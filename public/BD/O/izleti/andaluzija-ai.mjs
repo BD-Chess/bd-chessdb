@@ -59,9 +59,9 @@ function pageResult(navigation){
 const executor=createTravelExecutor({adapter:api,navigate:(args,options)=>showPageSection(args,{...options,before:()=>{if(matchMedia('(max-width:1099px)').matches)toggle(false);}}),progress:s=>status.textContent=s,renderPreview:p=>{
  const host=$('trip-ai-preview');host.replaceChildren();const title=document.createElement('b');title.textContent='Predogled sprememb';host.append(title);
  for(const d of p.diff){const text=document.createElement('p');text.textContent=d.changes.map(c=>(c.before?.name||'Nov ogled')+' → '+(c.after?.name||'odstranjeno')).join('; ')||'Vrstni red: '+d.orderAfter.join(' → ');host.append(text);}
- if(p.solver){const text=document.createElement('p');text.textContent='TripOpti · '+p.solver.receipt.source+' · ocena po ravni črti; pravočasnost in peš pot nista potrjeni.';host.append(text);}
+ if(p.solver){const text=document.createElement('p');text.textContent='TripOpti · '+p.solver.receipt.source+' · DeepOpti do 5 s; dejanske peš razdalje. Pravočasnost vstopnic ni potrjena.';host.append(text);}
 }});
-function toggle(open=!panel.hidden){if(open){previousFocus=document.activeElement;panel.hidden=false;$('trip-ai-toggle').setAttribute('aria-expanded','true');document.body.classList.add('trip-ai-open');input.focus();availability();}else{availabilitySequence++;clearCredentials();panel.hidden=true;$('trip-ai-toggle').setAttribute('aria-expanded','false');document.body.classList.remove('trip-ai-open');previousFocus?.focus();}}
+function toggle(open=!panel.hidden){if(open){previousFocus=document.activeElement;panel.hidden=false;$('trip-ai-toggle').setAttribute('aria-expanded','true');document.body.classList.add('trip-ai-open');input.focus({preventScroll:true});availability();}else{availabilitySequence++;clearCredentials();panel.hidden=true;$('trip-ai-toggle').setAttribute('aria-expanded','false');document.body.classList.remove('trip-ai-open');previousFocus?.focus({preventScroll:true});}document.getElementById('map-ai')?.setAttribute('aria-expanded',String(open));}
 function cancel(clear=false){epoch++;availabilitySequence++;active?.abort();active=null;api()?.cancelOptimization();busy=false;$('trip-ai-send').disabled=false;if(clear){$('trip-ai-page-notice').hidden=true;authenticated=false;available=null;history=[];log.replaceChildren();input.value='';$('trip-ai-preview').replaceChildren();executor.clear();$('trip-ai-allow').checked=true;clearCredentials();}status.textContent=clear?'Izlet je zaklenjen. Za AI se prijavita z računom MDL×DCC; za osebni del odklenita »Najini ogledi«.':'Odgovor je prekinjen. Že potrjene spremembe ostanejo vidne v programu.';}
 function ready(){return canonical&&!logoutPending&&(authenticated||api()?.getContext().capabilities.write);}
 async function availability(){
@@ -119,6 +119,7 @@ async function submit(message){
  finally{if(selectedEpoch===epoch){busy=false;active=null;$('trip-ai-send').disabled=false;}}
 }
 $('trip-ai-toggle').onclick=()=>toggle(panel.hidden);$('trip-ai-close').onclick=()=>toggle(false);$('trip-ai-cancel').onclick=()=>cancel();
+window.addEventListener('andaluzija-ai-toggle',()=>toggle(panel.hidden));
 $('trip-ai-return').onclick=()=>{$('trip-ai-page-notice').hidden=true;toggle(true);};
 $('trip-ai-dismiss-notice').onclick=()=>{$('trip-ai-page-notice').hidden=true;};
 $('trip-ai-account-action').onclick=()=>{if(authenticated||logoutPending)signOut();else showAuth(true);};

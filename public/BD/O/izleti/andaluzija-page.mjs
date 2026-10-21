@@ -26,6 +26,7 @@ export function pageRequest(message){
 }
 export async function showPageSection(args,{before=()=>{},alive=()=>{},signal}={}){
  validatePageTarget(args);alive();if(signal?.aborted)throw Error('LOCKED');
+ if(document.body.classList.contains('map-fullscreen'))await window.AndaluzijaMapV1?.exitFullscreen();alive();
  const definition=pageSections[args.section],target=document.getElementById(args.day?'dan-'+args.day:definition.id);
  if(!target||!target.getClientRects().length)throw Error('NAVIGATION_UNAVAILABLE');
  before();await new Promise(requestAnimationFrame);alive();

@@ -39,7 +39,7 @@ for(const provider of ['gpt','claude'])test(provider+': tool -> visible-target r
  const events=await parse(await handler(req({message:'Ali lahko pokažeš vgrajeni zemljevid?',provider,context:ctx(),epoch:8,allowChanges:false}))),e=events.find(e=>e.type==='client_action');assert(e);assert.equal(e.action.allowWrite,false);
  const receipt={...e.action,status:'shown',navigation:{section:'zemljevid',day:null,locked:false}};
  assert.equal((await handler(req({continuation:e.continuation,receipt:{...receipt,navigation:{...receipt.navigation,section:'potrjeno'}},context:ctx()}))).status,400);
- const final=await parse(await handler(req({continuation:e.continuation,receipt,context:ctx()})));assert(final.some(x=>x.type==='delta'&&x.text.includes('Prikazal')));assert.equal(final.at(-1).serverSaveVerified,false);assert.equal(final.at(-1).skill.version,'1.1.0');assert(payloads.every(p=>(p.instructions||p.system).includes('show_page_section')));
+ const final=await parse(await handler(req({continuation:e.continuation,receipt,context:ctx()})));assert(final.some(x=>x.type==='delta'&&x.text.includes('Prikazal')));assert.equal(final.at(-1).serverSaveVerified,false);assert.equal(final.at(-1).skill.version,'1.2.0');assert(payloads.every(p=>(p.instructions||p.system).includes('show_page_section')));
 });
 
 test('six hashed topics load progressively; city guides contain reasoning, not just a catalogue; Shield unchanged',async()=>{

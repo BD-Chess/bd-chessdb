@@ -9,15 +9,14 @@
 <meta name="trip-content-version" content="2026-10-21-SHIELD-R2">
 <meta name="description" content="Andaluzija 2026. Tri poti, slovenski vodič, mestni ogledi in posamične Google Maps povezave. Osebni podatki so zaklenjeni.">
 <title>Andaluzija 2026 · Moji izleti</title>
-<link rel="stylesheet" href="./assets/vendor/leaflet-1.9.4/leaflet.css">
-<link rel="stylesheet" href="./andaluzija-2027.css?v=20261020-trip1">
+<link rel="stylesheet" href="./andaluzija-2027.css?v=20261021-map1">
 <script defer src="./andaluzija-2027-data.js?v=20261021-shield2"></script>
-<script defer src="./andaluzija-2027.js?v=20261021-dualframe1"></script>
+<script defer src="./andaluzija-2027.js?v=20261021-map1"></script>
 <script defer src="../../../Trip/new/road-matrix.js"></script>
 <script defer src="./andaluzija-shield-core.js"></script>
-<script type="module" src="./andaluzija-planner.mjs?v=20261020-trip1"></script>
-<link rel="stylesheet" href="./andaluzija-ai.css?v=20261021-auth1">
-<script type="module" src="./andaluzija-ai.mjs?v=20261021-auth1"></script>
+<script type="module" src="./andaluzija-planner.mjs?v=20261021-map1"></script>
+<link rel="stylesheet" href="./andaluzija-ai.css?v=20261021-map1">
+<script type="module" src="./andaluzija-ai.mjs?v=20261021-map1"></script>
 <link rel="stylesheet" href="../../../shared/dualframe-album.css?v=20261021-fullscreen3">
 <script type="module" src="../../../shared/dualframe-album.mjs?v=20261021-fullscreen4"></script>
 </head>
@@ -50,14 +49,16 @@
  </section>
 
  <section id="zemljevid" class="section">
-  <div class="section-heading"><div><p class="eyebrow">02 / EN ZEMLJEVID</p><h2>Vse poti, vsaka v svoji barvi.</h2></div><p>Satelit, cestni zemljevid ali shema: vse tri možnosti na isti podlagi. Dotaknita se kraja za primerjavo dni; s kljukicami vključujta posamezne poti.</p></div>
-  <div class="map-card">
-   <div class="map-viewbar"><div class="map-views" role="group" aria-label="Podlaga zemljevida"><button type="button" data-map-view="satellite" aria-pressed="true">Satelit / ortofoto</button><button type="button" data-map-view="streets" aria-pressed="false">Cestni zemljevid</button><button type="button" data-map-view="scheme" aria-pressed="false">Shema</button></div><p id="map-status" role="status">Satelitski pogled se naloži ob prihodu do zemljevida.</p></div>
-   <div class="map-toolbar"><div id="map-toggles" class="map-toggles"></div><div class="map-tools"><button type="button" id="map-zoom-in" aria-label="Povečaj zemljevid">＋</button><button type="button" id="map-zoom-out" aria-label="Pomanjšaj zemljevid">−</button><button type="button" id="map-reset">Celotna pot</button><button type="button" id="map-expand">Razširi</button></div></div>
+  <div class="section-heading"><div><p class="eyebrow">02 / EN ZEMLJEVID</p><h2>Vse poti, vsaka v svoji barvi.</h2></div><p>Google satelit s cestami, dejanske vozne trase in mestni sprehodi. Izberita celotno pot, dan ali oglede; AI je pri roki tudi na celem zaslonu.</p></div>
+  <p class="project-callout"><b>Načrtuj s TripOpti.</b> Isti optimizacijski engine, tukaj prilagojen vajinim ogledom. <a href="https://www.mdlxdcc.org/trip/" target="_blank" rel="noopener noreferrer">Razišči TripOpti ↗</a></p>
+  <div class="map-card" id="trip-map-card">
+   <div class="map-viewbar"><div class="map-views" role="group" aria-label="Podlaga zemljevida"><button type="button" data-map-view="satellite" aria-pressed="true">Google satelit + ceste</button><button type="button" data-map-view="streets" aria-pressed="false">Cestni zemljevid</button><button type="button" data-map-view="scheme" aria-pressed="false">Shema</button></div><p id="map-status" role="status" aria-live="polite">Klik na Google podlago naloži zemljevid. Shema deluje brez zunanje povezave.</p></div>
+   <div class="map-route-controls"><label>Prikaz<select id="map-scope"><option value="trip">Celotne poti A / B / C · avto</option><option value="day">Posamezni dan · avto</option><option value="city">Najini ogledi · peš</option></select></label><label><span class="sr-only">Dan poti</span><select id="map-day" aria-label="Dan poti" hidden></select></label><label class="map-consent"><input id="map-provider-consent" type="checkbox"> Dovolim Google izračun tras (API je lahko plačljiv).</label><button id="map-draw" type="button">Prikaži traso</button></div>
+   <div class="map-toolbar"><div id="map-toggles" class="map-toggles"></div><div class="map-tools"><button type="button" id="map-zoom-in" aria-label="Povečaj zemljevid">+</button><button type="button" id="map-zoom-out" aria-label="Pomanjšaj zemljevid">−</button><button type="button" id="map-reset">Celotna pot</button><button type="button" id="map-ai" aria-controls="trip-ai-panel" aria-expanded="false">AI pomočnik</button><button type="button" id="map-expand" aria-expanded="false">Cel zaslon</button></div></div>
    <div id="map-host" class="map-host" data-map-mode="satellite"><div id="photo-map" class="photo-map" role="region" aria-label="Interaktivni zemljevid treh poti po Andaluziji"></div><svg id="trip-map" viewBox="0 0 1000 700" role="img" aria-labelledby="map-title map-desc"><title id="map-title">Tri poti po Andaluziji</title><desc id="map-desc">Mateja v koralni, Claude v modri in GPT v zeleni. Kraji so dostopni tudi prek gumbov pod zemljevidom.</desc><defs><pattern id="map-grid" width="65" height="65" patternUnits="userSpaceOnUse"><path d="M 65 0 L 0 0 0 65" fill="none" stroke="#294451" stroke-width=".7" opacity=".6"/></pattern><filter id="land-shadow"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity=".25"/></filter></defs><rect width="1000" height="700" fill="#0c2532"/><g id="map-viewport"></g></svg><div class="map-corner">S ↑<br><span>sever</span></div></div>
    <div id="place-buttons" class="place-buttons" aria-label="Kraji na zemljevidu"></div>
    <div id="map-detail" class="map-detail" aria-live="polite"></div>
-   <p class="map-note"><b>Satelit / ortofoto:</b> uradni posnetki IGN/PNOA za Španijo; na večji povečavi so to predvsem letalske ortofotografije, ne slika v živo. Cestna podlaga: OpenStreetMap. Barvne črte kažejo vrstni red postankov in <b>ne prikazujejo cestne trase</b>; skupni odseki imajo različne debeline in modro črtkano črto. Carmona je neobvezna. Za navigacijo uporabita dnevne povezave v Google Maps in izberita dovoljeno garažo. Podlage potrebujejo povezavo; <b>Shema</b> deluje brez zunanje podlage. <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Popravek cestnega zemljevida ↗</a></p>
+   <p class="map-note"><b>Google Maps:</b> satelitski posnetki s cestami niso slika v živo. Barvne Google trase sledijo cestam oziroma peš potem; oštevilčene točke ohranijo vrstni red. Medmestni dnevi uporabljajo avto, mestni krogi peš način iz »Najini ogledi«. Dovoljen dovoz, parkiranje, zapore in prihod ob uri vstopnice preverita posebej. <b>Shema</b> je izrecno le offline pregled z ravnimi črtami. Google podatki ostanejo v pomnilniku odprte seje.</p>
   </div>
  </section>
 
@@ -110,12 +111,13 @@
  <div id="photo-gallery" class="photo-grid" data-dualframe-album="./assets/andaluzija-2027/dualframe/album.json"></div>
  <p class="small muted">Izbor fotografij iz Matejinega Worda; izvirni fotografi niso potrjeni. Prikazana para L/P sta AI kompoziciji: rekonstruirane podrobnosti in dopolnjeni robovi so ilustrativni. Izvirnik ostaja dostopen pri vsaki sliki. Slike nastanitev so primeri iz dokumenta, ne potrdila rezerviranih enot. Dvojni klik ali dvojni dotik odprte slike preklopi cel zaslon.</p></section>
 
- <section id="viri" class="section sources-section"><p class="eyebrow">VIRI IN AVTORSTVO</p><h2>Od izvirnika do treh možnosti.</h2><p>Različica A: načrt iz dokumenta, ki ga je pripravila oziroma posredovala Mateja. Različica B: Claude, predaja R1 z dne 19. 10. 2026. Različica C in ta vodič: GPT, na BD-jevo naročilo. Izvirnika ostajata ločena; pripombe preverjanja ne prepisujejo njunega avtorstva.</p><p>Javni viri so bili preverjeni oktobra 2026. Ure, cene in dostopnost za 2027 je treba ponovno preveriti. Datumi in podatki rezervacij so v zaklenjenem delu. Črte med mesti so shematične.</p><div id="source-list" class="source-list"></div><p class="small muted">Ta stran ima nastavljeno noindex. Javni vodič je dosegljiv z URL-jem; osebni del uporablja 8zShield in strežniško prijavo. Različica 2026-10-21-SHIELD-R2.</p></section>
+ <section id="viri" class="section sources-section"><p class="eyebrow">VIRI IN AVTORSTVO</p><h2>Od izvirnika do treh možnosti.</h2><p>Različica A: načrt iz dokumenta, ki ga je pripravila oziroma posredovala Mateja. Različica B: Claude, predaja R1 z dne 19. 10. 2026. Različica C in ta vodič: GPT, na BD-jevo naročilo. Izvirnika ostajata ločena; pripombe preverjanja ne prepisujejo njunega avtorstva.</p><p>Javni viri so bili preverjeni oktobra 2026. Ure, cene in dostopnost za 2027 je treba ponovno preveriti. Datumi in podatki rezervacij so v zaklenjenem delu. Google trase sledijo cestam; le offline shema uporablja ravne črte.</p><div id="source-list" class="source-list"></div><p class="small muted">Ta stran ima nastavljeno noindex. Javni vodič je dosegljiv z URL-jem; osebni del uporablja 8zShield in strežniško prijavo. Različica 2026-10-21-SHIELD-R2.</p></section>
  <footer><a href="./index.html">← Moji izleti</a><a href="#naslov">Na vrh ↑</a><button type="button" id="print-page">Natisni izbrani načrt</button></footer>
 </main>
 <dialog id="photo-dialog"><form method="dialog"><button type="submit" aria-label="Zapri fotografijo">Zapri ×</button></form><img id="lightbox-photo" alt=""><p id="lightbox-caption"></p></dialog>
 <aside id="trip-ai-panel" role="dialog" aria-label="Andaluzija · AI vodič" hidden>
  <header><h2>Andaluzija · AI vodič</h2><button id="trip-ai-close" type="button" aria-label="Zapri AI vodiča">Zapri ×</button></header>
+ <a class="trip-ai-note" href="https://www.mdlxdcc.org/ai8/browser-loops.html" target="_blank" rel="noopener noreferrer">Browser Loops · kako sodelujemo z AI ↗</a>
  <div class="trip-ai-account"><span id="trip-ai-account-label">Prijava za AI</span><button id="trip-ai-account-action" type="button">Prijava</button></div>
  <form id="trip-ai-auth" hidden>
   <strong>Prijava za GPT in Claude</strong>

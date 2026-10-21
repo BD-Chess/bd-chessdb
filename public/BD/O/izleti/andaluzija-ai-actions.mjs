@@ -53,7 +53,7 @@ export function createTravelExecutor({adapter=()=>window.AndaluzijaTripOptiV1,fe
     let ops=operations(day,scope,changes,choices),solver;
     if(ops.length)renderPreview({diff:api.previewChanges(ops,a.baseRevision).diff,requestId:a.requestId});
     if(args.optimize||a.name==='optimize_day_visits'){
-     solver=await api.optimizeDay({mode:'estimate',segment:args.segment,operations:ops,baseRevision:a.baseRevision,progress:s=>{try{alive();progress(s);}catch{}}});alive();
+     solver=await api.optimizeDay({mode:'walking',segment:args.segment,operations:ops,baseRevision:a.baseRevision,progress:s=>{try{alive();progress(s);}catch{}}});alive();
      ops.push({type:'reorder',...scope,ids:solver.ids,origin:'deep',receipt:solver.receipt});
     }
     if(!ops.length)throw Error('NO_CHANGES');const p=api.previewChanges(ops,a.baseRevision);alive();
@@ -70,7 +70,7 @@ export function createTravelExecutor({adapter=()=>window.AndaluzijaTripOptiV1,fe
    if(!['saved','synced'].includes(saved.status)||!saved.etag)throw Error('SAVE_FAILED');
    return {...receipt,status:saved.status,save:saved};
   }catch(e){
-   const message=String(e.message||e);const reason=/LOCATION|lokacij|POINT|COORDINATE/i.test(message)?'LOCATION_REQUIRED':/REVISION|spremenil|CONFLICT/i.test(message)?'REVISION_CONFLICT':/FIXED_EVENT/i.test(message)?'FIXED_EVENT':/SCOPE/.test(message)?'SCOPE_CHANGED':/LOCKED|Abort/.test(message)?'LOCKED':'ACTION_FAILED';
+   const message=String(e.message||e);const reason=/CONSENT/.test(message)?'GOOGLE_CONSENT_REQUIRED':/LOCATION|lokacij|POINT|COORDINATE/i.test(message)?'LOCATION_REQUIRED':/REVISION|spremenil|CONFLICT/i.test(message)?'REVISION_CONFLICT':/FIXED_EVENT/i.test(message)?'FIXED_EVENT':/SCOPE/.test(message)?'SCOPE_CHANGED':/LOCKED|Abort/.test(message)?'LOCKED':'ACTION_FAILED';
    return {...receipt,status:reason==='LOCKED'?'cancelled':reason==='REVISION_CONFLICT'?'conflict':'failed',reason};
   }
  }

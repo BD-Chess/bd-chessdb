@@ -17,13 +17,15 @@ const {normalizeFunctionsConfig} = await import(pathToFileURL(join(cliRoot, 'dis
 const raw = JSON.parse(execFileSync('python3', ['-c',
   'import json,tomllib;print(json.dumps({k:v for k,v in tomllib.load(open("netlify.toml","rb"))["functions"].items() if isinstance(v,dict)}))'], {encoding:'utf8'}));
 const config = normalizeFunctionsConfig({functionsConfig:raw, projectRoot:root});
-await mkdir('bundled-functions', {recursive:true});
-const rows = await zipFunctions(resolve('functions'), resolve('bundled-functions'), {basePath:root, config, parallelLimit:1});
+const output=process.env.ANDALUZIJA_BUNDLE_NAME||'bundled-functions';
+if(!['bundled-functions','bundled-upgrade'].includes(output))throw Error('Invalid bundle output');
+await mkdir(output, {recursive:true});
+const rows = await zipFunctions(resolve('functions'), resolve(output), {basePath:root, config, parallelLimit:1});
 for (const row of rows) {
   row.path = resolve(row.path);
   const bytes = await readFile(row.path);
   if (bytes.length !== row.size) throw new Error(`Incomplete function ZIP: ${row.name}`);
   row.sha256 = createHash('sha256').update(bytes).digest('hex');
 }
-await writeFile('bundled-functions.json', JSON.stringify(rows, null, 2)+'\n');
+await writeFile(output+'.json', JSON.stringify(rows, null, 2)+'\n');
 console.log(`Bundled ${rows.length} pinned functions; no provider calls.`);

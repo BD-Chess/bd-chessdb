@@ -6,7 +6,7 @@ export const travelTopics=['overview','itinerary','page-guide','food-culture','p
 const root=()=>new URL('./public/ai/skills/', 'file://'+process.cwd()+'/');
 export async function travelKnowledge({read=path=>readFile(new URL(path,root()),'utf8')}={}){
  const registry=JSON.parse(await read('registry.json')),entry=registry.skills.find(s=>s.id===packageId&&s.availability==='ready');
- if(!entry||entry.version!=='1.1.0')throw Error('SKILL_UNAVAILABLE');
+ if(!entry||entry.version!=='1.2.0')throw Error('SKILL_UNAVAILABLE');
  const checked=new Map();
  async function load(path){
   if(!(path in entry.file_hashes)||path.includes('..'))throw Error('REFERENCE_UNAVAILABLE');

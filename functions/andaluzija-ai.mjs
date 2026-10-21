@@ -81,7 +81,7 @@ export function makeTravelHandler({actor=tripActor,knowledgeFactory=travelKnowle
     }
     // Whitelist receipt data; never reflect arbitrary browser/provider errors into prompts.
     receipt.changedIds=Array.isArray(r.changedIds)?r.changedIds.filter(x=>/^[-a-zA-Z0-9_]{1,90}$/.test(x)).slice(0,49):[];
-    receipt.reason=['LOCATION_REQUIRED','REVISION_CONFLICT','FIXED_EVENT','SCOPE_CHANGED','LOCKED','ACTION_FAILED'].includes(r.reason)?r.reason:undefined;
+    receipt.reason=['GOOGLE_CONSENT_REQUIRED','LOCATION_REQUIRED','REVISION_CONFLICT','FIXED_EVENT','SCOPE_CHANGED','LOCKED','ACTION_FAILED'].includes(r.reason)?r.reason:undefined;
     if(r.status==='preview'&&Array.isArray(r.order))receipt.order=r.order.filter(x=>/^[-a-zA-Z0-9_]{1,90}$/.test(x)).slice(0,49);
     if(r.maps&&/^https:\/\/www\.google\.com\/maps\//.test(r.maps))receipt.maps=r.maps.slice(0,2048);
     appendTool(v.input,v.provider,v.call,receipt);v.lastStatus=receipt.status;v.pending=null;
