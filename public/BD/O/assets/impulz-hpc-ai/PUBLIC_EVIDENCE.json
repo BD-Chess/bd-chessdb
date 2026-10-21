@@ -1,0 +1,556 @@
+{
+  "schema": "slaif.public_evidence.v2",
+  "revision": "R4",
+  "as_of": "2026-10-21",
+  "basis": "Codex original experiments; GPT editorial integrity/arithmetic review, not experimental replication",
+  "provider_label": "Gemma 4 26B-A4B IT Q8 (portal/handoff label; weights not independently audited)",
+  "api": {
+    "requests": 27,
+    "http_200": 26,
+    "http_400": 1,
+    "local_pre_http_errors": 1,
+    "retries": 0,
+    "allocation_extensions": 0,
+    "known_input_tokens": 53606,
+    "known_output_tokens": 19230,
+    "known_total_tokens": 72836,
+    "failed_request_usage": null,
+    "latency_sum_s": 551.453,
+    "latency_kind": "sum of client request durations, NOT session wall or pure generation",
+    "finish_reasons": {
+      "length": 10,
+      "stop": 14,
+      "unknown": 3
+    }
+  },
+  "json": {
+    "strict_or_function_tasks": {
+      "pass": 2,
+      "total": 10
+    },
+    "bare_exact_json": {
+      "pass": 1,
+      "total": 9
+    },
+    "extracted_exact_object_secondary": {
+      "pass": 6,
+      "total": 9
+    },
+    "code_task": {
+      "pass": 1,
+      "total": 1,
+      "fixtures_pass": 5,
+      "fixtures_total": 5
+    },
+    "retrieval": {
+      "found": 3,
+      "targets": 3,
+      "records": 600
+    }
+  },
+  "rhp": {
+    "tasks": 2,
+    "independent_blind_evaluation": false,
+    "general_benefit": "NOT_ESTABLISHED",
+    "768": {
+      "requests": 4,
+      "length": 4,
+      "scores": {
+        "HPC_SERVICE": {
+          "A": 5,
+          "B": 6
+        },
+        "TSP_HYPOTHESIS": {
+          "A": 6,
+          "B": 7
+        }
+      },
+      "score_max": 12,
+      "input_A": 383,
+      "input_B": 18171
+    },
+    "2048": {
+      "requests": 4,
+      "stop": 4,
+      "scores": {
+        "HPC_SERVICE": {
+          "A": 7,
+          "B": 5
+        },
+        "TSP_HYPOTHESIS": {
+          "A": 7,
+          "B": 7
+        }
+      },
+      "score_max": 12
+    },
+    "source_resolution": {
+      "canonical_sha256": "0a96871ae46923d5b9f952ad17bc45acd18b7d694a4e3f4d8379b63a692cdd57",
+      "archived_sha256": "4ba65def127ac257ccabc79f9498a19cbb94a0f79176797cc0999ff535949c95",
+      "exact_relation": "archived_bytes == canonical_bytes + b\"\\n\"",
+      "archived_protocol_is_prefix_of_frozen_B_system": true,
+      "meaning": "Content equal; byte identity not equal. Frozen B additionally contains a recorded execution instruction."
+    }
+  },
+  "local": {
+    "cpci": {
+      "focused_tests_pass": 18,
+      "worlds": 100,
+      "rule_removals": 500,
+      "changed_removals": 116,
+      "oracle_transitions": 6000
+    },
+    "lag": {
+      "instances": 30,
+      "cities": 35,
+      "basic_gap_uniform_pct": 1.8171,
+      "basic_gap_clustered_pct": 0.5781,
+      "distance_access_ratio_uniform": 2.531,
+      "distance_access_ratio_clustered": 1.949,
+      "matched_budget": false
+    },
+    "exact": {
+      "instances": 8,
+      "cities": 9,
+      "enumerated_cycles": 161280,
+      "candidate_tours": 40,
+      "NN_optima": 6,
+      "LAG_B_minus_optima": 8
+    },
+    "tspts": {
+      "version": "0.1 unchanged",
+      "instance": "wi29",
+      "tour_length": 27603,
+      "workers": 1,
+      "proposals": 128,
+      "external_wall_s": 1.172904,
+      "cpu_s": 1.078125,
+      "peak_rss_mib": 28.8125,
+      "invalid_resume": "OPEN_SILENT_NEW_START",
+      "forced_resume_acceptance": "NOT_RUN"
+    }
+  },
+  "remote_python": {
+    "status": "NOT_RUN_EXCLUDED",
+    "wall_s": null,
+    "speedup": null
+  },
+  "editorial_verification": {
+    "source_files_hash_verified": 95,
+    "manifest_entries_verified": 105,
+    "zip_crc": "PASS",
+    "new_model_calls": 0,
+    "new_solver_runs": 0,
+    "source_audit": "EDITORIAL_SOURCE_AUDIT.json"
+  },
+  "next_tests": [
+    {
+      "id": "test-resume",
+      "rank": "01",
+      "title": "TSPTS: nadaljevanje brez tihega novega teka",
+      "badge": "PREDNOSTNO · OFFLINE",
+      "scope": "Izolirana kopija; izvirni solver in aktivne arene ostanejo nespremenjeni.",
+      "why": "Odprt hrošč: ob nezdružljivih checkpointih lahko solve(--resume) tiho začne od začetka. To je tveganje za dokazni izvor, ne le za hitrost.",
+      "test": "Najprej zamrznemo kodo, vhod in konfiguracijo. Preverimo veljaven checkpoint, manjkajoč checkpoint, neujemanje konfiguracije ter poškodovan primarni zapis z veljavnim prejšnjim. Nato en kratek nadzorovan stop → resume na kopiji.",
+      "accept": "Neveljaven resume se ustavi z jasno napako in brez novega teka. Dovoljen fallback uporabi samo ujemajočo se identiteto. Veljavno nadaljevanje ohrani stanje, števce, seme/RNG in najboljšo pot; rezultat preveri neodvisni validator.",
+      "limit": "Predlog: največ 5 minut in vnaprej omejeni majhni vhodi. Test nadzorovanega stopa ni test izpada elektrike.",
+      "gate": "Ni API-ja. Popravek in testi še niso izvedeni; potreben je ločen izvedbeni mandat."
+    },
+    {
+      "id": "test-json",
+      "rank": "02",
+      "title": "JSON/API: najprej pojasnimo HTTP 400",
+      "badge": "ČAKA POTRJEN DOSTOP",
+      "scope": "Samo že potrjeni MaaS endpoint; VM/Slurm izključen.",
+      "why": "Delujoč HTTP prenos ni pogodba o formatu. Prvi response_format=json_object je vrnil 400; telo napake ni bilo shranjeno, zato vzroka ne poznamo.",
+      "test": "Od ponudnika pridobimo podprt primer. Zamrznemo eno kratko oracle nalogo: osnovni klic, dokumentirani strukturirani način in dokumentirani reasoning parameter samo, če je podprt. Ločeno beležimo status, zaključek, JSON, shemo in pravilnost.",
+      "accept": "Za vsako poslano zahtevo obstaja zapis izida. Neuspeh ima redaktirano kodo/tip/sporočilo napake brez glave Authorization ali ključa. Za strojno uporabo šteje samo celotna zahtevana shema in pravilen rezultat.",
+      "limit": "Predlog: največ 3 nove zahteve, do 60 s in 2.048 izhodnih tokenov na zahtevo; brez retryjev, stop ob prvi napaki. Nepodprta nastavitev se ne pošlje.",
+      "gate": "Šele po sveže potrjenem aktivnem brezplačnem dostopu in izrecno odobrenem proračunu. Ta stran ne kliče API-ja."
+    },
+    {
+      "id": "test-rhp",
+      "rank": "03",
+      "title": "RHP: nov vzorec in kontrola dolžine navodil",
+      "badge": "PO API DIAGNOSTIKI",
+      "scope": "Predlog novega vedenjskega preizkusa; ni potrditev protokola ali zavesti.",
+      "why": "Dve isti nalogi, neslepo ocenjevanje in zelo različen vhodni proračun ne ločijo učinka RHP od dolžine navodil, načina ocenjevanja ali odrezovanja.",
+      "test": "Pred izidi zamrznemo 3 nove naloge in rubriko: A nevtralno navodilo, B točno pripeti RHP, C vsebinsko nevtralna kontrola s primerljivo dolžino. Po 3 sveže stateless ponovitve na pogoj/nalogo; uravnotežen vrstni red, isti model in izhodni limit.",
+      "accept": "Skrijemo oznake pogojev pred neodvisnim ocenjevalcem; kjer je mogoče dodamo deterministični oracle. Poročamo vse izide, stroške, input/output tokene in odrezane odgovore. RHP slog lahko razkrije pogoj, zato blinding ni zagotovljen.",
+      "limit": "To je predlog 3 × 3 × 3 = 27 DODATNIH zahtev, ločen od 27 zgodovinskih. Končni limit in ustavitev določimo pred aktivacijo; brez samodejnega ponavljanja.",
+      "gate": "Nov omejen mandat in dostop. N = 3 naloge ostaja mali pilot; prag praktične koristi določimo vnaprej, ne po rezultatih."
+    },
+    {
+      "id": "test-lag",
+      "rank": "04",
+      "title": "TSP/LAG: kakovost pri enakem delu",
+      "badge": "OFFLINE · LOČENA PROGA",
+      "scope": "NN, LAG in variante ohranimo; brez posega v TSPTS ali Cockpit.",
+      "why": "Doslej so metode po skupnem 2-opt porabile različno število dostopov do razdalj. Enaka zaključna metoda zato ni enak računski proračun.",
+      "test": "Pred meritvijo zamrznemo nove held-out koordinate, semena, pravilo vezanih rezultatov in dve dovolj veliki omejitvi dela. Štejemo konstrukcijo in izboljševanje; vse metode dobijo isti skupni limit. Ločeno spremljamo čas in dostop do matrike.",
+      "accept": "Vsaka zaprta pot je neodvisno veljavna. Poročamo parne vrzeli in krivuljo kakovost–proračun po porazdelitvah; nobenega tuninga na held-out. Primere, kjer konstrukcija preseže limit, zabeležimo, ne skrijemo.",
+      "limit": "Predlog: majhen n = 35 korpus, vnaprej omejen skupni čas do 5 minut. To ni HPC benchmark, velike kampanje ali nov dokaz splošne prednosti.",
+      "gate": "Ločen offline mandat. Neodvisno od API dostopa, vendar ne pomeni, da smo ta poskus že izvedli."
+    }
+  ],
+  "request_ledger": [
+    {
+      "sequence": "1",
+      "phase": "R4",
+      "test": "smoke",
+      "http_status": "200",
+      "latency_ms": "12922.0",
+      "max_output_tokens": "96",
+      "prompt_tokens": "39",
+      "completion_tokens": "96",
+      "total_tokens": "135",
+      "finish_reason": ""
+    },
+    {
+      "sequence": "2",
+      "phase": "R4",
+      "test": "reasoning",
+      "http_status": "200",
+      "latency_ms": "11906.0",
+      "max_output_tokens": "96",
+      "prompt_tokens": "83",
+      "completion_tokens": "96",
+      "total_tokens": "179",
+      "finish_reason": ""
+    },
+    {
+      "sequence": "3",
+      "phase": "R5",
+      "test": "LOGIC",
+      "http_status": "200",
+      "latency_ms": "13438.0",
+      "max_output_tokens": "256",
+      "prompt_tokens": "135",
+      "completion_tokens": "256",
+      "total_tokens": "391",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "4",
+      "phase": "R5",
+      "test": "CAUSAL",
+      "http_status": "200",
+      "latency_ms": "13531.0",
+      "max_output_tokens": "256",
+      "prompt_tokens": "127",
+      "completion_tokens": "256",
+      "total_tokens": "383",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "5",
+      "phase": "R5",
+      "test": "CODE_REVIEW",
+      "http_status": "200",
+      "latency_ms": "13469.0",
+      "max_output_tokens": "256",
+      "prompt_tokens": "89",
+      "completion_tokens": "169",
+      "total_tokens": "258",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "6",
+      "phase": "R5",
+      "test": "TSP_MATH",
+      "http_status": "200",
+      "latency_ms": "12891.0",
+      "max_output_tokens": "256",
+      "prompt_tokens": "110",
+      "completion_tokens": "246",
+      "total_tokens": "356",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "7",
+      "phase": "R5",
+      "test": "SCIENCE",
+      "http_status": "200",
+      "latency_ms": "12344.0",
+      "max_output_tokens": "256",
+      "prompt_tokens": "97",
+      "completion_tokens": "256",
+      "total_tokens": "353",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "8",
+      "phase": "R5",
+      "test": "CALIBRATION",
+      "http_status": "200",
+      "latency_ms": "15781.0",
+      "max_output_tokens": "256",
+      "prompt_tokens": "113",
+      "completion_tokens": "256",
+      "total_tokens": "369",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "9",
+      "phase": "RHP_768",
+      "test": "HPC_SERVICE_A",
+      "http_status": "200",
+      "latency_ms": "20390.0",
+      "max_output_tokens": "768",
+      "prompt_tokens": "184",
+      "completion_tokens": "768",
+      "total_tokens": "952",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "10",
+      "phase": "RHP_768",
+      "test": "HPC_SERVICE_B",
+      "http_status": "200",
+      "latency_ms": "31610.0",
+      "max_output_tokens": "768",
+      "prompt_tokens": "9078",
+      "completion_tokens": "768",
+      "total_tokens": "9846",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "11",
+      "phase": "RHP_768",
+      "test": "TSP_HYPOTHESIS_B",
+      "http_status": "200",
+      "latency_ms": "27531.0",
+      "max_output_tokens": "768",
+      "prompt_tokens": "9093",
+      "completion_tokens": "768",
+      "total_tokens": "9861",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "12",
+      "phase": "RHP_768",
+      "test": "TSP_HYPOTHESIS_A",
+      "http_status": "200",
+      "latency_ms": "19156.0",
+      "max_output_tokens": "768",
+      "prompt_tokens": "199",
+      "completion_tokens": "768",
+      "total_tokens": "967",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "13",
+      "phase": "CONFERENCE_R2",
+      "test": "SYNC3",
+      "http_status": "200",
+      "latency_ms": "22984.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "213",
+      "completion_tokens": "1024",
+      "total_tokens": "1237",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "14",
+      "phase": "CONFERENCE_R2",
+      "test": "REMOVAL3",
+      "http_status": "200",
+      "latency_ms": "22375.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "198",
+      "completion_tokens": "1024",
+      "total_tokens": "1222",
+      "finish_reason": "length"
+    },
+    {
+      "sequence": "15",
+      "phase": "CONFERENCE_R2",
+      "test": "LAG_SIGN",
+      "http_status": "200",
+      "latency_ms": "22016.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "232",
+      "completion_tokens": "1005",
+      "total_tokens": "1237",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "16",
+      "phase": "CONFERENCE_R2",
+      "test": "EUC_CLOSURE",
+      "http_status": "200",
+      "latency_ms": "16484.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "169",
+      "completion_tokens": "628",
+      "total_tokens": "797",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "17",
+      "phase": "CONFERENCE_R2",
+      "test": "EVIDENCE_BOUNDARY",
+      "http_status": "200",
+      "latency_ms": "15172.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "217",
+      "completion_tokens": "542",
+      "total_tokens": "759",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "18",
+      "phase": "CONFERENCE_R2",
+      "test": "SLOVENE_JSON",
+      "http_status": "200",
+      "latency_ms": "14297.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "164",
+      "completion_tokens": "474",
+      "total_tokens": "638",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "19",
+      "phase": "CONFERENCE_R2",
+      "test": "UNTRUSTED_DATA",
+      "http_status": "200",
+      "latency_ms": "15562.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "164",
+      "completion_tokens": "466",
+      "total_tokens": "630",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "20",
+      "phase": "CONFERENCE_R2",
+      "test": "CODE_EARLY_RETURN",
+      "http_status": "200",
+      "latency_ms": "21203.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "222",
+      "completion_tokens": "560",
+      "total_tokens": "782",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "21",
+      "phase": "CONFERENCE_R2",
+      "test": "HONEST_UNKNOWN",
+      "http_status": "200",
+      "latency_ms": "16360.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "169",
+      "completion_tokens": "536",
+      "total_tokens": "705",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "22",
+      "phase": "CONFERENCE_R2",
+      "test": "HPC_SERVICE_A_2048",
+      "http_status": "200",
+      "latency_ms": "31093.0",
+      "max_output_tokens": "2048",
+      "prompt_tokens": "184",
+      "completion_tokens": "1812",
+      "total_tokens": "1996",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "23",
+      "phase": "CONFERENCE_R2",
+      "test": "HPC_SERVICE_B_2048",
+      "http_status": "200",
+      "latency_ms": "43719.0",
+      "max_output_tokens": "2048",
+      "prompt_tokens": "9078",
+      "completion_tokens": "2024",
+      "total_tokens": "11102",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "24",
+      "phase": "CONFERENCE_R2",
+      "test": "TSP_HYPOTHESIS_B_2048",
+      "http_status": "200",
+      "latency_ms": "42078.0",
+      "max_output_tokens": "2048",
+      "prompt_tokens": "9093",
+      "completion_tokens": "2014",
+      "total_tokens": "11107",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "25",
+      "phase": "CONFERENCE_R2",
+      "test": "TSP_HYPOTHESIS_A_2048",
+      "http_status": "200",
+      "latency_ms": "34656.0",
+      "max_output_tokens": "2048",
+      "prompt_tokens": "199",
+      "completion_tokens": "1929",
+      "total_tokens": "2128",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "26",
+      "phase": "CONFERENCE_R2",
+      "test": "LONG_CONTEXT_RETRIEVAL",
+      "http_status": "200",
+      "latency_ms": "27594.0",
+      "max_output_tokens": "1536",
+      "prompt_tokens": "13957",
+      "completion_tokens": "489",
+      "total_tokens": "14446",
+      "finish_reason": "stop"
+    },
+    {
+      "sequence": "27",
+      "phase": "CONFERENCE_FORMAT",
+      "test": "SYNC3_JSON",
+      "http_status": "400",
+      "latency_ms": "891.0",
+      "max_output_tokens": "1024",
+      "prompt_tokens": "",
+      "completion_tokens": "",
+      "total_tokens": "",
+      "finish_reason": ""
+    }
+  ],
+  "sources": {
+    "complete": {
+      "id": "1kbdKphsUqH9pf8qIHoYRT_7P0Y-23t6m",
+      "title": "Codex · celotno poročilo 21. 10. 2026",
+      "sha256": "27a8b0c394a8770577477f428aa35160baa01c66d569b8aad59e3ede4ec28c63"
+    },
+    "rhp768": {
+      "id": "1AYhuUFNxHW9TwtzNkI0lmhEEMMw2jrKE",
+      "title": "Codex · RHP A/B pri 768 tokenih"
+    },
+    "conference": {
+      "id": "1Y0Zh8xRv_KrtFf6l6mnm14SC-UywPF8G",
+      "title": "Codex · dodatni konferenčni R2 in RHP 2048"
+    },
+    "evidence": {
+      "id": "1YKzxccTx5VCh21l5FimWHP9ZgY417Xlq",
+      "title": "Interni paket · 95 izvornih dokazil",
+      "sha256": "f1a07b7b0cc4a9bebb390b7e86e2d4aa783c030af83d6f787632010fe8475cf8"
+    }
+  },
+  "authority": {
+    "website_update_only": true,
+    "new_tests_authorized": false,
+    "email_sent": false,
+    "vm_slurm_excluded": true,
+    "current_free_access": "UNCONFIRMED"
+  },
+  "catalogue": {
+    "reference_date": "2026-10-21",
+    "offers": 13,
+    "projects": 9,
+    "checks": 10,
+    "terms_reverified_in_R4": false
+  }
+}
