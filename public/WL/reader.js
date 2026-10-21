@@ -57,17 +57,17 @@ function renderRules(){
   const el=fragment(h?('h'+(h[1].length+1)):'p',line.startsWith('- ')?'ruleBullet':'',clean(h?h[2]:line));
   parts.push(el);
  }
- $('rulesText').replaceChildren(...parts);
+ $('rulesText')?.replaceChildren(...parts);
 }
 
 function now(t){return t?new Date(t).toLocaleString('sl-SI',{timeZone:'Europe/Ljubljana'}):'—'}
 function setFont(n){if(!Number.isFinite(n))n=100;font=Math.max(70,Math.round(n));document.documentElement.style.setProperty('--reader',font/100);document.documentElement.dataset.large=String(font>=200);$('fontReset').textContent=font+'%';$('fontMinus').disabled=font<=70;write(localStorage,FONT,String(font))}
-function text(id,s){$(id).textContent=s??'—'}
+function text(id,s){const node=$(id);if(node)node.textContent=s??'—'}
 function gate(message=''){
  generation++;busy=false;unlocked=false;key=null;token='';state=null;rulesDoc=null;rulesRelease=null;events=[];clearInterval(timer);timer=null;erase(sessionStorage,SESSION);
- $('stream').replaceChildren();$('retained').replaceChildren();$('roster').replaceChildren();$('rulesText').replaceChildren();
- ['question','updated','execution','notice','integrity','phase','steps','autosteps','engine','control','pulseTime','rulesVersion','rulesStatus'].forEach(id=>text(id,''));
- $('rulesPanel').open=false;$('app').hidden=true;$('gate').hidden=false;text('error',message);$('pw').value='';
+ $('stream')?.replaceChildren();$('retained')?.replaceChildren();$('roster')?.replaceChildren();$('rulesText')?.replaceChildren();
+ ['question','retainedCount','updated','execution','notice','integrity','phase','steps','autosteps','engine','control','pulseTime','rulesVersion','rulesStatus'].forEach(id=>text(id,''));
+ if($('rulesPanel'))$('rulesPanel').open=false;$('app').hidden=true;$('gate').hidden=false;text('error',message);$('pw').value='';
 }
 function fragment(tag,cls,value){const x=document.createElement(tag);if(cls)x.className=cls;if(value!==undefined)x.textContent=String(value);return x}
 function render(){
@@ -75,11 +75,11 @@ function render(){
  $('gate').hidden=true;$('app').hidden=false;setFont(font);
  text('phase',state.phase);text('steps',events.length);text('autosteps',state.execution.auto_steps);text('engine',state.execution.scheduled_enabled?(state.execution.fast_trigger_connected?'GMAIL + URNO':'URNO'):'PRIPRAVLJENO');
  text('updated','Zadnji zapis: '+now(state.updated_at)+' · naslednji član: '+state.members.find(x=>x.id===state.next_author_id)?.name);
- text('execution',state.execution.note);text('question',state.next_question);
- $('roster').replaceChildren(...state.members.map(m=>{const d=fragment('div','member');d.append(fragment('b','',m.id+' · '+m.name),fragment('small','',m.function));if(m.id===state.next_author_id)d.classList.add('next');return d}));
- $('retained').replaceChildren(...state.retained.map(x=>fragment('p','',x)));
+ text('execution',state.execution.note);text('question',state.next_question);text('retainedCount',state.retained.length);
+ $('roster')?.replaceChildren(...state.members.map(m=>{const d=fragment('div','member');d.append(fragment('b','',m.id+' · '+m.name),fragment('small','',m.function));if(m.id===state.next_author_id)d.classList.add('next');return d}));
+ $('retained')?.replaceChildren(...state.retained.map(x=>fragment('p','',x)));
  const atBottom=window.innerHeight+window.scrollY>=document.body.scrollHeight-100;
- $('stream').replaceChildren(...events.slice().reverse().map(e=>{
+ $('stream')?.replaceChildren(...events.slice().reverse().map(e=>{
    const a=fragment('article','entry');a.dataset.eventId=e.event_id;
    a.append(fragment('div','meta',e.event_id+' · '+e.author_name+' · '+now(e.created_at)+' · '+(e.execution==='event_driven_model_step'?'Gmail dogodkovni prispevek':e.execution==='scheduled_model_step'?'urni samodejni prispevek':'začetni prispevek v seji')),
             fragment('h3','',e.title||e.author_name),fragment('div','body',e.body));
@@ -136,7 +136,7 @@ async function control(action){
 $('login').addEventListener('submit',unlock);$('show').onclick=()=>{const p=$('pw');p.type=p.type==='password'?'text':'password';$('show').textContent=p.type==='password'?'Pokaži':'Skrij'};
 $('fontMinus').onclick=()=>setFont(font-10);$('fontPlus').onclick=()=>setFont(font+10);$('fontReset').onclick=()=>setFont(100);
 $('theme').onclick=()=>{const t=document.documentElement.dataset.theme==='light'?'dark':'light';document.documentElement.dataset.theme=t;write(localStorage,THEME,t)};
-$('lock').onclick=()=>gate('Zaklenjeno.');$('refresh').onclick=()=>refresh();['pause','resume','pulse'].forEach(a=>$(a).onclick=()=>control(a));
+$('lock').onclick=()=>gate('Zaklenjeno.');$('refresh').onclick=()=>refresh();['pause','resume','pulse'].forEach(a=>$(a)?.addEventListener('click',()=>control(a)));
 font=Number(read(localStorage,FONT)||'100');setFont(font);document.documentElement.dataset.theme=read(localStorage,THEME)||'dark';
 document.addEventListener('visibilitychange',()=>{if(unlocked&&!document.hidden)refresh()});
 window.addEventListener('pageshow',()=>{if(unlocked&&!read(sessionStorage,SESSION))gate()});

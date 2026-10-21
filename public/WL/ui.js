@@ -21,10 +21,22 @@ function foldEntries(){
  }finally{folding=false}
 }
 if(stream){new MutationObserver(foldEntries).observe(stream,{childList:true});foldEntries()}
+function revealTarget(){
+ let id='';try{id=decodeURIComponent(location.hash.slice(1))}catch{return}
+ const target=document.getElementById(id);if(!target)return;
+ const details=target.closest('details');if(details)details.open=true;
+ if(!document.getElementById('app')?.hidden)target.scrollIntoView({block:'start'});
+}
+window.addEventListener('hashchange',revealTarget);
+const app=document.getElementById('app');
+let wasHidden=app?.hidden;
+if(app)new MutationObserver(()=>{if(wasHidden&&!app.hidden)revealTarget();wasHidden=app.hidden}).observe(app,{attributes:true,attributeFilter:['hidden']});
+for(const link of document.querySelectorAll('a[href^="#"]'))link.addEventListener('click',()=>requestAnimationFrame(revealTarget));
+revealTarget();
 function hasSession(){try{const s=JSON.parse(sessionStorage.getItem(SESSION)||'null');return !!(s&&s.vault&&s.key)}catch{return false}}
 for(const link of document.querySelectorAll('a[href]')){
  let path='';try{path=new URL(link.href,location.href).pathname}catch{}
- if(!/\/WL\/BD\/$/i.test(path))continue;
+ if(!/\/WL\/(?:BD\/|research(?:\.html)?)$/i.test(path))continue;
  link.addEventListener('click',e=>{
   if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||hasSession())return;
   e.preventDefault();const target=link.href;let tries=0;
