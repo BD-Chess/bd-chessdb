@@ -1,0 +1,129 @@
+name: IMPULZ R4 bounded publication and verification
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/impulz-r4-transfer-20261021.yml']
+permissions:
+  contents: read
+jobs:
+  prepare:
+    if: github.event.head_commit.message == 'Stage verified IMPULZ R4 publication transfer'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      candidate: ${{ steps.prepare.outputs.candidate }}
+      parent: ${{ steps.prepare.outputs.parent }}
+      manifest: ${{ steps.prepare.outputs.manifest }}
+    steps:
+      - name: Verify public delta and prepare unpromoted commit
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import base64, hashlib, json, lzma, os, urllib.request, urllib.error
+          REPO = 'BD-Chess/bd-chessdb'
+          API = 'https://api.github.com/repos/' + REPO
+          MAIN = 'public/BD/O/impulz-hpc-ai.html'
+          WF = '.github/workflows/impulz-r4-transfer-20261021.yml'
+          PREFIX = 'public/BD/O/assets/impulz-hpc-ai/'
+          names = {'ALL_27_API_REQUESTS_PUBLIC.csv','EDITORIAL_SOURCE_AUDIT.json','EMAIL_DRAFT_SLAIF_REQUEST.md','NEXT_TESTS_R4.md','PUBLIC_EVIDENCE.json','PUBLIC_RELEASE_READINESS_R4.json','SLAIF_GEMMA_RHP_TSPTS_PILOT_REPORT.md','slaif-povzetek.html'}
+          parts = ['5be4f76581c3e8c4301d93e47b0b213bc480b230','6068aaecaa3649ee6df56ba43726d60d573c3540','b524ce96838b36c180f52750b48f1c385d985dd9','9570ad807fecd9605e3059a7a3b37c324344737b','f5ba03b2b0d031407fac99af66283956622e0bb8']
+          def api(path, value=None):
+              headers = {'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'impulz-r4-scoped-publication'}
+              req = urllib.request.Request(API+path, data=None if value is None else json.dumps(value).encode(), headers=headers, method='GET' if value is None else 'POST')
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+          sha = lambda b: hashlib.sha256(b).hexdigest()
+          packed = b''.join(base64.b64decode(api('/git/blobs/'+p)['content']) for p in parts)
+          assert len(packed)==26028 and sha(packed)=='33f907e537dc5741f05cbcece90cebdb7c700a59248e9544ef50dcc2ac65e449'
+          dec = lzma.LZMADecompressor()
+          raw = dec.decompress(packed, max_length=300000)
+          assert dec.eof and not dec.unused_data and len(raw)==167218
+          d = json.loads(raw)
+          assert d['schema']=='impulz.publication.delta.v1' and d['target']==MAIN
+          assert set(d['files'])=={PREFIX+n for n in names}
+          parent = api('/git/ref/heads/main')['object']['sha']
+          tree = api('/git/commits/'+parent)['tree']['sha']
+          source = base64.b64decode(api('/contents/'+MAIN+'?ref='+parent)['content'])
+          assert sha(source)==d['base_sha256']=='83d89a9b470be05888db552967d9412876301c550bee4128fb468a1c9a61ffca', 'Concurrent source change: do not overwrite'
+          lines = source.decode('utf-8').splitlines(keepends=True)
+          last = 0
+          for start,end,text in d['patch']:
+              assert last<=start<=end<=len(lines) and isinstance(text,str)
+              last=end
+          for start,end,text in reversed(d['patch']):
+              lines[start:end]=[text]
+          updated = ''.join(lines)
+          assert sha(updated.encode())==d['target_sha256']=='dca7f55923987e470b413262c3ea97bfa6c7dbcef908fcf7570f5ba1e4b51eb7'
+          outputs = {MAIN:{'content':updated,'sha256':d['target_sha256']}, **d['files']}
+          for path,v in d['files'].items():
+              try:
+                  old = api('/contents/'+path+'?ref='+parent)
+              except urllib.error.HTTPError as e:
+                  if e.code!=404: raise
+              else:
+                  assert sha(base64.b64decode(old['content']))==v['sha256'], 'Refuse replacing concurrent sidecar'
+          entries=[]
+          manifest={}
+          for path,v in outputs.items():
+              b=v['content'].encode('utf-8')
+              assert sha(b)==v['sha256']
+              blob=api('/git/blobs', {'content':v['content'],'encoding':'utf-8'})['sha']
+              assert blob==hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
+              entries.append({'path':path,'mode':'100644','type':'blob','sha':blob})
+              manifest[path]={'sha256':sha(b),'blob_sha':blob,'bytes':len(b)}
+          # Remove this one-shot transport from the final tree. No recurring job is added.
+          entries.append({'path':WF,'mode':'100644','type':'blob','sha':None})
+          newtree=api('/git/trees', {'base_tree':tree,'tree':entries})['sha']
+          commit=api('/git/commits', {'message':'IMPULZ HPC R4: reconcile 27 API requests, RHP comparisons and bounded next tests','tree':newtree,'parents':[parent]})['sha']
+          result={'candidate':commit,'parent':parent,'manifest':manifest,'ref_updated':False}
+          print('PUBLICATION_CANDIDATE '+json.dumps(result,ensure_ascii=False))
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('candidate='+commit+'\nparent='+parent+'\nmanifest='+json.dumps(manifest,separators=(',',':'))+'\n')
+  verify_live:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - name: Await connector promotion and verify public Pages bytes
+        env:
+          EXPECTED_MANIFEST: ${{ needs.prepare.outputs.manifest }}
+          CANDIDATE: ${{ needs.prepare.outputs.candidate }}
+        shell: python
+        run: |
+          import hashlib,json,os,time,urllib.request,urllib.error
+          manifest=json.loads(os.environ['EXPECTED_MANIFEST'])
+          base='https://bd-chess.github.io/bd-chessdb/'
+          def read(path):
+              url=base+path.removeprefix('public/')+'?release=impulz-r4-'+os.environ['CANDIDATE'][:12]
+              req=urllib.request.Request(url,headers={'Cache-Control':'no-cache','User-Agent':'impulz-r4-public-readback'})
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  assert r.status==200
+                  return r.read(),url
+          main='public/BD/O/impulz-hpc-ai.html'
+          deadline=time.monotonic()+600
+          while True:
+              try:
+                  b,url=read(main)
+                  good=hashlib.sha256(b).hexdigest()==manifest[main]['sha256']
+              except (urllib.error.URLError,TimeoutError):
+                  good=False
+              if good: break
+              if time.monotonic()>deadline: raise SystemExit('PUBLIC_PAGES_NOT_VERIFIED_WITHIN_BOUND')
+              time.sleep(20)
+          results=[]
+          for path,want in manifest.items():
+              b,url=read(path)
+              got=hashlib.sha256(b).hexdigest()
+              assert got==want['sha256'],path
+              results.append({'path':path,'url':url.split('?')[0],'http':200,'sha256':got,'bytes':len(b)})
+          conference,url=read('public/BD/O/impulz-2026.html')
+          assert b'impulz-hpc-ai.html' in conference
+          b,_=read(main)
+          assert b'impulz-2026.html' in b and b'data-release="impulz-hpc-r4-20261021"' in b
+          print('LIVE_PUBLICATION_VERIFIED '+json.dumps({'candidate':os.environ['CANDIDATE'],'files':results,'reciprocal_links':True,'scope':'Public HTTP byte equality; not real-device or real-origin persistence E2E'}))
