@@ -16,8 +16,8 @@ import urllib.parse
 import urllib.request
 
 SITE = '17b4124d-c197-4c0a-a711-8b2c08d91088'
-BASE = '6ad8b7e388788b37611bbe89'
-SOURCE = '6bb34255fbf20a294d6704e5b9ae16e02ecbd900'
+BASE = '6ad8f264d12d64595e64eca4'
+SOURCE = 'c6ccd2e618a89c2d5a1517267fdf648a74aa1c5c'
 OUT = Path('roads-release-evidence')
 OUT.mkdir(exist_ok=True)
 ASSETS = ['andaluzija-2027.css', 'andaluzija-2027.js', 'andaluzija-ai-actions.mjs',
@@ -74,7 +74,7 @@ def main():
  before=request('deploys/'+BASE)
  global files
  files={f['path'].lstrip('/').lower():f['sha'] for f in request('sites/'+SITE+'/files')}
- assert len(files)==4654 and 'netlify.toml' in files
+ assert len(files)==4655 and 'netlify.toml' in files
  original_files=dict(files)
  overlay={}
  for name in ASSETS:
@@ -121,11 +121,10 @@ def main():
  baseline_functions={f['n']:f['d'] for f in before['available_functions']}
  root=Path(os.environ['ALBUM_FROZEN_ROOT'])
  old_bundles={b['name']:b for b in json.loads((root/'bundled-functions.json').read_text())}
- assert {n:b['sha256'] for n,b in old_bundles.items()}==baseline_functions and len(old_bundles)==30
  upgrade={b['name']:b for b in json.loads((root/'bundled-upgrade.json').read_text())}
  bundles={**old_bundles,'andaluzija-ai':upgrade['andaluzija-ai']}
  functions={n:b['sha256'] for n,b in bundles.items()}
- assert [n for n in functions if functions[n]!=baseline_functions[n]]==['andaluzija-ai']
+ assert functions==baseline_functions and len(functions)==30, 'Static-only patch must preserve every function ZIP'
  for n,b in bundles.items():assert sha(Path(b['path']).read_bytes())==functions[n]
  config_functions={}
  for f in before['available_functions']:
@@ -133,6 +132,8 @@ def main():
   config_functions[f['n']]={long:f[short] for long,short in {'display_name':'dn','generator':'g','build_data':'bd','priority':'p','traffic_rules':'tr'}.items() if f.get(short) is not None}
   if f.get('ro'):config_functions[f['n']]['routes']=[{long:r[short] for long,short in {'pattern':'p','literal':'l','expression':'e','methods':'m','prefer_static':'ps'}.items() if r.get(short) is not None} for r in f['ro']]
  for p,data in overlay.items():files[p]=sha(data,'sha1')
+ changed=[p for p,data in overlay.items() if original_files.get(p)!=sha(data,'sha1')]
+ assert changed==['bd/o/izleti/andaluzija-map.mjs'], 'Camera patch escaped its one-file scope'
  guard()
  title='Andaluzija Google roads, 5s DeepOpti and fullscreen AI '+os.environ['GITHUB_SHA']+' base='+BASE
  dep=request('sites/'+SITE+'/deploys?title='+urllib.parse.quote(title)+'&commit_ref='+os.environ['GITHUB_SHA'],{'files':files,'functions':functions,'functions_config':config_functions,'function_schedules':before['function_schedules'],'branch':'main','async':True,'draft':False},'POST')
@@ -166,7 +167,7 @@ def main():
  after_files={f['path'].lstrip('/').lower():f['sha'] for f in request('sites/'+SITE+'/files')}
  assert after_files==files
  for p,data in overlay.items():assert raw_file(p)==data
- receipt={'deploy_id':did,'state':dep['state'],'published_at':dep['published_at'],'source':os.environ['GITHUB_SHA'],'previous_deploy':BASE,'changed_files':list(overlay),'all_other_static_files_identical':True,'static_file_count':len(files),'unchanged_functions':29,'changed_function':'andaluzija-ai','all_function_configuration_and_schedules_identical':True,'private_cipher_unchanged':True,'dualframe_unchanged':True,'skill_version':'1.2.0','url':'https://www.mdlxdcc.org/bd/o/izleti/andaluzija-2027'}
+ receipt={'deploy_id':did,'state':dep['state'],'published_at':dep['published_at'],'source':os.environ['GITHUB_SHA'],'previous_deploy':BASE,'changed_files':changed,'all_other_static_files_identical':True,'static_file_count':len(files),'unchanged_functions':30,'changed_function':None,'all_function_configuration_and_schedules_identical':True,'private_cipher_unchanged':True,'dualframe_unchanged':True,'skill_version':'1.2.0','googleRoadSmokeVerifiedOn':BASE,'url':'https://www.mdlxdcc.org/bd/o/izleti/andaluzija-2027'}
  (OUT/'receipt.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt),flush=True)
 
 if __name__=='__main__':main()

@@ -34,7 +34,7 @@ export class GoogleTripMap{
   this.map.setMapTypeId(type);return this;
  }
  clear(){++this.epoch;this.lines.forEach(x=>x.setMap(null));this.markers.forEach(x=>x.setMap(null));this.lines=[];this.markers=[];}
- clearPrivate(){this.clear();this.cache.clear();}
+ clearPrivate(){this.clear();this.cache.clear();this.bounds=null;this.map?.panTo({lat:37.1,lng:-4.8});this.map?.setZoom(7);}
  async show(routes){
   this.clear();const epoch=this.epoch,current=()=>epoch===this.epoch;
   await this.init(this.map?.getMapTypeId()||'hybrid');if(!current())return;

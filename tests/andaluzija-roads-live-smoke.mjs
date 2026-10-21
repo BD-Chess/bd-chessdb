@@ -16,6 +16,9 @@ try{
  assert.equal(await page.locator('#poi-mode').inputValue(),'walking');assert.equal(await page.locator('#map-provider-consent').isChecked(),false);
  const csp=response.headers()['content-security-policy'];assert(csp.includes('https://*.googleapis.com')&&csp.includes("frame-ancestors 'none'"));
  await page.waitForSelector('#photo-gallery[data-dualframe-ready="true"]',{timeout:15000});assert.equal(await page.evaluate(()=>AndaluzijaTripOptiV1.getContext().capabilities.write),false);
+ if(process.env.ANDALUZIJA_STATIC_SMOKE_ONLY){
+  const r=await page.request.get(new URL('./andaluzija-map.mjs',receipt.url));assert.equal(r.status(),200);assert((await r.text()).includes('this.bounds=null;this.map?.panTo({lat:37.1,lng:-4.8});this.map?.setZoom(7)'));result.cameraResetAsset=true;result.googleRoadSmokeVerifiedOn=receipt.googleRoadSmokeVerifiedOn;
+ }else{
  await page.locator('[data-map-view="satellite"]').click();
  await page.waitForFunction(()=>document.querySelector('#photo-map .gm-style')||document.getElementById('map-status').textContent.includes('ni dosegljiv'),null,{timeout:30000});
  assert(await page.locator('#map-host').evaluate(e=>e.classList.contains('photo-mode')),'Google basemap did not initialize');
@@ -23,6 +26,7 @@ try{
  await page.locator('[data-map-toggle="mateja"]').uncheck();await page.locator('[data-map-toggle="claude"]').uncheck();
  await page.locator('#map-provider-consent').check();result.roadDrawAttempts++;await page.locator('#map-draw').click();
  await page.waitForFunction(()=>!document.getElementById('map-draw').disabled,null,{timeout:30000});const status=await page.locator('#map-status').textContent();assert(/C · GPT:.*km/.test(status),'No actual Google road geometry returned');result.googleRoadGeometry=true;
+ }
  await page.locator('#map-expand').click();assert.equal(await page.evaluate(()=>document.fullscreenElement?.id),'trip-map-card');await page.locator('#map-ai').click();assert.equal(await page.locator('#trip-ai-panel').evaluate(e=>e.parentElement.id),'trip-map-card');
  const panel=await page.locator('#trip-ai-panel').boundingBox(),close=await page.locator('#map-expand').boundingBox();assert(close.x+close.width<=panel.x+2,'AI covers fullscreen exit');await page.locator('#trip-ai-close').click();await page.locator('#map-expand').click();assert.equal(await page.evaluate(()=>!!document.fullscreenElement),false);result.nativeFullscreenAI=true;
  await page.setViewportSize({width:402,height:874});assert(await page.locator('.topbar').evaluate(e=>parseFloat(getComputedStyle(e).paddingTop)>=30));result.portraitSafeArea=true;

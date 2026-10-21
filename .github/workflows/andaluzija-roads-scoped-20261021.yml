@@ -1,6 +1,7 @@
 name: Andaluzija roads and fullscreen AI scoped production
 # One user-authorized release. Ordinary Git CD remains suppressed.
 # R2: normalize published skill paths and verify one live Google road request.
+# R3: final one-file camera/bounds clearing; reuse successful Google proof, no new paid calls.
 on:
   push:
     branches: [main]
@@ -54,6 +55,7 @@ jobs:
         env:
           NODE_PATH: /tmp/roads-browser-tools/node_modules
           ANDALUZIJA_TEST_CHROMIUM: /usr/bin/google-chrome
+          ANDALUZIJA_STATIC_SMOKE_ONLY: '1'
         run: node tests/andaluzija-roads-live-smoke.mjs
       - uses: actions/upload-artifact@v4
         if: always()
