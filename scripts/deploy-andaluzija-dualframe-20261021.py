@@ -16,6 +16,7 @@ import urllib.error
 
 SITE = '17b4124d-c197-4c0a-a711-8b2c08d91088'
 BASE = '6ad7f1f75aa407c6d162b971'
+RESUME = '6ad87fea33e0aca3edd3c338'
 HOST = 'https://' + BASE + '--mdlxdcc.netlify.app'
 PAGE = 'BD/O/izleti/andaluzija-2027.html'
 DF = 'Nara/dualframe-lab/'
@@ -147,6 +148,10 @@ for path, data in overlay.items():
     files[path] = sha(data, 'sha1')
 functions = {f['n']: f['d'] for f in published['available_functions']}
 assert len(functions) == 30
+# `d` is the deployed function digest; `oid` identifies the original cached
+# upload. Keep their roles separate when reusing the existing function bundles.
+cached_uploads = {f['n']: f['oid'] for f in published['available_functions']}
+assert all(re.fullmatch('[0-9a-f]{64}', h) for h in cached_uploads.values())
 # The API reports effective defaults. Re-sending them would request plan-gated
 # overrides, although this release changes no function settings. Require the
 # existing default allocation, then let the same site retain those defaults.
@@ -172,14 +177,17 @@ scope = {'previous_deploy': BASE, 'source': os.environ['GITHUB_SHA'],
     'live_dualframe_policy': 'only backlink and matching offline package; preserve current deployed features'}
 (EVIDENCE / 'scope.json').write_text(json.dumps(scope, indent=2) + '\n')
 
-# One creation attempt. An unknown POST outcome must never be blindly retried.
+# Resume the one known prepared deploy; never create a second production attempt.
 guard()
 title = 'Andaluzija DualFrame album ' + os.environ['GITHUB_SHA'] + ' baseline=' + BASE
-deploy = api('sites/' + SITE + '/deploys?title=' + urllib.parse.quote(title), {
-    'files': files, 'functions': functions, 'functions_config': config,
+pending = api('deploys/' + RESUME)
+assert pending['site_id'] == SITE and pending['state'] in ['prepared', 'uploading']
+assert BASE in pending['title'] and '88e6d6aa09de0bd94fa1399f74808356e220a0a8' in pending['title']
+deploy = api('sites/' + SITE + '/deploys/' + RESUME + '?commit_ref=' + os.environ['GITHUB_SHA'], {
+    'files': files, 'functions': cached_uploads, 'functions_config': config,
     'function_schedules': published.get('function_schedules') or [],
     'branch': 'main', 'framework': published.get('framework') or 'unknown', 'async': True,
-})
+}, method='PUT')
 deploy_id = deploy['id']
 (EVIDENCE / 'created.json').write_text(json.dumps({'deploy_id': deploy_id, 'source': os.environ['GITHUB_SHA']}) + '\n')
 for _ in range(90):
