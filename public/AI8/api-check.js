@@ -3,7 +3,7 @@
   const A = window.BDAPI;
   const $ = s => document.querySelector(s);
   const cards = new Map(), results = new Map();
-  let running = false, importing = false, stopRequested = false, activeController = null, requestsIssued = 0;
+  let running = false, importing = false, unlocking = false, stopRequested = false, activeController = null, requestsIssued = 0;
   const stateLabels = {pass:'Deluje',attention:'Za pregled',error:'Napaka',unknown:'Neznano',running:'Preverjam …'};
   const authLabels = {accepted:'API je sprejel zahtevo',rejected:'Ni sprejet za to pot',unknown:'Ni potrjeno'};
   const modelLabels = {response_received:'Prejet odgovor',unknown:'Ni potrjeno'};
@@ -87,20 +87,20 @@
     $('#count-pending').textContent=A.PROVIDERS.length-values.filter(r => r.state!=='running').length;
     const selected = [...cards.values()].filter(c => c.select.checked).length;
     $('#selected-count').textContent=selected;
-    $('#run-selected').disabled=running || importing || selected===0;
+    $('#run-selected').disabled=running || importing || unlocking || selected===0;
     $('#export').disabled=values.every(r => r.state==='running');
     $('#key-count').textContent=secrets().length+' / 10 ključev vnesenih';
   }
   function lock(value) {
     running=value;
     for (const c of cards.values()) for (const n of [c.select,c.model,c.key,c.endpoint,c.type,c.reveal,...c.card.querySelectorAll('.test-one')]) n.disabled=value;
-    for (const id of ['import','clear-keys','select-ready','select-all','select-none','transport','token-cap']) $('#'+id).disabled=value;
+    for (const id of ['import','clear-keys','select-ready','select-all','select-none','transport','token-cap','unlock-keys']) $('#'+id).disabled=value;
     $('#stop').disabled=!value;
     updateCounts();
   }
   function nonce() { const bytes = new Uint8Array(12); crypto.getRandomValues(bytes); return 'BD_API_SMOKE_OK_'+Array.from(bytes,b => b.toString(16).padStart(2,'0')).join(''); }
   async function run(chosen) {
-    if (running || importing || !chosen.length) return;
+    if (running || importing || unlocking || !chosen.length) return;
     stopRequested=false; lock(true);
     const transport = $('#transport').value, cap = Number($('#token-cap').value);
     let attempted=0, invalid=0;
@@ -138,15 +138,58 @@
     $('#settings-summary').textContent=(direct?'Neposredno':'MAL posrednik')+' · do '+$('#token-cap').value+' izhodnih tokenov';
     $('#transport-help').textContent=direct?'Ključ se pošlje neposredno izbranemu ponudniku. Nekateri API-ji blokirajo brskalnik (CORS). Stran v tem primeru ne bo samodejno poskusila druge povezave.':'Zahteva in ključ se za izvedbo preneseta prek obstoječega MAL posrednika na mdlxdcc.org do izbranega ponudnika. Stran ju ne shranjuje.';
   }
+  // Vault decrypts only after explicit input. It NEVER starts provider requests.
+  const vaultPanel=$('#vault-panel'), vaultButton=$('#unlock-keys'), vaultPass=$('#vault-passphrase');
+  function closeVault() {
+    vaultPass.value='';
+    $('#vault-status').textContent='';
+    vaultPanel.hidden=true;
+    vaultButton.setAttribute('aria-expanded','false');
+  }
+  vaultButton.addEventListener('click', () => {
+    if (running || importing || unlocking) return;
+    vaultPanel.hidden=!vaultPanel.hidden;
+    vaultButton.setAttribute('aria-expanded',String(!vaultPanel.hidden));
+    if (vaultPanel.hidden) closeVault(); else vaultPass.focus();
+  });
+  $('#vault-cancel').addEventListener('click', closeVault);
+  vaultPanel.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (running || importing || unlocking || !vaultPass.value) return;
+    unlocking=true; updateCounts();
+    const submit=$('#vault-submit'), status=$('#vault-status');
+    submit.disabled=true; vaultButton.disabled=true;
+    status.dataset.tone='';
+    status.textContent='Izpeljujem ključ 8Z Shield …';
+    const passphrase=vaultPass.value; vaultPass.value='';
+    try {
+      if (!window.BDAPIVault || typeof window.BDAPIVault.unlock !== 'function') throw Error('Missing vault module');
+      const keys=await window.BDAPIVault.unlock(passphrase);
+      for (const [id,c] of cards) {
+        if (!Object.prototype.hasOwnProperty.call(keys,id)) throw Error('Incomplete vault');
+      }
+      for (const [id,c] of cards) {
+        c.key.value=keys[id]; c.key.type='password';
+        c.reveal.textContent='Pokaži'; c.reveal.setAttribute('aria-pressed','false');
+        reset(c);
+      }
+      closeVault(); note('Odklenjenih je 10 / 10 API ključev. Noben API test ni bil samodejno sprožen.','success');
+    } catch (_) {
+      status.dataset.tone='error';
+      status.textContent='Odklep ni uspel. Preveri geslo ali dostopnost šifrirane datoteke.';
+    } finally {
+      unlocking=false; submit.disabled=false; vaultButton.disabled=false; updateCounts();
+    }
+  });
   A.PROVIDERS.forEach(p => { const c=buildCard(p); cards.set(p.id,c); $('#providers').append(c.card); });
   $('#run-selected').addEventListener('click',() => run([...cards.values()].filter(c => c.select.checked)));
   $('#stop').addEventListener('click',() => { stopRequested=true; activeController?.abort(); $('#stop').disabled=true; note('Ustavljam pregled. Trenutna zahteva je morda že dosegla ponudnika.'); });
   for (const [id,predicate] of [['select-ready',c => !!c.key.value.trim()],['select-all',() => true],['select-none',() => false]]) $('#'+id).addEventListener('click',() => { for (const c of cards.values()) c.select.checked=predicate(c); updateCounts(); });
-  $('#clear-keys').addEventListener('click',() => { for (const c of cards.values()) { c.key.value=''; c.key.type='password'; c.reveal.textContent='Pokaži'; c.reveal.setAttribute('aria-pressed','false'); c.reveal.setAttribute('aria-label','Pokaži ključ za '+c.provider.name); } updateCounts(); note('Ključi so odstranjeni iz te strani. Rezultati ostanejo brez ključev. Za nov test jih vnesi znova.'); });
+  $('#clear-keys').addEventListener('click',() => { closeVault(); for (const c of cards.values()) { c.key.value=''; c.key.type='password'; c.reveal.textContent='Pokaži'; c.reveal.setAttribute('aria-pressed','false'); c.reveal.setAttribute('aria-label','Pokaži ključ za '+c.provider.name); } updateCounts(); note('Ključi so odstranjeni iz te strani. Rezultati ostanejo brez ključev. Za nov test jih vnesi znova.'); });
   $('#transport').addEventListener('change',settings); $('#token-cap').addEventListener('change',settings);
   $('#import').addEventListener('click',() => { $('#import-files').value=''; $('#import-files').click(); });
   $('#import-files').addEventListener('change',async function () {
-    if (running || importing) return;
+    if (running || importing || unlocking) return;
     importing=true; updateCounts(); $('#import').disabled=true; $('#clear-keys').disabled=true;
     let imported=0, ignored=0; const updated=new Set();
     try {
