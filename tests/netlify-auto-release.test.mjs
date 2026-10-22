@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { prepare, fingerprint, inventory, isAlreadyPublished, checkRuns, MARKER } from '../scripts/netlify-auto-release.mjs';
+import { prepare, fingerprint, inventory, isAlreadyPublished, checkRuns, deployArgs, MARKER } from '../scripts/netlify-auto-release.mjs';
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), 'bd-netlify-release-'));
   for (const dir of ['public/chess', 'public/Trip', 'public/S', 'public/BD/O', 'functions', 'scripts']) await mkdir(join(root, dir), { recursive: true });
@@ -12,6 +12,13 @@ async function fixture() {
   return root;
 }
 const sha = 'a'.repeat(40);
+test('prebuilt CLI arguments publish complete artifacts without build-only context flags or explicit credentials', () => {
+  const args = deployArgs({ dir: '/tmp/tested-artifact', id: 'existing-site' }, 'source proof');
+  for (const flag of ['--prod', '--no-build', '--dir', '--functions', '--site', '--json']) assert.ok(args.includes(flag));
+  for (const flag of ['--context', '--build', '--trigger', '--auth']) assert.ok(!args.includes(flag));
+  assert.equal(args[args.indexOf('--dir') + 1], '/tmp/tested-artifact');
+  assert.equal(args[args.indexOf('--functions') + 1], 'functions');
+});
 test('dual-site snapshots preserve shared routes and encrypted bytes with correct root overlay', async t => {
   const root = await fixture(); t.after(() => rm(root, { recursive: true, force: true }));
   const output = join(root, 'out'), m = await prepare(root, output, sha);

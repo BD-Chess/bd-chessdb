@@ -114,6 +114,11 @@ export function isAlreadyPublished(published, marker, site, fp) {
   return published?.state === 'ready' && published?.title === `prebuilt:v1 ${site} ${marker?.source_sha} ${fp}` && marker?.schema === 'bd.deploy.v1' && marker?.site === site && marker?.fingerprint === fp;
 }
 
+export function deployArgs(prepared, message) {
+  // CLI 26.2 rejects --context with --no-build; --prod already selects production.
+  return ['--yes', 'netlify-cli@26.2.0', 'deploy', '--prod', '--no-build', '--dir', prepared.dir, '--functions', 'functions', '--skip-functions-cache', '--site', prepared.id, '--message', message, '--json'];
+}
+
 async function readMarker(url) {
   const r = await fetch(url + '/' + MARKER + '?receipt=' + Date.now(), { cache: 'no-store', signal: AbortSignal.timeout(20000) });
   return r.ok ? r.json() : null;
@@ -151,7 +156,7 @@ export async function publish(root, output) {
     requireValue(fresh.published_deploy?.id === receipt.previous_deploy_id, 'Production changed during preparation');
     if (!await currentMain(sha)) { receipt.status = 'SKIP_SUPERSEDED'; await save(); return; }
     receipt.status = 'INTENT'; receipt.attempted_at = new Date().toISOString(); await save();
-    const cli = spawnSync('npx', ['--yes', 'netlify-cli@26.2.0', 'deploy', '--prod', '--no-build', '--context', 'production', '--dir', prepared.dir, '--functions', 'functions', '--skip-functions-cache', '--site', prepared.id, '--message', message, '--json'], { cwd: root, encoding: 'utf8', maxBuffer: 20*1024*1024, timeout: 600000, env: process.env });
+    const cli = spawnSync('npx', deployArgs(prepared, message), { cwd: root, encoding: 'utf8', maxBuffer: 20*1024*1024, timeout: 600000, env: process.env });
     // CLI stdout can contain details: keep it in the CI artifact, never print tokens.
     await writeFile(join(output, site + '-cli.json'), cli.stdout || '');
     if (cli.status !== 0) {
