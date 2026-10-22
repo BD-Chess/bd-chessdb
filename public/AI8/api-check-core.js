@@ -7,7 +7,7 @@
   else root.BDAPI = factory();
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const VERSION = '20261022-r1';
+  const VERSION = '20261022-r2';
   const RELAY = 'https://www.mdlxdcc.org/.netlify/functions/mal-relay';
   const TYPES = ['openai_chat', 'openai_responses', 'anthropic_messages', 'gemini_generate'];
   const PROVIDERS = [
@@ -131,7 +131,9 @@
     function walk(v) {
       if (typeof v === 'string') {
         for (const k of keys) v = v.split(k).join('[SKRITO]');
-        return v.replace(/Bearer\s+[^\s"'<>]+/gi,'Bearer [SKRITO]').replace(/([?&](?:key|api_key|token)=)[^&#\s]+/gi,'$1[SKRITO]');
+        return v.replace(/Bearer\s+[^\s"'<>]+/gi,'Bearer [SKRITO]')
+          .replace(/(https?:\/\/)[^/\s@]+@/gi,'$1[SKRITO]@')
+          .replace(/([?&](?:key|api[_-]?key|access_token|token)=)[^&#\s]+/gi,'$1[SKRITO]');
       }
       if (Array.isArray(v)) return v.map(walk);
       if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k,x]) => [walk(k),sensitive.test(k)?'[SKRITO]':walk(x)]));

@@ -90,6 +90,8 @@ test('MAL imports accept split API/Config text files, aliases, env and JSON; unr
 test('redaction and export cannot leak keys, encoded keys, headers, or unapproved row fields', () => {
   const r=A.redact({message:'Echo '+fixtureKey+' '+encodeURIComponent(fixtureKey),[fixtureKey]:'key echoed as a field name',nested:[{api_key:fixtureKey,authorization:'Bearer other-secret',url:'https://x/?key=unlisted-secret'}]},[fixtureKey]);
   assert(!JSON.stringify(r).includes(fixtureKey)); assert(!JSON.stringify(r).includes(encodeURIComponent(fixtureKey))); assert(!JSON.stringify(r).includes('unlisted-secret')); assert(!JSON.stringify(r).includes('other-secret'));
+  const malformed=A.redact({endpoint:'https://username:unlisted-password@api.openai.com/v1/chat/completions?api-key=unlisted-query-secret&access_token=unlisted-access-secret'},[]);
+  for (const secret of ['username','unlisted-password','unlisted-query-secret','unlisted-access-secret']) assert(!JSON.stringify(malformed).includes(secret));
   const report=A.exportReport([{id:'chatgpt',state:'error',text:fixtureKey,diagnostic:{headers:{authorization:'Bearer '+fixtureKey}},key:fixtureKey,api_key:fixtureKey,request:{secret:'hidden'},provider_message:'Echo '+fixtureKey}], [fixtureKey],{requests_issued:1});
   const raw=JSON.stringify(report); assert(!raw.includes(fixtureKey)); assert(!raw.includes('hidden')); assert.equal(report.contains_api_keys,false); assert.equal(report.requests_issued,1); assert(!('key' in report.results[0]));
 });
