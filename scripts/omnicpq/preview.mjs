@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { makeHandler } from '../../functions/omnicpq-assistant.mjs';
-import { loadKnowledge, verifyPack, readPrivatePack } from '../../functions/lib/omnicpq/knowledge.mjs';
+import { loadKnowledge, verifyPack } from '../../functions/lib/omnicpq/knowledge.mjs';
 const demo = process.argv.includes('--demo');
 if (process.env.NETLIFY) throw Error('Local preview must not run as a deployed function.');
 const port = Number(process.env.PORT || 4173), root = resolve('public/OmniCPQ');
@@ -17,7 +17,8 @@ if (demo) {
   process.env.OMNICPQ_KNOWLEDGE_MODE = 'file';
   process.env.OMNICPQ_KNOWLEDGE_FILE ||= resolve('.private/omnicpq/knowledge.json');
 }
-const demoPack = demo ? await verifyPack(await readPrivatePack()) : null;
+const localReader = async () => readFile(process.env.OMNICPQ_KNOWLEDGE_FILE, 'utf8');
+const demoPack = demo ? await verifyPack(await localReader()) : null;
 const transport = async ({ payload, signal, onText, onIdentity }) => {
   const all = JSON.stringify(payload.input), mode = payload.instructions.includes('Izbrana začetna naloga je PLM_TESTS') ? 'plm' : payload.instructions.includes('Izbrana začetna naloga je JIRA_REQUIREMENT') ? 'jira' : 'work';
   const requirementSource = payload.instructions.match(/<source id="(S\d+)" path="references\/POSLOVNA_ZAHTEVA_IT_PLM\.md"/)?.[1];
@@ -45,7 +46,7 @@ const transport = async ({ payload, signal, onText, onIdentity }) => {
 };
 const handler = makeHandler(demo ? {
   enabled: true, simulation: true, accessFactory: async () => ({ id: 'local-preview-owner', role: 'owner' }),
-  knowledgeFactory: loadKnowledge, transport, budgetFactory: () => ({ reserve: async () => null, settle: async () => {} }),
+  knowledgeFactory: () => loadKnowledge({ reader: localReader }), transport, budgetFactory: () => ({ reserve: async () => null, settle: async () => {} }),
 } : { enabled: false });
 const mime = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.png':'image/png','.json':'application/json','.webmanifest':'application/manifest+json' };
 const server = createServer(async (incoming, outgoing) => {

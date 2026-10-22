@@ -1,6 +1,5 @@
 import { validateLifecycleAnswer } from './lifecycle.mjs';
-import { readFile, realpath } from 'node:fs/promises';
-import { resolve, sep } from 'node:path';
+import { resolve } from 'node:path';
 import { SKILL, error, hash } from './identity.mjs';
 import { gunzipSync } from 'node:zlib';
 import { runtime } from './runtime.mjs';
@@ -27,15 +26,10 @@ export async function readPrivatePack() {
     if (!text || text.length > 8_000_000) throw error('KNOWLEDGE_UNAVAILABLE');
     return text;
   }
-  // Disk mode is explicitly local, unavailable in a deployed Netlify Function.
-  if (env('NETLIFY') || env('OMNICPQ_KNOWLEDGE_MODE') !== 'file') throw error('KNOWLEDGE_UNAVAILABLE');
-  const filename = env('OMNICPQ_KNOWLEDGE_FILE');
-  if (!filename) throw error('KNOWLEDGE_UNAVAILABLE');
-  const actual = await realpath(filename), publicRoot = resolve('public');
-  if (actual === publicRoot || actual.startsWith(publicRoot + sep)) throw error('KNOWLEDGE_UNAVAILABLE');
-  const text = await readFile(actual, 'utf8');
-  if (text.length > 8_000_000) throw error('KNOWLEDGE_UNAVAILABLE');
-  return text;
+  // Local preview owns its file reader and injects it explicitly. Keeping all
+  // filesystem discovery out of this deployed import graph prevents the native
+  // ESM tracer from treating unrelated repository files as runtime resources.
+  throw error('KNOWLEDGE_UNAVAILABLE');
 }
 
 export async function verifyPack(text) {

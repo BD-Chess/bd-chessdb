@@ -42,6 +42,10 @@ jobs:
           python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
           node tests/mdlxdcc-root-pwa.test.cjs
           node --test tests/mdlxdcc-guide.test.mjs
+      - name: Preflight each function bundle without invoking handlers
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund @netlify/zip-it-and-ship-it@16.4.1
+          node scripts/omnicpq/check-function-bundles.mjs
       - name: Deploy frozen commit to the existing MDLxDCC project
         shell: bash
         run: |
@@ -51,8 +55,9 @@ jobs:
           npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "OmniCPQ approved exception main $GITHUB_SHA" --json > netlify-deploy.json
           node -e 'const d=require("./netlify-deploy.json");console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId,url:d.url||d.deploy_url}))'
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: omnicpq-approved-release-${{ github.run_id }}
           path: netlify-deploy.json
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 30
