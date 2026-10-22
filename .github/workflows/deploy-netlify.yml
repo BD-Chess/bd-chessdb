@@ -1,14 +1,12 @@
 name: Deploy to Netlify production
 
-# BD approved 2026-10-22: every verified main update; no weekly release window.
-# Native Netlify builds stay Stopped; preparation runs on GitHub Actions.
+# BD approved 2026-10-22: each verified main push publishes via
+# GitHub-hosted tests/prepare + netlify deploy --prod --no-build.
+# Native Netlify builds stay Stopped. GitHub Pages remains independent;
+# there is one Netlify publication path (not both push and workflow_run).
 on:
-  workflow_run:
-    workflows: ['Deploy to GitHub Pages']
-    types: [completed]
-    branches: [main]
   push:
-    branches: [maintenance/netlify-prebuilt-20261022]
+    branches: [main, maintenance/netlify-prebuilt-20261022]
   workflow_dispatch:
     inputs:
       site:
@@ -31,16 +29,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: >-
-      github.repository == 'BD-Chess/bd-chessdb' &&
-      (github.event_name != 'workflow_run' ||
-       (github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'main' &&
-        github.event.workflow_run.head_repository.full_name == github.repository))
+    if: github.repository == 'BD-Chess/bd-chessdb'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      TARGET_SHA: ${{ github.event.workflow_run.head_sha || inputs.target_sha || github.sha }}
+      TARGET_SHA: ${{ inputs.target_sha || github.sha }}
       RELEASE_SITE: ${{ inputs.site || 'all' }}
     steps:
       - name: Checkout exact verified source
@@ -87,7 +80,7 @@ jobs:
       - name: Freeze complete site artifacts and fingerprints
         run: node scripts/netlify-auto-release.mjs prepare "$RELEASE_DIR" "$TARGET_SHA" "$RELEASE_SITE"
       - name: Publish unchanged tested artifacts and verify actual production
-        if: github.ref == 'refs/heads/main' && github.event_name != 'push' && inputs.verify_only != true
+        if: github.ref == 'refs/heads/main' && inputs.verify_only != true
         env:
           GITHUB_TOKEN: ${{ github.token }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
