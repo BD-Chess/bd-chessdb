@@ -206,16 +206,3 @@ export function lifecycleIssues(data) {
   return issues;
 }
 
-// Ob uvozu v brskalniku se Node API-ji ne nalagajo.
-if (typeof process !== 'undefined' && process.versions?.node && process.argv[1]) {
-  const { pathToFileURL } = await import('node:url');
-  if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-    try {
-      if (!process.argv[2]) throw new Error('Uporaba: node scripts/validate_lifecycle.mjs FILE');
-      const { readFile } = await import('node:fs/promises');
-      const issues = lifecycleIssues(JSON.parse(await readFile(process.argv[2], 'utf8')));
-      if (issues.length) { console.error(issues.join('\n')); process.exitCode = 1; }
-      else console.log('Zapis je skladen; odobritev in izvedba nista neodvisno preverjeni.');
-    } catch (error) { console.error(`Napaka: ${error.message}`); process.exitCode = 1; }
-  }
-}
