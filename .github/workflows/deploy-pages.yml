@@ -106,6 +106,8 @@ jobs:
           while IFS= read -r f; do node --check "$f"; done < <(grep -R -l -F "https://mdlxdcc-trip-auth.iemcccc.workers.dev/" public/Trip --include='*.js')
       - name: Verify root PWA refresh and legacy migration
         run: node tests/mdlxdcc-root-pwa.test.cjs && node --test tests/dualframe-pwa.test.mjs tests/dfc-cmarvel-public.test.mjs
+      - name: Verify API Check smoke diagnostics (offline only)
+        run: node --test tests/api-check.test.cjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
@@ -130,3 +132,4 @@ jobs:
         env:
           PWA_BASE_URL: ${{ steps.deployment.outputs.page_url }}
         run: node tests/dualframe-pwa-live-smoke.mjs
+

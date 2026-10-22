@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://www.mdlxdcc.org https://api.openai.com https://api.anthropic.com https://api.deepseek.com https://generativelanguage.googleapis.com https://api.x.ai https://api.z.ai https://api.minimax.io https://api.mistral.ai https://api.moonshot.ai https://ws-w0wh18jpdbeyf7d7.ap-southeast-1.maas.aliyuncs.com https://dashscope-intl.aliyuncs.com; base-uri 'none'; object-src 'none'; form-action 'none'">
+  <meta name="bd-api-check-release" content="20261022-r1">
+  <title>API pregled · BD / MAL</title>
+  <link rel="icon" href="../Start/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./api-check.css?v=20261022-r1">
+  <script defer src="./api-check-core.js?v=20261022-r1"></script>
+  <script defer src="./api-check.js?v=20261022-r1"></script>
+</head>
+<body>
+  <a class="skip" href="#providers">Preskoči na ponudnike</a>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="../index.html"><span class="brand-mark">8</span><span>MDL<span class="muted">×</span>DCC</span></a>
+      <nav aria-label="Navigacija"><a href="../Start/index.html">↖ BD Start</a><span class="nav-divider"></span><span>MAL orodja</span></nav>
+    </header>
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy"><p class="eyebrow"><span class="tiny-dot"></span> PRED NASLEDNJIM MAL RUNOM</p>
+          <h1 id="page-title">Deset API-jev.<br><span>En jasen pregled.</span></h1>
+          <p class="lede">Preveri svoje ključe, dostop do modelov in dejanski odgovor. Vsak test pošlje eno kratko zahtevo izbranemu ponudniku.</p>
+        </div>
+        <aside class="hero-note"><span class="note-symbol" aria-hidden="true">⌁</span><strong>Najprej povezava.<br>Potem veliki testi.</strong><p>Uspešen smoke test potrdi izbrano API pot. Dobroimetje in cene preveri v ponudnikovi konzoli.</p><a href="#guide">Kako brati rezultate <span aria-hidden="true">↘</span></a></aside>
+      </section>
+
+      <section class="overview" aria-label="Povzetek rezultatov">
+        <div class="overview-title"><span class="live-ring" aria-hidden="true"></span><div><strong>Stanje povezav</strong><span id="last-run">Testi še niso bili zagnani</span></div></div>
+        <div class="stat pass"><strong id="count-pass">0</strong><span>deluje</span></div>
+        <div class="stat attention"><strong id="count-attention">0</strong><span>za pregled</span></div>
+        <div class="stat"><strong id="count-pending">10</strong><span>nepreverjenih</span></div>
+      </section>
+
+      <section class="workbench" aria-labelledby="workbench-title">
+        <div class="section-heading"><div><p class="eyebrow">TVOJ NABOR</p><h2 id="workbench-title">API ključi & modeli <span class="count-pill">10</span></h2></div><span class="memory-pill"><span aria-hidden="true">◈</span> Ključi samo za to sejo</span></div>
+        <div class="toolbar">
+          <div class="actions"><button class="primary" id="run-selected" type="button">Preveri izbrane <span id="selected-count">10</span><span aria-hidden="true">↗</span></button><button id="stop" class="stop" type="button" disabled>Ustavi</button></div>
+          <div class="actions secondary"><button id="import" type="button">↥ Uvozi iz MAL</button><button id="export" type="button">↓ Izvozi rezultate</button><button id="clear-keys" class="quiet" type="button">Pozabi ključe</button></div>
+          <input id="import-files" type="file" accept=".txt,.json,.env,.conf,text/plain,application/json" multiple hidden>
+        </div>
+        <p id="notice" class="notice" role="status" aria-live="polite">Vnesi ključe ali uvozi svoje datoteke Provider-API.txt in Provider-Config.txt. Ob odprtju se nič ne pošlje.</p>
+        <details class="settings" id="settings">
+          <summary><span>⚙ Nastavitve testa</span><span class="settings-summary" id="settings-summary">MAL posrednik · do 256 izhodnih tokenov</span></summary>
+          <div class="settings-body">
+            <label>Način povezave<select id="transport"><option value="relay">MAL posrednik (priporočeno)</option><option value="direct">Neposredno iz brskalnika</option></select></label>
+            <label>Največ izhodnih tokenov<select id="token-cap"><option>128</option><option selected>256</option><option>512</option><option>1024</option></select></label>
+            <div class="settings-help"><p id="transport-help">Zahteva in ključ se za izvedbo preneseta prek obstoječega MAL posrednika na mdlxdcc.org do izbranega ponudnika. Stran ju ne shranjuje.</p><p>Testi tečejo zaporedno, brez ponovitev ali rezervnih modelov. En klic se lahko zaračuna. Omejitev velja za izhod; pri thinking modelih lahko vključuje razmišljanje. Časovna meja: 55 s prek posrednika, 60 s neposredno.</p></div>
+          </div>
+        </details>
+        <div class="list-controls"><span id="key-count">0 / 10 ključev vnesenih</span><div><button id="select-ready" type="button">Izberi s ključi</button><span>·</span><button id="select-all" type="button">Izberi vse</button><span>·</span><button id="select-none" type="button">Počisti izbor</button></div></div>
+        <div id="providers" class="providers"></div>
+        <noscript><p class="notice">Za vnos ključev in izvedbo testov omogoči JavaScript. API klici se izvajajo šele po kliku.</p></noscript>
+      </section>
+
+      <section class="guide" id="guide" aria-labelledby="guide-title"><div class="guide-heading"><p class="eyebrow">KAJ TI POVE TEST</p><h2 id="guide-title">Odgovor z naslednjim korakom.</h2><p>Rezultat velja za model in nastavitve ob testu. Konzole lahko zahtevajo prijavo in izbiro prave ekipe ali projekta.</p></div><div class="guide-items">
+        <article><span class="legend-dot green"></span><div><h3>API deluje</h3><p>Prejet je pravilen, enkratni kontrolni niz. Pokažemo vrnjeni ID modela, trajanje in porabo tokenov, če ju API sporoči.</p></div></article>
+        <article><span class="legend-dot amber"></span><div><h3>Preveri nastavitev ali kvoto</h3><p>401, 403, 404 in 429 imajo različne vzroke. Pri vsaki napaki dobiš razlago in povezave do API ključev, porabe ter pomoči.</p></div></article>
+        <article><span class="legend-dot gray"></span><div><h3>Neznano ni enako neveljavno</h3><p>CORS, timeout ali ustavitev ne potrdijo stanja ključa. Zahteva je morda že dosegla ponudnika. Pred ponovitvijo preveri porabo.</p></div></article>
+      </div></section>
+    </main>
+    <footer><span>BD / MAL <span class="muted">·</span> API pregled</span><span>Brez samodejnih testov. Brez ključev v izvozu.</span><a href="../Start/index.html">Nazaj na Start ↗</a></footer>
+  </div>
+</body>
+</html>

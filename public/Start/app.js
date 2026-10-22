@@ -48,16 +48,22 @@
   function make(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
   function pressed(selector,attr,value){$$(selector).forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute(attr)===value));});}
   function query(){return $('#bs-search-input').value.trim().toLocaleLowerCase(lang);}
+  // Built-in favorite is visible with existing saved Start data too. Keep it
+  // outside the user's editable/exported links so no local state migration is needed.
+  const apiCheckFavorite=['API pregled',new URL('../AI8/api-check.html',document.baseURI).href,'API'];
   function renderLinks(){
     const host=$('#bs-shortcuts');host.replaceChildren();let count=0;const q=query();
     const groups=q?Object.keys(links):[linkGroup];const seen=new Set();
-    groups.forEach(function(group){links[group].forEach(function(link,index){
+    groups.forEach(function(group){const entries=links[group].map(function(link,index){return {link:link,index:index};});
+      if(group==='daily'&&!entries.some(function(entry){return entry.link[1]===apiCheckFavorite[1];}))entries.unshift({link:apiCheckFavorite,index:-1});
+      entries.forEach(function(entry){const link=entry.link,index=entry.index;
       if((!manageLinks&&seen.has(link[1]))||(q&&!link[0].toLocaleLowerCase(lang).includes(q)))return;
       seen.add(link[1]);count++;
       const wrapper=make('div','bs-shortcut-item'+(manageLinks?' bs-editing':''));
       const a=make('a','bs-shortcut cursor-interaction');a.href=link[1];a.target='_blank';a.rel='noopener noreferrer';
       a.append(make('span','bs-link-symbol',link[2]),make('span','',link[0]));wrapper.append(a);
-      if(manageLinks){const controls=make('div','bs-shortcut-controls');
+      if(index===-1)a.title=lang==='sl'?'Pripeto orodje · API pregled':'Pinned tool · API check';
+      if(manageLinks&&index!==-1){const controls=make('div','bs-shortcut-controls');
         const edit=make('button','');edit.type='button';edit.append(icon('pencil'));edit.setAttribute('aria-label',t('edit')+': '+link[0]);
         edit.addEventListener('click',function(){editingLink={group:group,index:index};$('#bs-link-name').value=link[0];$('#bs-link-url').value=link[1];$('#bs-add-link').hidden=false;$('#bs-add-link-toggle').setAttribute('aria-expanded','true');$('#bs-link-error').hidden=true;$('#bs-link-name').focus();});
         const remove=make('button','');remove.type='button';remove.append(icon('trash-2'));remove.setAttribute('aria-label',t('remove')+': '+link[0]);
@@ -218,3 +224,4 @@
   const clockTimer=setInterval(function(){if(root.isConnected){clock();if(lastToday!==todayISO()){lastToday=todayISO();renderCalendar();}}else clearInterval(clockTimer);},30000);
   icons();
 })();
+
