@@ -34,9 +34,14 @@ Object.defineProperties(frame,{
   currentURL=redirected.href;frameChanges++;
   const child=new JSDOM('<meta name="robots" content="noindex,nofollow"><title>Many curves. One rule.</title><main><h1>Many curves. One rule.</h1><p>A rich pattern comes from one generating ellipse and rotations. This is a public teaching example, not a general compression benchmark.</p><label>Curves<input type="range" min="8" max="64" value="48" aria-label="Curves"><output>48</output></label></main>',{url:currentURL,pretendToBeVisual:true});
   frameDocument=child.window.document;frameWindow=child.window;
+  if(redirected.searchParams.get('demo')==='glance') {
+   child.window.document.body.innerHTML='<main id="glance-public-demo"><h1>Public travel demo</h1><p>An isolated public travel demonstration with five public points. No owner plan, private data or cloud state is loaded.</p></main>';
+   const travelWindow=child.window;
+   setTimeout(()=>{travelWindow.AndaluzijaGlanceDemo={show:async stage=>{travelWindow.document.body.dataset.lastStage=stage;return {verified:true,stage};}};travelWindow.document.body.dataset.demoReady='true';},50);
+  }
   Object.defineProperty(child.window.HTMLElement.prototype,'innerText',{get(){return this.textContent}});
   Object.defineProperty(frameDocument,'readyState',{get:()=> 'complete'});
-  const slider=frameDocument.querySelector('input');slider.addEventListener('input',()=>{frameDocument.querySelector('output').value=slider.value});
+  const slider=frameDocument.querySelector('input');slider?.addEventListener('input',()=>{frameDocument.querySelector('output').value=slider.value});
   setTimeout(()=>frame.dispatchEvent(new w.Event('load')),0);
  }}
 });
@@ -110,6 +115,17 @@ const submit=async text=>{d.getElementById('guide-input').value=text;d.getElemen
  assert.equal(requests.length,beforePublic,'Signed-out glance uses the public script without a paid request');
  assert.ok(d.querySelector('.guide-message[data-role=scenario]'));
  d.getElementById('guide-stop').click();
+ await submit('help glance');assert.equal(d.getElementById('guide-tour').hidden,true,'Help does not start a tour');
+ await submit('glance trip');await until(()=>interval!==null);
+ assert.equal(frameDocument.body.dataset.demoReady,'true','Wait for delayed dynamic demo initialization');
+ assert.equal(frameDocument.body.dataset.lastStage,'authorship');
+ const tripFrameChanges=frameChanges;
+ await submit('n');await until(()=>interval!==null&&d.getElementById('guide-tour-status').textContent.startsWith('2 /'));
+ assert.equal(frameChanges,tripFrameChanges,'Pages prefix retains the same initialized travel frame');
+ assert.equal(frameDocument.body.dataset.lastStage,'suggestion');
+ await submit('pause');assert.equal(interval,null);await submit('resume');assert(interval);
+ await submit('stop');assert.equal(d.getElementById('guide-tour').hidden,true);
+ assert.equal(requests.length,beforePublic,'Full travel tour has no provider calls');
  assert.deepEqual(errors,[]);
  console.log(JSON.stringify({client_qa:'PASS',checks:['sign-in gate and retained question','password never stored','signed-out public tour','stream decoding across UTF-8 chunks','safe Markdown','conversation and draft survive AI toggle and provider change','provider-labelled shared history','selection retained in tab','busy provider guard','one frame retained','eight curves verified','60-second boundary','provider change and typing pause tour','standalone n advances','stop ends tour'],provider:'simulated GPT and Claude; not a live API test'}));
  dom.window.close();

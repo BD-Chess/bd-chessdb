@@ -186,8 +186,8 @@ async function showPage(path, { fromTour = false } = {}) {
  const target = localURL(p.path + p.suffix); $('guide-page-external').href = target;
  // Consecutive travel chapters retain the same isolated demo and computed route.
  try {
-  const current = new URL(frame.contentWindow.location.href), next = new URL(target);
-  if (isPublicTripDemo(next) && current.pathname===next.pathname && current.search===next.search && frame.contentDocument.body.dataset.demoReady==='true') {
+  const current = sitePath(frame.contentWindow.location.href), currentURL = new URL(frame.contentWindow.location.href), next = new URL(target);
+  if (isPublicTripDemo(new URL(p.path+p.suffix, 'https://www.mdlxdcc.org')) && current?.path===p.path && currentURL.search===next.search && frame.contentDocument.body.dataset.demoReady==='true') {
    const page=snapshot(); if(!page.verified)throw Error('PAGE_UNAVAILABLE'); $('guide-page-title').textContent=page.title; return page;
   }
  } catch {}
@@ -201,6 +201,16 @@ async function showPage(path, { fromTour = false } = {}) {
   frame.addEventListener('load', done);
  });
  frame.src = target; await loaded;
+ if (isPublicTripDemo(new URL(p.path+p.suffix, 'https://www.mdlxdcc.org'))) {
+  // Dynamic module imports (including the album) may settle after iframe load.
+  await new Promise((resolve,reject) => {
+   const d=frame.contentDocument, ready=()=>d.body?.dataset.demoReady==='true';
+   if(ready())return resolve();
+   const observer=new MutationObserver(()=>{if(ready()){clearTimeout(timeout);observer.disconnect();resolve();}});
+   const timeout=setTimeout(()=>{observer.disconnect();reject(Error('DEMO_READY_TIMEOUT'));},12000);
+   observer.observe(d.documentElement,{subtree:true,attributes:true,attributeFilter:['data-demo-ready']});
+  });
+ }
  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
  const page = snapshot(); if (!page.verified) throw Error('PAGE_UNAVAILABLE');
  $('guide-page-title').textContent = page.title;
@@ -315,7 +325,8 @@ async function showScene() {
   if (!active.silent) addMessage('scenario', (scene.narration[lang()] || scene.narration.en) + (page.verified ? '' : '\n' + w('pageError')));
   // The dwell begins after navigation, bounded action verification AND the full comment.
   active.loading = false; active.remaining = 60000; armClock(); updateTourStatus();
- } catch {
+ } catch(error) {
+  console.warn('Public tour scene unavailable', error.message);
   if (number !== sceneNumber || tour !== active) return;
   active.loading = false; active.paused = true; addMessage('notice', w('pageError')); updateTourStatus();
  }
