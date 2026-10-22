@@ -182,5 +182,5 @@ test('landing preserves existing entry points and one persistent chat/frame; pub
  assert.doesNotMatch(html,/<iframe[^>]+chatgpt\.com/);
  const manifest=JSON.parse(await readFile(new URL('../public/assets/mdlxdcc-guide/tour.json',import.meta.url),'utf8'));
  assert.equal(manifest.dwell_after_comment_seconds,60);
- for(const t of Object.values(manifest.tours)) for(const id of t.scenes) { const path=manifest.scenes[id].path; if(path.includes('?demo=glance')) assert.throws(()=>publicPath(path)); else assert.doesNotThrow(()=>publicPath(path)); }
+ for(const t of Object.values(manifest.tours)) for(const id of t.scenes) { const path=manifest.scenes[id].path; assert.doesNotThrow(()=>publicPath(path)); if(path.includes('?demo=glance')) assert.match(path,/^\/glance-trip\.html\?demo=glance#/); }
 });
