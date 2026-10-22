@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { prepare, fingerprint, inventory, isAlreadyPublished, checkRuns, deployArgs, MARKER } from '../scripts/netlify-auto-release.mjs';
+import { prepare, fingerprint, inventory, isAlreadyPublished, checkRuns, deployArgs, verifyFunctionInventory, MARKER } from '../scripts/netlify-auto-release.mjs';
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), 'bd-netlify-release-'));
   for (const dir of ['public/chess', 'public/Trip', 'public/S', 'public/BD/O', 'functions', 'scripts']) await mkdir(join(root, dir), { recursive: true });
@@ -69,4 +69,12 @@ test('CI requires secret scan success and respects failed/pending checks, exclud
   assert.equal(checkRuns([secret, { id: 2, path: 'test', event: 'push', status: 'in_progress' }], 99).ready, false);
   assert.equal(checkRuns([secret, { id: 3, path: 'test', event: 'push', status: 'completed', conclusion: 'failure' }], 99).bad.length, 1);
   assert.equal(checkRuns([secret, { id: 4, path: 'retired', event: 'workflow_run', status: 'completed', conclusion: 'cancelled' }], 99).ready, true);
+});
+
+test('actual Netlify compact function inventory confirms all handlers and rejects missing or unknown metadata', () => {
+  const files = [{path:'auth.mjs'}, {path:'maps.mts'}, {path:'lib/helper.mjs'}, {path:'package.json'}];
+  assert.deepEqual(verifyFunctionInventory({available_functions:[{n:'auth'}, {n:'maps'}]}, files), ['auth', 'maps']);
+  assert.deepEqual(verifyFunctionInventory({functions:[{name:'auth'}, {name:'maps'}]}, files), ['auth', 'maps']);
+  assert.throws(() => verifyFunctionInventory({available_functions:[{n:'auth'}]}, files), /incomplete: maps/);
+  assert.throws(() => verifyFunctionInventory({}, files), /incomplete: auth, maps/);
 });

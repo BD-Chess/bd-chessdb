@@ -119,6 +119,18 @@ export function deployArgs(prepared, message) {
   return ['--yes', 'netlify-cli@26.2.0', 'deploy', '--prod', '--no-build', '--dir', prepared.dir, '--functions', 'functions', '--skip-functions-cache', '--site', prepared.id, '--message', message, '--json'];
 }
 
+export function verifyFunctionInventory(deployed, files) {
+  // Netlify's deploy API returns compact available_functions rows with `n`;
+  // also accept expanded function rows used by other API representations.
+  const actual = new Set([...(deployed.available_functions || []), ...(deployed.functions || [])]
+    .map(f => typeof f === 'string' ? f : f.name || f.n).filter(Boolean));
+  const expected = files.filter(f => !f.path.includes('/') && /\.(mjs|mts|js|ts)$/.test(f.path))
+    .map(f => f.path.replace(/\.(mjs|mts|js|ts)$/, ''));
+  const missing = expected.filter(name => !actual.has(name));
+  requireValue(!missing.length, 'Deployed function inventory is incomplete: ' + missing.join(', '));
+  return expected;
+}
+
 async function readMarker(url) {
   const r = await fetch(url + '/' + MARKER + '?receipt=' + Date.now(), { cache: 'no-store', signal: AbortSignal.timeout(20000) });
   return r.ok ? r.json() : null;
@@ -176,9 +188,7 @@ export async function publish(root, output) {
     const now = await netlify('sites/' + prepared.id);
     requireValue(now.published_deploy?.id === id, 'Uploaded deploy is not current production');
     receipt.status = 'READY'; receipt.build_id = deployed.build_id ?? null; receipt.provider_state = deployed.state; await save();
-    const actualFunctions = new Set((deployed.functions || []).map(f => f.name));
-    const expectedFunctions = prepared.functions.filter(f => !f.path.includes('/') && /\.(mjs|mts|js|ts)$/.test(f.path)).map(f => f.path.replace(/\.(mjs|mts|js|ts)$/, ''));
-    requireValue(expectedFunctions.every(name => actualFunctions.has(name)), 'Deployed function inventory is incomplete');
+    const expectedFunctions = verifyFunctionInventory(deployed, prepared.functions);
     let live = false;
     for (let attempt = 0; attempt < 12; attempt++) {
       const m = await readMarker(SITES[site].url);

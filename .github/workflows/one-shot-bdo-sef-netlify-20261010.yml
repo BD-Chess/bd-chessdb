@@ -1,19 +1,16 @@
 name: One-shot BD Sef encrypted Start.me Netlify release
 # BD explicitly authorized this production Sef migration on 2026-10-10.
 # Keep normal Netlify auto-builds disabled. Release only exact named commit.
+# Retired 2026-10-22: no automatic trigger and no shared production lock.
+# The tested deploy-netlify.yml workflow owns automatic main publication.
 on:
-  workflow_run:
-    workflows: ["Deploy to GitHub Pages"]
-    types: [completed]
+  workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: netlify-production
-  cancel-in-progress: false
 jobs:
   one-shot-sef:
-    # Retired by BD on 2026-10-18. Weekly releases and agreed exceptions
-    # use deploy-netlify.yml; this historical job must not publish again.
+    # Retired by BD on 2026-10-18; retained only as historical source.
+    # Automatic tested main publication now uses deploy-netlify.yml.
     if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 18
@@ -81,3 +78,4 @@ jobs:
             if [ "$ok" != true ]; then echo "BD_SEF_LIVE_EXACT_FAILED $asset"; exit 1; fi
             echo "BD_SEF_LIVE_EXACT_PASS $asset"
           done
+
