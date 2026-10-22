@@ -26,7 +26,7 @@ test('seven exact routes, help and modifiers; private path remains blocked',asyn
 });
 test('public shell reuses the demo without reducing any owner frame policy',async()=>{
  const shell=await read('public/glance-trip.html'),headers=await read('public/_headers'),config=await read('netlify.toml');
- assert(shell.includes('src="./BD/O/izleti/andaluzija-demo.mjs"')); assert(!/andaluzija-(?:data|main|store|ai)\./.test(shell));
+ assert(shell.includes('src="./BD/O/izleti/andaluzija-demo.mjs"')); assert(shell.includes('./shared/dualframe-album.css')); assert(!/andaluzija-(?:data|main|store|ai)\./.test(shell));
  for(const path of ['/glance-trip.html','/glance-trip']) {const block=headers.split('\n'+path+'\n')[1]?.split('\n\n')[0];assert(block?.includes("frame-ancestors 'self'"));assert(block?.includes("connect-src 'self'"));}
  for(const path of ['/BD/O/*','/bd/o/*','/BD/O/izleti/andaluzija-2027.html','/bd/o/izleti/andaluzija-2027']) {const block=config.split('for = "'+path+'"')[1]?.split('[[headers]]')[0];assert(block?.includes("frame-ancestors 'none'"));}
 });
@@ -79,7 +79,8 @@ for(const width of [1440,402])test('isolated demo, real engine, Maps, album and 
  d.querySelector('dialog [data-df-mode="L"]').click();assert(d.querySelector('[data-df-image]').src.endsWith('-L.webp'));
  d.querySelector('[data-df-full]').click();assert.equal(d.querySelector('[data-df-full]').getAttribute('aria-pressed'),'true');
  d.querySelector('[data-df-close]').click();assert(!d.querySelector('dialog').open);
- await api.show('shield');assert(d.getElementById('demo-secret').textContent.includes('DEMO-ONLY'));
+ d.querySelector('[data-df-index="0"]').click(); d.querySelector('[data-df-full]').click(); assert(d.querySelector('dialog').open);
+ await api.show('shield');assert(!d.querySelector('dialog').open,'Leaving gallery closes modal and fullscreen before Shield');assert(d.getElementById('demo-secret').textContent.includes('DEMO-ONLY'));
  d.getElementById('demo-lock').click();assert(!d.getElementById('demo-secret').textContent.includes('DEMO-ONLY'));
  d.getElementById('demo-password').value='wrong';d.getElementById('demo-unlock').click();
  await new Promise(resolve=>setTimeout(resolve,300));assert(!d.getElementById('demo-secret').textContent.includes('DEMO-ONLY'));

@@ -6,7 +6,7 @@ The public `/glance-trip.html?demo=glance` shell imports the same isolated demo 
 
 The saved GPT example was authored for this demo on 22 October 2026 using the existing public Málaga catalogue; it is explicitly an editorial suggestion, not a live API response or verified timetable. Five exterior stops and a city entry form a six-node round trip. Classical DeepSearch receives a real computed great-circle distance matrix. The result independently checks every ID once and recomputes the complete closed-route cost. This free mode is labelled as an estimate, separate from Google walking distances. Existing Maps generators produce every place and ordered walking leg, including the return.
 
-The existing 21-pair album retains Mateja’s selection, BD’s concept and GPT AI composition labels. The demo envelope uses AES-GCM and PBKDF2 at 600,000 iterations with the public password `glance-trip-demo`. Its synthetic plaintext is absent from public source/envelope bytes until decrypted. It is unrelated to owner authentication or personal data.
+The public shell loads the existing shared album stylesheet; leaving its chapter closes any modal/fullscreen viewer before revealing Shield. The existing 21-pair album retains Mateja’s selection, BD’s concept and GPT AI composition labels. The demo envelope uses AES-GCM and PBKDF2 at 600,000 iterations with the public password `glance-trip-demo`. Its synthetic plaintext is absent from public source/envelope bytes until decrypted. It is unrelated to owner authentication or personal data.
 
 Fresh MAL source is a private encrypted mobile laboratory. Public AI8 tours therefore retain AI8 → ArenaLoop → AIM³ → atlas; the obsolete Drive scene is explicitly excluded. Private filters are preserved.
 

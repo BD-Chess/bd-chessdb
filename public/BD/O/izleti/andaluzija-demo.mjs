@@ -89,6 +89,9 @@ window.AndaluzijaGlanceDemo=Object.freeze({
   save:()=>Promise.reject(Error('DEMO_CLOUD_WRITE_DISABLED')),
   async show(stage) {
     if(!['overview','authorship','suggestion','before','optimize','maps','gallery','shield','finish'].includes(stage))throw Error('INVALID_DEMO_STAGE');
+    // Leaving the photo chapter must reveal the next scene, even from fullscreen.
+    const viewer=document.getElementById('df-album-dialog');
+    if(stage!=='gallery'&&viewer?.open)viewer.close();
     if(stage==='optimize'||stage==='maps')await optimize();
     if(stage==='shield'){lock();if(!await unlock('glance-trip-demo'))throw Error('DEMO_SHIELD_FAILED');}
     $(stage==='before'?'optimize':stage).scrollIntoView({behavior:'instant'});
