@@ -7,12 +7,13 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="color-scheme" content="dark">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://www.mdlxdcc.org https://api.openai.com https://api.anthropic.com https://api.deepseek.com https://generativelanguage.googleapis.com https://api.x.ai https://api.z.ai https://api.minimax.io https://api.mistral.ai https://api.moonshot.ai https://ws-w0wh18jpdbeyf7d7.ap-southeast-1.maas.aliyuncs.com https://dashscope-intl.aliyuncs.com; base-uri 'none'; object-src 'none'; form-action 'none'">
-  <meta name="bd-api-check-release" content="20261022-r2">
+  <meta name="bd-api-check-release" content="20261022-r3">
   <title>API pregled · BD / MAL</title>
   <link rel="icon" href="../Start/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./api-check.css?v=20261022-r2">
+  <link rel="stylesheet" href="./api-check.css?v=20261022-r3">
   <script defer src="./api-check-core.js?v=20261022-r2"></script>
-  <script defer src="./api-check.js?v=20261022-r2"></script>
+  <script defer src="./api-check-unlock.js?v=20261022-r3"></script>
+  <script defer src="./api-check.js?v=20261022-r3"></script>
 </head>
 <body>
   <a class="skip" href="#providers">Preskoči na ponudnike</a>
@@ -39,12 +40,24 @@
 
       <section class="workbench" aria-labelledby="workbench-title">
         <div class="section-heading"><div><p class="eyebrow">TVOJ NABOR</p><h2 id="workbench-title">API ključi & modeli <span class="count-pill">10</span></h2></div><span class="memory-pill"><span aria-hidden="true">◈</span> Ključi samo za to sejo</span></div>
+        <div class="vault-toolbar">
+          <button id="unlock-keys" class="vault-unlock" type="button" aria-controls="vault-panel" aria-expanded="false">🔐 Odkleni API ključe</button>
+          <span>8Z Shield · po odklepu so ključi na voljo samo v tej seji brskalnika.</span>
+        </div>
+        <form id="vault-panel" class="vault-panel" hidden autocomplete="off">
+          <label for="vault-passphrase">Geslo za odklep
+            <input id="vault-passphrase" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="128" required>
+          </label>
+          <button id="vault-submit" type="submit">Odkleni 10 ključev</button>
+          <button id="vault-cancel" type="button">Prekliči</button>
+          <span id="vault-status" role="status" aria-live="polite"></span>
+        </form>
         <div class="toolbar">
           <div class="actions"><button class="primary" id="run-selected" type="button">Preveri izbrane <span id="selected-count">10</span><span aria-hidden="true">↗</span></button><button id="stop" class="stop" type="button" disabled>Ustavi</button></div>
           <div class="actions secondary"><button id="import" type="button">↥ Uvozi iz MAL</button><button id="export" type="button">↓ Izvozi rezultate</button><button id="clear-keys" class="quiet" type="button">Pozabi ključe</button></div>
           <input id="import-files" type="file" accept=".txt,.json,.env,.conf,text/plain,application/json" multiple hidden>
         </div>
-        <p id="notice" class="notice" role="status" aria-live="polite">Vnesi ključe ali uvozi svoje datoteke Provider-API.txt in Provider-Config.txt. Ob odprtju se nič ne pošlje.</p>
+        <p id="notice" class="notice" role="status" aria-live="polite">Odkleni shranjene šifrirane ključe ali uvozi svoje datoteke Provider-API.txt in Provider-Config.txt. Ob odprtju se nič ne pošlje.</p>
         <details class="settings" id="settings">
           <summary><span>⚙ Nastavitve testa</span><span class="settings-summary" id="settings-summary">MAL posrednik · do 256 izhodnih tokenov</span></summary>
           <div class="settings-body">
