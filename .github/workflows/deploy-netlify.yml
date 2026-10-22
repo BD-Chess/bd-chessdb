@@ -42,7 +42,6 @@ jobs:
     env:
       TARGET_SHA: ${{ github.event.workflow_run.head_sha || inputs.target_sha || github.sha }}
       RELEASE_SITE: ${{ inputs.site || 'all' }}
-      RELEASE_DIR: ${{ runner.temp }}/netlify-prebuilt
     steps:
       - name: Checkout exact verified source
         uses: actions/checkout@v4
@@ -55,6 +54,7 @@ jobs:
       - name: Check source identity and secret boundary before installing dependencies
         run: |
           test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          echo "RELEASE_DIR=$RUNNER_TEMP/netlify-prebuilt" >> "$GITHUB_ENV"
           python3 scripts/check_secret_boundary.py
           node --check scripts/netlify-auto-release.mjs
           node --test tests/netlify-auto-release.test.mjs
