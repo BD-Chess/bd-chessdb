@@ -33,6 +33,12 @@ jobs:
           node --check public/WL/BD/reader.js
           node --check public/Trip/private-client.js
           node --check public/Trip/new/private-client.js
+      - name: Verify HMAL private report reader and source syntax
+        run: |
+          python3 tests/hmal/report_reader_test.py
+          python3 -m compileall -q integrations/hmal/app
+          node --check integrations/hmal/app/static/hmal.js
+          node --check integrations/hmal/app/static/hmal_i18n.js
       - name: Inline owner-access runtime for GitHub Pages
         shell: python
         run: |

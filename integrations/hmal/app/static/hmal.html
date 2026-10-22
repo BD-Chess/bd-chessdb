@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="sl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark"><title>HMAL · Home Model Lab</title>
+<link rel="stylesheet" href="/static/hmal.css"><script defer src="/static/hmal_i18n.js"></script><script defer src="/static/hmal.js"></script></head>
+<body><div class="workspace">
+<header class="topbar"><a class="brand" href="/">BD<span> / HOME</span></a><div class="lab-title"><strong>HMAL</strong><span>Home Model Lab</span></div><div class="top-status"><span id="connection">Povezujem …</span><div class="top-tools"><div class="lang-switch" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="false" aria-label="English">EN</button><button type="button" data-lang="sl" aria-pressed="true" aria-label="Slovenščina">SL</button></div><button type="button" class="theme-button" id="theme" aria-label="Switch color theme"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg></button></div><button id="logout" class="quiet" type="button">Odjava</button></div></header>
+<nav class="jump-nav" aria-label="HMAL"><a href="#conversation">Pogovor</a><a href="#model-panel">Modeli</a><a href="#settings-panel">Nastavitve</a></nav>
+<main>
+<aside id="model-panel" class="sidebar panel"><div class="section-top"><h2>Domači modeli</h2><span id="model-count" class="pill">—</span></div>
+<p class="hint">Izberi udeležence. Puščici določita vrstni red.</p><div id="models" class="models"></div>
+<div class="resource-box"><span id="native-state">Stanje ni znano</span><small id="resources">Čakam na meritve …</small></div>
+<div class="section-top history-title"><h2>Pogovori</h2><button id="new" class="quiet" type="button">+ Nov</button></div><label class="sr-only" for="history-search">Poišči pogovor</label><input id="history-search" type="search" placeholder="Poišči pogovor" maxlength="100"><div id="history" class="history"></div></aside>
+<section id="conversation" class="conversation panel"><div class="conversation-head"><div><p class="eyebrow">DOMAČI LABORATORIJ</p><h1 id="conversation-title">Prostor za tvoje vprašanje.</h1></div><div class="export-tools"><button id="export-md" class="quiet" type="button" disabled>Izvoz MD</button><button id="export" class="quiet" type="button" disabled>Izvoz JSON</button></div></div>
+<div id="run-strip" class="run-strip" hidden><span id="run-state"></span><span id="round-state"></span><span id="archive-state"></span></div>
+<div id="notice" class="notice" role="status" hidden></div>
+<div id="progress-panel" class="progress-panel" role="status" aria-live="polite" hidden></div>
+<div id="messages" class="messages"><div class="welcome"><div class="orb">H</div><h2>En model. Več pogledov. Tvoj nadzor.</h2><p>Klepetaj z izbranim modelom, primerjaj ločene predloge v HMAL-u ali odpri zaporedno razpravo LOOP.</p><div class="welcome-tags"><span>Chat</span><span>HMAL</span><span>LOOP · 2–8</span></div></div></div>
+<form id="composer" class="composer"><label class="sr-only" for="prompt">Vprašanje ali komentar</label><textarea id="prompt" rows="3" placeholder="Kaj želiš raziskati?" maxlength="18000" required></textarea>
+<div class="composer-bottom"><span id="composer-help">Lokalno takoj; na Drive vsakih 5 minut ali na klik.</span><button id="send" class="primary" type="submit">Začni pogovor <span aria-hidden="true">↗</span></button></div></form>
+<div class="run-controls"><button data-action="step" type="button">Ena poteza</button><button data-action="pause" type="button">Premor</button><button data-action="resume" type="button">Nadaljuj</button><button data-action="stop" class="stop" type="button">Stop</button><button data-action="sync" class="quiet" type="button">Shrani na Drive</button><button data-action="recover" id="recover" class="quiet" type="button" hidden>Preveri shranjeni odgovor</button><button data-action="skip" id="skip" class="quiet" type="button" hidden>Preskoči prekinjeno potezo</button></div>
+</section>
+<aside id="settings-panel" class="settings panel"><p class="eyebrow">KAKO BOMO DELALI</p><h2>Nastavitve</h2>
+<fieldset id="mode-field"><legend>Način</legend><div class="mode-switch"><label><input type="radio" name="mode" value="chat" checked><span>Chat</span></label><label><input type="radio" name="mode" value="hmal"><span>HMAL</span></label><label><input type="radio" name="mode" value="loop"><span>LOOP</span></label></div></fieldset><p id="mode-description" class="hint">Preprost pogovor z enim modelom.</p>
+<label id="rounds-field" class="field" for="rounds" hidden>Krogi<input id="rounds" type="number" min="1" max="100" value="3"></label><p id="turn-estimate" class="hint">Izberi model.</p>
+<section id="reasoning-section" aria-labelledby="reasoning-title"><h3 id="reasoning-title">Razmišljanje</h3><div id="reasoning-controls"></div><p class="hint">Izberi model na levi. Nastavitev velja za nov pogovor; tekočega odgovora ne spremeni.</p></section>
+<section class="quality-panel" aria-labelledby="quality-title"><h3 id="quality-title">Prostor za odgovor</h3><div id="quality-models" class="hint">Izberi model.</div>
+<label class="field" for="completion-policy">Zaključevanje<select id="completion-policy"><option value="native">Nativno · brez omejitve razmišljanja</option><option value="reserve_final">Rezerviraj prostor za končni odgovor</option></select></label>
+<label id="answer-reserve-field" class="field" for="answer-reserve" hidden>Rezerva tokenov<input id="answer-reserve" type="number" min="128" max="32768" value="1024"></label><p id="reserve-hint" class="hint" hidden>Izbirni preizkus: skrajša razmišljanje in pusti prostor za odgovor. Skupni obseg ostane celoten prosti kontekst. Uspeh ni zagotovljen; potreben je nativni preizkus.</p></section>
+<section class="memory-maintenance"><button id="memory-clean" type="button">Počisti pomnilnik</button><p id="memory-clean-status" class="hint" role="status">Ročno čiščenje RAM-a; samo ko je krmilnik prost. Modelov ne zažene.</p></section>
+<label class="toggle"><input id="rhp" type="checkbox"><span><strong>Omogoči RHP</strong><small>Več perspektiv, primerjava in načrt preverjanja.</small></span></label>
+<div id="rhp-options" hidden><label class="check"><input id="question-opening" type="checkbox">Najprej odpri vprašanja</label><p class="hint">Za nejasen okvir ali sporne predpostavke. Lokalna projekcija T1; dodatne faze so vključene v število potez.</p><p class="hint">Soglasje modelov ni dokaz. Gemma Q5 in Q6 sta dve različici istega modela. RHP ohrani ugovore in predlaga preverjanja; sam jih ne izvede.</p></div>
+<details><summary>Napredne nastavitve</summary><div class="advanced">
+<label class="field" for="context">Kontekst<select id="context"><option value="recent">Zadnji prispevki</option><option value="previous">Prejšnji odgovor + BD</option><option value="full" selected>Celotni pogovor</option></select></label>
+<p id="generation-policy" class="hint">Brez umetne omejitve odgovora ali časovne meje. Velja prosti kontekst modela. Ustaviš z gumbom Stop.</p>
+<label class="check"><input id="synthesis" type="checkbox">Zaključna sinteza</label>
+<label class="field" for="sources">Izbrano gradivo<textarea id="sources" rows="4" maxlength="18000" placeholder="Prilepi pomemben odlomek …"></textarea></label><label class="file-label">Dodaj besedilno datoteko<input id="source-file" type="file" accept=".txt,.md,.json,.csv,text/plain,text/markdown,application/json"></label>
+<div id="roles" class="roles"></div><p class="hint">Celoten arhiv ostane ohranjen. Kontekst za posamezno potezo je viden v podrobnostih. Predolgega vnosa ne krajšamo potiho.</p>
+</div></details>
+<div class="save-note"><span class="save-dot"></span><div><strong>Lokalni disk + Google Drive</strong><p>Lokalno takoj. Drive samodejno vsakih 5 minut ali z gumbom Shrani na Drive. Pogovor ne čaka na prenos.</p></div></div>
+<details><summary>O tej izvedbi</summary><p class="hint">RHP: HMAL T1 Local R1. Brez samodejnih zunanjih orodij; predlagani testi ostanejo načrti. Modeli odgovarjajo zaporedno. Nativni odjemalec trenutno prikaže celoten odgovor po koncu generiranja. Vsaka poteza model ponovno naloži in ga nato ustavi.</p></details>
+</aside>
+</main>
+<details id="hmal-smoke-results" class="smoke-results panel">
+<summary><strong>Rezultati testiranja</strong><span id="smoke-summary" class="smoke-summary">Arhiv meritev</span></summary>
+<div class="smoke-content"><p id="smoke-date" class="hint">Shranjene meritve; trenutno stanje je prikazano pri modelih.</p>
+<p id="smoke-unavailable" class="hint">Čakam na shranjeno poročilo …</p>
+<div id="smoke-report" hidden>
+<div class="smoke-table-wrap" role="region" aria-label="Tabela meritev" tabindex="0"><table class="smoke-table"><caption>Čas obdelave brez nalaganja; vključuje prefill in generiranje.</caption><thead><tr><th scope="col">Model</th><th scope="col">Reasoning OFF</th><th scope="col">Reasoning ON / native</th></tr></thead><tbody id="smoke-rows"></tbody></table></div>
+<p class="hint">GPT-OSS low ni OFF. Qwen ON je low. Zadnji trije modeli uporabljajo podprto native nastavitev.</p>
+<p id="smoke-failure" class="smoke-failure"></p><p id="smoke-method" class="hint"></p>
+<p class="hint">To so posamične meritve. Preostala odprta sprejema: Ministral in običajen večpotezni Chat.</p>
+<nav id="smoke-links" class="smoke-links" aria-label="Dokazi testiranja"></nav>
+</div></div></details>
+<footer><span>BD × AI Lab · HMAL</span><span id="build">Zasebni domači pogovori</span></footer></div></body></html>

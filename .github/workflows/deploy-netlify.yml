@@ -60,6 +60,13 @@ jobs:
           node scripts/omnicpq/materialize-icons.mjs
           node scripts/omnicpq/build-shell.mjs
           node --test tests/omnicpq/demo-r4.test.mjs tests/omnicpq/ui-r4.test.mjs
+      - name: Verify HMAL source and private report UI without model calls
+        run: |
+          python3 tests/hmal/report_reader_test.py
+          python3 -m compileall -q integrations/hmal/app
+          node --check integrations/hmal/app/static/hmal.js
+          node --check integrations/hmal/app/static/hmal_i18n.js
+          node --test tests/hmal/smoke-report.test.cjs
       - name: Prepare protected pages and verify applications without paid calls
         run: |
           python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
