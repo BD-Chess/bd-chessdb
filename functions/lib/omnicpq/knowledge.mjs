@@ -2,6 +2,8 @@ import { validateLifecycleAnswer } from './lifecycle.mjs';
 import { catalogExtracts } from './catalog.mjs';
 import { resolve } from 'node:path';
 import { SKILL, error, hash } from './identity.mjs';
+import { SKILL_V15 } from './v15.mjs';
+import { openSealedKnowledge } from './sealed-knowledge.mjs';
 import { gunzipSync } from 'node:zlib';
 import { runtime } from './runtime.mjs';
 
@@ -9,9 +11,23 @@ const env = key => globalThis.Netlify?.env?.get(key) ?? process.env[key];
 const norm = value => String(value).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 const safePath = path => /^(?:SKILL\.md|copilot\/PROMPTS\.json|references\/[a-zA-Z0-9_./-]+\.(?:md|json))$/.test(path) && !path.split('/').includes('..');
 let cached;
+const activeSkill = () => env('OMNICPQ_ACTIVE_RELEASE') === 'v15' ? SKILL_V15 : SKILL;
 
 // A fixed, server-controlled key, never a user URL/key or a public source path.
 export async function readPrivatePack() {
+  // Private, EU-region site store; decrypt only inside an authenticated server function.
+  // A separate 256-bit secret protects the ciphertext; the login password is never used as an encryption key.
+  if (env('OMNICPQ_KNOWLEDGE_MODE') === 'sealed_blobs_v15') {
+    if (activeSkill().release !== 'v15') throw error('KNOWLEDGE_UNAVAILABLE');
+    const { getStore } = await import('@netlify/blobs');
+    let sealed;
+    try {
+      sealed = await getStore({ name: 'omnicpq-private-prod', region: 'eu-central-1', consistency: 'strong' })
+        .get('v15/knowledge.enc.json', { type: 'text', consistency: 'strong' });
+    } catch { throw error('KNOWLEDGE_UNAVAILABLE'); }
+    if (!sealed) throw error('KNOWLEDGE_UNAVAILABLE');
+    return openSealedKnowledge(sealed, env('OMNICPQ_KNOWLEDGE_DEK_B64'), SKILL_V15);
+  }
   if (env('OMNICPQ_KNOWLEDGE_MODE') === 'database') {
     // The existing database RPC has a fixed legacy slot; the pack's pinned
     // ZIP/manifest and per-file hashes, rather than that slot name, define v16.
@@ -25,7 +41,7 @@ export async function readPrivatePack() {
     const name = env('OMNICPQ_KNOWLEDGE_STORE');
     if (!/^omnicpq-private-[a-z0-9-]{1,40}$/.test(name || '')) throw error('KNOWLEDGE_UNAVAILABLE');
     const { getStore } = await import('@netlify/blobs');
-    const text = await getStore({ name, consistency: 'strong' }).get(SKILL.release + '/knowledge.json', { type: 'text' });
+    const text = await getStore({ name, consistency: 'strong' }).get(activeSkill().release + '/knowledge.json', { type: 'text' });
     if (!text || Buffer.byteLength(text) > 32_000_000) throw error('KNOWLEDGE_UNAVAILABLE');
     return text;
   }
@@ -39,10 +55,10 @@ export async function verifyPack(text) {
   let pack, manifest;
   try {
     pack = JSON.parse(text);
-    if (pack.schema !== 'omnicpq.private_knowledge.v1' || pack.zipSha256 !== SKILL.zipSha256 ||
-        await hash(pack.manifestText) !== SKILL.manifestSha256) throw Error();
+    if (pack.schema !== 'omnicpq.private_knowledge.v1' || pack.zipSha256 !== activeSkill().zipSha256 ||
+        await hash(pack.manifestText) !== activeSkill().manifestSha256) throw Error();
     manifest = JSON.parse(pack.manifestText);
-    if (manifest.version !== SKILL.version || manifest.payload_files.length !== SKILL.payloads) throw Error();
+    if (manifest.version !== activeSkill().version || manifest.payload_files.length !== activeSkill().payloads) throw Error();
     const expected = new Map(manifest.payload_files.filter(f => safePath(f.path)).map(f => [f.path, f]));
     if (Object.keys(pack.files).length !== expected.size) throw Error();
     for (const [path, file] of Object.entries(pack.files)) {
@@ -55,12 +71,12 @@ export async function verifyPack(text) {
 
 export async function loadKnowledge({ reader = readPrivatePack } = {}) {
   // Cache is process memory only; an input or failed verification is never cached.
-  if (reader === readPrivatePack && cached && cached.until > Date.now()) return cached.value;
+  if (reader === readPrivatePack && cached && cached.release === activeSkill().release && cached.until > Date.now()) return cached.value;
   let verified;
   try { verified = await verifyPack(await reader()); }
   catch (e) { throw e.code ? e : error('KNOWLEDGE_UNAVAILABLE'); }
   const value = createRetriever(verified);
-  if (reader === readPrivatePack) cached = { until: Date.now() + 60_000, value };
+  if (reader === readPrivatePack) cached = { release: activeSkill().release, until: Date.now() + 60_000, value };
   return value;
 }
 
@@ -133,7 +149,7 @@ export function createRetriever({ files, manifest, packSha256 }) {
   const specs = new Map(manifest.payload_files.map(f => [f.path, f]));
   const lifecycleSchema = JSON.parse(files['references/LIFECYCLE_OUTPUT.schema.json']);
   return {
-    skill: { ...SKILL, packSha256, promptsSha256: specs.get('copilot/PROMPTS.json').sha256,
+    skill: { ...activeSkill(), packSha256, promptsSha256: specs.get('copilot/PROMPTS.json').sha256,
       outputSchemaSha256: specs.get('references/LIFECYCLE_OUTPUT.schema.json').sha256 },
     validateLifecycleAnswer: text => validateLifecycleAnswer(text, lifecycleSchema, specs.get('references/LIFECYCLE_OUTPUT.schema.json').sha256),
     canonicalPrompts: JSON.parse(files['copilot/PROMPTS.json']).prompts,
