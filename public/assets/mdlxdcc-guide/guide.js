@@ -1,4 +1,4 @@
-import { createPublicRoutes } from './routes.mjs?v=20261019-r1';
+import { createPublicRoutes, isPublicTripDemo, parseGlance } from './routes.mjs?v=20261022-trip1';
 
 const root = new URL('../../', import.meta.url);
 const endpoint = new URL('/.netlify/functions/mdlxdcc-guide', location.origin);
@@ -9,8 +9,8 @@ const storageKey = 'mdlxdcc-guide-conversation-v1';
 const providerKey = 'mdlxdcc-guide-provider-v1';
 const providerName = provider => provider === 'claude' ? 'Claude' : 'GPT';
 const words = {
- sl: { title:'MDL×DCC Guide', subtitle:'Javni vodnik', close:'Skrij klepet', welcome:'Kaj te zanima?', intro:'Raziskuj projekte, vprašaj za razlago ali se odpravi na vodeni ogled.', glance:'Začni glance →', projects:'Kaj je MDL×DCC?', dgte:'DGTE: elektrika v €?', placeholder:'Vprašaj o projektu …', send:'Pošlji', fine:'Skupen pogovor ostane v tem zavihku. Vprašanje in pogovor obdeluje {provider}. Odgovore preveri ob virih.', reading:'Berem javne vire …', thinking:'Razmišljam …', checking:'Preverjam podatke …', unavailable:'Pomočnik trenutno ni dosegljiv. Poskusi pozneje. Vodeni ogled je na voljo s komentarji iz scenarija.', rate:'Dosežena je omejitev vprašanj. Počakaj minuto in poskusi znova.', timeout:'Odgovor se je zavlekel. Poskusi znova ali skrajšaj vprašanje.', interrupted:'Odgovor je prekinjen.', sources:'Prebrani viri', scenario:'Komentar iz scenarija', next:'Naprej · n', pause:'Pavza', resume:'Nadaljuj', back:'Nazaj', stop:'Končaj', home:'Na začetno', loading:'Odpiram stran …', paused:'Pavza — vprašaj ali nadaljuj.', wait:'Naslednji prizor čez', seconds:'s', completed:'Ogled je končan. Vprašaj o čemerkoli prikazanem.', pageError:'Strani ni bilo mogoče preveriti. Uporabi Naprej ali odpri povezavo neposredno.', unknown:'Izberi: glance, glance it, glance devices, glance creative, glance ai8 ali glance theories.', ready:'javni viri', offline:'povezava ni na voljo', tour:'Ogled', external:'Odpri stran v zavihku', truncated:'Odgovor je skrajšan. Za nadaljevanje postavi dodatno vprašanje.' },
- en: { title:'MDL×DCC Guide', subtitle:'Public guide', close:'Hide chat', welcome:'What are you curious about?', intro:'Explore the projects, ask for an explanation, or take a guided tour.', glance:'Start glance →', projects:'What is MDL×DCC?', dgte:'DGTE: electricity in €?', placeholder:'Ask about a project …', send:'Send', fine:'One shared conversation in this tab. {provider} processes your question and conversation. Check answers against their sources.', reading:'Reading public sources …', thinking:'Thinking …', checking:'Checking the details …', unavailable:'The assistant is currently unavailable. Try again later. The guided tour is available with comments from its script.', rate:'The question limit has been reached. Wait a minute and try again.', timeout:'The answer took too long. Try again or shorten the question.', interrupted:'The answer was interrupted.', sources:'Sources read', scenario:'Comment from the tour script', next:'Next · n', pause:'Pause', resume:'Resume', back:'Back', stop:'Finish', home:'Back to landing', loading:'Opening the page …', paused:'Paused — ask a question or resume.', wait:'Next scene in', seconds:'s', completed:'The tour is complete. Ask about anything you have seen.', pageError:'This page could not be verified. Choose Next or open the link directly.', unknown:'Choose: glance, glance it, glance devices, glance creative, glance ai8 or glance theories.', ready:'public sources', offline:'connection unavailable', tour:'Tour', external:'Open page in a tab', truncated:'The answer was shortened. Ask a follow-up to continue.' }
+ sl: { title:'MDL×DCC Guide', subtitle:'Javni vodnik', close:'Skrij klepet', welcome:'Kaj te zanima?', intro:'Raziskuj projekte, vprašaj za razlago ali se odpravi na vodeni ogled.', glance:'Začni glance →', projects:'Kaj je MDL×DCC?', dgte:'DGTE: elektrika v €?', placeholder:'Vprašaj o projektu …', send:'Pošlji', fine:'Skupen pogovor ostane v tem zavihku. Vprašanje in pogovor obdeluje {provider}. Odgovore preveri ob virih.', reading:'Berem javne vire …', thinking:'Razmišljam …', checking:'Preverjam podatke …', unavailable:'Pomočnik trenutno ni dosegljiv. Poskusi pozneje. Vodeni ogled je na voljo s komentarji iz scenarija.', rate:'Dosežena je omejitev vprašanj. Počakaj minuto in poskusi znova.', timeout:'Odgovor se je zavlekel. Poskusi znova ali skrajšaj vprašanje.', interrupted:'Odgovor je prekinjen.', sources:'Prebrani viri', scenario:'Komentar iz scenarija', next:'Naprej · n', pause:'Pavza', resume:'Nadaljuj', back:'Nazaj', stop:'Končaj', home:'Na začetno', loading:'Odpiram stran …', paused:'Pavza — vprašaj ali nadaljuj.', wait:'Naslednji prizor čez', seconds:'s', completed:'Ogled je končan. Vprašaj o čemerkoli prikazanem.', pageError:'Strani ni bilo mogoče preveriti. Uporabi Naprej ali odpri povezavo neposredno.', unknown:'Izberi: glance, glance it, glance devices, glance creative, glance ai8, glance theories ali glance trip.', ready:'javni viri', offline:'povezava ni na voljo', tour:'Ogled', external:'Odpri stran v zavihku', truncated:'Odgovor je skrajšan. Za nadaljevanje postavi dodatno vprašanje.' },
+ en: { title:'MDL×DCC Guide', subtitle:'Public guide', close:'Hide chat', welcome:'What are you curious about?', intro:'Explore the projects, ask for an explanation, or take a guided tour.', glance:'Start glance →', projects:'What is MDL×DCC?', dgte:'DGTE: electricity in €?', placeholder:'Ask about a project …', send:'Send', fine:'One shared conversation in this tab. {provider} processes your question and conversation. Check answers against their sources.', reading:'Reading public sources …', thinking:'Thinking …', checking:'Checking the details …', unavailable:'The assistant is currently unavailable. Try again later. The guided tour is available with comments from its script.', rate:'The question limit has been reached. Wait a minute and try again.', timeout:'The answer took too long. Try again or shorten the question.', interrupted:'The answer was interrupted.', sources:'Sources read', scenario:'Comment from the tour script', next:'Next · n', pause:'Pause', resume:'Resume', back:'Back', stop:'Finish', home:'Back to landing', loading:'Opening the page …', paused:'Paused — ask a question or resume.', wait:'Next scene in', seconds:'s', completed:'The tour is complete. Ask about anything you have seen.', pageError:'This page could not be verified. Choose Next or open the link directly.', unknown:'Choose: glance, glance it, glance devices, glance creative, glance ai8, glance theories or glance trip.', ready:'public sources', offline:'connection unavailable', tour:'Tour', external:'Open page in a tab', truncated:'The answer was shortened. Ask a follow-up to continue.' }
 };
 const lang = () => document.documentElement.lang.toLowerCase().startsWith('sl') ? 'sl' : 'en';
 Object.assign(words.sl, { loginTitle:'Prijava za vprašanja GPT in Claude', registerTitle:'Ustvari račun za vodnika', loginInfo:'Vprašanje ostane pripravljeno. Javni ogled deluje tudi brez prijave.', email:'E-pošta', password:'Geslo', login:'Prijava', logout:'Odjava', register:'Ustvari račun', registerChoice:'Še nimaš računa? Ustvari ga', loginChoice:'Že imaš račun? Prijavi se', cancelLogin:'Nazaj v klepet', budgetInfo:'Obiskovalci si delijo največ 100 USD mesečne porabe API. BD je izven te kvote.', signedOut:'Vprašanja s prijavo · glance je javen', signedIn:'Prijavljen obiskovalec', owner:'BD · izven javne kvote', monthlyLimit:'Skupna mesečna kvota obiskovalcev je porabljena. Ogled glance ostaja na voljo.', storageError:'Prijava ali beleženje porabe trenutno ni dosegljivo. Poskusi pozneje.', invalidLogin:'E-pošta ali geslo ni pravilno.', exists:'Račun s to e-pošto že obstaja. Uporabi Prijava.', invalidPassword:'Geslo mora imeti vsaj 8 in največ 256 znakov.', invalidEmail:'Vpiši veljaven e-poštni naslov.', pool:'Javna poraba', ownUsage:'Tvoja vprašanja', conservative:'konservativna ocena', loginRequired:'Za odgovor se prijavi. Vprašanje ostane pripravljeno.' });
@@ -29,7 +29,7 @@ function sitePath(url) {
  const canonical = ['www.mdlxdcc.org', 'mdlxdcc.org'].includes(u.hostname);
  if (!canonical && (u.origin !== root.origin || !u.pathname.startsWith(root.pathname))) return null;
  const p = canonical ? u.pathname : '/' + u.pathname.slice(root.pathname.length);
- if (denied.test(decodeURIComponent(p)) || /[\\\x00-\x1f]/.test(p)) return null;
+ if ((denied.test(decodeURIComponent(p)) && !isPublicTripDemo(new URL(p + u.search, 'https://www.mdlxdcc.org'))) || /[\\\x00-\x1f]/.test(p)) return null;
  return { path:routes.resolve(p), suffix:u.search + u.hash };
 }
 function localURL(path) { return new URL(path.replace(/^\//, ''), root).href; }
@@ -184,6 +184,13 @@ async function showPage(path, { fromTour = false } = {}) {
  if (!fromTour && tour) pauseTour();
  $('guide-stage').hidden = false; document.body.classList.add('guide-viewing'); topSize(); $('guide-page-title').textContent = w('loading');
  const target = localURL(p.path + p.suffix); $('guide-page-external').href = target;
+ // Consecutive travel chapters retain the same isolated demo and computed route.
+ try {
+  const current = new URL(frame.contentWindow.location.href), next = new URL(target);
+  if (isPublicTripDemo(next) && current.pathname===next.pathname && current.search===next.search && frame.contentDocument.body.dataset.demoReady==='true') {
+   const page=snapshot(); if(!page.verified)throw Error('PAGE_UNAVAILABLE'); $('guide-page-title').textContent=page.title; return page;
+  }
+ } catch {}
  const loaded = new Promise((resolve, reject) => {
   const timeout = setTimeout(() => { frame.removeEventListener('load', done); reject(Error('PAGE_TIMEOUT')); }, 16000);
   function done() {
@@ -270,8 +277,15 @@ function armClock() {
   if (tour.remaining === 0) advance();
  }, 250); updateTourStatus();
 }
-function observeAdapter(scene) {
+async function observeAdapter(scene) {
  const d = frame.contentDocument;
+ if (scene.adapter?.startsWith('andaluzija:')) {
+  const demo = frame.contentWindow.AndaluzijaGlanceDemo;
+  if (!demo || d.body.dataset.demoReady !== 'true') throw Error('DEMO_NOT_READY');
+  const result = await demo.show(scene.adapter.split(':')[1]);
+  if (!result.verified) throw Error('DEMO_NOT_VERIFIED');
+  return 'Verified isolated public demo: ' + result.stage;
+ }
  if (scene.adapter === 'curves-eight') {
   const slider = [...d.querySelectorAll('input[type=range]')].find(x => /curves|krivulj/i.test(x.getAttribute('aria-label') || x.closest('label')?.innerText || ''));
   if (!slider) return 'The requested curves control was not found. Describe only the visible default scene.';
@@ -294,15 +308,11 @@ async function showScene() {
   const sceneURL = new URL(scene.path, 'https://www.mdlxdcc.org');
   if (sceneURL.searchParams.has('lang')) sceneURL.searchParams.set('lang', lang());
   await showPage(sceneURL.href, { fromTour:true }); if (number !== sceneNumber || tour !== active) return;
-  const observation = observeAdapter(scene), page = snapshot();
+  const observation = await observeAdapter(scene), page = snapshot();
   addMessage('notice', `${active.cursor + 1} / ${active.ids.length} · ${scene.title}`);
-  let narrated = false;
-  if (available === true && account) narrated = await ask(`Scene: ${scene.title}\nObserved interaction: ${observation}\nPrepared script (reference, not proof of current page): ${scene.narration[lang()] || scene.narration.en}\nComment on the verified page in 2–4 sentences.`, { recordUser:false, tourComment:true });
+  // A glance invocation never spends API budget, including signed-in owners.
   if (number !== sceneNumber || tour !== active) return;
-  if (!narrated) {
-   const text = scene.narration[lang()] || scene.narration.en;
-   addMessage('scenario', text + (page.verified ? '' : '\n' + w('pageError')));
-  }
+  if (!active.silent) addMessage('scenario', (scene.narration[lang()] || scene.narration.en) + (page.verified ? '' : '\n' + w('pageError')));
   // The dwell begins after navigation, bounded action verification AND the full comment.
   active.loading = false; active.remaining = 60000; armClock(); updateTourStatus();
  } catch {
@@ -310,13 +320,13 @@ async function showScene() {
   active.loading = false; active.paused = true; addMessage('notice', w('pageError')); updateTourStatus();
  }
 }
-async function startTour(key) {
+async function startTour(key, silent = false) {
  const data = await manifest(); const chosen = data.tours[key]; if (!chosen) { addMessage('notice', w('unknown')); return; }
- sceneNumber++; stopClock(); tour = { key, ids:chosen.scenes, cursor:0, paused:false, remaining:60000, loading:true, finished:false };
+ sceneNumber++; stopClock(); tour = { key, silent, ids:chosen.scenes, cursor:0, paused:false, remaining:60000, loading:true, finished:false };
  setOpen(true); await showScene();
 }
 function advance() {
- if (!tour || tour.finished) return; stopClock();
+ if (!tour || tour.finished || tour.loading) return; stopClock();
  if (tour.cursor + 1 >= tour.ids.length) { tour.finished = true; tour.paused = true; updateTourStatus(); addMessage('notice', w('completed')); return; }
  tour.cursor++; tour.paused = false; showScene();
 }
@@ -325,10 +335,10 @@ function stopTour() { sceneNumber++; stopClock(); cancelAnswer(); tour = null; u
 async function submit(text) {
  const clean = text.trim(); if (!clean) return;
  const command = clean.toLowerCase();
- if (/^glance(?:\s|$)/.test(command)) {
-  const match = /^glance(?: (main|it|devices|creative|ai8|theories))?$/.exec(command); addMessage('user', clean);
-  if (!match) return addMessage('notice', w('unknown'));
-  try { await startTour(match[1] || 'main'); } catch { addMessage('notice', w('pageError')); } return;
+ if (/^(?:glance|help glance)(?:\s|$)/.test(command)) {
+  const parsed = parseGlance(clean); addMessage('user', clean);
+  if (!parsed || parsed.help) { if(tour) pauseTour(); return addMessage('notice', w('unknown') + '\n' + (lang()==='sl' ? 'Po komentarju 60 s; n/next, pause, resume, stop, back, repeat. glance trip: celotni potovalni ogled.' : '60 s after each comment; n/next, pause, resume, stop, back, repeat. glance trip: the full travel tour.')); }
+  try { await startTour(parsed.key, parsed.silent); } catch { addMessage('notice', w('pageError')); } return;
  }
  if (tour && ['n','next','naprej'].includes(command)) return advance();
  if (tour && ['pause','pavza'].includes(command)) return pauseTour();

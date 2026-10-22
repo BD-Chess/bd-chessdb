@@ -1,7 +1,7 @@
 const {JSDOM}=require('jsdom');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
-const routes=fs.readFileSync(__dirname+'/../public/assets/mdlxdcc-guide/routes.mjs','utf8').replace('export function','function');
+const routes=fs.readFileSync(__dirname+'/../public/assets/mdlxdcc-guide/routes.mjs','utf8').replaceAll('export function','function');
 const source=routes+'\n'+fs.readFileSync(__dirname+'/../public/assets/mdlxdcc-guide/guide.js','utf8').replace(/^import .*routes\.mjs[^\n]*\n/,'').replace('import.meta.url',JSON.stringify('https://www.mdlxdcc.org/assets/mdlxdcc-guide/guide.js'));
 const html=fs.readFileSync(__dirname+'/../public/index.html','utf8');
 const manifest=JSON.parse(fs.readFileSync(__dirname+'/../public/assets/mdlxdcc-guide/tour.json','utf8'));
@@ -88,7 +88,8 @@ const submit=async text=>{d.getElementById('guide-input').value=text;d.getElemen
  await until(()=>interval!==null&&!d.getElementById('guide-tour-status').textContent.includes('Opening'));
  assert.equal(frameDocument.querySelector('input').value,'8');
  assert.equal(frameDocument.querySelector('output').value,'8');
- assert.equal(requests.at(-1).page.path,'/index-demo.html','Redirected frame observations retain the canonical source path');
+ assert.equal(w.eval('snapshot().path'),'/index-demo.html','Redirected frame observations retain the canonical source path');
+ assert.equal(requests.length,2,'Signed-in glance never calls a paid provider');
  assert.match(d.getElementById('guide-tour-status').textContent,/60 s/);
  assert.equal(requests.at(-1).provider,'claude');
  d.getElementById('guide-provider-gpt').click();assert.equal(interval,null,'Changing provider pauses the tour');
@@ -98,7 +99,7 @@ const submit=async text=>{d.getElementById('guide-input').value=text;d.getElemen
  assert.ok(d.getElementById('guide-tour-status').textContent.startsWith('2 /'));
  assert.equal(new URL(currentURL).searchParams.get('lang'),'sl','Tour navigation preserves selected language');
  await until(()=>interval!==null);
- assert.equal(requests.at(-1).page.path,'/Trip/demo.html','Lowercase extensionless Trip URL resolves to its registered source');
+ assert.equal(w.eval('snapshot().path'),'/Trip/demo.html','Lowercase extensionless Trip URL resolves to its registered source');
  input.value='Vprašanje';input.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(interval,null,'Typing pauses tour');
  assert.match(d.getElementById('guide-tour-status').textContent,/Paused|Pavza/);
  input.value='n';d.getElementById('guide-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));

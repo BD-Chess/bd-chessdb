@@ -173,8 +173,8 @@ test('GPT tour comment makes one short model call without tools or navigation', 
 
 test('landing preserves existing entry points and one persistent chat/frame; public tour excludes protected scenes', async () => {
  const html=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
- assert.match(html,/class="brand-home" href="\.\/Start\/index.html"/);
- assert.match(html,/<a href="\.\/BD\/">BD<\/a>/);
+ assert.match(html,/class="brand-home" id="guide-brand-toggle"/);
+ assert.match(html,/<a href="\.\/Start\/index.html">BD<\/a>/);
  assert.equal((html.match(/id="guide-panel"/g)||[]).length,1);
  assert.equal((html.match(/id="guide-frame"/g)||[]).length,1);
  assert.match(html,/id="guide-provider-gpt"/);assert.match(html,/id="guide-provider-claude"/);
@@ -182,5 +182,5 @@ test('landing preserves existing entry points and one persistent chat/frame; pub
  assert.doesNotMatch(html,/<iframe[^>]+chatgpt\.com/);
  const manifest=JSON.parse(await readFile(new URL('../public/assets/mdlxdcc-guide/tour.json',import.meta.url),'utf8'));
  assert.equal(manifest.dwell_after_comment_seconds,60);
- for(const t of Object.values(manifest.tours)) for(const id of t.scenes) assert.doesNotThrow(()=>publicPath(manifest.scenes[id].path));
+ for(const t of Object.values(manifest.tours)) for(const id of t.scenes) { const path=manifest.scenes[id].path; if(path.includes('?demo=glance')) assert.throws(()=>publicPath(path)); else assert.doesNotThrow(()=>publicPath(path)); }
 });

@@ -1,9 +1,9 @@
 {
   "schema": "mdlxdcc.web-tour.v1",
-  "version": "1.0.0",
-  "updated": "2026-10-19",
+  "version": "1.1.0",
+  "updated": "2026-10-22",
   "dwell_after_comment_seconds": 60,
-  "source_scenario_version": "1.0.2",
+  "source_scenario_version": "1.1.0",
   "tours": {
     "main": {
       "command": "glance",
@@ -11,6 +11,7 @@
       "scenes": [
         "visual",
         "trip",
+        "andaluzija",
         "chess",
         "compression",
         "nara",
@@ -19,6 +20,10 @@
         "ai8",
         "theory",
         "atlas"
+      ],
+      "andaluzija_estimated_minutes": [
+        1,
+        2
       ]
     },
     "it": {
@@ -26,11 +31,18 @@
       "title": "IT in programska orodja",
       "scenes": [
         "trip",
+        "trip-suggestion",
+        "trip-optimize",
+        "trip-maps",
         "tsp",
         "compression",
         "shield",
         "chess",
         "atlas"
+      ],
+      "andaluzija_estimated_minutes": [
+        2,
+        3
       ]
     },
     "devices": {
@@ -75,6 +87,25 @@
         "cch",
         "cfh",
         "atlas"
+      ]
+    },
+    "trip": {
+      "command": "glance trip",
+      "title": "Andaluzija · pet rešitev v uporabi",
+      "scenes": [
+        "trip-authorship",
+        "trip-suggestion",
+        "trip-before",
+        "trip-optimize",
+        "trip-maps",
+        "trip-gallery",
+        "trip-shield",
+        "trip-finish",
+        "atlas"
+      ],
+      "estimated_minutes": [
+        8,
+        12
       ]
     }
   },
@@ -176,8 +207,8 @@
       "path": "/index-atlas.html",
       "title": "To je šele vhod",
       "narration": {
-        "sl": "To je bil samo prvi prelet. Za vsakim prizorom so dodatni projekti, zapisi, poskusi in odprta vprašanja. Nadaljuješ lahko z glance it, glance devices, glance creative, glance ai8 ali glance theories.",
-        "en": "That was only the first pass. Behind each scene are more projects, records, experiments and open questions. Continue with glance it, glance devices, glance creative, glance ai8 or glance theories."
+        "sl": "To je bil samo prvi prelet. Za vsakim prizorom so dodatni projekti, zapisi, poskusi in odprta vprašanja. Nadaljuješ lahko z glance it, glance devices, glance creative, glance ai8 glance theories ali glance trip.",
+        "en": "That was only the first pass. Behind each scene are more projects, records, experiments and open questions. Continue with glance it, glance devices, glance creative, glance ai8 glance theories or glance trip."
       },
       "evidence_class": "PUBLIC_PROJECT_MAP_NOT_UNIQUE_PROJECT_COUNT"
     },
@@ -290,6 +321,112 @@
         "en": "CFH explores a broader field hypothesis. Ask what it proposes, what follows and what could test or falsify it. Preserve the distinction between an idea, a mathematical description and verified physics."
       },
       "evidence_class": "SPECULATIVE_FIELD_HYPOTHESIS"
+    },
+    "andaluzija": {
+      "id": "andaluzija",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#overview",
+      "title": "Pet rešitev na enem potovanju",
+      "narration": {
+        "sl": "Tukaj pet rešitev sodeluje pri eni vsakdanji potrebi: potovalni vodič, AI pomočnik, TripOpti, DualFrame in 8zShield. To je izoliran javni primer; za celotno zgodbo izberi glance trip.",
+        "en": "Five solutions meet one everyday need: a travel guide, AI assistant, TripOpti, DualFrame and 8zShield. This is an isolated public example; choose glance trip for the full story."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:overview"
+    },
+    "trip-authorship": {
+      "id": "trip-authorship",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#authorship",
+      "title": "Od izvirnika do uporabnega vodiča",
+      "narration": {
+        "sl": "Matejin izvirni dokument in slikovni izbor sta izhodišče, BD je usmeril projekt. Claude in GPT sta prispevala ločena predloga; spletni vodič in ta shranjeni primer je pripravil GPT. Avtorstvo ostaja vidno.",
+        "en": "Mateja’s source document and images are the starting point; BD directed the project. Claude and GPT contributed separate proposals. GPT built the web guide and this saved example, with authorship visible."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:authorship"
+    },
+    "trip-suggestion": {
+      "id": "trip-suggestion",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#suggestion",
+      "title": "AI predlog za dve uri",
+      "narration": {
+        "sl": "Prikazan je resnični shranjeni GPT uredniški primer: pet zunanjih točk v Málagi, s prostorom za hojo in odmor. To ni nov odgovor plačljivega API. Iste javne točke zdaj preidejo v TripOpti.",
+        "en": "This is a genuine saved GPT editorial example: five exterior stops in Málaga, allowing time for walking and a break. It is not a fresh paid API response. The same public stops now feed TripOpti."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:suggestion"
+    },
+    "trip-before": {
+      "id": "trip-before",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#before",
+      "title": "Najprej poglej izhodišče",
+      "narration": {
+        "sl": "Pet javnih točk ima namenoma neroden začetni vrstni red. Začetek kroga je Plaza de la Marina. Osebni načrt, prijava in skupno shranjevanje se v tem demo načinu sploh ne naložijo.",
+        "en": "Five public stops start in a deliberately awkward order, with Plaza de la Marina as the round-trip start. The personal itinerary, authentication and shared storage are never loaded in demo mode."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:before"
+    },
+    "trip-optimize": {
+      "id": "trip-optimize",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#optimize",
+      "title": "Pravi izračun, vidna razlika",
+      "narration": {
+        "sl": "Classical DeepSearch je pravkar preveril vrstni red z dejanskim vzdrževanim Trip engine. Primerjaj pred in po: vsaka od petih točk se pojavi enkrat. Številka je iz matrike zračnih razdalj, ne meritev peš poti ali jamstvo časa.",
+        "en": "Classical DeepSearch has checked the order using the maintained Trip engine. Compare before and after: each of the five stops appears once. The metric uses a great-circle distance matrix, not walking measurements or a timing guarantee."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:optimize"
+    },
+    "trip-maps": {
+      "id": "trip-maps",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#maps",
+      "title": "Naslednji korak je resnična povezava",
+      "narration": {
+        "sl": "Povezave kažejo kraj in peš pot do naslednje točke v izračunanem vrstnem redu, tudi povratek na začetek. Google Maps ob odprtju določi pravo peš pot. Demo ni uporabil plačljive Google matrike.",
+        "en": "Links show each place and the walking leg to the next stop in the computed order, including the return. Google Maps computes the real walking route when opened. This demo used no paid Google matrix."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:maps"
+    },
+    "trip-gallery": {
+      "id": "trip-gallery",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#gallery",
+      "title": "Podoba se prilagodi zaslonu",
+      "narration": {
+        "sl": "Obstoječi DualFrame album ima 21 parov. Odpri prvo sliko, primerjaj P in L ter cel zaslon. To so označene AI kompozicije iz Matejinega izbora; dopolnjeni robovi niso nov dokumentarni dokaz.",
+        "en": "The existing DualFrame album has 21 pairs. Open the first image, compare P and L, then fullscreen. These are labelled AI compositions from Mateja’s selection; extended edges are not new documentary evidence."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:gallery"
+    },
+    "trip-shield": {
+      "id": "trip-shield",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#shield",
+      "title": "Odklenjen samo sintetični primer",
+      "narration": {
+        "sl": "8zShield je z javnim demo geslom odprl pravo šifrirano sintetično vsebino. Zakleni jo in opazuj, kako izgine iz prikaza. Tu ni osebne rezervacije ali povezave s pravim geslom.",
+        "en": "8zShield has used the public demo password to open genuinely encrypted synthetic content. Lock it and see it disappear. This contains no personal booking or connection to an owner password."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:shield"
+    },
+    "trip-finish": {
+      "id": "trip-finish",
+      "path": "/BD/O/izleti/andaluzija-2027.html?demo=glance#finish",
+      "title": "Ena potreba poveže rešitve",
+      "narration": {
+        "sl": "Od predloga smo prišli do izračunane poti, navigacijskih povezav, prilagodljive slike in šifriranega razdelka. To je javni demonstracijski tok, ki pusti pravi načrt nedotaknjen.",
+        "en": "We moved from a suggestion to a computed route, navigation links, adaptable imagery and an encrypted section. This public demonstration leaves the real itinerary untouched."
+      },
+      "evidence_class": "ISOLATED_PUBLIC_SYNTHETIC_DEMO",
+      "adapter": "andaluzija:finish"
     }
+  },
+  "duration_note": "Planning estimates, not measured timing guarantees. 60 seconds after each comment.",
+  "mal_reconciliation": {
+    "status": "PROTECTED_SOURCE_EXCLUDED",
+    "checked": "2026-10-22",
+    "source": "/crp/IM3_MentalArena_MALm.html",
+    "reason": "Fresh main serves a private encrypted mobile laboratory. Keep public ai8 route through AIM3; do not unlock or relax filters."
   }
 }
