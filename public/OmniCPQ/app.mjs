@@ -200,7 +200,31 @@ async function health() {
     if (epoch !== accessEpoch) return;
     if ([401, 403].includes(response.status)) ownerAccess(false);
     const data = await response.json();
-    if (!response.ok) { label.textContent = response.status === 401 ? 'Potrebna prijava' : 'AI ni dosegljiv'; $('auth-status').textContent = issue(data.error?.code); return; }
+    if (!response.ok) {
+      label.textContent = response.status === 401 ? 'Potrebna prijava' : 'AI še ni dosegljiv';
+      $('auth-status').textContent = issue(data.error?.code);
+      if (state.ownerVerified) notice(issue(data.error?.code));
+      else if (response.status === 503) {
+        try {
+          const access = await fetch(AUTH, { credentials: 'same-origin', cache: 'no-store' });
+          const account = await access.json();
+          if (epoch !== accessEpoch) return;
+          if (access.ok && account.authenticated && account.account?.role === 'owner') {
+            const nextId = account.account.id || 'owner';
+            if (state.accountId !== nextId) {
+              state.messages = []; state.comparisons = []; $('message').value = ''; $('context-text').value = '';
+              $('manual-url').value = ''; clearFrozen(); setSnapshot(null);
+            }
+            state.accountId = nextId; state.role = 'owner'; ownerAccess(true);
+            $('login-form').hidden = true; $('logout').hidden = false;
+            $('account-status').textContent = 'Lastniški dostop · obstoječa prijava MDL×DCC.';
+            $('knowledge-status').textContent = 'Prijava potrjena; zasebno znanje še ni dosegljivo. Vprašanja AI so začasno zadržana.';
+            notice(issue(data.error?.code));
+          }
+        } catch { /* independent owner check unavailable */ }
+      }
+      return;
+    }
     if (epoch !== accessEpoch) return;
     if (!['owner','demo'].includes(data.account?.role) && !data.simulation) throw Error('AUTH_REQUIRED');
     const nextId = data.account?.id || 'preview';
@@ -471,7 +495,20 @@ $('login-form').onsubmit = async event => {
   event.preventDefault(); const button = event.submitter; button.disabled = true;
   try {
     const response = await fetch(AUTH, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', email: $('login-email').value, password: $('login-password').value, token: $('demo-code').value.trim() }) });
-    const data = await response.json(); if (!response.ok) throw Error(issue(data.error?.code)); await health(); $('settings-dialog').close();
+    const data = await response.json(); if (!response.ok) throw Error(issue(data.error?.code));
+    if (data.authenticated && data.account?.role === 'owner') {
+      const nextId = data.account.id || 'owner';
+      if (state.accountId !== nextId) {
+        state.messages = []; state.comparisons = []; $('message').value = ''; $('context-text').value = '';
+        $('manual-url').value = ''; clearFrozen(); setSnapshot(null);
+      }
+      state.accountId = nextId; state.role = 'owner'; state.ready = false;
+      ownerAccess(true); $('login-form').hidden = true; $('logout').hidden = false;
+      $('connection').querySelector('span').textContent = 'Prijava potrjena · AI še ni pripravljen';
+      $('account-status').textContent = 'Lastniški dostop · obstoječa prijava MDL×DCC.';
+      $('knowledge-status').textContent = 'Prijava potrjena; zasebno znanje še ni dosegljivo. Vprašanja AI so začasno zadržana.';
+    }
+    await health(); $('settings-dialog').close();
   } catch (e) { $('auth-status').textContent = e.message; }
   finally { $('login-password').value = ''; button.disabled = false; }
 };
