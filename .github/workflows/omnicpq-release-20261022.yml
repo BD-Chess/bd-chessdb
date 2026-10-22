@@ -1,0 +1,58 @@
+name: OmniCPQ one-off approved production release 2026-10-22
+
+# BD explicitly authorized this exception in the OmniCPQ project conversation.
+# Only this dated marker and matching commit message trigger this one-off lane.
+# The existing manual weekly release workflow and Netlify ignore rule are retained.
+on:
+  push:
+    branches: [main]
+    paths: [ops/releases/omnicpq-20261022.json]
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[omnicpq-release-20261022]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Install image-function dependencies
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Reproduce the original OmniCPQ icons and verify the release shell
+        run: |
+          node scripts/omnicpq/materialize-icons.mjs
+          node scripts/omnicpq/build-shell.mjs
+          node --test tests/omnicpq/demo-r4.test.mjs tests/omnicpq/ui-r4.test.mjs
+      - name: Preserve protected pages and verify the existing landing application
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          node tests/mdlxdcc-root-pwa.test.cjs
+          node --test tests/mdlxdcc-guide.test.mjs
+      - name: Deploy frozen commit to the existing MDLxDCC project
+        shell: bash
+        run: |
+          test -n "$NETLIFY_AUTH_TOKEN"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test ! -e public/.private
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "OmniCPQ approved exception main $GITHUB_SHA" --json > netlify-deploy.json
+          node -e 'const d=require("./netlify-deploy.json");console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId,url:d.url||d.deploy_url}))'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: omnicpq-approved-release-${{ github.run_id }}
+          path: netlify-deploy.json
+          if-no-files-found: error
+          retention-days: 30

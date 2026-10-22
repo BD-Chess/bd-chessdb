@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="sl" data-theme="dark">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>AI pomočnik za OmniCPQ</title>
+  <meta name="description" content="Zasebni delovni pomočnik za OmniCPQ, testiranje PLM in pripravo poslovnih zahtev.">
+  <meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0c1923">
+  <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="OmniCPQ AI">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'">
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icons/favicon-32.png" type="image/png"><link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./app.css"><script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <a href="#message" class="skip">Preskoči na vprašanje</a>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="AI pomočnik za OmniCPQ, začetek"><img src="./icons/icon-192.png" width="44" height="44" alt=""><span><small>AI pomočnik za</small><strong>Omni<span>CPQ</span></strong></span></a>
+    <div class="top-actions"><span class="connection" id="connection"><i></i><span>Preverjam povezavo</span></span><button id="new-chat" class="icon-button" title="Nov pogovor" aria-label="Nov pogovor">＋</button><button id="settings-open" class="icon-button" title="Nastavitve" aria-label="Odpri nastavitve">☷</button></div>
+  </header>
+  <div id="demo-usage" class="notice demo-usage" role="status" hidden></div>
+  <div id="notice" class="notice" role="status" hidden></div>
+  <div id="simulation" class="simulation" hidden><strong>Predogled · simuliran transport</strong><span>Odzivi in časi so testni; brez klicev AI.</span></div>
+  <div id="update-bar" class="update-bar" hidden><span>Nova izdaja je pripravljena.</span><button id="apply-update">Varno posodobi</button></div>
+  <section id="access-gate" class="access-gate" aria-labelledby="access-title">
+    <div class="access-card"><div class="eyebrow">ZASEBNI DELOVNI PROSTOR</div>
+      <h1 id="access-title">AI pomočnik za OmniCPQ</h1><p>Delo v CPQ · testiranje PLM · poslovne zahteve za IT</p>
+      <p id="auth-status" class="hint" role="status">Prijavi se z obstoječim dostopom. Za demo uporabi prejeto povabilo in demo geslo.</p>
+      <form id="login-form"><label for="login-email">E-pošta</label><input id="login-email" type="email" autocomplete="username" required>
+        <label for="login-password">Geslo</label><input id="login-password" type="password" autocomplete="current-password" required>
+        <details id="demo-code-details"><summary>Imam demo povabilo</summary><label for="demo-code">Koda povabila</label><input id="demo-code" type="text" autocomplete="off" maxlength="64"></details>
+        <button type="submit" class="primary">Prijava</button>
+      </form><p class="hint">Demo velja 24 ur od aktivacije na enem IP-ju, do skupno 1 USD konservativno obračunane porabe API.</p>
+    </div>
+  </section>
+  <main id="workspace" hidden>
+    <nav id="mode-nav" class="mode-nav" aria-label="Vrsta naloge"></nav>
+    <section id="welcome" class="welcome" aria-labelledby="welcome-heading">
+      <div class="eyebrow"><span class="tiny-square"></span> TVOJ DELOVNI PROSTOR</div>
+      <h1 id="welcome-heading">Kaj želiš urediti?</h1>
+      <p class="intro">Od prvega koraka v CPQ do jasne poslovne zahteve.<br class="desktop-br"> Izberi nalogo ali preprosto napiši vprašanje.</p>
+      <div class="cards" id="start-cards"></div>
+      <div class="quick-label">LAHKO ZAČNEŠ TUDI TAKO</div><div class="quick-actions" id="quick-actions"></div>
+      <div class="context-tip"><span class="tip-symbol">▣</span><div><strong>Pokaži, pri čem si.</strong><p>Dodaj sliko ali poveži izbrani CPQ zaslon. Pred pošiljanjem vidiš, kaj bo prejel pomočnik.</p></div><button id="welcome-context" class="text-button">Dodaj kontekst <span>↗</span></button></div>
+    </section>
+    <section id="messages" class="messages" role="log" aria-label="Pogovor" aria-live="polite" aria-relevant="additions"></section>
+    <details class="panel" id="context-panel">
+      <summary><span>▣ <strong>CPQ kontekst</strong><small id="context-status">Brez slike · po želji</small></span><span class="chevron">⌄</span></summary>
+      <div class="panel-body">
+        <div class="button-row"><button id="connect-screen">Poveži CPQ zaslon</button><button id="capture-frame" disabled>Zajemi sliko</button><label class="file-button">Dodaj sliko<input id="image-file" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="disconnect-screen" hidden>Ustavi deljenje</button></div>
+        <p class="hint" id="capture-status">Sliko lahko tudi prilepiš. Povezava ali split pogled sama ne omogočata branja CPQ.</p>
+        <video id="screen-video" autoplay muted playsinline hidden aria-label="Lokalni predogled izbranega zaslona"></video>
+        <label class="check-row"><input type="checkbox" id="capture-on-send"> Ob pošiljanju zajemi svežo sliko iz povezanega zaslona</label>
+        <figure id="snapshot-preview" hidden><img id="snapshot-image" alt="Slika CPQ, ki bo priložena naslednjemu vprašanju"><figcaption id="snapshot-info"></figcaption><div class="button-row"><button id="crop-open">Obreži</button><button id="remove-snapshot">Odstrani sliko</button></div></figure>
+        <label for="context-text">Izbrano besedilo ali pojasnilo</label><textarea id="context-text" rows="3" maxlength="16000" placeholder="Prilepi besedilo napake, zahtevo ali podatke trenutne postavke …"></textarea>
+        <div class="form-grid"><div><label for="manual-url">CPQ povezava <small>ročno, ne preverjen DOM</small></label><input id="manual-url" type="url" maxlength="1200" placeholder="https://…"></div><div><label for="environment">Okolje <small>ročno</small></label><select id="environment"><option value="UNKNOWN">Neznano</option><option>STAGE</option><option>PROD</option></select></div></div>
+        <p class="hint">Slika ostane v pomnilniku do izrecnega pošiljanja. Zvoka in neprekinjenega videa ne pošiljamo.</p>
+      </div>
+    </details>
+    <details class="panel" id="comparison-panel">
+      <summary><span>◷ <strong>Primerjava</strong><small>Copilot / ChatGPT / API</small></span><span class="chevron">⌄</span></summary>
+      <div class="panel-body">
+        <p class="hint">Primerjaj enak zamrznjeni vhod ali delo v živo. Odgovora drugega pomočnika ne dodaj prvemu pred zaključkom.</p>
+        <p id="comparison-gate" class="hint">Primerjava je zadržana do potrditve, da oba pomočnika uporabljata isti v15 ZIP.</p>
+        <label class="check-row"><input type="checkbox" id="copilot-v15-confirmed"> Preverjen je dejanski Copilotov uvoz v15/v0.1.5, znanja, navodil in pozivov</label>
+        <label for="copilot-import-evidence">Dokaz uvoza Copilota</label><textarea id="copilot-import-evidence" rows="2" placeholder="Datum preizkusa, identiteta v15 ZIP in opaženi selektivni priklic; pripravljena datoteka sama ni dokaz uvoza."></textarea>
+        <div class="form-grid"><div><label for="pilot-task">Pilotna naloga</label><select id="pilot-task"></select></div><div><label for="comparison-mode">Način primerjave</label><select id="comparison-mode"><option value="frozen">Enak zamrznjeni vhod</option><option value="live">Delo v živo</option></select></div></div>
+        <div class="button-row"><button id="load-pilot">Pripravi vprašanje</button><button id="freeze-input">Zamrzni vhod</button><button id="unfreeze-input" hidden>Odstrani zamrznitev</button><button id="copy-comparison">Kopiraj skupni vhod</button><button id="export-snapshot">Izvozi sliko</button></div>
+        <p id="frozen-status" class="hint">Ni zamrznjenega vhoda. Pilot: NOT_RUN.</p>
+        <a class="external-link" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Primerjaj tudi v ChatGPT ↗</a><p class="hint">Odpre ChatGPT. Vhod prilepi in sliko dodaj ročno; skupni skill v15 mora biti posebej naložen.</p>
+        <hr><div class="form-grid"><div><label for="other-platform">Drugi pomočnik</label><select id="other-platform"><option value="copilot">Copilot</option><option value="chatgpt_native">ChatGPT Instant + v15 (native)</option><option value="api_other">Drugi API</option></select></div><div><label for="other-model">Dejanski model / reasoning</label><input id="other-model" placeholder="UNKNOWN, če ni izpostavljeno"></div></div>
+        <label for="other-context">Kontekst, skill in razlike</label><textarea id="other-context" rows="2" placeholder="Kateri skill/hash je bil dejansko naložen? Enaka slika in izsek? Kaj je imel drugi pomočnik drugače?"></textarea>
+        <div class="button-row"><button id="other-start">Označi začetek</button><button id="other-first" disabled>Prvi vidni odgovor</button><button id="other-end" disabled>Označi konec</button></div><p id="other-timing" class="hint">Ročno opazovanje · čas UNKNOWN</p>
+        <label for="other-answer">Odgovor drugega pomočnika</label><textarea id="other-answer" rows="4" placeholder="Prilepi dejanski odgovor …"></textarea>
+        <label for="comparison-review">Ocena in dokaz</label><textarea id="comparison-review" rows="3" placeholder="Pravilnost, uporabnost, nepotrebna vprašanja, izmišljanje; konkretni primeri in vir presoje …"></textarea>
+        <div class="button-row"><button id="save-comparison">Dodaj zapis primerjave</button><button id="export-comparison">Izvozi primerjavo JSON</button></div><p class="hint" id="comparison-count">Brez zapisanih primerjav.</p>
+      </div>
+    </details>
+  </main>
+  <footer id="composer-shell" class="composer-wrap" hidden>
+    <form id="composer" class="composer">
+      <div class="composer-heading"><span class="mode-badge" id="mode-badge">Delo v OmniCPQ</span><button type="button" id="context-toggle" class="attach-button">＋ Kontekst <span id="attachment-count"></span></button><span id="frozen-badge" hidden>Zamrznjen vhod</span></div>
+      <label for="message" class="sr-only">Tvoje vprašanje</label><textarea id="message" rows="2" maxlength="16000" placeholder="Kaj želiš urediti v OmniCPQ?" aria-describedby="composer-hint"></textarea>
+      <div class="composer-bottom"><span id="composer-hint">Enter pošlje · Shift + Enter nova vrstica</span><div><button id="cancel" type="button" hidden>Ustavi odgovor</button><button id="send" type="submit" class="primary" aria-label="Pošlji vprašanje">Pošlji <span>↑</span></button></div></div>
+    </form>
+    <p class="privacy-line" id="privacy-line">Vprašanje in izbrano sliko ob pošiljanju obdeluje <strong>OpenAI</strong>. Zgodovina se privzeto ne shranjuje.</p>
+  </footer>
+  <dialog id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-heading"><h2 id="settings-title">Nastavitve</h2><button id="settings-close" class="icon-button" aria-label="Zapri nastavitve">×</button></div>
+    <section><h3>Dostop</h3><p id="account-status" class="hint">Dostop še ni potrjen.</p><button id="logout" hidden>Odjava</button></section>
+    <section><h3>Pomočnik</h3><p id="knowledge-status" class="hint">Znanje: še ni potrjeno.</p><label for="profile">Profil odgovora</label><select id="profile"><option value="fast">Hiter</option><option value="careful">Premišljen</option></select><p class="hint">API profil; ni ista seja kot ChatGPT Instant. Dejanski vrnjeni model je v podatkih odgovora.</p><label for="service">Storitev</label><select id="service"><option value="">Samodejna izbira iz vprašanja</option></select></section>
+    <section><h3>Na tej napravi</h3><label for="theme">Videz</label><select id="theme"><option value="dark">Temen</option><option value="light">Svetel</option></select><label class="check-row"><input id="persist" type="checkbox"> Shrani osnutek in pogovor na tej napravi</label><p class="hint">Poslovno besedilo se shrani samo po tej izbiri. Slike in prijavni podatki se nikoli ne shranijo v zgodovino.</p><div class="button-row"><button id="export-md">Izvozi Markdown</button><button id="export-json">Izvozi JSON</button><button id="clear-data" class="danger">Počisti lokalne podatke</button></div></section>
+    <section id="demo-owner" hidden><h3>Demo povabila</h3><p class="hint">Vsako povabilo omogoči en IP, 24 ur in največ 1 USD porabe. Prejemniku daj tudi ločeno demo geslo.</p>
+      <div class="button-row"><button id="demo-create">Ustvari demo povabilo</button><button id="demo-refresh">Osveži seznam</button></div>
+      <div id="demo-invitation" hidden><label for="demo-link">Nova povezava · prikaže se samo ob izdelavi</label><input id="demo-link" type="text" readonly autocomplete="off"><button id="demo-copy">Kopiraj povezavo</button></div><div id="demo-list"></div>
+    </section>
+    <section><h3>Aplikacija in CPQ</h3><button id="install" hidden>Namesti aplikacijo</button><p id="install-status" class="hint">Če brskalnik podpira namestitev, uporabi njegov meni »Namesti aplikacijo«. Na iPhonu v Safariju: Deli → Dodaj na začetni zaslon.</p><div class="button-row"><a href="https://cpq-stg.apps.test-ocp.ts.telekom.si/sl/dashboard" target="_blank" rel="noopener noreferrer">OmniCPQ STAGE ↗</a><a href="https://cpq.apps.prod-ocp.ts.telekom.si/sl" target="_blank" rel="noopener noreferrer">OmniCPQ PROD ↗</a></div><p class="hint">V Edge odpri to stran in CPQ v split pogledu. Nameščeno PWA postavi ob CPQ z razporeditvijo oken. Copilot ostane ob CPQ.</p></section>
+    <details><summary>Napredni podatki</summary><pre id="technical-info">Model in znanje še nista preverjena.</pre></details>
+  </dialog>
+  <dialog id="crop-dialog" aria-labelledby="crop-title"><div class="dialog-heading"><h2 id="crop-title">Obreži sliko</h2><button id="crop-close" class="icon-button" aria-label="Zapri obrezovanje">×</button></div><p class="hint">Izberi izsek v odstotkih izvorne slike. Predogled spodaj je dejanski rezultat obreza.</p><div class="crop-fields"><label>X %<input id="crop-x" type="number" min="0" max="99" value="0"></label><label>Y %<input id="crop-y" type="number" min="0" max="99" value="0"></label><label>Širina %<input id="crop-width" type="number" min="1" max="100" value="100"></label><label>Višina %<input id="crop-height" type="number" min="1" max="100" value="100"></label></div><canvas id="crop-canvas"></canvas><button id="crop-apply" class="primary">Uporabi izsek</button></dialog>
+  <noscript>Za klepet, dodajanje slik in shranjevanje osnutka vključi JavaScript.</noscript>
+</body></html>
