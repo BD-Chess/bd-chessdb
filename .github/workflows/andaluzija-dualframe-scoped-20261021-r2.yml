@@ -46,7 +46,8 @@ jobs:
           path: album-release-evidence/
           retention-days: 30
   publish:
-    if: github.repository == 'BD-Chess/bd-chessdb' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && (contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-R2') || contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-PWA-FIX') || contains(github.event.head_commit.message, 'ANDALUZIJA-PHOTO-ONLY-FULLSCREEN'))
+    # Retired 2026-10-22: all verified main changes use deploy-netlify.yml.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 18
     env:
@@ -92,3 +93,4 @@ jobs:
           path: album-release-evidence/
           if-no-files-found: warn
           retention-days: 30
+

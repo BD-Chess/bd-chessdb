@@ -1,145 +1,104 @@
 name: Deploy to Netlify production
 
-# MANUAL-ONLY NETLIFY RELEASE PATH.
-# Git-triggered Netlify builds are suppressed by netlify.toml.
-# A normal Git push is expected to be ignored before the Netlify build command runs.
-# The sole coordinator may dispatch once per site in the Monday 06:00
-# Europe/Ljubljana window, subject to budget, safety and provenance gates.
-# Additional manual releases require a new explicit agreement with BD.
+# BD approved 2026-10-22: every verified main update; no weekly release window.
+# Native Netlify builds stay Stopped; preparation runs on GitHub Actions.
 on:
+  workflow_run:
+    workflows: ['Deploy to GitHub Pages']
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [maintenance/netlify-prebuilt-20261022]
   workflow_dispatch:
     inputs:
       site:
-        description: Existing production site approved for this release
+        description: Existing site, or both sites
         type: choice
-        required: true
-        default: mdlxdcc
-        options:
-          - mdlxdcc
-          - bd-chess
+        default: all
+        options: [all, mdlxdcc, bd-chess]
       target_sha:
-        description: Exact current main commit approved by the coordinator or BD
+        description: Optional exact main SHA; defaults to current main
         type: string
-        required: true
-
+      verify_only:
+        description: Prepare and test without publishing
+        type: boolean
+        default: false
 permissions:
   contents: read
-
+  actions: read
 concurrency:
   group: netlify-production
   cancel-in-progress: false
-
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    if: >-
+      github.repository == 'BD-Chess/bd-chessdb' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     env:
-      RELEASE_SITE: ${{ inputs.site }}
-      TARGET_SHA: ${{ inputs.target_sha }}
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      TARGET_SHA: ${{ github.event.workflow_run.head_sha || inputs.target_sha || github.sha }}
+      RELEASE_SITE: ${{ inputs.site || 'all' }}
     steps:
-      - name: Validate the frozen main target and select the existing site
-        shell: bash
-        run: |
-          [[ "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'A full commit SHA is required.' >&2; exit 1; }
-          test "$TARGET_SHA" = "$GITHUB_SHA" || { echo 'Main moved since approval; no deployment attempted.' >&2; exit 1; }
-          case "$RELEASE_SITE" in
-            mdlxdcc) echo 'NETLIFY_SITE_ID=17b4124d-c197-4c0a-a711-8b2c08d91088' >> "$GITHUB_ENV" ;;
-            bd-chess) echo 'NETLIFY_SITE_ID=deb1dab6-dfad-436e-ae92-4477d873c987' >> "$GITHUB_ENV" ;;
-            *) echo 'Unapproved site; no deployment attempted.' >&2; exit 1 ;;
-          esac
-
-      - name: Checkout exact approved main commit
+      - name: Checkout exact verified source
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.target_sha }}
-
-      - name: Prepare protected pages for browser password managers
-        shell: bash
+          ref: ${{ env.TARGET_SHA }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Check source identity and secret boundary before installing dependencies
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          echo "RELEASE_DIR=$RUNNER_TEMP/netlify-prebuilt" >> "$GITHUB_ENV"
+          python3 scripts/check_secret_boundary.py
+          node --check scripts/netlify-auto-release.mjs
+          node --test tests/netlify-auto-release.test.mjs
+      - name: Install locked dependencies
+        run: |
+          npm ci --ignore-scripts
+          npm ci --prefix functions --no-audit --no-fund
+      - name: Reproduce generated OmniCPQ assets and verify the application
+        run: |
+          node scripts/omnicpq/materialize-icons.mjs
+          node scripts/omnicpq/build-shell.mjs
+          node --test tests/omnicpq/demo-r4.test.mjs tests/omnicpq/ui-r4.test.mjs
+      - name: Prepare protected pages and verify applications without paid calls
         run: |
           python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
           node --check public/js/bd-password-manager.js
+          node --check public/js/bd-owner-access-v1.js
           node --check public/js/trading-password-shield.js
           node --check public/BD/O/vault.js
           node --check public/WL/reader.js
           node --check public/WL/BD/reader.js
           node --check public/Trip/private-client.js
           node --check public/Trip/new/private-client.js
-
-      - name: Verify root PWA refresh and legacy migration
-        run: node tests/mdlxdcc-root-pwa.test.cjs
-      - name: Detect configured Netlify token
-        id: netlify
-        shell: bash
+          node tests/mdlxdcc-root-pwa.test.cjs
+          node --test tests/mdlxdcc-guide.test.mjs tests/api-check.test.cjs tests/dualframe-pwa.test.mjs tests/dfc-cmarvel-public.test.mjs
+      - name: Preflight every function bundle without invoking handlers
         run: |
-          if [ -n "$NETLIFY_AUTH_TOKEN" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "NETLIFY_AUTH_TOKEN is not configured; no deployment attempted." >&2
-            exit 1
-          fi
-
-      - name: Set up Node 22
-        if: steps.netlify.outputs.ready == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install pinned runtime dependencies
-        if: steps.netlify.outputs.ready == 'true'
-        run: npm ci --ignore-scripts
-
-      - name: Install isolated image-function dependencies
-        if: steps.netlify.outputs.ready == 'true' && hashFiles('functions/package.json') != ''
-        run: npm install --prefix functions --no-audit --no-fund
-
-      - name: Verify the public MDLxDCC Guide
-        if: steps.netlify.outputs.ready == 'true'
-        run: node --test tests/mdlxdcc-guide.test.mjs
-
-      - name: Prepare the correct publish root for the selected site
-        if: steps.netlify.outputs.ready == 'true'
-        shell: bash
-        run: |
-          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
-          if [ "$RELEASE_SITE" = 'bd-chess' ]; then
-            publish_dir="$RUNNER_TEMP/netlify-chess-site"
-            mkdir -p "$publish_dir"
-            cp -a public/. "$publish_dir/"
-            cp -a public/chess/. "$publish_dir/"
-            cmp public/chess/index.html "$publish_dir/index.html"
-            test -f "$publish_dir/Trip/index.html"
-            test -f "$publish_dir/S/index.html"
-          else
-            publish_dir="$GITHUB_WORKSPACE/public"
-          fi
-          echo "PUBLISH_DIR=$publish_dir" >> "$GITHUB_ENV"
-
-      - name: Deploy public site and functions to existing Netlify project
-        if: steps.netlify.outputs.ready == 'true'
-        shell: bash
-        run: |
-          npx --yes netlify-cli@latest deploy \
-            --prod \
-            --no-build \
-            --dir "$PUBLISH_DIR" \
-            --functions functions \
-            --skip-functions-cache \
-            --site "$NETLIFY_SITE_ID" \
-            --auth "$NETLIFY_AUTH_TOKEN" \
-            --message "$RELEASE_SITE GitHub main $TARGET_SHA" \
-            --json > netlify-deploy.json
-          node -e 'const d=require("./netlify-deploy.json"); console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId||null,url:d.url||d.deploy_url||null,logs:d.logs||null}))'
-
-      - name: Retain the actual deployment receipt
-        if: steps.netlify.outputs.ready == 'true'
+          npm install --no-save --ignore-scripts --no-audit --no-fund @netlify/zip-it-and-ship-it@16.4.1
+          node scripts/omnicpq/check-function-bundles.mjs
+      - name: Freeze complete site artifacts and fingerprints
+        run: node scripts/netlify-auto-release.mjs prepare "$RELEASE_DIR" "$TARGET_SHA" "$RELEASE_SITE"
+      - name: Publish unchanged tested artifacts and verify actual production
+        if: github.ref == 'refs/heads/main' && github.event_name != 'push' && inputs.verify_only != true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: node scripts/netlify-auto-release.mjs publish "$RELEASE_DIR"
+      - name: Retain manifests and actual release receipts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: netlify-${{ inputs.site }}-${{ github.run_id }}
-          path: netlify-deploy.json
-          if-no-files-found: error
-          retention-days: 30
-
+          name: netlify-prebuilt-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/netlify-prebuilt/*.json
+            ${{ runner.temp }}/password-manager-compat-report.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -91,6 +91,12 @@ Production truth for the public web code is the repository's **`main`** branch.
 
 ---
 
+## Automatic production publication
+
+Tested `main` updates are prepared in GitHub Actions and published to the existing MDLxDCC and ChessBest projects with `netlify deploy --prod --no-build`. Native Netlify builds remain **Stopped**. There is no weekly release window or build-minute hold; source verification, protection, duplicate suppression and live acceptance remain automatic. See [the deployment standard](docs/NETLIFY_DEPLOYMENT.md).
+
+---
+
 ## Run the static site locally
 
 Clone the repository:
@@ -128,3 +134,4 @@ Where the projects make stronger claims, the surrounding material aims to preser
 Created and developed by **Bojan Dobrečevič (BD)** with AI collaborators as part of **BD × AI Lab**.
 
 Public sites: **[MDLxDCC.org](https://www.mdlxdcc.org/)** · **[ChessBest.org](https://chessbest.org/)**
+

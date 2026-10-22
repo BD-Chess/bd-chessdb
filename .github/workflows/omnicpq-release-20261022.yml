@@ -14,7 +14,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[omnicpq-release-20261022]')
+    # Retired 2026-10-22: all verified main changes use deploy-netlify.yml.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -61,3 +62,4 @@ jobs:
           path: netlify-deploy.json
           if-no-files-found: ignore
           retention-days: 30
+

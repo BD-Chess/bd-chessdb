@@ -1,10 +1,10 @@
 [build]
-  # Netlify Git continuous deployment is intentionally suppressed.
-  # Production is published by the Monday 06:00 Europe/Ljubljana coordinator via CLI --no-build.
-  # Additional manual Netlify releases require a fresh explicit agreement with BD.
-  # Exit 0 tells Netlify to stop every Git-triggered build before the build command runs.
+  # BD 2026-10-22: native Netlify builds stay Stopped in project settings.
+  # Every verified main update is prepared on GitHub Actions and uploaded with --no-build.
+  # See docs/NETLIFY_DEPLOYMENT.md; no weekly/time/build-minute hold.
+  # The ignore guard is only defense against accidental native reactivation.
   ignore = "exit 0"
-  # One repo serves two Netlify projects: mdlxdcc keeps public/ unchanged; bd-chess overlays public/chess/ at the publish root during its build.
+  # Compatibility command; the prebuilt workflow performs equivalent preparation explicitly.
   command = 'python3 scripts/inject_password_manager.py public --report /tmp/password-manager-compat-report.json && if [ "$SITE_NAME" = "bd-chess" ]; then cp -a public/chess/. public/; fi'
 
 [functions]
@@ -219,3 +219,4 @@
 # Keep OmniCPQ module tracing inside the actual function imports.
 [functions."omnicpq-*"]
   node_bundler = "esbuild"
+

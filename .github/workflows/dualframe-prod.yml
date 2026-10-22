@@ -10,7 +10,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch'
+    # Retired 2026-10-22: all verified main changes use deploy-netlify.yml.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -72,3 +73,4 @@ jobs:
             dualframe-test-results.txt
             browser-evidence/dfc-live/
           if-no-files-found: ignore
+

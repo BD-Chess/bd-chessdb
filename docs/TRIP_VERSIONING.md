@@ -46,11 +46,11 @@ by archival event; the next archive is 002.
    base the minimal Trip-only commit on that head; merge only the Trip block
    of public/_redirects. If Trip itself changed, reconcile before publishing.
    Push without force. If main moves again, retry from the new head.
-9. Do not start a manual Netlify deploy alongside other sessions. Wait for an
-   active production deploy to finish before pushing. Use the existing
-   GitHub → Netlify workflow; verify its deployed commit includes this commit.
-   Cross-session writes cannot be atomically locked by this document: if a
-   newer push supersedes the deployment, verify that newer deployed tree too.
+9. Commit to fresh main without force. The shared prebuilt pipeline in
+   docs/NETLIFY_DEPLOYMENT.md publishes tested main automatically after Pages.
+   Do not dispatch another Netlify workflow or wait for the historical weekly
+   window. Verify that the actual published source includes this promotion;
+   newer main changes are preserved and a commit alone is not a live release.
 10. Verify live URLs and archive hashes, then store the release package,
     provenance and validation results in the canonical Trip project folder.
 
@@ -71,3 +71,4 @@ Archive integrity is checked against committed Git blob hashes. The original
 old2 preservation test stays in force. CURRENT/LAB runtime equality is an
 initial-adoption regression check; when LAB intentionally diverges, replace
 that equality test with release-specific assertions as part of that work.
+
