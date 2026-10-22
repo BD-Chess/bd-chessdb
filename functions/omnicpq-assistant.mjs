@@ -84,7 +84,13 @@ export function makeHandler({ accessFactory = authenticateOmni, knowledgeFactory
     let k;
     const retrievalStart = performance.now();
     try { k = await knowledgeFactory(); }
-    catch (e) { return failure(e.code === 'KNOWLEDGE_INTEGRITY' ? e.code : 'KNOWLEDGE_UNAVAILABLE', 503); }
+    catch (e) {
+      // Server operators need the failing stage without logging source text,
+      // credentials, storage URLs or provider responses.
+      const stage = ['STORAGE_UNAVAILABLE', 'KNOWLEDGE_UNAVAILABLE', 'KNOWLEDGE_INTEGRITY'].includes(e.code) ? e.code : 'UNEXPECTED';
+      console.warn('OMNICPQ_KNOWLEDGE_LOAD:' + stage);
+      return failure(e.code === 'KNOWLEDGE_INTEGRITY' ? e.code : 'KNOWLEDGE_UNAVAILABLE', 503);
+    }
     if (req.method === 'GET') return json({ ok: true, version: APP_VERSION, available, simulation,
       configuredProvider: 'OpenAI', configuredModel: model, observedModel: 'UNKNOWN', profiles, skill: k.skill,
       adapterDelta: ADAPTER_DELTA, services: k.services, privateKnowledge: 'VERIFIED',
@@ -155,3 +161,4 @@ export function makeHandler({ accessFactory = authenticateOmni, knowledgeFactory
 }
 export default makeHandler();
 export const config = { rateLimit: { windowLimit: 12, windowSize: 60, aggregateBy: ['ip', 'domain'] } };
+
