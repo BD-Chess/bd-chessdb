@@ -12,10 +12,10 @@ export function createPublicRoutes(paths = []) {
  return { known, add, resolve: path => known.has(path) ? path : aliases.get(key(path)) || path };
 }
 
-// A query flag only chooses the isolated runtime; the owner path stays denied.
+// Public presentation shell only. The owner path stays denied, including demo queries.
 export function isPublicTripDemo(url) {
  const u = url instanceof URL ? url : new URL(url, 'https://www.mdlxdcc.org');
- return /^\/BD\/O\/izleti\/andaluzija-2027(?:\.html)?$/i.test(u.pathname)
+ return /^\/glance-trip(?:\.html)?$/i.test(u.pathname)
   && u.searchParams.getAll('demo').length === 1 && u.searchParams.get('demo') === 'glance'
   && [...u.searchParams.keys()].every(k => ['demo','lang'].includes(k))
   && u.searchParams.getAll('lang').length <= 1

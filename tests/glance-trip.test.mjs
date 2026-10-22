@@ -10,19 +10,25 @@ import {cities,makeStop,mapsForStop,mapsForLeg} from '../public/BD/O/izleti/anda
 import {mountAlbum} from '../public/shared/dualframe-album.mjs';
 const require=createRequire(import.meta.url),ShieldCore=require('../public/BD/O/izleti/andaluzija-shield-core.js');
 const read=p=>fs.readFile(new URL('../'+p,import.meta.url),'utf8');
-const base='https://www.mdlxdcc.org/BD/O/izleti/andaluzija-2027.html?demo=glance';
+const base='https://www.mdlxdcc.org/glance-trip.html?demo=glance';
 test('seven exact routes, help and modifiers; private path remains blocked',async()=>{
  const manifest=JSON.parse(await read('public/assets/mdlxdcc-guide/tour.json'));
  assert.equal(Object.keys(manifest.tours).length,7);
  for(const tour of Object.values(manifest.tours)){assert(parseGlance(tour.command));for(const id of tour.scenes)assert(manifest.scenes[id]);}
  assert.equal(parseGlance('GLANCE TRIP silence').key,'trip');assert(parseGlance('help glance').help);
  for(const bad of ['glance main','glance trip next','glance trip\nstop','"glance trip"','glance unknown'])assert.equal(parseGlance(bad),null);
- assert(isPublicTripDemo(base));assert(isPublicTripDemo('https://www.mdlxdcc.org/bd/o/izleti/andaluzija-2027?demo=glance&lang=en'));
+ assert(isPublicTripDemo(base));assert(isPublicTripDemo('https://www.mdlxdcc.org/glance-trip?demo=glance&lang=en'));
  for(const path of [base.replace('?demo=glance',''),base+'&plan=gpt',base+'&demo=glance',base.replace('glance','owner')])assert(!isPublicTripDemo(path));
- assert.throws(()=>publicPath(base));assert.throws(()=>publicPath('/BD/O/izleti/andaluzija-private.8zs.json'));
+ assert.throws(()=>publicPath('https://www.mdlxdcc.org/BD/O/izleti/andaluzija-2027.html?demo=glance')); assert(!isPublicTripDemo('/BD/O/izleti/andaluzija-2027.html?demo=glance'));assert.throws(()=>publicPath('/BD/O/izleti/andaluzija-private.8zs.json'));
  assert(!manifest.tours.ai8.scenes.includes('mal'));assert.equal(manifest.mal_reconciliation.status,'PROTECTED_SOURCE_EXCLUDED');
  assert.equal(manifest.tours.main.scenes.filter(x=>x==='andaluzija').length,1);
  assert.equal(manifest.tours.it.scenes.filter(x=>x.startsWith('trip-')).length,3);
+});
+test('public shell reuses the demo without reducing any owner frame policy',async()=>{
+ const shell=await read('public/glance-trip.html'),headers=await read('public/_headers'),config=await read('netlify.toml');
+ assert(shell.includes('src="./BD/O/izleti/andaluzija-demo.mjs"')); assert(!/andaluzija-(?:data|main|store|ai)\./.test(shell));
+ for(const path of ['/glance-trip.html','/glance-trip']) {const block=headers.split('\n'+path+'\n')[1]?.split('\n\n')[0];assert(block?.includes("frame-ancestors 'self'"));assert(block?.includes("connect-src 'self'"));}
+ for(const path of ['/BD/O/*','/bd/o/*','/BD/O/izleti/andaluzija-2027.html','/bd/o/izleti/andaluzija-2027']) {const block=config.split('for = "'+path+'"')[1]?.split('[[headers]]')[0];assert(block?.includes("frame-ancestors 'none'"));}
 });
 const sources=Object.fromEntries(await Promise.all(['air-distance.js','deep-search.js'].map(async n=>[n,await read('public/Trip/new/'+n)])));
 const workerSource=await read('public/BD/O/izleti/andaluzija-worker.js');
