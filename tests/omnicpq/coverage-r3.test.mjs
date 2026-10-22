@@ -16,14 +16,14 @@ test('coverage questions receive the identical complete shared overview with its
     assert.equal(coverage.kind, 'coverage_overview_not_product_rule');
     assert.equal(coverage.sha256, createHash('sha256').update(pack.files[coverage.path]).digest('hex'));
     assert(result.text.includes(pack.files[coverage.path]));
-    assert(pack.files[coverage.path].includes('USER_REPORTED_IN_PROGRESS'));
+    assert(pack.files[coverage.path].includes('49 izdanimi'));
   }
   const routine = await k.retrieve(request('Kako spremenim plačnika?'));
   assert(!routine.sources.some(row => row.path.endsWith('/SERVICE_COVERAGE.md')));
 });
-test('overview adds no product identity; public cards preserve all sixteen common messages', () => {
+test('overview adds no product identity; public cards preserve all nineteen common messages', () => {
   const registry = JSON.parse(pack.files['references/SERVICE_REGISTRY.json']);
-  const integration = JSON.parse(pack.files['references/INTEGRATION_V15.json']);
+  const integration = JSON.parse(pack.files['references/INTEGRATION_V16.json']);
   assert.deepEqual(registry.product_modules, integration.baseline_product_modules);
   assert.equal(registry.product_modules.length, 16);
   assert.equal(registry.process_modules.length, 28);
@@ -31,7 +31,7 @@ test('overview adds no product identity; public cards preserve all sixteen commo
   assert.equal(registry.coverage_overview.entrypoint, 'references/SERVICE_COVERAGE.md');
   const common = JSON.parse(pack.files['copilot/PROMPTS.json']).prompts;
   assert.deepEqual(CANONICAL_PROMPTS, common);
-  assert.equal(common.length, 16);
+  assert.equal(common.length, 19);
 });
 test('host export verdict retains both strict schema and v14 oracle/evidence semantics', () => {
   const data = JSON.parse(pack.files['references/PLM_TEST_EXAMPLE.json']);
@@ -40,3 +40,4 @@ test('host export verdict retains both strict schema and v14 oracle/evidence sem
   assert.equal(result.state, 'INVALID');
   assert(result.issues.some(issue => issue.category === 'semantic'));
 });
+

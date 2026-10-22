@@ -1,5 +1,5 @@
 // Only this application's reviewed, hash-verified shell. No API/auth/CPQ interception.
-const RELEASE = 'f2c01c7207489097a1cc';
+const RELEASE = '09e6833f142a3a17b27b';
 const ROOT = new URL('./', self.registration.scope);
 const PREFIX = 'omnicpq-shell:' + ROOT.pathname + ':';
 const CACHE = PREFIX + RELEASE;
@@ -33,3 +33,4 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || url.origin !== ROOT.origin || !name) return;
   event.respondWith((async () => (await (await caches.open(CACHE)).match(new URL(name, ROOT).href)) || fetch(event.request))());
 });
+

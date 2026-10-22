@@ -10,7 +10,7 @@ const source = await readFile(new URL('../../public/OmniCPQ/app.mjs', import.met
 const STORAGE = 'omnicpq:workspace:v1', PREFS = 'omnicpq:preferences:v1';
 const marker = 'SYNTHETIC_OWNER_PRIVATE_MARKER';
 const metadata = () => ({ available: true, simulation: false, account: { id: 'owner', role: 'owner' }, adapterDelta: 'TEST_ONLY', services: [{ id: 'VPI', title: 'VPI' }, { id: 'TS_SO', title: 'SO' }],
-  skill: { version: 'v0.1.5', release: 'v15', files: 184, zipSha256: 'FIXTURE', promptsSha256: prompts.PROMPTS_SHA256 } });
+  skill: { version: 'v0.1.6', release: 'v16', files: 184, zipSha256: 'FIXTURE', promptsSha256: prompts.PROMPTS_SHA256 } });
 const denied = status => Response.json({ error: { code: status === 401 ? 'AUTH_REQUIRED' : 'OWNER_REQUIRED' } }, { status });
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
 
@@ -136,3 +136,4 @@ test('comparison copy includes the exact canonical mode and service, including a
   input.service = null; assert(h.app.comparisonText().includes(JSON.stringify({ mode: 'work', service: null })));
   assert(h.app.comparisonText().includes('BREZ SLIKE'));
 });
+

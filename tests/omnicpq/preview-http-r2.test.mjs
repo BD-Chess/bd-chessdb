@@ -6,7 +6,7 @@ import { once } from 'node:events';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-test('local preview serves every frozen shell resource and relative module dependency without exposing private files', async () => {
+test('local preview serves every frozen shell resource and relative module dependency without exposing private files', { timeout: 15_000 }, async () => {
   const socket = createServer(); socket.listen(0, '127.0.0.1'); await once(socket, 'listening');
   const port = socket.address().port; await new Promise(resolve => socket.close(resolve));
   const child = spawn(process.execPath, ['scripts/omnicpq/preview.mjs', '--demo'], {
@@ -46,8 +46,11 @@ test('local preview serves every frozen shell resource and relative module depen
     const identity = await import('../../functions/lib/omnicpq/identity.mjs');
     assert(doc.includes(identity.SKILL.zipSha256)); assert(doc.includes(identity.SKILL.manifestSha256));
   } finally {
-    const exited = once(child, 'exit'); child.kill('SIGTERM');
-    const timer = setTimeout(() => child.kill('SIGKILL'), 3000); timer.unref();
-    await exited; clearTimeout(timer);
+    if (child.exitCode === null && child.signalCode === null) {
+      const exited = once(child, 'exit'); child.kill('SIGTERM');
+      const timer = setTimeout(() => child.kill('SIGKILL'), 3000); timer.unref();
+      await exited; clearTimeout(timer);
+    }
   }
 });
+

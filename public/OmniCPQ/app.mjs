@@ -13,7 +13,7 @@ const problems = {
   DEMO_INVITATION_REQUIRED: 'Za demo odpri prejeto povabilo ali vnesi njegovo kodo.', DEMO_IP_UNAVAILABLE: 'IP-ja ni mogoče varno potrditi. Demo dostop je zadržan.',
   DEMO_IP_CHANGED: 'Demo je vezan na IP ob prvi aktivaciji. Za drugo omrežje potrebuješ novo povabilo.', DEMO_EXPIRED: 'Veljavnost demo dostopa je potekla.', DEMO_REVOKED: 'Demo dostop je preklican.', DEMO_LIMIT: 'Dosežena je meja demo porabe; novega API klica ne izvedemo.',
   AUTH_REQUIRED: 'Prijavi se z obstoječim računom lastnika v nastavitvah.', OWNER_REQUIRED: 'Ta prijava nima dostopa do internega znanja OmniCPQ.',
-  KNOWLEDGE_UNAVAILABLE: 'Zasebni vir znanja še ni dosegljiv na tem strežniku.', KNOWLEDGE_INTEGRITY: 'Znanje se ne ujema s preverjeno izdajo v15; zahteva je ustavljena.',
+  KNOWLEDGE_UNAVAILABLE: 'Zasebni vir znanja še ni dosegljiv na tem strežniku.', KNOWLEDGE_INTEGRITY: 'Znanje se ne ujema s preverjeno izdajo v16; zahteva je ustavljena.',
   AI_UNAVAILABLE: 'AI na tem strežniku še ni omogočen ali trenutno ni dosegljiv.', MODEL_NOT_ALLOWED: 'Strežniški profil modela ni na dovoljenem seznamu.',
   RATE_LIMITED: 'Dosežena je omejitev zahtev. Poskusi pozneje; ponovne zahteve ne pošljemo samodejno.', MONTHLY_LIMIT: 'Dosežena je omejitev porabe.',
   DUPLICATE_REQUEST: 'Ta zahteva je bila že sprejeta. Ne ponavljaj je brez preverjanja izida.', REQUEST_IN_PROGRESS: 'Prejšnja zahteva še poteka.',
@@ -168,7 +168,7 @@ function finishMessage(message) {
       const reasons = Array.isArray(validation?.issues) ? validation.issues.slice(0,6).map(i => `${i.path || '$'}: ${i.message || 'Neveljaven zapis.'}`).join(' ') : '';
       panel.append(element('p', '', reasons || (message.status !== 'complete' ? 'Odgovor ni dokončan. Surovi izvoz ostane na voljo.' : 'Za ta točen odgovor ni veljavnega strežniškega pregleda. Surovi izvoz ostane na voljo.')));
     }
-    panel.append(element('p', 'hint', 'Pregled uporablja skupno v15 shemo in povezave ID-jev. Ne potrjuje poslovnih pravil, odobritve zahtev ali izvedbe testov.'));
+    panel.append(element('p', 'hint', 'Pregled uporablja skupno v16 shemo in povezave ID-jev. Ne potrjuje poslovnih pravil, odobritve zahtev ali izvedbe testov.'));
     node.append(panel);
     if (canExportTests(message)) btn('Testi CSV', () => download('OmniCPQ_PLM_testi.csv', csv(data.tests.map(test => ({ service: data.service, model_version: data.context?.model_version, environment: data.context?.environment, ...test }))), 'text/csv;charset=utf-8'));
   }
@@ -236,7 +236,7 @@ async function health() {
     if (state.role === 'demo') { state.persist = false; $('persist').checked = false; }
     state.health = data; state.ready = data.available && data.skill?.promptsSha256 === PROMPTS_SHA256; $('simulation').hidden = !data.simulation;
     ownerAccess(true); showUsage(data.usage);
-    if (data.skill?.promptsSha256 !== PROMPTS_SHA256) notice('Začetni pozivi in strežniški v15 se ne ujemajo. Pošiljanje je zadržano do uskladitve.');
+    if (data.skill?.promptsSha256 !== PROMPTS_SHA256) notice('Začetni pozivi in strežniški v16 se ne ujemajo. Pošiljanje je zadržano do uskladitve.');
     label.textContent = data.simulation ? 'Testni predogled' : data.available ? 'Pomočnik pripravljen' : 'AI ni omogočen';
     $('connection').classList.toggle('ready', state.ready);
     $('auth-status').textContent = data.simulation ? 'Testni lokalni lastnik · brez prave prijave ali AI.' : (state.role === 'demo' ? 'Demo dostop je potrjen.' : 'Strežnik je potrdil lastniški dostop.');
@@ -246,7 +246,7 @@ async function health() {
     $('service').replaceChildren(new Option('Samodejna izbira iz vprašanja', ''), ...data.services.map(s => new Option(s.title, s.id)));
     $('service').value = selectedService;
     $('technical-info').textContent = JSON.stringify(data, null, 2);
-    $('knowledge-status').textContent = `Dejansko naloženo ${data.skill.release} / ${data.skill.version} · ${data.skill.files} datotek · ZIP SHA-256 ${data.skill.zipSha256}. Vseh 16 pozivov se preverja po skupnem hashu.`;
+    $('knowledge-status').textContent = `Dejansko naloženo ${data.skill.release} / ${data.skill.version} · ${data.skill.files} datotek · ZIP SHA-256 ${data.skill.zipSha256}. Vseh 19 pozivov se preverja po skupnem hashu.`;
     updateComparisonGate();
     if (data.simulation) $('privacy-line').textContent = 'Testni predogled. Odgovore pripravi lokalni simuliran transport. Nobeno vprašanje ali slika ne gre ponudniku AI.';
   } catch { label.textContent = 'AI ni dosegljiv'; $('auth-status').textContent = 'Strežniški del ni dosegljiv. Osnutek in lokalni izvozi ostanejo uporabni.'; }
@@ -377,18 +377,18 @@ async function freeze() {
 }
 function comparisonText() {
   const b = state.frozen?.body || bodyForInput();
-  return `NAČIN IN STORITEV (točna polja zamrznjenega vhoda):\n${JSON.stringify({ mode: b.mode, service: b.service || null })}\n\nPREDHODNI POGOVOR (zamrznjen pred odgovorom):\n${JSON.stringify(b.history || [], null, 2)}\n\nVPRAŠANJE:\n${b.message}\n\nKONTEKST (uporabniški podatki):\n${b.context.text || '(brez izseka)'}\nOkolje: ${b.context.environment}; ročni URL: ${b.context.manualUrl || 'UNKNOWN'}\nSlika: ${b.snapshot ? `${b.snapshot.id}; ${b.snapshot.sha256}; ${b.snapshot.capturedAt}; ${b.snapshot.method}. Priloži isto sliko.` : 'BREZ SLIKE'}\nIzvirna osnova: ai-pomocnik-omnicpq v15/v0.1.5; ZIP SHA-256 ${state.health?.skill?.zipSha256 || 'UNKNOWN'}.\nPoziv ID: ${b.promptId || 'CUSTOM'}; pozivi SHA-256 ${PROMPTS_SHA256}.\nPWA host delta: ${state.health?.adapterDelta || 'UNKNOWN'}. Native ChatGPT mora imeti paket posebej naložen; ta tekst ga ne namesti.`;
+  return `NAČIN IN STORITEV (točna polja zamrznjenega vhoda):\n${JSON.stringify({ mode: b.mode, service: b.service || null })}\n\nPREDHODNI POGOVOR (zamrznjen pred odgovorom):\n${JSON.stringify(b.history || [], null, 2)}\n\nVPRAŠANJE:\n${b.message}\n\nKONTEKST (uporabniški podatki):\n${b.context.text || '(brez izseka)'}\nOkolje: ${b.context.environment}; ročni URL: ${b.context.manualUrl || 'UNKNOWN'}\nSlika: ${b.snapshot ? `${b.snapshot.id}; ${b.snapshot.sha256}; ${b.snapshot.capturedAt}; ${b.snapshot.method}. Priloži isto sliko.` : 'BREZ SLIKE'}\nIzvirna osnova: ai-pomocnik-omnicpq v16/v0.1.6; ZIP SHA-256 ${state.health?.skill?.zipSha256 || 'UNKNOWN'}.\nPoziv ID: ${b.promptId || 'CUSTOM'}; pozivi SHA-256 ${PROMPTS_SHA256}.\nPWA host delta: ${state.health?.adapterDelta || 'UNKNOWN'}. Native ChatGPT mora imeti paket posebej naložen; ta tekst ga ne namesti.`;
 }
 function comparisonReady() {
-  return state.ownerVerified && state.health?.skill?.version === 'v0.1.5' && state.health?.skill?.promptsSha256 === PROMPTS_SHA256 &&
-    $('copilot-v15-confirmed').checked && $('copilot-import-evidence').value.trim().length > 15;
+  return state.ownerVerified && state.health?.skill?.version === 'v0.1.6' && state.health?.skill?.promptsSha256 === PROMPTS_SHA256 &&
+    $('copilot-v16-confirmed').checked && $('copilot-import-evidence').value.trim().length > 15;
 }
 function updateComparisonGate() {
   const ready = comparisonReady(); $('other-start').disabled = !ready; $('save-comparison').disabled = !ready;
-  $('comparison-gate').textContent = ready ? 'v15 osnova PWA je preverjena; Copilotov uvoz je naveden kot USER_REPORTED z dodanim dokazom. Primerjavo še vedno preveri po skupnem protokolu.' : 'Primerjava zadržana. PWA potrebuje preverjen v15, Copilot pa dokaz dejanskega uvoza iste izdaje.';
+  $('comparison-gate').textContent = ready ? 'v16 osnova PWA je preverjena; Copilotov uvoz je naveden kot USER_REPORTED z dodanim dokazom. Primerjavo še vedno preveri po skupnem protokolu.' : 'Primerjava zadržana. PWA potrebuje preverjen v16, Copilot pa dokaz dejanskega uvoza iste izdaje.';
 }
 async function saveComparison() {
-  if (!comparisonReady()) { notice('Primerjava počaka, dokler oba pomočnika ne uporabljata istega v15.'); return; }
+  if (!comparisonReady()) { notice('Primerjava počaka, dokler oba pomočnika ne uporabljata istega v16.'); return; }
   if (!$('other-answer').value.trim()) { notice('Za zapis primerjave dodaj dejanski odgovor drugega pomočnika.'); return; }
   const timing = state.otherTiming;
   const input = state.frozen?.body || bodyForInput();
@@ -400,7 +400,7 @@ async function saveComparison() {
     skill: state.health?.skill || 'UNKNOWN', adapterDelta: state.health?.adapterDelta || 'UNKNOWN',
     pwa: own ? { input: own.input, response: own.content, status: own.status, ttftMs: own.ttftMs, totalMs: own.totalMs, meta: own.meta } : { status: 'NOT_RUN' },
     other: { platform: $('other-platform').value, observedModelReasoning: $('other-model').value || 'UNKNOWN', response: $('other-answer').value,
-      skillImport: { version: 'v15/v0.1.5', evidence: $('copilot-import-evidence').value, status: 'USER_REPORTED_NOT_INDEPENDENTLY_VERIFIED' },
+      skillImport: { version: 'v16/v0.1.6', evidence: $('copilot-import-evidence').value, status: 'USER_REPORTED_NOT_INDEPENDENTLY_VERIFIED' },
       timing: timing ? { startedAt: timing.startedAt, ttftMs: timing.first === null ? 'UNKNOWN' : timing.first - timing.start, totalMs: timing.end === null ? 'UNKNOWN' : timing.end - timing.start, method: 'manual_observation' } : 'UNKNOWN',
       contextAndSkillEvidence: contextNotes || 'UNKNOWN', usage: 'UNKNOWN', cost: 'UNKNOWN' },
     equivalence: own?.input?.inputHash === hash && contextNotes ? 'USER_RECORDED_REQUIRES_REVIEW' : 'CONTEXT_NOT_PROVEN_EQUAL',
@@ -485,7 +485,7 @@ $('freeze-input').onclick = freeze; $('unfreeze-input').onclick = clearFrozen;
 $('copy-comparison').onclick = () => copy(comparisonText());
 $('export-snapshot').onclick = () => { if (!mayExport()) return; const snapshot = state.frozen?.body?.snapshot || state.snapshot; if (!snapshot) { notice('Ni slike za izvoz.'); return; } const a = element('a'); a.href = snapshot.dataUrl; a.download = `CPQ_${snapshot.id}.${snapshot.dataUrl.includes('image/jpeg') ? 'jpg' : 'png'}`; a.click(); };
 $('save-comparison').onclick = saveComparison;
-for (const id of ['copilot-v15-confirmed','copilot-import-evidence']) $(id).addEventListener('input', updateComparisonGate);
+for (const id of ['copilot-v16-confirmed','copilot-import-evidence']) $(id).addEventListener('input', updateComparisonGate);
 updateComparisonGate();
 $('export-comparison').onclick = () => download('OmniCPQ_primerjava.json', JSON.stringify({ schema: 'omnicpq.comparison.v1', exportedAt: new Date().toISOString(), records: state.comparisons, unrunPilot: PILOT.filter(p => !state.comparisons.some(c => c.taskId === p.id)).map(p => ({ ...p, status: 'NOT_RUN' })) }, null, 2));
 $('other-start').onclick = () => { state.otherTiming = { start: performance.now(), startedAt: new Date().toISOString(), first: null, end: null }; $('other-first').disabled = false; $('other-end').disabled = false; $('other-timing').textContent = 'Začetek označen ročno. Opazuj prvi vidni tekst.'; };
@@ -540,3 +540,4 @@ const invitation = new URLSearchParams(location.hash.slice(1)).get('demo');
 if (/^[a-f0-9]{64}$/.test(invitation || '')) { $('demo-code').value = invitation; $('demo-code-details').open = true; history.replaceState(null, '', location.pathname + location.search); }
 setInterval(() => { if (state.role === 'demo' && !state.busy && navigator.onLine) health(); }, 30000);
 health(); installWorker();
+

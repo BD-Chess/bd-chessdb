@@ -11,7 +11,7 @@ test('real DOM: login gate, owner access, demo isolation and invitation handling
   try {
     const w=dom.window;Object.assign(w,{...core,...prompts,Response,Blob,AbortController});
     w.matchMedia=()=>({matches:false});w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
-    let actor=null;const makeMetadata=()=>({ok:true,available:true,account:actor,skill:{release:'v15',version:'v0.1.5',files:194,promptsSha256:prompts.PROMPTS_SHA256},services:[],usage:actor?.role==='demo'?{expires_at:new Date(Date.now()+86400000).toISOString(),spent:0.1,reserved:0}: {exempt:true}});
+    let actor=null;const makeMetadata=()=>({ok:true,available:true,account:actor,skill:{release:'v16',version:'v0.1.6',files:194,promptsSha256:prompts.PROMPTS_SHA256},services:[],usage:actor?.role==='demo'?{expires_at:new Date(Date.now()+86400000).toISOString(),spent:0.1,reserved:0}: {exempt:true}});
     w.fetch=async()=>actor?Response.json(makeMetadata()):Response.json({error:{code:'AUTH_REQUIRED'}},{status:401});
     w.eval(code.replace('health(); installWorker();','window.bootHealth=health();')+'\nwindow.testApp={state,health};');
     await w.bootHealth;
@@ -37,3 +37,4 @@ test('real DOM: login gate, owner access, demo isolation and invitation handling
     assert.match(w.document.getElementById('knowledge-status').textContent,/Prijava potrjena/);
   } finally {dom.window.close();}
 });
+

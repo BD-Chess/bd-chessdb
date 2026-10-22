@@ -1,10 +1,10 @@
-// Run on an extracted ORIGINAL shared v15 folder; never writes to public/.
+// Run on an extracted ORIGINAL shared v16 folder; never writes to public/.
 import { readFile, writeFile, mkdir, realpath } from 'node:fs/promises';
 import { resolve, dirname, sep } from 'node:path';
 import { SKILL, hash } from '../../functions/lib/omnicpq/identity.mjs';
 import { verifyPack } from '../../functions/lib/omnicpq/knowledge.mjs';
 const [folder, zip, output = '.private/omnicpq/knowledge.json'] = process.argv.slice(2);
-if (!folder || !zip) throw Error('Usage: node scripts/omnicpq/prepare-knowledge.mjs EXTRACTED_V15 ORIGINAL_V15_ZIP [OUTPUT]');
+if (!folder || !zip) throw Error('Usage: node scripts/omnicpq/prepare-knowledge.mjs EXTRACTED_V16 ORIGINAL_V16_ZIP [OUTPUT]');
 const dest = resolve(output), publicRoot = resolve('public');
 if (dest === publicRoot || dest.startsWith(publicRoot + sep)) throw Error('Private output must be outside public/');
 if (await hash(await readFile(zip)) !== SKILL.zipSha256) throw Error('Original ZIP hash mismatch');
@@ -24,3 +24,4 @@ await verifyPack(text);
 await mkdir(dirname(dest), { recursive: true });
 await writeFile(dest, text, { mode: 0o600 });
 console.log(JSON.stringify({ output: dest, files: Object.keys(files).length, verifiedPayloads: manifest.payload_files.length, sha256: await hash(text) }));
+

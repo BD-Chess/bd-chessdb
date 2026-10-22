@@ -28,7 +28,7 @@ const transport = async ({ payload, signal, onText, onIdentity }) => {
     const example = JSON.parse(demoPack.files['references/PLM_TEST_EXAMPLE.json']);
     const invalidFixture = all.includes('[QA_NULL_TEST]');
     if (invalidFixture) example.tests = [null]; // Disposable QA clone; never edits the shared source.
-    text = '### Sintetični načrt · v15\n\n' + (invalidFixture ? 'Poškodovana testna kopija za preverjanje zavrnitve izvoza. Izvirni skill je nespremenjen.' : 'To je nespremenjen skupni PLM_TEST_EXAMPLE iz v15. Pravila so izmišljena samo za ta primer; noben test ni izveden.') + '\n\n```json\n' + JSON.stringify(example, null, 2) + '\n```';
+    text = '### Sintetični načrt · v16\n\n' + (invalidFixture ? 'Poškodovana testna kopija za preverjanje zavrnitve izvoza. Izvirni skill je nespremenjen.' : 'To je nespremenjen skupni PLM_TEST_EXAMPLE iz v16. Pravila so izmišljena samo za ta primer; noben test ni izveden.') + '\n\n```json\n' + JSON.stringify(example, null, 2) + '\n```';
   }
   else if (mode === 'jira') text = '### Osnutek poslovne zahteve · proposal\n\n**Cilj:** nova cloud storitev z osnovnim paketom in doplačljivimi izbirami.\n\n1. AsIs: MANJKA; ToBe: ponudba in naročilo storitve.\n2. Hierarhija, števnosti, odvisnosti, atributi: MANJKA.\n3. Cena, BILLING_QTY, RC/OTC: MANJKA. Prazna cena ni ničelna.\n4. Lifecycle in integracije: PREDLOG, potrditi objekte, dogodke in verzije.\n5. Prevzemna merila: PREDLOG; testi NOT_RUN.\n6. Odprte odločitve: odgovorne vloge, potrjena zahteva in okolje.\n\nStanje: proposal; approved / implemented / tested: UNKNOWN. Osnutek ni oddan.' + (requirementSource ? ` [${requirementSource}, references/POSLOVNA_ZAHTEVA_IT_PLM.md]` : '');
   else if (image) text = 'Prejeta je dejanska slika v testnem multimodalnem requestu. Ta simuliran transport ne izvaja vision analize. Za pravi pregled CPQ je potreben živ, pooblaščen modelni klic.\n\n**Izid CPQ:** NOT_RUN.';
@@ -83,3 +83,4 @@ const server = createServer(async (incoming, outgoing) => {
 });
 server.listen(port, process.env.OMNICPQ_PREVIEW_HOST || '127.0.0.1', () => console.log(`OmniCPQ ${demo ? 'SIMULATED' : 'shell only'} preview: http://localhost:${port}${prefix}`));
 for (const signal of ['SIGTERM','SIGINT']) process.on(signal, () => server.close(() => process.exit(0)));
+

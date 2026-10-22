@@ -1,6 +1,6 @@
-// Generated from the unmodified shared v15 copilot/PROMPTS.json. Do not edit message/title/id.
-export const PROMPT_VERSION = 'v15/v0.1.5';
-export const PROMPTS_SHA256 = '24aeaa386be72da6919c004ec350ffe6e311e873d053e4ad83722367b7579108';
+// Generated from the unmodified shared v16 copilot/PROMPTS.json. Do not edit message/title/id.
+export const PROMPT_VERSION = 'v16/v0.1.6';
+export const PROMPTS_SHA256 = 'bd0706fe2a8027575df2453e17ee42947ff4b747bcfc8b2eed414f34fb2cc6c3';
 export const CANONICAL_PROMPTS = [
   {
     "id": "CPQ_HELP",
@@ -27,8 +27,8 @@ export const CANONICAL_PROMPTS = [
     "id": "ABOUT",
     "group": "secondary",
     "mode": "AUTO",
-    "title": "Kaj zmore pomočnik?",
-    "message": "Na kratko predstavi tri naloge pomočnika: delo v OmniCPQ, pripravo PLM testnih scenarijev in oblikovanje poslovnih zahtev IT/PLM/Jira. Pojasni skupno znanje, dokazne meje ter razliko med pripravljenim osnutkom in dejansko izvedenim dejanjem."
+    "title": "Kaj zna pomočnik?",
+    "message": "Na kratko predstavi aktualno izdajo pomočnika in tri načine dela: uporaba OmniCPQ, PLM testni scenariji in poslovne zahteve IT/PLM/Jira. Pojasni razliko med katalogom ponudb, podrobnimi produktnimi pravili, datiranim podpornim primerom in dejansko izvedenim dejanjem. Uporabi naloženi manifest, ne ugibaj različice."
   },
   {
     "id": "EXAMPLES",
@@ -111,8 +111,29 @@ export const CANONICAL_PROMPTS = [
     "id": "SOURCES",
     "group": "secondary",
     "mode": "AUTO",
-    "title": "Navodila in viri",
-    "message": "Pokaži relevantna uporabniška navodila ter znane vire za trenutno nalogo. Če je storitev jasna, dodaj njene produktne ali PLM reference. Uporabi samo znane povezave in ohrani datum, verzijo ter dokazne omejitve."
+    "title": "Navodila in viri znanja",
+    "message": "Pokaži relevantna navodila in vire za trenutno nalogo. Uporabi register virov in popis pokritosti; za jasno storitev dodaj njene produktne ali PLM reference. Navedi izvorni dokument, datum ali različico, uporabljeni odsek ter mejo preverjanja. Uporabi samo znane povezave; če je povezava neznana, navedi datoteko in stran oziroma list in vrstico."
+  },
+  {
+    "id": "COVERAGE",
+    "group": "secondary",
+    "mode": "AUTO",
+    "title": "Seznam podprtih B2B storitev",
+    "message": "Iz aktualnega skupnega popisa Podprte storitve in kandidati za OmniCPQ prikaži vključene produktne module, obseg kataloga PLM in kandidate za dopolnitev. Loči poznavanje šifre in cene od podrobnih pravil konfiguracije. Navedi vire in pomembne vrzeli. Ne zanašaj se na staro ime Wordove priponke."
+  },
+  {
+    "id": "PLM_CATALOG",
+    "group": "secondary",
+    "mode": "AUTO",
+    "title": "Poišči PLM ponudbo in cenik",
+    "message": "V priloženem B2B PLM izvozu z dne 22. 10. 2026 poišči ponudbo po šifri ali nazivu iz mojega vprašanja. Navedi tip produkta, A4 in ločeno CO-PA kategorijo ter vse relevantne cenovne postavke z enotami, diskriminatorji in veljavnostjo. Podaj datoteko, list in vrstico. Če šifre ali naziva še nimam, vprašaj samo zanju. Prazne cene ne razumi kot 0 in ne sklepaj relacij iz kategorije."
+  },
+  {
+    "id": "SO_RELATIONS",
+    "group": "secondary",
+    "mode": "AUTO",
+    "title": "Kako so razdeljene SO ponudbe?",
+    "message": "Iz SO ponudbe.xlsx z dne 22. 10. 2026 prikaži razliko med Ikt.SO.Pck in Ikt.SO.Pck2: neposredne komponente, tipe relacij, skupine, zapisane števnosti in pravila. Aktivnosti, dokumentov in logičnih virov ne štej med komponente. Posebej navedi šest komponent brez izvožene neposredne povezave in omejitev skupine (0,0). Navedi liste in vrstice; ne izmišljaj posrednih relacij ali SO cen."
   }
 ];
 const modes = {CPQ_HELP:'work',PLM_TESTS:'plm',JIRA_REQUIREMENT:'jira',AUTO:'work'};

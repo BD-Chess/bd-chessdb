@@ -29,15 +29,15 @@ test('plain HTTP preview SHA-256 fallback matches independent Node hashes includ
   }
 });
 
-test('original v15 payloads verified; modified, missing and extra private source rejected', async () => {
-  const verified = await verifyPack(packText); assert.equal(verified.manifest.version, 'v0.1.5'); assert.equal(knowledge.skill.zipSha256, SKILL.zipSha256);
+test('original v16 payloads verified; modified, missing and extra private source rejected', async () => {
+  const verified = await verifyPack(packText); assert.equal(verified.manifest.version, 'v0.1.6'); assert.equal(knowledge.skill.zipSha256, SKILL.zipSha256);
   for (const mutate of [p => { p.files['SKILL.md'] += '\nForged'; }, p => { delete p.files['SKILL.md']; }, p => { p.files['references/NEW.md'] = 'x'; }]) {
     const pack = JSON.parse(packText); mutate(pack); await assert.rejects(verifyPack(JSON.stringify(pack)), { code: 'KNOWLEDGE_INTEGRITY' });
   }
 });
-test('all 16 canonical IDs, titles, messages and modes exactly match the same v15 Copilot package', () => {
+test('all 19 canonical IDs, titles, messages and modes exactly match the same v16 Copilot package', () => {
   const exact = JSON.parse(JSON.parse(packText).files['copilot/PROMPTS.json']);
-  assert.deepEqual(CANONICAL_PROMPTS, exact.prompts); assert.equal(CANONICAL_PROMPTS.length, 16); assert.equal(PROMPTS_SHA256, knowledge.skill.promptsSha256);
+  assert.deepEqual(CANONICAL_PROMPTS, exact.prompts); assert.equal(CANONICAL_PROMPTS.length, 19); assert.equal(PROMPTS_SHA256, knowledge.skill.promptsSha256);
 });
 test('service-specific retrieval: SO isolated, current VPI beats past SO; full documents and locators retained', async () => {
   const so = await knowledge.retrieve(validateBody(input({ message: 'TS Suvereni oblak disk Backup cena' })));
@@ -125,7 +125,7 @@ test('all three prompt modes reach isolated system task logic; missing-screen so
     assert.equal((await handler(req(input({ message: 'Spremenjeno sporočilo', promptId: prompt.id })))).status, 400);
   }
 });
-test('shared v15 output is preserved; invalid PASS flagged, CSV formula escaped, images excluded from session', () => {
+test('shared v16 output is preserved; invalid PASS flagged, CSV formula escaped, images excluded from session', () => {
   const baseInput = input();
   assert.notEqual(canonicalInput(baseInput), canonicalInput({ ...baseInput, history: [{ role: 'user', content: 'Prejšnja zahteva' }] }));
   const example = JSON.parse(JSON.parse(packText).files['references/PLM_TEST_EXAMPLE.json']);
@@ -176,3 +176,4 @@ test('PWA install verifies complete shell; incomplete update preserves old/forei
     let cachedResponse; listeners.fetch({ request: new Request('https://example.test' + prefix), respondWith: p => { cachedResponse = p; } }); assert((await cachedResponse).ok);
   }
 });
+

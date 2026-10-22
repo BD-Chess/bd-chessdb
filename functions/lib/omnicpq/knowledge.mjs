@@ -1,4 +1,5 @@
 import { validateLifecycleAnswer } from './lifecycle.mjs';
+import { catalogExtracts } from './catalog.mjs';
 import { resolve } from 'node:path';
 import { SKILL, error, hash } from './identity.mjs';
 import { gunzipSync } from 'node:zlib';
@@ -12,9 +13,11 @@ let cached;
 // A fixed, server-controlled key, never a user URL/key or a public source path.
 export async function readPrivatePack() {
   if (env('OMNICPQ_KNOWLEDGE_MODE') === 'database') {
+    // The existing database RPC has a fixed legacy slot; the pack's pinned
+    // ZIP/manifest and per-file hashes, rather than that slot name, define v16.
     const result = await runtime('knowledge');
     if (result.encoding !== 'gzip-base64' || typeof result.payload !== 'string' || result.payload.length > 8_000_000) throw error('KNOWLEDGE_UNAVAILABLE');
-    const text = gunzipSync(Buffer.from(result.payload, 'base64'), { maxOutputLength: 8_000_000 }).toString('utf8');
+    const text = gunzipSync(Buffer.from(result.payload, 'base64'), { maxOutputLength: 32_000_000 }).toString('utf8');
     if (await hash(text) !== result.sha256) throw error('KNOWLEDGE_INTEGRITY');
     return text;
   }
@@ -22,8 +25,8 @@ export async function readPrivatePack() {
     const name = env('OMNICPQ_KNOWLEDGE_STORE');
     if (!/^omnicpq-private-[a-z0-9-]{1,40}$/.test(name || '')) throw error('KNOWLEDGE_UNAVAILABLE');
     const { getStore } = await import('@netlify/blobs');
-    const text = await getStore({ name, consistency: 'strong' }).get('v15/knowledge.json', { type: 'text' });
-    if (!text || text.length > 8_000_000) throw error('KNOWLEDGE_UNAVAILABLE');
+    const text = await getStore({ name, consistency: 'strong' }).get(SKILL.release + '/knowledge.json', { type: 'text' });
+    if (!text || Buffer.byteLength(text) > 32_000_000) throw error('KNOWLEDGE_UNAVAILABLE');
     return text;
   }
   // Local preview owns its file reader and injects it explicitly. Keeping all
@@ -183,6 +186,13 @@ export function createRetriever({ files, manifest, packSha256 }) {
       if (/primerjav|copilot|benchmark/.test(question)) add('references/COMPARISON_PROTOCOL.md');
       if (/primeri uporabe|galerij|zmore pomocnik/.test(question)) add('references/PROMPT_GALLERY.md');
       if (request.promptId === 'CAPABILITIES' || /pokrit|podprt|podpir|kandidat|portfelj|katere storitve|kaj (?:se )?zmore|kaj (?:se )?manjka/.test(question)) add('references/SERVICE_COVERAGE.md');
+      if (request.promptId === 'COVERAGE') add('references/SERVICE_COVERAGE.md');
+      if (request.promptId === 'SOURCES' || /viri znanja|izvor.{0,20}znanj|od kod.{0,20}znan/.test(question)) add('references/KNOWLEDGE_ORIGINS.md');
+      const catalogRequested = request.promptId === 'PLM_CATALOG' || /\b(?:plm|cenik|sifr[a-z]*|katalog[a-z]*|kategorij[a-z]*|copa|co-pa)\b/.test(question);
+      const extracts = catalogExtracts(files, request.message, { requested: catalogRequested && service?.service_id !== 'TS_SO' && request.promptId !== 'SO_RELATIONS' });
+      if (catalogRequested || extracts.length || service?.service_id === 'TS_SO' || request.promptId === 'SO_RELATIONS') add('references/PLM_EXPORTS_20261022.md');
+      if (service?.service_id === 'TS_SO' || request.promptId === 'SO_RELATIONS' || /ikt\.so\./.test(question)) add('references/PLM_SO_20261022.json');
+      if (/promo_type|mmer-5890|ecm-13407|standard request|sinhronizacij.{0,30}(?:plm|mcrm)|ikt oprem/.test(question)) add('references/PILOT_R2_DIAGNOSTICS_DELNI.md');
       if (service) {
         add(service.entrypoint);
         if (service.service_id === 'TS_SO') {
@@ -226,9 +236,19 @@ export function createRetriever({ files, manifest, packSha256 }) {
         sources.push({ id, path, sha256, kind, sections });
         blocks.push(`<source id="${id}" path="${path}" kind="${kind}">\n${text}\n</source>`);
       }
+      for (const extract of extracts) {
+        const bytes = extract.text.length;
+        if (size + bytes > 190_000) throw error('RETRIEVAL_LIMIT', 422);
+        size += bytes;
+        const id = `S${sources.length+1}`;
+        sources.push({ id, path: extract.path, sha256: specs.get(extract.path)?.sha256, extractSha256: await hash(extract.text),
+          kind: extract.kind, locator: extract.locator, sections: [{ heading: 'Izbrane celotne cenovne vrstice', startLine: 1, endLine: 1 }] });
+        blocks.push(`<source id="${id}" path="${extract.path}" kind="${extract.kind}">\n${extract.text}\n</source>`);
+      }
       return { service: service ? { id: service.service_id, title: service.title, coverage: service.coverage } : null,
         serviceResolution: { ambiguous: !service && selection.ambiguous, conflict: Boolean(selection.conflict), unknownNewService, candidates: !service ? selection.candidates : [] },
         intent, sources, text: blocks.join('\n\n'), skill: this.skill };
     },
   };
 }
+
