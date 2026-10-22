@@ -26,5 +26,14 @@ test('real DOM: login gate, owner access, demo isolation and invitation handling
     assert.equal(w.document.getElementById('demo-owner').hidden,true);assert.equal(w.document.getElementById('persist').disabled,true);
     assert.equal(w.document.getElementById('demo-usage').hidden,false);
     actor=null;await w.testApp.health();assert.equal(w.document.getElementById('workspace').hidden,true);
+    // Regression: a valid owner session must unlock the UI even if AI knowledge is offline.
+    w.fetch=async path=>path === '/.netlify/functions/omnicpq-auth'
+      ? Response.json({authenticated:true,account:{id:'owner',role:'owner'}})
+      : Response.json({error:{code:'KNOWLEDGE_UNAVAILABLE'}},{status:503});
+    await w.testApp.health();
+    assert.equal(w.document.getElementById('workspace').hidden,false);
+    assert.equal(w.document.getElementById('access-gate').hidden,true);
+    assert.equal(w.testApp.state.ready,false);
+    assert.match(w.document.getElementById('knowledge-status').textContent,/Prijava potrjena/);
   } finally {dom.window.close();}
 });
