@@ -6,6 +6,7 @@ import {JSDOM} from 'jsdom';
 import {cpqPage} from '../../public/OmniCPQ/extension/page.mjs';
 import {makeBridgeHandler} from '../../public/OmniCPQ/extension/worker.mjs';
 import * as bridge from '../../public/OmniCPQ/browser-bridge.mjs';
+import * as guiBridge from '../../public/OmniCPQ/browser-bridge-v2.mjs';
 import * as starters from '../../public/OmniCPQ/starters.mjs';
 import * as core from '../../public/OmniCPQ/core.mjs';
 import * as prompts from '../../public/OmniCPQ/prompts.mjs';
@@ -99,31 +100,72 @@ test('backend treats bounded fresh DOM as client evidence, not attestation; no b
     assert.throws(()=>validateBody({message:'x',clientRequestId:randomUUID(),browser:{...o,url:'http://internal.invalid/'}}),{code:'INVALID_BROWSER_CONTEXT'});
   }finally{f.dom.window.close();}
 });
-test('complete synthetic UI -> authenticated handler -> proposal -> extension -> real DOM click -> new observation; no fake live claim',async()=>{
-  const f=fixture(),e=extension(f);const html=await readFile('public/OmniCPQ/index.html','utf8');
-  const dom=new JSDOM(html,{url:APP,runScripts:'outside-only'});let modelCalls=0,charges=0;
-  try{
-    await e.pair();
-    const runtime={sendMessage:(id,message,reply)=>{assert.equal(id,bridge.BRIDGE_EXTENSION_ID);e.handle(message,e.sender).then(reply);}};
+test('complete synthetic PWA -> authenticated handler -> v2 action -> scoped bridge -> DOM click -> new observation',async()=>{
+  const f=fixture(),html=await readFile('public/OmniCPQ/index.html','utf8');
+  const dom=new JSDOM(html,{url:APP,runScripts:'outside-only'});
+  let modelCalls=0,charges=0,dispatches=0,last=null;
+  const toGui=async()=>{
+    const r=await f.observe();assert.equal(r.ok,true);
+    const o=r.observation;
+    return {schema:'omnicpq.gui.observation.v2',observationId:o.id,revision:o.revision,capturedAt:o.capturedAt,
+      url:o.url,title:o.title,text:o.text,scope:'order',documentKey:'SYNTHETIC-ORDER',dialogOpen:o.dialogOpen,
+      navigationLocked:o.navigationLocked,viewport:{width:1200,height:800,scrollX:0,scrollY:0},
+      controls:o.controls.map((c,i)=>({id:'c'+i,kind:c.kind==='link'?'link':'tab',label:c.label,enabled:true,
+        inputType:'',visibleInViewport:true,rect:{x:12,y:21+i*45,w:90,h:32,cx:57,cy:37+i*45}})),
+      paging:{offset:0,limit:180,totalFound:o.controls.length,hasMore:false}};
+  };
+  const onMessage=async m=>{
+    assert.equal(m.protocol,guiBridge.BRIDGE_PROTOCOL);
+    if(m.type==='status')return {ok:true,protocol:guiBridge.BRIDGE_PROTOCOL,token:'synthetic-pair',scope:'order',
+      capabilities:{schema:'omnicpq.gui.capabilities.v2',cdpAvailable:true,allowWrites:true}};
+    if(m.token!=='synthetic-pair')return {ok:false,error:'BRIDGE_NOT_PAIRED'};
+    if(m.type==='observe'){last=await toGui();return {ok:true,observation:last};}
+    if(m.type==='disconnect')return {ok:true};
+    const a=m.action;
+    if(a.observationId!==last?.observationId||a.revision!==last?.revision)return {ok:false,error:'CPQ_SCREEN_CHANGED'};
+    const target=last.controls.find(c=>c.id===a.targetId);if(!target)return {ok:false,error:'CPQ_TARGET_NOT_ALLOWED'};
+    if(m.type==='preview')return {ok:true,prepared:{targetId:a.targetId,label:target.label,revision:last.revision,
+      documentKey:last.documentKey,risk:'ordinary',kind:target.kind}};
+    if(m.type!=='execute'||a.operation!=='click')return {ok:false,error:'BRIDGE_INVALID_COMMAND'};
+    const index=Number(a.targetId.slice(1));
+    const clicked=await f.page({type:'navigate',scope:'order',origin:ORIGIN,
+      action:{schema:'omnicpq.navigation.v1',revision:last.revision,targetId:'n'+index}});
+    if(!clicked.ok)return clicked;
+    dispatches++;
+    return {ok:true,receipt:{schema:'omnicpq.gui.receipt.v2',actionId:a.actionId,status:'DISPATCHED',
+      target:{id:a.targetId,label:target.label,operation:a.operation},outcome:'OBSERVATION_AVAILABLE_NOT_BUSINESS_ATTESTED'}};
+  };
+  try {
+    const runtime={sendMessage:(id,msg,cb)=>{assert.equal(id,guiBridge.BRIDGE_EXTENSION_ID);onMessage(msg).then(cb);}};
     const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
-      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC TEST CONTEXT ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC TEST CONTEXT ONLY',sources:[],intent:{mode:'work'}}),
+      validateLifecycleAnswer:()=>({state:'ABSENT'})};
     const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'synthetic-owner',role:'owner'}),knowledgeFactory:async()=>k,
       budgetFactory:()=>({reserve:async()=>{charges++;return null;},settle:async()=>null}),
       transport:async({payload,onText,onIdentity})=>{
         modelCalls++;const input=payload.input.at(-1).content[0].text;
         const o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
-        assert.match(payload.instructions,/omejeno navigacijo/);assert.equal(o.routeScope,'order');
+        assert.match(payload.instructions,/omnicpq_action/);assert.equal(o.routeScope,'order');
         onIdentity({model:'SYNTHETIC_TRANSPORT',reasoning:'low'});
         const target=o.controls.find(c=>c.label.startsWith('OMNI-SYN'));
-        onText(target?'Odprl bom obstoječe naročilo.\n```omnicpq_navigation\n'+JSON.stringify({schema:'omnicpq.navigation.v1',observationId:o.id,revision:o.revision,targetId:target.id,reason:'Odpri obstoječe naročilo.'})+'\n```':'Cilj je dosežen: odprta je postavka TS Suvereni oblak v naročilu OMNI-SYN.');
+        onText(target?'Predlagam odpiranje obstoječega naročila.\n```omnicpq_action
+'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,
+          targetId:target.id,operation:'click',expectedDocument:o.documentKey,reason:'Odpri obstoječe naročilo.'})+
+          '\n```':'Cilj je dosežen: odprta je postavka TS Suvereni oblak v naročilu OMNI-SYN.');
         return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
       }});
-    const w=dom.window;Object.assign(w,{...core,...prompts,...starters,...bridge,createBrowserBridge:()=>bridge.createBrowserBridge({runtime}),Response,Blob,AbortController,TextEncoder});
+    const w=dom.window;Object.assign(w,{...core,...prompts,...starters,...guiBridge,
+      createBrowserBridge:()=>guiBridge.createBrowserBridge({runtime}),Response,Blob,AbortController,TextEncoder});
     Object.defineProperty(w,'crypto',{value:webcrypto});w.matchMedia=()=>({matches:false});
     w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
-    w.fetch=async(path,options={})=>{assert.equal(path,'/.netlify/functions/omnicpq-assistant');return handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));};
+    w.fetch=async(path,options={})=>{
+      assert.equal(path,'/.netlify/functions/omnicpq-assistant');
+      return handler(new Request('https://www.mdlxdcc.org'+path,{...options,
+        headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    };
     const code=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,'');
-    w.eval(code.replace('health(); installWorker();','window.bootHealth=health();')+'\nwindow.appTest={state,connectBrowser,send};');
+    w.eval(code.replace('health(); installWorker();','window.bootHealth=health();')+
+      '\nwindow.appTest={state,connectBrowser,send};');
     await w.bootHealth;assert.equal(w.appTest.state.ready,true);
     assert.equal(w.document.querySelectorAll('[data-prompt]').length,12);
     assert.deepEqual([...w.document.getElementById('mode-nav').children].map(b=>b.dataset.mode),['work','jira','plm']);
@@ -131,10 +173,11 @@ test('complete synthetic UI -> authenticated handler -> proposal -> extension ->
     w.document.getElementById('message').value='Pokaži Suvereni oblak v obstoječem naročilu prek Naročil.';
     w.document.getElementById('browser-auto').checked=true;
     await w.appTest.send();
-    assert.equal(f.clicks(),1);assert.equal(modelCalls,2);assert.equal(charges,2);
+    assert.equal(f.clicks(),1);assert.equal(dispatches,1);assert.equal(modelCalls,2);assert.equal(charges,2);
     assert.match(w.appTest.state.messages.at(-1).content,/Cilj je dosežen/);
-    assert.equal(w.appTest.state.messages[1].meta.browserNavigation.receipt.outcome,'CLICK_DISPATCHED');
+    assert.equal(w.appTest.state.messages[1].meta.browserNavigation.receipt.status,'DISPATCHED');
     assert.equal(w.appTest.state.messages[2].input.automaticContinuation,true);
+    assert.equal(w.appTest.state.guiCheckpoint.status,'OBSERVED_NOT_BUSINESS_ATTESTED');
     assert.equal(w.appTest.state.busy,false);
   }finally{dom.window.close();f.dom.window.close();}
 });
