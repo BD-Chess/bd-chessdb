@@ -28,7 +28,7 @@ export function validateAction(action) {
 const cap = Object.freeze({
   schema:'omnicpq.gui.capabilities.v2',protocol:PROTOCOL,observation:true,
   pointer:['click','doubleClick','hover','contextClick','scroll','drag','ensureVisible'],keyboard:['key','fill','focus'],
-  forms:['fill','check','selectNative','upload'],execution:'CDP_WHEN_ALLOWED',
+  forms:['fill','check','selectNative','upload'],execution:'CDP_WHEN_ALLOWED',domFallback:true,
   frames:'MAIN_FRAME_ONLY',trustedCDP:'probe_required',maxBatchActions:1,
   noArbitraryJavascript:true,noArbitraryCDP:true,approvalGate:true
 });
@@ -70,7 +70,8 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
     if(!prepared.visibleInViewport)return fail('CPQ_TARGET_OFFSCREEN');
     if(['selectNative','upload'].includes(action.operation))return page(tabId,scope,origin,'domApply',{action});
     if(action.operation==='check' && prepared.checked===action.checked)return {ok:true,method:'ALREADY_MATCHES'};
-    if(!target)return fail('BRIDGE_DEBUGGER_UNAVAILABLE');
+    if(!target){if(['click','focus','fill','check','hover','scroll'].includes(action.operation))return page(tabId,scope,origin,'domApply',{action});
+      return fail('BRIDGE_DEBUGGER_UNAVAILABLE');}
     if(['click','focus','check'].includes(action.operation))await point(target,r);
     else if(action.operation==='doubleClick'){await point(target,r);await point(target,r,'left',2);}
     else if(action.operation==='contextClick')await point(target,r,'right');
@@ -152,7 +153,10 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
       await api.storage.session.set({guiPair:{...current,attempted}});
       let debuggerTarget=null;
       try{
-        if(!['selectNative','upload','ensureVisible'].includes(a.operation)){debuggerTarget=await attach(tab.id);if(!debuggerTarget)return fail('BRIDGE_DEBUGGER_UNAVAILABLE');}
+        if(!['selectNative','upload','ensureVisible'].includes(a.operation) && current.cdpAvailable) {
+          try{debuggerTarget=await attach(tab.id);}catch{debuggerTarget=null;}
+        }
+        if(!debuggerTarget && !['click','focus','fill','check','hover','scroll','selectNative','upload','ensureVisible'].includes(a.operation))return fail('BRIDGE_DEBUGGER_UNAVAILABLE');
         // Re-read DOM revision, label, document and viewport AFTER debugger attach and immediately before input.
         const checked=await page(tab.id,guiPair.scope,guiPair.origin,'prepare',{action:a,offset:a.offset,limit:a.limit});
         if(!checked.ok || checked.prepared?.label!==prepared.label || checked.prepared?.risk!==prepared.risk ||

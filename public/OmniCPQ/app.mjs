@@ -430,7 +430,7 @@ async function connectBrowser() {
   const epoch = accessEpoch;
   try {
     const handshake = await browserBridge.connect();
-    if (handshake.capabilities?.cdpAvailable !== true) notice('Povezan le bralni del; CDP upravljanje miške/tipkovnice v Edge ni potrjeno.');
+    if (handshake.capabilities?.cdpAvailable !== true) notice('CDP debugger ni dostopen; uporabi se omejeni DOM način (brez zanesljivih fizičnih tipk/vlečenja). Učinek vnosa je treba preveriti.');
     if (epoch !== accessEpoch || !state.ownerVerified) { await browserBridge.disconnect(); return; }
     state.browserConnected = true; state.browserStop = false;
     $('browser-tools').hidden = false;

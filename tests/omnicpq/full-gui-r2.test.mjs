@@ -25,7 +25,7 @@ function env({allowCdp=true,allowWrites=true,changeGeometryOnAttach=false}={}){
         label:obs.controls.find(c=>c.id===command.action.targetId).label,rect:changeGeometryOnAttach&&events.filter(x=>x==='attach').length>=2?{...obs.controls.find(c=>c.id===command.action.targetId).rect,cx:33}:obs.controls.find(c=>c.id===command.action.targetId).rect,
         visibleInViewport:true,risk:command.action.targetId==='c3'?'irreversible':command.action.targetId==='c2'?'business_write':'ordinary',
         checked:command.action.targetId==='c4'?false:null}};
-      else result={ok:true,method:'DOM_VALUE_EVENTS'};
+      else result={ok:true,method:command.action?.operation==='click'?'DOM_CLICK_UNTRUSTED':'DOM_VALUE_EVENTS_UNTRUSTED'};
       return [{frameId:0,result}];}},
     storage:{session:{get:async key=>({[key]:structuredClone(storage[key])}),set:async obj=>Object.assign(storage,structuredClone(obj)),remove:async key=>{delete storage[key]}}},
     debugger:{attach:async()=>{if(!allowCdp)throw Error('denied');events.push('attach')},
@@ -85,11 +85,15 @@ test('form fill issues focus, Ctrl+A, text via CDP and never uses arbitrary DOM 
   assert.equal(r.ok,true);assert(e.events.some(x=>x.name==='Input.insertText'&&x.params.text==='SINTETIČNA VREDNOST'));
   assert(e.events.some(x=>x.name==='Input.dispatchKeyEvent'&&x.params.modifiers===2&&x.params.key==='a'&&x.params.windowsVirtualKeyCode===65));
 });
-test('denied debugger fails closed; does not claim full GUI despite pairing',async()=>{
+test('denied debugger uses explicitly labelled DOM fallback; keyboard still fails closed',async()=>{
   const e=env({allowCdp:false}),token=await e.pair();
   assert.equal((await e.handler(e.request('status'),e.sender)).capabilities.cdpAvailable,false);
   const o=(await e.handler(e.request('observe',{token}),e.sender)).observation;
-  assert.equal((await e.handler(e.request('execute',{token,action:action(o,'c0','click')}),e.sender)).error,'CPQ_ACTION_OUTCOME_UNKNOWN');
+  const fallback=await e.handler(e.request('execute',{token,action:action(o,'c0','click'),guidedAuthorization:true}),e.sender);
+  assert.equal(fallback.ok,true);assert.equal(fallback.receipt.method,'DOM_CLICK_UNTRUSTED');
+  const fresh=(await e.handler(e.request('observe',{token}),e.sender)).observation;
+  const unsupported=await e.handler(e.request('execute',{token,action:action(fresh,'c0','key',{key:'Enter'}),guidedAuthorization:true}),e.sender);
+  assert.equal(unsupported.error,'BRIDGE_DEBUGGER_UNAVAILABLE');
 });
 test('client transport requires the v2 handshake and preserves evidence boundary',async()=>{
   const e=env(),token=await e.pair();
@@ -137,7 +141,16 @@ test('synthetic Angular Material DOM exposes icon-only plus, fields and masks cr
       operation:'click',expectedDocument:null,reason:'Odpri nov dokument'};
     const pre=await page({type:'prepare',scope:'order',origin,action:a});assert.equal(pre.ok,true);
     assert.equal(pre.prepared.risk,'business_write');
-    w.document.getElementById('new').disabled=true;
+    let clicked=0;w.document.getElementById('new').addEventListener('click',()=>{clicked++;w.document.getElementById('new').disabled=true;});
+    const effect=await page({type:'domApply',scope:'order',origin,action:a});assert.equal(effect.ok,true);
+    assert.equal(effect.method,'DOM_CLICK_UNTRUSTED');assert.equal(clicked,1);
     const stale=await page({type:'prepare',scope:'order',origin,action:a});assert.equal(stale.ok,false);
+    const newer=await page({type:'observe',scope:'order',origin});assert.equal(newer.ok,true);
+    const vm=newer.observation.controls.find(c=>c.label==='VM vCPU');assert(vm);
+    const fill={...a,actionId:randomUUID(),observationId:newer.observation.observationId,revision:newer.observation.revision,
+      targetId:vm.id,operation:'fill',value:'12'};
+    const filled=await page({type:'domApply',scope:'order',origin,action:fill});assert.equal(filled.ok,true);
+    assert.equal(filled.method,'DOM_VALUE_EVENTS_UNTRUSTED');assert.equal(w.document.getElementById('vm').value,'12');
+    const final=await page({type:'observe',scope:'order',origin});assert.equal(final.observation.controls.find(c=>c.label==='VM vCPU').value,'12');
   }finally{dom.window.close();}
 });

@@ -114,9 +114,30 @@ export async function cpqPageV2(command) {
   if(command.type==='prepare')return {ok:true,prepared:{schema:'omnicpq.gui.prepared.v2',targetId:a.targetId,kind:control.kind,
     label,rect:at,risk,revision,documentKey,enabled:control.enabled,value:control.value??null,checked:control.checked??null,visibleInViewport:control.visibleInViewport}};
   if(leaving && a.leaveConfirmed!==true)return fail('CPQ_UNSAVED_WORK_PROTECTED');
-  // DOM-only native selects/check reads. Trusted keyboard/pointer input is in the extension debugger transport.
+  // CDP preferred, with a bounded DOM fallback when enterprise policy denies debugger.
+  // DOM-dispatched pointer/value events are NOT trusted hardware events and success
+  // still requires a post-action observation, not a business-success assertion.
   if(command.type==='domApply') {
-    if(!['selectNative','upload','ensureVisible'].includes(a.operation))return fail('BRIDGE_INVALID_COMMAND');
+    if(!['click','focus','fill','check','hover','scroll','selectNative','upload','ensureVisible'].includes(a.operation))return fail('BRIDGE_DEBUGGER_UNAVAILABLE');
+    if(a.operation==='click') {e.click();return {ok:true,method:'DOM_CLICK_UNTRUSTED'};}
+    if(a.operation==='focus') {e.focus();return {ok:true,method:'DOM_FOCUS_UNTRUSTED'};}
+    if(a.operation==='hover'){e.dispatchEvent(new MouseEvent('mouseover',{bubbles:true}));e.dispatchEvent(new MouseEvent('mouseenter',{bubbles:false}));return {ok:true,method:'DOM_HOVER_UNTRUSTED'};}
+    if(a.operation==='scroll'){e.scrollBy?.({top:a.deltaY,left:a.deltaX||0,behavior:'instant'});return {ok:true,method:'DOM_SCROLL_UNTRUSTED'};}
+    if(a.operation==='fill') {
+      const proto=e.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;
+      const descriptor=Object.getOwnPropertyDescriptor(proto,'value');
+      if(e.isContentEditable){e.textContent=a.value;}
+      else if(descriptor?.set){descriptor.set.call(e,a.value);}else return fail('CPQ_INVALID_FIELD');
+      e.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertReplacementText',data:a.value}));
+      e.dispatchEvent(new Event('change',{bubbles:true}));
+      return {ok:true,method:'DOM_VALUE_EVENTS_UNTRUSTED'};
+    }
+    if(a.operation==='check') {
+      if(typeof a.checked!=='boolean')return fail('CPQ_INVALID_CHECK');
+      if(e.checked!==undefined){if(e.checked!==a.checked)e.click();}
+      else {e.setAttribute('aria-checked',String(a.checked));e.dispatchEvent(new Event('change',{bubbles:true}));}
+      return {ok:true,method:'DOM_CHECK_UNTRUSTED'};
+    }
     if(a.operation==='ensureVisible'){e.scrollIntoView({block:'center',inline:'nearest'});return {ok:true,method:'VIEWPORT_SCROLL'};}
     if(a.operation==='selectNative') {
       if(e.tagName!=='SELECT'||typeof a.value!=='string'||![...e.options].some(o=>o.value===a.value))return fail('CPQ_INVALID_SELECT');

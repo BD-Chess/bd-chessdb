@@ -41,7 +41,9 @@ export function validateGuiBrowser(raw,now=Date.now()){
 }
 export function guiInstructions(browser){
   if(!browser)throw BAD();
-  const actions='click, doubleClick, hover, contextClick, focus, scroll, drag, fill, key, check, selectNative';
+  const cdp=browser.capabilities?.cdpAvailable===true;
+  const actions=cdp?'click, doubleClick, hover, contextClick, focus, scroll, drag, fill, key, check, selectNative':
+    'click, hover, focus, scroll, fill, check, selectNative (DOM fallback, učinek ni nujno sprejet v Angular)';
   return `Povezan je NAMENSKI OmniCPQ GUI most v2. Dejansko opazovanje je uporabnikovo odjemalsko poročilo, ne strežniški dokaz. Obseg: ${browser.scope==='order'?'NAROČILA':'PONUDBE'}, okolje ${browser.environment}, dokument ${browser.documentKey??'še ni identificiran'}. Podprti tipi predlogov: ${actions}. Prenos datoteke zahteva uporabniško izbrano datoteko in ločeno UI dejanje, nikoli podatkov iz modelovega odgovora.
 Izključno dejanski controls z ID cN so izvedljive tarče; tudi ikonski gumbi in +. Če manjkajo relevantne kontrole, predlagaj pomik ali naslednje opazovanje paging.offset; NIKOLI ne izmišljaj ID, CSS selectorja, URL poti, stranke, cen, količin ali vrednosti. Ne reci, da je nastavitev shranjena ali naročilo oddano, dokler sveže opazovanje in poslovno stanje tega ne potrdita.
 Pri naročilu razlikuj Ponudbo za stranko od Naročila za realizacijo. Ne ustvari novega dokumenta, če uporabnik že ureja pravi dokument; ohrani documentKey. Ob odprtem dialogu obravnavaj ta dialog. Ob navigationLocked NE predlagaj odhoda, ki bi izgubil neshranjeno delo. Tipkanje/shranjevanje znotraj istega konfiguratorja je dovoljeno, če je v nalogu. Stop/Pause uporabnika ima prednost. Uporabnikova odobritev cilja pokriva običajne vmesne vnose v vodenem načinu; nepovratne/nenamerne izgube zahtevajo pregled in konkretno odobritev.
