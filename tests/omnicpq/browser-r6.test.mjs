@@ -148,8 +148,7 @@ test('complete synthetic PWA -> authenticated handler -> v2 action -> scoped bri
         assert.match(payload.instructions,/omnicpq_action/);assert.equal(o.routeScope,'order');
         onIdentity({model:'SYNTHETIC_TRANSPORT',reasoning:'low'});
         const target=o.controls.find(c=>c.label.startsWith('OMNI-SYN'));
-        onText(target?'Predlagam odpiranje obstoječega naročila.\n```omnicpq_action
-'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,
+        onText(target?'Predlagam odpiranje obstoječega naročila.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,
           targetId:target.id,operation:'click',expectedDocument:o.documentKey,reason:'Odpri obstoječe naročilo.'})+
           '\n```':'Cilj je dosežen: odprta je postavka TS Suvereni oblak v naročilu OMNI-SYN.');
         return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
