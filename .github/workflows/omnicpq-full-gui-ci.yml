@@ -1,0 +1,43 @@
+name: OmniCPQ Full GUI R2 acceptance
+on:
+  push:
+    branches: [main, work/omnicpq-full-gui-20261023-r2]
+  pull_request:
+    paths:
+      - 'public/OmniCPQ/**'
+      - 'functions/lib/omnicpq/**'
+      - 'functions/omnicpq-assistant.mjs'
+      - 'tests/omnicpq/**'
+      - 'scripts/omnicpq/**'
+permissions:
+  contents: read
+jobs:
+  isolated-gui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Syntax and static boundary
+        run: |
+          node --check public/OmniCPQ/app.mjs
+          node --check public/OmniCPQ/browser-bridge-v2.mjs
+          node --check public/OmniCPQ/extension/page-v2.mjs
+          node --check public/OmniCPQ/extension/worker-v2.mjs
+          node --check functions/lib/omnicpq/browser-v2.mjs
+          node --check functions/lib/omnicpq/browser.mjs
+          node --check functions/lib/omnicpq/instructions.mjs
+          python3 scripts/check_secret_boundary.py
+      - name: Install locked test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prepare extension and sealed PWA
+        run: |
+          node scripts/omnicpq/materialize-icons.mjs
+          node scripts/omnicpq/build-shell.mjs
+          node scripts/omnicpq/verify-shell.mjs
+      - name: New action engine plus R6.3 regression
+        run: |
+          node --test tests/omnicpq/full-gui-r2.test.mjs tests/omnicpq/browser-r6.test.mjs tests/omnicpq/ux-r6.test.mjs tests/omnicpq/pwa-r6.test.mjs
