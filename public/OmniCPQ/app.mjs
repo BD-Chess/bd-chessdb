@@ -443,7 +443,7 @@ async function connectBrowser() {
 async function executeBrowserNavigation(proposal,epoch,guided=false) {
   if (state.browserStop || state.browserPaused || !state.ownerVerified || epoch !== accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
   const before = await readBrowserObservation();
-  if (before.revision !== proposal.revision || !before.controls.some(c=>c.id===proposal.targetId && c.enabled)) throw Error('CPQ_SCREEN_CHANGED');
+  if (before.revision !== proposal.revision || !before.controls.some(c=>c.id===proposal.targetId && c.enabled!==false)) throw Error('CPQ_SCREEN_CHANGED');
   if (before.schema==='omnicpq.browser-observation.v1') {
     const legacy=await browserBridge.navigate(proposal);
     if(legacy.receipt?.outcome!=='CLICK_DISPATCHED')throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
