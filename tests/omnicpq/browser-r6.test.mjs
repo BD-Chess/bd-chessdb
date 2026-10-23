@@ -40,7 +40,7 @@ test('12 user starters: ten CPQ/B2B tasks, ECM penultimate, tests last; stable e
   assert.match(s.find(p=>p.id==='COVERAGE').message,/B2B_pokritost_in_kandidati_OmniCPQ_vXX\.docx/);
   assert.equal(starterMetadata.sha256,createHash('sha256').update(JSON.stringify(s)).digest('hex'));
   const m=JSON.parse(await readFile('public/OmniCPQ/extension/manifest.json','utf8'));
-  assert.deepEqual(m.permissions,['activeTab','scripting','storage']);assert.equal(m.host_permissions,undefined);assert.equal(m.optional_host_permissions,undefined);
+  assert.deepEqual(m.permissions,['activeTab','scripting','storage','debugger']);assert.equal(m.host_permissions,undefined);assert.equal(m.optional_host_permissions,undefined);
   const id=createHash('sha256').update(Buffer.from(m.key,'base64')).digest('hex').slice(0,32).split('').map(c=>String.fromCharCode(97+parseInt(c,16))).join('');
   assert.equal(id,bridge.BRIDGE_EXTENSION_ID);assert.deepEqual(m.externally_connectable,{matches:['https://www.mdlxdcc.org/*']});
 });

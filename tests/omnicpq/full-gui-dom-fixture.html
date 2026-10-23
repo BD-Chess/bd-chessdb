@@ -1,0 +1,11 @@
+<!doctype html><html><meta charset="utf-8"><title>SYNTHETIC CPQ</title><body>
+<main><h1>Naročila</h1><button id="plus"><mat-icon>add</mat-icon></button><label>Ime stranke<input id="name" value="Predhodno"></label><label>VM vCPU<input id="cores" type="number" value="4"></label><label>SO konfiguracija<select id="size"><option value="small">Mala</option><option value="big">Velika</option></select></label><label><input type="checkbox" id="backup"> Backup</label><button id="save">Shrani</button><button id="delete">Izbriši</button><input id="password" type="password" value="private_password"></main>
+<pre id="result">WAITING</pre>
+<script type="module">
+import {cpqPageV2} from '../../public/OmniCPQ/extension/page-v2.mjs';
+const ORIGIN='https://cpq-stg.apps.test-ocp.ts.telekom.si';
+// This is a file:// fixture: virtual location is mocked by the harness below.
+const output=document.getElementById('result');
+const observed = await cpqPageV2({type:'observe',scope:'order',origin:ORIGIN}).catch(e=>({ok:false,error:e.message}));
+output.textContent=JSON.stringify(observed);
+</script></body></html>

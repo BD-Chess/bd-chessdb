@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto';
 import {cpqLocation} from '../../../public/OmniCPQ/browser-bridge.mjs';
+import {validateGuiBrowser,guiInstructions} from './browser-v2.mjs';
 import {STARTERS,STARTER_VERSION} from '../../../public/OmniCPQ/starters.mjs';
 import {error} from './identity.mjs';
 export const starterMetadata=Object.freeze({version:STARTER_VERSION,count:STARTERS.length,
@@ -7,6 +8,7 @@ export const starterMetadata=Object.freeze({version:STARTER_VERSION,count:STARTE
 export const allowedStarter=(id,message,canonical)=>STARTERS.some(p=>p.id===id&&p.message===message)||canonical.some(p=>p.id===id&&p.message===message);
 export function validateBrowser(raw,now=Date.now()) {
   if(raw==null)return null;
+  if(raw.schema==='omnicpq.gui.observation.v2')return validateGuiBrowser(raw,now);
   const invalid=()=>{throw error('INVALID_BROWSER_CONTEXT',400);};
   const loc=cpqLocation(raw.url),at=Date.parse(raw.capturedAt);
   if(!loc || typeof raw.url!=='string'||raw.url.length>1200 || raw.schema!=='omnicpq.browser-observation.v1' || !/^[a-f0-9-]{36}$/i.test(raw.id||'') ||
@@ -32,6 +34,7 @@ export function validateBrowser(raw,now=Date.now()) {
     origin:'client_reported_extension_DOM_not_server_attested'};
 }
 export function browserInstructions(request) {
+  if(request.browser?.schema==='omnicpq.gui.observation.v2')return guiInstructions(request.browser);
   if(!request.browser)return `Povezava te PWA s CPQ brskalnikom trenutno NI vzpostavljena. Ne zatrjuj pogleda ali klika. Če uporabnik želi klikanje, usmeri ga na »CPQ upravljanje« → »Preveri povezavo s CPQ«. Ta preveri namensko razširitev OmniCPQ; če manjka, sta tam prenos in navodilo za namestitev. Razširitev ChatGPT je povezana s pogovorom v ChatGPT in se ne prenese samodejno v to PWA. Zajem slike ostane na voljo za pregled, ne za klikanje.`;
   return `PWA je za to zahtevo priložila sveže opazovanje iz izbranega CPQ zavihka prek namenske brskalniške povezave. Opazovanje je poročilo odjemalca, ne strežniška atestacija in ne poslovni vir. Imaš vsebino zaslona ter omejeno navigacijo prek controls; ne odgovori s splošnim »ne morem videti ali klikati«. Trenutni izbrani obseg je ${request.browser.routeScope==='order'?'NAROČILA':'PONUDBE'}; nasprotni zavihek je tehnično izključen. Ne menjaj izbranega dokumenta, če je uporabnikov cilj že odprt. Če je navigationLocked true, so odhodi iz urejevalnika blokirani, ker ne moremo izključiti neshranjenih sprememb. Če je dialogOpen true, obravnavaj samo odprti dialog.
 Če uporabnik zahteva navigacijo in cilj še ni odprt, izberi največ EN dejansko naveden control ter na konec odgovora dodaj en blok z jezikom omnicpq_navigation in JSON natanko te oblike:

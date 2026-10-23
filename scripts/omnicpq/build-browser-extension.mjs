@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {STARTERS} from '../../public/OmniCPQ/starters.mjs';
 const root=new URL('../../public/OmniCPQ/',import.meta.url);
 const source=new URL('extension/',root);
-const names=['manifest.json','worker.mjs','page.mjs','popup.html','popup.mjs','popup.css'];
+const names=['manifest.json','worker.mjs','page.mjs','worker-v2.mjs','page-v2.mjs','popup.html','popup.mjs','popup.css'];
 function crc32(bytes){let crc=0xffffffff;for(const b of bytes){crc^=b;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;}
 export function zipStore(entries){
   const locals=[],directory=[];let offset=0;
@@ -22,7 +22,7 @@ export function zipStore(entries){
 export async function buildBrowserExtension(){
   const entries=[];for(const name of names)entries.push(['OmniCPQ_Browser_Bridge_R6/'+name,await readFile(new URL(name,source))]);
   entries.push(['OmniCPQ_Browser_Bridge_R6/icon-32.png',await readFile(new URL('icons/favicon-32.png',root))]);
-  entries.push(['OmniCPQ_Browser_Bridge_R6/README.txt',Buffer.from('OmniCPQ Browser Bridge R6\nNavodilo: https://www.mdlxdcc.org/omnicpq/browser-help.html\nNamestitev in povezavo odobri uporabnik. Razvojna distribucija, ni objava v trgovini.\nDostop: activeTab, scripting, storage; samo izbrani CPQ in samo dovoljena navigacija.\nBrez API kljucev, gesel, zasebnega znanja, analitike ali oddaljene kode.\n')]);
+  entries.push(['OmniCPQ_Browser_Bridge_R6/README.txt',Buffer.from('OmniCPQ Browser Bridge R6\nNavodilo: https://www.mdlxdcc.org/omnicpq/browser-help.html\nNamestitev in povezavo odobri uporabnik. Razvojna distribucija, ni objava v trgovini.\nDostop: activeTab, scripting, storage, debugger; samo izbrani CPQ GUI po potrditvah.\nBrez API kljucev, gesel, zasebnega znanja, analitike ali oddaljene kode.\n')]);
   const bytes=zipStore(entries);await writeFile(new URL('OmniCPQ_Browser_Bridge_R6.zip',root),bytes);
   await writeFile(new URL('OMNICPQ_ZACETNI_POZIVI_12_R6.txt',root),STARTERS.map((p,i)=>`${i+1}. ${p.title}\n${p.message}\n`).join('\n'));
   const manifest=JSON.parse(await readFile(new URL('manifest.json',source),'utf8'));
