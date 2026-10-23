@@ -389,6 +389,7 @@ function browserProblem(error) {
     BRIDGE_TARGET_CHANGED:'Izbrani CPQ zavihek je zamenjal okolje ali zapustil CPQ. Ponovno ga poveži.',
     CPQ_SCREEN_CHANGED:'CPQ zaslon se je medtem spremenil. Dejanja nismo ponovili. Osveži opazovanje v pomočniku in ponovno vprašaj.',
     BRIDGE_UPDATE_REQUIRED:'Razširitev je starejša od protokola FULL GUI v2. Posodobi celotno mapo razširitve in klikni Znova naloži v Edge; CPQ zavihka ne osvežuj.',
+    BRIDGE_INVALID_COMMAND:'Povezan je starejši Browser Bridge. Posodobi razširitev na FULL GUI 1.1.0 ter jo znova naloži brez osvežitve CPQ urejevalnika.',
     BRIDGE_DEBUGGER_UNAVAILABLE:'Edge debugger/CDP ni dosegljiv. Upravljanje miške in tipkovnice ni potrjeno; preveri dovoljenje razširitve in organizacijsko politiko.',
     CPQ_EXPLICIT_APPROVAL_REQUIRED:'Dejanje zahteva izrecno potrditev (oddaja, izbris ali izguba neshranjenega dela). Samodejno izvajanje je ustavljeno.',
     CPQ_UNSAVED_WORK_PROTECTED:'Odprte so morebitne neshranjene spremembe. Odhod je preprečen.',
@@ -396,7 +397,6 @@ function browserProblem(error) {
     CPQ_WRITE_APPROVAL_REQUIRED:'Za spremembo je potreben uporabnikov nalog in potrditev ali vključeno vodenje.',
     CPQ_ACTION_ALREADY_ATTEMPTED:'To dejanje je bilo že poskušeno. Najprej preveri dejanski izid; ne ponavljamo.',
     CPQ_TARGET_NOT_ALLOWED:'Ta element ni dovoljena navigacija. Klika nismo izvedli.',
-    CPQ_ACTION_ALREADY_ATTEMPTED:'Ta klik je bil že poskusen. Ne ponavljamo ga; najprej preveri dejanski CPQ zaslon.',
     CPQ_ACTION_OUTCOME_UNKNOWN:'Izida klika ni mogoče potrditi. Ne ponavljamo ga. Najprej preveri dejanski CPQ zaslon.',
     BRIDGE_TIMEOUT:'Brskalniška povezava se ni odzvala. Morebitnega klika ne ponavljamo; najprej preveri CPQ.',
     BRIDGE_BUSY:'Na tem CPQ zavihku že poteka dejanje. Preveri njegov rezultat.',
@@ -416,7 +416,8 @@ async function readBrowserObservation() {
   try { o = await browserBridge.observe(); }
   catch(e) { disconnectBrowser(); throw e; }
   if (epoch !== accessEpoch || !state.ownerVerified || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
-  if (!['omnicpq.gui.observation.v2','omnicpq.browser-observation.v1'].includes(o?.schema) || !cpqLocation(o.url) || !Array.isArray(o.controls) || o.text?.length > 16000) throw Error('BRIDGE_UNAVAILABLE');
+  if (o?.schema !== 'omnicpq.gui.observation.v2') throw Error('BRIDGE_UPDATE_REQUIRED');
+  if (!cpqLocation(o.url) || !Array.isArray(o.controls) || o.text?.length > 16000) throw Error('BRIDGE_UNAVAILABLE');
   state.browserObservation = o;
   $('browser-preview').hidden = false;
   $('browser-observation').textContent = JSON.stringify({title:o.title,url:o.url,capturedAt:o.capturedAt,routeScope:o.routeScope,
@@ -444,13 +445,6 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   if (state.browserStop || state.browserPaused || !state.ownerVerified || epoch !== accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
   const before = await readBrowserObservation();
   if (before.revision !== proposal.revision || !before.controls.some(c=>c.id===proposal.targetId && c.enabled)) throw Error('CPQ_SCREEN_CHANGED');
-  if (before.schema==='omnicpq.browser-observation.v1') {
-    const legacy=await browserBridge.navigate(proposal);
-    if(legacy.receipt?.outcome!=='CLICK_DISPATCHED')throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
-    const after=await readBrowserObservation();
-    const summary=`Legacy navigacija: ${legacy.receipt.target.label}. Novo opazovanje: ${after.title}. Brez poslovne potrditve.`;
-    $('browser-result').textContent=summary;return {receipt:legacy.receipt,afterObservationId:after.id,afterRevision:after.revision,summary};
-  }
   const a={...proposal,actionId:uuid(),observationId:before.id,revision:before.revision,expectedDocument:before.documentKey,offset:before.paging?.offset??0,limit:before.paging?.limit??180};
   const prepared=await browserBridge.preview(a);
   if (!prepared || prepared.revision !== before.revision || prepared.documentKey !== before.documentKey) throw Error('CPQ_SCREEN_CHANGED');
