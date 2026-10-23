@@ -36,6 +36,6 @@ test('live byte verification includes HTML, worker, manifest and downloads; a pr
     return new Response(bytes);
   };
   const result=await verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher});
-  assert.equal(result.status,'PASS');assert.equal(result.shell_files,17);assert.equal(result.public_files_checked,22);
+  assert.equal(result.status,'PASS');assert.equal(result.shell_files,18);assert.equal(result.public_files_checked,23);
   altered=true;await assert.rejects(verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher}),/live shell differs.*index.html/);
 });

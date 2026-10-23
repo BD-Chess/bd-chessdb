@@ -1,6 +1,6 @@
 const $=id=>document.getElementById(id);
 const status=text=>{$('status').textContent=text;};
-const send=data=>chrome.runtime.sendMessage({protocol:'omnicpq.browser.v1',...data});
+const send=data=>chrome.runtime.sendMessage({protocol:'omnicpq.gui.v2',...data});
 async function tabs(){
   const [active]=await chrome.tabs.query({active:true,currentWindow:true});
   if(active && /^https:\/\/(?:cpq-stg\.apps\.test-ocp|cpq\.apps\.prod-ocp)\.ts\.telekom\.si\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(active.url||'') && !active.incognito) {
