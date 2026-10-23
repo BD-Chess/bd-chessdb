@@ -147,9 +147,10 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
       if(['irreversible','lose_unsaved'].includes(prepared.risk) && message.humanApproved!==true)return fail('CPQ_EXPLICIT_APPROVAL_REQUIRED');
       if(prepared.risk==='business_write'&&!(message.humanApproved===true||message.guidedAuthorization===true))return fail('CPQ_WRITE_APPROVAL_REQUIRED');
 
-      // one attempt is durably recorded BEFORE an effect. On timeout, observe; do not retry.
+      // Consume the observation BEFORE effect. Even a new action ID requires a fresh read after an attempted write.
+      // On timeout or unknown outcome, observe the real CPQ state; never blindly replay.
       const attempted=[...current.attempted.slice(-149),a.actionId];
-      await api.storage.session.set({guiPair:{...current,attempted}});
+      await api.storage.session.set({guiPair:{...current,attempted,lastObserved:null}});
       let debuggerTarget=null;
       try{
         if(!['selectNative','upload','ensureVisible'].includes(a.operation)){debuggerTarget=await attach(tab.id);if(!debuggerTarget)return fail('BRIDGE_DEBUGGER_UNAVAILABLE');}
