@@ -7,16 +7,31 @@ export async function cpqPage(command) {
   const visible=e=>!e.closest('[hidden],[aria-hidden="true"]') && e.getClientRects().length>0 &&
     getComputedStyle(e).visibility!=='hidden' && getComputedStyle(e).display!=='none';
   const clean=s=>String(s||'').replace(/\s+/g,' ').trim();
-  const label=e=>clean(e.getAttribute('aria-label') || e.innerText || e.textContent || e.getAttribute('title'));
+  const disabled=e=>Boolean(e.disabled || e.matches(':disabled') || e.closest('[inert],[aria-disabled="true"]'));
+  const label=e=>{
+    if(e.getAttribute('aria-label'))return clean(e.getAttribute('aria-label'));
+    // Material steppers include hidden "Editable" badges and icon ligatures in
+    // innerText. Read their actual text label, not "EditablecreatePostavke".
+    const step=e.getAttribute('role')==='tab' && e.querySelector('.mat-step-text-label');
+    if(step)return clean(step.textContent);
+    const copy=e.cloneNode(true);
+    copy.querySelectorAll('mat-icon,[hidden],[aria-hidden="true"],.material-icons,.material-symbols-outlined,.cdk-visually-hidden,svg,script,style').forEach(n=>n.remove());
+    return clean(copy.textContent || e.getAttribute('title'));
+  };
+  // Icon-only save actions still protect an editor, but a disabled save icon
+  // in the document toolbar is not evidence of pending changes.
+  const actionLabel=e=>label(e) || clean([...e.querySelectorAll('mat-icon')].map(n=>n.textContent).join(' '));
   const dangerous=/(?:^|\s)(?:shrani|potrdi|oddaj|izbriši|briši|prekliči|realiziraj|ustvari|dodaj|podpiši|generiraj|zaključi|pošlji|plačaj|naroči|save|submit|delete|create|cancel)(?:\s|$)/i;
   const scope=command.scope==='quote'?'quote':'order';
   const dialog=[...document.querySelectorAll('dialog[open],[role="dialog"],[aria-modal="true"]')].find(visible);
   const root=dialog || document;
-  const locked=[...document.querySelectorAll('button,[role="button"]')].some(e=>visible(e)&&/^(Shrani|Potrdi|Save|Submit)$/i.test(label(e)));
+  const departureLocked=()=>/\/(?:configure|edit)(?:\/|$)/i.test(location.pathname) ||
+    [...document.querySelectorAll('button,[role="button"]')].some(e=>visible(e)&&!disabled(e)&&/^(Shrani|Potrdi|Save|Submit)$/i.test(actionLabel(e)));
+  const locked=departureLocked();
   const elements=[];
   for(const e of root.querySelectorAll('a[href],[role="tab"],button,[role="button"][aria-expanded]')) {
     if(elements.length>=80)break;
-    if(!visible(e)||e.disabled||e.getAttribute('aria-disabled')==='true')continue;
+    if(!visible(e)||disabled(e))continue;
     if(e.matches('input,textarea,select,option') || (e.tagName==='BUTTON' && e.form && e.type==='submit'))continue;
     const name=label(e);if(!name || name.length>160 || dangerous.test(name))continue;
     const role=e.getAttribute('role');let kind,href;
@@ -30,7 +45,7 @@ export async function cpqPage(command) {
       if((scope==='order' && name==='Ponudbe') || (scope==='quote' && name==='Naročila'))continue;
       kind='tab';
     } else if(e.hasAttribute('aria-expanded') && (role==='button'||e.tagName==='BUTTON'))kind='expand';
-    else if(!locked && e.tagName==='BUTTON' && e.getAttribute('type')!=='submit' && /^(?:Odpri|Poglej|Konfiguriraj|Postavke|Podatki)$/.test(name))kind='view';
+    else if(!locked && e.tagName==='BUTTON' && e.getAttribute('type')!=='submit' && /^(?:Odpri|Poglej|Konfiguriraj|Postavke|Podatki)$/i.test(name))kind='view';
     else continue;
     elements.push({element:e,id:'n'+elements.length,label:name,kind,...(href?{href}:{})});
   }
@@ -52,7 +67,7 @@ export async function cpqPage(command) {
     const target=elements.find(e=>e.id===a.targetId);
     if(!target)return fail('CPQ_TARGET_NOT_ALLOWED');
     // Recheck after the asynchronous digest, immediately before dispatch.
-    if(!target.element.isConnected || !visible(target.element) || target.element.disabled || label(target.element)!==target.label ||
+    if(departureLocked()!==locked || !target.element.isConnected || !visible(target.element) || disabled(target.element) || label(target.element)!==target.label ||
       (target.href && target.element.href!==target.href))return fail('CPQ_SCREEN_CHANGED');
     target.element.scrollIntoView({block:'center'});
     target.element.click();

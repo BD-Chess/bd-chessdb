@@ -25,6 +25,7 @@ export async function buildBrowserExtension(){
   entries.push(['OmniCPQ_Browser_Bridge_R6/README.txt',Buffer.from('OmniCPQ Browser Bridge R6\nNavodilo: https://www.mdlxdcc.org/omnicpq/browser-help.html\nNamestitev in povezavo odobri uporabnik. Razvojna distribucija, ni objava v trgovini.\nDostop: activeTab, scripting, storage; samo izbrani CPQ in samo dovoljena navigacija.\nBrez API kljucev, gesel, zasebnega znanja, analitike ali oddaljene kode.\n')]);
   const bytes=zipStore(entries);await writeFile(new URL('OmniCPQ_Browser_Bridge_R6.zip',root),bytes);
   await writeFile(new URL('OMNICPQ_ZACETNI_POZIVI_12_R6.txt',root),STARTERS.map((p,i)=>`${i+1}. ${p.title}\n${p.message}\n`).join('\n'));
-  const receipt={version:'1.0.0',filename:'OmniCPQ_Browser_Bridge_R6.zip',bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};
+  const manifest=JSON.parse(await readFile(new URL('manifest.json',source),'utf8'));
+  const receipt={version:manifest.version,filename:'OmniCPQ_Browser_Bridge_R6.zip',bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};
   await writeFile(new URL('browser-extension-integrity.json',root),JSON.stringify(receipt,null,2)+'\n');return receipt;
 }
