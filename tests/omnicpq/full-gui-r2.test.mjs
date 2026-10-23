@@ -71,6 +71,9 @@ test('visible icon +: observe, preview, trusted CDP click, new observation, repl
   assert.equal(done.receipt.outcome,'OBSERVATION_AVAILABLE_NOT_BUSINESS_ATTESTED');
   assert.equal(e.events.filter(x=>x.name==='Input.dispatchMouseEvent'&&x.params.type==='mousePressed').length,1);
   assert.equal((await e.handler(e.request('execute',{token,action:a}),e.sender)).error,'CPQ_ACTION_ALREADY_ATTEMPTED');
+  const differentIdSameScreen=action(observed,'c0','click');
+  assert.equal((await e.handler(e.request('execute',{token,action:differentIdSameScreen}),e.sender)).error,'CPQ_SCREEN_CHANGED');
+  assert.equal(e.events.filter(x=>x.name==='Input.dispatchMouseEvent'&&x.params.type==='mousePressed').length,1);
 });
 test('destructive action blocked until explicit human approval; write actions respect guided grant',async()=>{
   const e=env(),token=await e.pair(),o=(await e.handler(e.request('observe',{token}),e.sender)).observation;
