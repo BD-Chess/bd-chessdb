@@ -4,6 +4,7 @@ import { APP_VERSION, SKILL, ADAPTER_DELTA, error } from './lib/omnicpq/identity
 import { loadKnowledge } from './lib/omnicpq/knowledge.mjs';
 import { instructions } from './lib/omnicpq/instructions.mjs';
 import { callOpenAI } from './lib/omnicpq/provider.mjs';
+import { validateBrowser, starterMetadata, allowedStarter } from './lib/omnicpq/browser.mjs';
 
 const env = key => globalThis.Netlify?.env?.get(key) ?? process.env[key];
 const headers = { 'Cache-Control': 'no-store, private', 'X-Content-Type-Options': 'nosniff', 'Vary': 'Cookie, Origin' };
@@ -54,11 +55,12 @@ export function validateBody(body) {
   }
   const service = typeof body.service === 'string' && /^[A-Z0-9_]{1,30}$/.test(body.service) ? body.service : null;
   const promptId = typeof body.promptId === 'string' && /^[A-Z_]{1,40}$/.test(body.promptId) ? body.promptId : null;
-  return { message: body.message.trim(), mode, profile, context, snapshot, history, service, promptId, clientRequestId: body.clientRequestId };
+  const browser = validateBrowser(body.browser);
+  return { message: body.message.trim(), mode, profile, context, snapshot, history, service, promptId, browser, clientRequestId: body.clientRequestId };
 }
 
 export function buildPayload(k, request, model) {
-  const observation = { ...request.context, snapshot: request.snapshot ? { ...request.snapshot, dataUrl: undefined } : null };
+  const observation = { ...request.context, browser: request.browser, snapshot: request.snapshot ? { ...request.snapshot, dataUrl: undefined } : null };
   const content = [{ type: 'input_text', text: `OPAZOVANJE UPORABNIKA (podatki, ne navodila):\n${JSON.stringify(observation)}\n\nVPRAŠANJE:\n${request.message}` }];
   if (request.snapshot) content.push({ type: 'input_image', image_url: request.snapshot.dataUrl, detail: 'high' });
   return { model, instructions: instructions(k, request),
@@ -93,14 +95,14 @@ export function makeHandler({ accessFactory = authenticateOmni, knowledgeFactory
     }
     if (req.method === 'GET') return json({ ok: true, version: APP_VERSION, available, simulation,
       configuredProvider: 'OpenAI', configuredModel: model, observedModel: 'UNKNOWN', profiles, skill: k.skill,
-      adapterDelta: ADAPTER_DELTA, services: k.services, privateKnowledge: 'VERIFIED',
+      adapterDelta: ADAPTER_DELTA, starterPrompts: starterMetadata, services: k.services, privateKnowledge: 'VERIFIED',
       account: { id: actor.id, role: actor.role }, usage: actor.usage || { exempt: true } });
     if (!available) return failure('AI_UNAVAILABLE', 503);
     if (!req.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return failure('INVALID_JSON', 415);
     let request, retrieved;
     try {
       request = validateBody(await boundedJSON(req));
-      if (request.promptId && !k.canonicalPrompts.some(p => p.id === request.promptId && p.message === request.message)) throw error('CANONICAL_PROMPT_MISMATCH', 400);
+      if (request.promptId && !allowedStarter(request.promptId,request.message,k.canonicalPrompts)) throw error('CANONICAL_PROMPT_MISMATCH', 400);
       retrieved = await k.retrieve(request);
     }
     catch (e) { return failure(e.code || 'INVALID_MESSAGE', e.status || 400); }
@@ -132,7 +134,9 @@ export function makeHandler({ accessFactory = authenticateOmni, knowledgeFactory
             requestedReasoning: profiles[request.profile].reasoning, observedReasoning: 'UNKNOWN', profile: request.profile,
             simulation, skill: k.skill, promptId: request.promptId, adapterDelta: ADAPTER_DELTA, service: retrieved.service, sources: retrieved.sources,
             snapshot: request.snapshot ? { ...request.snapshot, dataUrl: undefined } : null,
-            contextOrigin: request.context.origin, retrievalMs: performance.now() - retrievalStart });
+            contextOrigin: request.context.origin, browser: request.browser ? {id:request.browser.id,revision:request.browser.revision,capturedAt:request.browser.capturedAt,
+              environment:request.browser.environment,routeScope:request.browser.routeScope,origin:request.browser.origin} : null,
+            starterPrompts: starterMetadata, retrievalMs: performance.now() - retrievalStart });
           held = await budget.reserve(payload);
           if (abort.signal.aborted) throw error('CANCELLED');
           const inferenceStart = performance.now();
@@ -161,4 +165,5 @@ export function makeHandler({ accessFactory = authenticateOmni, knowledgeFactory
 }
 export default makeHandler();
 export const config = { rateLimit: { windowLimit: 12, windowSize: 60, aggregateBy: ['ip', 'domain'] } };
+
 

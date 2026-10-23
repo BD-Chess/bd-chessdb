@@ -1,11 +1,16 @@
 import { PROMPTS, SECONDARY, PILOT, PROMPT_VERSION, PROMPTS_SHA256 } from './prompts.mjs';
 import { APP_VERSION, uuid, digest, canonicalInput, sseEvents, structured, lifecycleIssues, canExportTests, hasValidLifecycle, csv, exportSession } from './core.mjs';
+import { STARTERS, STARTER_VERSION, WORK_MODES } from './starters.mjs';
+import { createBrowserBridge, navigationProposal, cpqLocation } from './browser-bridge.mjs';
 
 const $ = id => document.getElementById(id);
 const API = '/.netlify/functions/omnicpq-assistant', AUTH = '/.netlify/functions/omnicpq-auth';
 const STORAGE = 'omnicpq:workspace:v1', PREFS = 'omnicpq:preferences:v1';
+const browserBridge = createBrowserBridge();
 const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready: false, ownerVerified: false, snapshot: null,
-  capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, health: null, controller: null, otherTiming: null, role: null, accountId: null };
+  capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
+  browserConnected: false, browserObservation: null, browserStop: false, pendingDraft: null, release: null,
+  comparisonPartner: 'copilot', partnerInputs: {} };
 let installEvent, registration, accessEpoch = 0;
 const element = (tag, className, text) => { const e = document.createElement(tag); if (className) e.className = className; if (text !== undefined) e.textContent = text; return e; };
 function notice(text) { $('notice').textContent = text; $('notice').hidden = !text; }
@@ -54,7 +59,9 @@ function ownerAccess(verified) {
   $('new-chat').disabled = !verified || state.busy;
   if (!verified) {
     accessEpoch++;
+    disconnectBrowser();
     state.ready = false; state.health = null; state.controller?.abort(); disconnect(); setSnapshot(null);
+    state.pendingDraft = null; $('draft-dialog').close(); $('new-chat-dialog').close();
     $('crop-dialog').close(); $('crop-canvas').width = $('crop-canvas').height = 0;
     $('technical-info').textContent = ''; $('knowledge-status').textContent = 'Znanje: potreben je lastniški dostop.';
     $('login-form').hidden = false; $('logout').hidden = true;
@@ -79,10 +86,13 @@ function getContext() { return { text: $('context-text').value, manualUrl: $('ma
 function conversationHistory() { return state.messages.filter(m => m.role === 'user' || (m.role === 'assistant' && m.status === 'complete')).slice(-16).map(({ role, content }) => ({ role, content })); }
 function bodyForInput() { return { message: $('message').value.trim(), mode: state.mode, promptId: state.promptId, service: $('service').value || null,
   profile: state.profile, context: getContext(), snapshot: state.snapshot ? { ...state.snapshot } : null,
+  browser: $('browser-include').checked ? state.browserObservation : null,
   history: state.frozen?.body.history || conversationHistory() }; }
 function setMode(mode) {
-  state.mode = mode; $('mode-badge').textContent = PROMPTS.find(p => p.mode === mode).short;
+  state.mode = mode; $('mode-badge').textContent = WORK_MODES.find(p => p.mode === mode).short;
+  if (mode !== 'work') $('browser-auto').checked = false;
   for (const button of $('mode-nav').children) { button.classList.toggle('active', button.dataset.mode === mode); button.setAttribute('aria-pressed', String(button.dataset.mode === mode)); }
+  showWorkspaceStatus();
 }
 function clearFrozen() {
   state.frozen = null; $('frozen-badge').hidden = true; $('unfreeze-input').hidden = true;
@@ -90,13 +100,41 @@ function clearFrozen() {
 }
 function setDraft(message, mode, promptId = null) {
   if (state.busy) return;
+  if ($('message').value.trim() && $('message').value.trim() !== message.trim()) {
+    state.pendingDraft = {message,mode,promptId}; $('draft-dialog').showModal(); return;
+  }
+  applyDraft(message,mode,promptId);
+}
+function applyDraft(message,mode,promptId) {
   clearFrozen(); state.promptId = promptId; setMode(mode || 'work'); $('message').value = message; fitComposer(); localWrite(); $('message').focus();
+}
+function hasBusinessContext() {
+  return Boolean(state.messages.length || state.comparisons.length || $('message').value.trim() || $('context-text').value.trim() || $('manual-url').value.trim() ||
+    $('service').value || $('environment').value !== 'UNKNOWN' || state.snapshot || state.capture || state.browserConnected || hasComparisonDraft());
+}
+function hasComparisonDraft() {
+  const ids=['other-answer','comparison-review','other-context'];
+  return ids.some(id=>$(id).value.trim()) || Object.values(state.partnerInputs).some(p=>ids.some(id=>p[id]?.trim()));
+}
+function startNewChat(keepContext=false) {
+  if (state.busy || !state.ownerVerified) return;
+  state.messages = []; state.comparisons = []; state.promptId = null; state.pendingDraft = null; clearFrozen(); $('message').value = '';
+  state.browserStop = true; $('browser-auto').checked = false;
+  if (!keepContext) {
+    disconnect(); disconnectBrowser(); setSnapshot(null); $('context-text').value = ''; $('manual-url').value = '';
+    $('service').value = ''; $('environment').value = 'UNKNOWN'; setMode('work');
+  }
+  state.partnerInputs = {}; state.otherTiming = null;
+  for (const id of ['other-answer','comparison-review','other-context','other-model','partner-import-evidence','partner-zip-hash']) $(id).value = '';
+  $('partner-v16-confirmed').checked = false; $('comparison-count').textContent = 'Brez zapisanih primerjav.';
+  $('new-chat-dialog').close(); renderMessages(); updateComparisonGate(); showWorkspaceStatus(); fitComposer(); localWrite(); $('message').focus();
 }
 function fitComposer() { $('message').rows = Math.min(5, Math.max(2, $('message').value.split('\n').length)); }
 function setBusy(value) {
   state.busy = value; $('send').disabled = value; $('cancel').hidden = !value; $('new-chat').disabled = value || !state.ownerVerified;
   for (const b of document.querySelectorAll('#mode-nav button,#start-cards button,#quick-actions button,#freeze-input,#load-pilot')) b.disabled = value;
   $('message').setAttribute('aria-busy', String(value));
+  for (const id of ['browser-connect','browser-read']) $(id).disabled = value || !state.ownerVerified || (id === 'browser-read' && !state.browserConnected);
 }
 function download(name, value, type = 'application/json') {
   if (!mayExport()) return;
@@ -137,10 +175,11 @@ function richText(node, text) {
   }
 }
 function stamp(ms) { return Number.isFinite(ms) ? (ms / 1000).toFixed(2) + ' s' : 'UNKNOWN'; }
+function visibleAnswer(text) { return String(text).replace(/```omnicpq_navigation[\s\S]*?(?:```|$)/g,'').trimEnd(); }
 function messageNode(message) {
   const node = element('article', 'message ' + message.role), header = element('div', 'message-header');
   header.append(element('span', 'avatar', message.role === 'user' ? 'TI' : 'AI'), element('strong', '', message.role === 'user' ? 'Tvoje vprašanje' : 'OmniCPQ pomočnik'));
-  const content = element('div', 'message-text', message.content), status = element('div', 'message-status');
+  const content = element('div', 'message-text', message.role === 'assistant' ? visibleAnswer(message.content) : message.content), status = element('div', 'message-status');
   node.append(header, content, status); message.node = node; message.contentNode = content; message.statusNode = status;
   if (message.role === 'assistant' && message.status !== 'streaming') finishMessage(message);
   return node;
@@ -152,12 +191,30 @@ function finishMessage(message) {
   message.statusNode.textContent = `${message.meta?.simulation ? 'SIMULACIJA · ' : ''}${message.status === 'complete' ? 'Zaključeno' : message.status === 'cancelled' ? 'Ustavljeno · delni odgovor' : 'Delni / neuspešen odgovor'} · prvi tekst ${stamp(message.ttftMs)} · skupaj ${stamp(message.totalMs)}`;
   const actions = element('div', 'message-footer');
   const btn = (title, callback) => { const b = element('button', '', title); b.type = 'button'; b.onclick = callback; actions.append(b); };
-  btn('Kopiraj', () => copy(message.content)); btn('Markdown', () => download('OmniCPQ_odgovor.md', message.content, 'text/markdown'));
+  btn('Kopiraj', () => copy(visibleAnswer(message.content))); btn('Markdown', () => download('OmniCPQ_odgovor.md', visibleAnswer(message.content), 'text/markdown'));
   btn('JSON', () => download('OmniCPQ_odgovor.json', JSON.stringify({ content: message.content, structured: structured(message.content, message.meta?.sources), meta: message.meta, status: message.status, input: message.input, ttftMs: message.ttftMs, totalMs: message.totalMs }, null, 2)));
   // Raw actions exist before inspecting any generated object. Bad model data
   // must never make the original answer or its diagnostic export inaccessible.
   node.append(actions);
-  try { richText(message.contentNode, message.content || 'Brez prejetega besedila.'); }
+  const proposal = message.status === 'complete' ? navigationProposal(message.content, message.browserObservation) : null;
+  if (proposal) {
+    const panel = element('div','browser-action');
+    panel.append(element('p','',proposal.reason));
+    if (message.meta?.browserNavigation) panel.append(element('p','',message.meta.browserNavigation.summary));
+    else {
+      const go = element('button','','Klikni v CPQ'); go.disabled = !state.browserConnected;
+      go.onclick = async () => {
+        if (state.busy || !state.ownerVerified || !state.browserConnected) return;
+        go.disabled = true; setBusy(true); const epoch = accessEpoch;
+        try { const result = await executeBrowserNavigation(proposal,epoch); message.meta.browserNavigation = result;
+          panel.append(element('p','',result.summary)); localWrite();
+        } catch(e) { const summary = browserProblem(e); message.meta.browserNavigation = {error:e.message,summary}; panel.append(element('p','',summary)); notice(summary); }
+        finally { setBusy(false); }
+      }; panel.append(go);
+    }
+    node.append(panel);
+  }
+  try { richText(message.contentNode, visibleAnswer(message.content) || 'Naslednji korak je prikazan spodaj.'); }
   catch { message.contentNode.textContent = message.content || 'Brez prejetega besedila.'; }
   const data = structured(message.content, message.meta?.sources);
   const validation = message.meta?.lifecycleValidation;
@@ -228,16 +285,21 @@ async function health() {
     if (epoch !== accessEpoch) return;
     if (!['owner','demo'].includes(data.account?.role) && !data.simulation) throw Error('AUTH_REQUIRED');
     const nextId = data.account?.id || 'preview';
+    if (state.accountId !== nextId) disconnectBrowser();
     if (state.accountId !== nextId && (state.messages.length || state.comparisons.length || $('message').value.trim() || $('context-text').value.trim())) {
       state.messages = []; state.comparisons = []; $('message').value = ''; $('context-text').value = ''; $('manual-url').value = ''; clearFrozen(); setSnapshot(null);
     }
     state.accountId = nextId; state.role = data.account?.role || 'owner';
     $('persist').disabled = state.role === 'demo';
     if (state.role === 'demo') { state.persist = false; $('persist').checked = false; }
-    state.health = data; state.ready = data.available && data.skill?.promptsSha256 === PROMPTS_SHA256; $('simulation').hidden = !data.simulation;
+    const startersMatch = data.starterPrompts?.version === STARTER_VERSION && data.starterPrompts?.sha256 === await digest(JSON.stringify(STARTERS));
+    if (epoch !== accessEpoch) return;
+    state.health = data; state.ready = data.available && data.skill?.promptsSha256 === PROMPTS_SHA256 && startersMatch && data.version === APP_VERSION; $('simulation').hidden = !data.simulation;
     ownerAccess(true); showUsage(data.usage);
     if (data.skill?.promptsSha256 !== PROMPTS_SHA256) notice('Začetni pozivi in strežniški v16 se ne ujemajo. Pošiljanje je zadržano do uskladitve.');
-    label.textContent = data.simulation ? 'Testni predogled' : data.available ? 'Pomočnik pripravljen' : 'AI ni omogočen';
+    else if (!startersMatch) notice('Vmesnik in strežniških 12 začetnih pozivov se ne ujemata. Varno posodobi aplikacijo.');
+    else if (data.version !== APP_VERSION) notice('Različici aplikacije in strežnika se ne ujemata. Varno posodobi aplikacijo.');
+    label.textContent = data.simulation ? 'Testni predogled' : state.ready ? 'Pomočnik pripravljen' : data.available ? 'Potrebna posodobitev' : 'AI ni omogočen';
     $('connection').classList.toggle('ready', state.ready);
     $('auth-status').textContent = data.simulation ? 'Testni lokalni lastnik · brez prave prijave ali AI.' : (state.role === 'demo' ? 'Demo dostop je potrjen.' : 'Strežnik je potrdil lastniški dostop.');
     $('account-status').textContent = state.role === 'demo' ? 'Demo · dostop samo do lastnega pogovora.' : 'Lastniški dostop · obstoječa prijava MDL×DCC.';
@@ -245,11 +307,24 @@ async function health() {
     const selectedService = $('service').value;
     $('service').replaceChildren(new Option('Samodejna izbira iz vprašanja', ''), ...data.services.map(s => new Option(s.title, s.id)));
     $('service').value = selectedService;
-    $('technical-info').textContent = JSON.stringify(data, null, 2);
-    $('knowledge-status').textContent = `Dejansko naloženo ${data.skill.release} / ${data.skill.version} · ${data.skill.files} datotek · ZIP SHA-256 ${data.skill.zipSha256}. Vseh 19 pozivov se preverja po skupnem hashu.`;
+    $('technical-info').textContent = JSON.stringify({...data,release:state.release || 'UNKNOWN'}, null, 2);
+    $('knowledge-status').textContent = `Dejansko naloženo ${data.skill.release} / ${data.skill.version} · ${data.skill.files} datotek · ZIP SHA-256 ${data.skill.zipSha256}. Vmesnik: 12 preverjenih začetnih pozivov.`;
     updateComparisonGate();
+    showWorkspaceStatus();
     if (data.simulation) $('privacy-line').textContent = 'Testni predogled. Odgovore pripravi lokalni simuliran transport. Nobeno vprašanje ali slika ne gre ponudniku AI.';
   } catch { label.textContent = 'AI ni dosegljiv'; $('auth-status').textContent = 'Strežniški del ni dosegljiv. Osnutek in lokalni izvozi ostanejo uporabni.'; }
+}
+function showWorkspaceStatus() {
+  const k=state.health?.skill,service=$('service').selectedOptions?.[0]?.textContent || 'Samodejna izbira storitve';
+  const environment=state.browserObservation ? cpqLocation(state.browserObservation.url)?.environment : $('environment').value;
+  $('workspace-status').textContent = `${state.ownerVerified ? 'Prijava potrjena' : 'Potrebna prijava'} · ${k ? 'Znanje '+k.release : 'Znanje še ni potrjeno'} · ${state.ready ? 'API pripravljen' : 'API še ni pripravljen'} · ${service} · ${environment === 'UNKNOWN' ? 'Okolje ni izbrano' : environment + (state.browserConnected ? ' · povezan CPQ' : ' (ročno)')}`;
+}
+async function readReleaseInfo() {
+  try { const r=await fetch('/.well-known/bd-deploy.json',{credentials:'omit',cache:'no-store'}); if(!r.ok)return;
+    const data=await r.json();if(data.schema!=='bd.deploy.v1'||data.site!=='mdlxdcc'||!/^[a-f0-9]{40}$/.test(data.source_sha)||!/^[a-f0-9]{64}$/.test(data.fingerprint))return;
+    state.release={source_sha:data.source_sha,fingerprint:data.fingerprint,origin:'public_deploy_marker'};
+    if(state.health)$('technical-info').textContent=JSON.stringify({...state.health,release:state.release},null,2);
+  }catch { /* An unavailable public marker never grants access or blocks a draft. */ }
 }
 
 async function snapshotFromURL(dataUrl, method, previous = {}) {
@@ -306,14 +381,84 @@ async function drawCrop() {
   canvas.getContext('2d').drawImage(image, image.naturalWidth * x / 100, image.naturalHeight * y / 100, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 }
 
-async function send(event) {
+function browserProblem(error) {
+  const messages = {
+    BRIDGE_NOT_INSTALLED:'Namenska razširitev OmniCPQ še ni nameščena. V razdelku »Poveži CPQ zavihek« sta prenos in navodilo.',
+    BRIDGE_NOT_PAIRED:'Zahteva za povezavo je pripravljena. Na CPQ zavihku odpri ikono razširitve OmniCPQ, poveži izbrana zavihka in tukaj ponovno preveri povezavo.',
+    BRIDGE_PERMISSION_REQUIRED:'Dostop ni potrjen. Ikono namenske razširitve odpri neposredno na izbranem CPQ zavihku in ga ponovno poveži.',
+    BRIDGE_TARGET_CHANGED:'Izbrani CPQ zavihek je zamenjal okolje ali zapustil CPQ. Ponovno ga poveži.',
+    CPQ_SCREEN_CHANGED:'CPQ zaslon se je medtem spremenil. Klika nismo izvedli. Osveži CPQ zaslon in ponovno vprašaj.',
+    CPQ_TARGET_NOT_ALLOWED:'Ta element ni dovoljena navigacija. Klika nismo izvedli.',
+    CPQ_ACTION_ALREADY_ATTEMPTED:'Ta klik je bil že poskusen. Ne ponavljamo ga; najprej preveri dejanski CPQ zaslon.',
+    CPQ_ACTION_OUTCOME_UNKNOWN:'Izida klika ni mogoče potrditi. Ne ponavljamo ga. Najprej preveri dejanski CPQ zaslon.',
+    BRIDGE_TIMEOUT:'Brskalniška povezava se ni odzvala. Morebitnega klika ne ponavljamo; najprej preveri CPQ.',
+    BRIDGE_BUSY:'Na tem CPQ zavihku že poteka dejanje. Preveri njegov rezultat.',
+  }; return messages[error?.message] || 'CPQ povezava ni dosegljiva. Preveri izbrana zavihka in jo ponovno vzpostavi.';
+}
+function disconnectBrowser() {
+  state.browserStop = true; state.browserConnected = false; state.browserObservation = null;
+  $('browser-tools').hidden = true;
+  for (const id of ['browser-include','browser-auto']) { $(id).checked = false; $(id).disabled = true; }
+  $('browser-read').disabled = true; $('browser-disconnect').hidden = true; $('browser-preview').hidden = true;
+  $('browser-observation').textContent = ''; $('browser-status').textContent = 'Ni povezano · priklopi izbrani CPQ zavihek za branje in klikanje.';
+  browserBridge.disconnect().catch(() => {});
+}
+async function readBrowserObservation() {
+  if (!state.ownerVerified || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
+  const epoch = accessEpoch; let o;
+  try { o = await browserBridge.observe(); }
+  catch(e) { disconnectBrowser(); throw e; }
+  if (epoch !== accessEpoch || !state.ownerVerified || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
+  if (o?.schema !== 'omnicpq.browser-observation.v1' || !cpqLocation(o.url) || !Array.isArray(o.controls) || o.text?.length > 16000) throw Error('BRIDGE_UNAVAILABLE');
+  state.browserObservation = o;
+  $('browser-preview').hidden = false;
+  $('browser-observation').textContent = JSON.stringify({title:o.title,url:o.url,capturedAt:o.capturedAt,routeScope:o.routeScope,
+    navigationLocked:o.navigationLocked,dialogOpen:o.dialogOpen,fields:o.fields,text:o.text,controls:o.controls},null,2);
+  $('browser-status').textContent = `${cpqLocation(o.url).environment} · ${o.routeScope === 'order' ? 'Naročila' : 'Ponudbe'} · ${o.title}`;
+  $('browser-result').textContent = o.navigationLocked ? 'Odprt je urejevalnik s shranjevanjem ali potrjevanjem. Odhodi so zadržani zaradi možnih neshranjenih sprememb.' : 'Povezana navigacija je pripravljena. Prikazano vsebino pošljemo AI šele ob pošiljanju vprašanja.';
+  return o;
+}
+async function connectBrowser() {
+  if (!state.ownerVerified || state.busy) return;
+  const epoch = accessEpoch;
+  try {
+    await browserBridge.connect();
+    if (epoch !== accessEpoch || !state.ownerVerified) { await browserBridge.disconnect(); return; }
+    state.browserConnected = true; state.browserStop = false;
+    $('browser-tools').hidden = false;
+    $('browser-read').disabled = false; $('browser-disconnect').hidden = false;
+    for (const id of ['browser-include','browser-auto']) $(id).disabled = false;
+    $('browser-include').checked = true; clearFrozen();
+    await readBrowserObservation(); $('browser-setup').open = false; notice('CPQ povezava je potrjena. Pred pošiljanjem lahko pregledaš prebrano vsebino.');
+  } catch(e) { disconnectBrowser(); $('browser-setup').open = true; notice(browserProblem(e)); }
+}
+async function executeBrowserNavigation(proposal,epoch) {
+  if (state.browserStop || !state.ownerVerified || epoch !== accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
+  const before = await readBrowserObservation();
+  if (before.revision !== proposal.revision || !before.controls.some(c => c.id === proposal.targetId)) throw Error('CPQ_SCREEN_CHANGED');
+  if (state.browserStop || !state.ownerVerified || epoch !== accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
+  const result = await browserBridge.navigate(proposal);
+  if (result.receipt?.outcome !== 'CLICK_DISPATCHED') throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
+  const after = await readBrowserObservation();
+  const summary = `Klik izveden: ${result.receipt.target.label}. Sveže prebrano: ${after.title}. Doseženi cilj preverimo iz tega novega zaslona.`;
+  $('browser-result').textContent = summary;
+  return {receipt:result.receipt,afterObservationId:after.id,afterRevision:after.revision,summary};
+}
+
+async function send(event, browserRun = null) {
   event?.preventDefault(); if (state.busy) return;
   if (!navigator.onLine) { notice('Brez povezave. Vprašanje ostane osnutek; pozneje ga pošlji sam.'); return; }
   if (!state.ready) { notice('Pomočnik še ni dosegljiv. Preveri dostop v nastavitvah.'); return; }
   if (!$('message').value.trim()) { $('message').focus(); return; }
   setBusy(true); notice(''); const controller = new AbortController(); state.controller = controller;
-  let answer, start;
+  if (!browserRun) state.browserStop = false;
+  const run = browserRun || {goal:$('message').value.trim(),step:0,attempted:[],accountId:state.accountId,epoch:accessEpoch};
+  let answer, start, continueNavigation = false;
   try {
+    if ($('browser-include').checked) {
+      if (state.frozen) throw Error('Za zamrznjeno primerjavo izključi živo CPQ povezavo.');
+      await readBrowserObservation();
+    }
     if ($('capture-on-send').checked) {
       if (state.frozen) throw Error('Pri zamrznjenem vhodu svež zajem ni dovoljen. Odstrani zamrznitev.');
       await captureFrame();
@@ -324,10 +469,10 @@ async function send(event) {
     if (controller.signal.aborted) throw new DOMException('Cancelled', 'AbortError');
     const history = request.history;
     const inputRecord = { prompt: request.message, promptId: state.promptId, promptHash, inputHash, canonical: JSON.parse(canonical), taskId: $('pilot-task').value,
-      comparisonMode: $('comparison-mode').value, promptVersion: PROMPT_VERSION, historyHash: await digest(JSON.stringify(history)), historyCount: history.length };
+      comparisonMode: $('comparison-mode').value, promptVersion: STARTER_VERSION, automaticContinuation: Boolean(browserRun), historyHash: await digest(JSON.stringify(history)), historyCount: history.length };
     request.history = history; request.clientRequestId = uuid();
     state.messages.push({ role: 'user', content: request.message, input: inputRecord });
-    answer = { role: 'assistant', content: '', status: 'streaming', input: inputRecord, meta: {}, startedAt: new Date().toISOString(), ttftMs: null, totalMs: null };
+    answer = { role: 'assistant', content: '', status: 'streaming', input: inputRecord, browserObservation:request.browser, meta: {}, startedAt: new Date().toISOString(), ttftMs: null, totalMs: null };
     state.messages.push(answer); renderMessages(); $('message').value = ''; state.promptId = null; fitComposer();
     start = performance.now();
     const response = await fetch(API, { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request), signal: controller.signal });
@@ -345,17 +490,27 @@ async function send(event) {
       if (frame.type === 'identity') Object.assign(answer.meta, { observedModel: frame.model, observedReasoning: frame.reasoning, providerRequestId: frame.providerRequestId, responseId: frame.responseId });
       if (frame.type === 'delta' && !terminal) {
         if (answer.ttftMs === null) answer.ttftMs = performance.now() - start;
-        answer.content += frame.text; answer.contentNode.textContent = answer.content;
+        answer.content += frame.text; answer.contentNode.textContent = visibleAnswer(answer.content);
       }
       if (frame.type === 'done') { answer.status = frame.status === 'complete' ? 'complete' : 'partial'; Object.assign(answer.meta, frame); if (frame.budget) showUsage(frame.budget); terminal = true; }
       if (frame.type === 'error') { answer.status = frame.code === 'CANCELLED' ? 'cancelled' : 'partial'; answer.meta.error = frame.code; notice(issue(frame.code)); terminal = true; }
     }
     if (!terminal) answer.status = 'partial';
+    const proposal = answer.status === 'complete' ? navigationProposal(answer.content,request.browser) : null;
+    if (proposal && $('browser-auto').checked && state.mode === 'work' && !state.browserStop && !controller.signal.aborted && state.accountId === run.accountId && run.epoch === accessEpoch) {
+      const key = proposal.revision + ':' + proposal.targetId;
+      if (run.step >= 5 || run.attempted.includes(key)) notice('Samodejno vodenje se je ustavilo. Preveri zadnji CPQ zaslon in po želji nadaljuj z novim vprašanjem.');
+      else {
+        run.attempted.push(key); run.step++;
+        try { answer.meta.browserNavigation = await executeBrowserNavigation(proposal,run.epoch); continueNavigation = true; }
+        catch(e) { state.browserStop = true; const summary = browserProblem(e); answer.meta.browserNavigation = {error:e.message,summary}; notice(summary); }
+      }
+    }
     // This is a one-question attachment. A connected screen can supply a NEW frame.
     if (!state.frozen) setSnapshot(null);
   } catch (e) {
     if (answer) { answer.status = controller.signal.aborted ? 'cancelled' : 'partial'; answer.meta.error = controller.signal.aborted ? 'CANCELLED' : e.code || 'NETWORK_OR_PROTOCOL_ERROR'; }
-    notice(controller.signal.aborted ? 'Odgovor ustavljen. Prejeti del ostane v pogovoru.' : e.message);
+    notice(controller.signal.aborted ? 'Odgovor ustavljen. Prejeti del ostane v pogovoru.' : /^(BRIDGE_|CPQ_)/.test(e.message) ? browserProblem(e) : e.message);
   } finally {
     try {
       if (answer) { answer.totalMs = performance.now() - start; if (answer.status === 'streaming') answer.status = 'partial'; finishMessage(answer); }
@@ -364,11 +519,16 @@ async function send(event) {
       notice('Prikaz izhoda ni bil dokončan. Izvirno besedilo ostane v pogovoru in izvozu.');
     } finally { state.controller = null; setBusy(false); localWrite(); }
   }
+  if (continueNavigation && !state.browserStop && !controller.signal.aborted && state.browserConnected && $('browser-auto').checked && state.accountId === run.accountId && run.epoch === accessEpoch) {
+    $('message').value = `Samodejno nadaljevanje iste uporabnikove naloge po preverjenem kliku ${run.step}/5. Prvotna zahteva: ${run.goal}\nZadnji rezultat: ${answer.meta.browserNavigation.summary}\nUporabi priloženo novo opazovanje. Če je cilj dosežen, to povej brez novega klika. Ohrani isti dokument in izbrani zavihek.`;
+    state.promptId = null; await send(null,run);
+  }
 }
 
 async function freeze() {
   if (state.busy) return;
   if (!$('message').value.trim()) { notice('Najprej napiši skupno vprašanje.'); return; }
+  if ($('browser-include').checked) { notice('Za zamrznjeno primerjavo izključi živo CPQ povezavo.'); return; }
   if ($('capture-on-send').checked) { notice('Za zamrznjen vhod najprej zajemi sliko, nato izključi zajem ob pošiljanju.'); return; }
   const body = { ...bodyForInput(), history: conversationHistory() }, canonical = canonicalInput(body);
   state.frozen = { body, hash: await digest(canonical), frozenAt: new Date().toISOString(), historyHash: await digest(JSON.stringify(body.history)) };
@@ -381,15 +541,30 @@ function comparisonText() {
 }
 function comparisonReady() {
   return state.ownerVerified && state.health?.skill?.version === 'v0.1.6' && state.health?.skill?.promptsSha256 === PROMPTS_SHA256 &&
-    $('copilot-v16-confirmed').checked && $('copilot-import-evidence').value.trim().length > 15;
+    /^[a-f0-9]{64}$/.test(state.health.skill.zipSha256 || '') && $('partner-zip-hash').value.trim().toLowerCase() === state.health.skill.zipSha256 &&
+    $('partner-v16-confirmed').checked && $('partner-import-evidence').value.trim().length > 15;
+}
+function partnerTitle() { return ({copilot:'Copilot',chatgpt_native:'ChatGPT',api_other:'Drugi API'})[$('other-platform').value] || 'Izbrani pomočnik'; }
+const partnerFields=['partner-import-evidence','partner-zip-hash','other-model','other-context','other-answer','comparison-review'];
+function switchComparisonPartner() {
+  state.partnerInputs[state.comparisonPartner] = Object.fromEntries(partnerFields.map(id=>[id,$(id).value]));
+  state.partnerInputs[state.comparisonPartner].confirmed = $('partner-v16-confirmed').checked;
+  state.comparisonPartner = $('other-platform').value;
+  const next=state.partnerInputs[state.comparisonPartner] || {};
+  for(const id of partnerFields) $(id).value=next[id] || '';
+  $('partner-v16-confirmed').checked=next.confirmed === true; state.otherTiming=null;
+  $('other-timing').textContent='Ročno opazovanje · čas UNKNOWN'; updateComparisonGate();
 }
 function updateComparisonGate() {
   const ready = comparisonReady(); $('other-start').disabled = !ready; $('save-comparison').disabled = !ready;
-  $('comparison-gate').textContent = ready ? 'v16 osnova PWA je preverjena; Copilotov uvoz je naveden kot USER_REPORTED z dodanim dokazom. Primerjavo še vedno preveri po skupnem protokolu.' : 'Primerjava zadržana. PWA potrebuje preverjen v16, Copilot pa dokaz dejanskega uvoza iste izdaje.';
+  const partner=partnerTitle(); $('partner-confirm-label').textContent=`Preverjen je dejanski uvoz v16/v0.1.6 v ${partner}`;
+  $('partner-evidence-label').textContent='Dokaz uvoza · '+partner;
+  $('comparison-gate').textContent = ready ? `v16 osnova PWA je preverjena; uvoz v ${partner} je naveden kot USER_REPORTED z enakim ZIP hashom in dokazom. Enakost vhoda še preveri po skupnem protokolu.` : `Primerjava zadržana. PWA potrebuje preverjen v16, ${partner} pa potrditev, enak ZIP hash in dokaz dejanskega uvoza.`;
 }
 async function saveComparison() {
   if (!comparisonReady()) { notice('Primerjava počaka, dokler oba pomočnika ne uporabljata istega v16.'); return; }
   if (!$('other-answer').value.trim()) { notice('Za zapis primerjave dodaj dejanski odgovor drugega pomočnika.'); return; }
+  if ($('comparison-mode').value === 'frozen' && !state.frozen) { notice('Za primerjavo enakega vhoda ga najprej zamrzni in drugemu pomočniku priloži isto besedilo, zgodovino in sliko.'); return; }
   const timing = state.otherTiming;
   const input = state.frozen?.body || bodyForInput();
   const hash = state.frozen?.hash || await digest(canonicalInput(input));
@@ -400,7 +575,7 @@ async function saveComparison() {
     skill: state.health?.skill || 'UNKNOWN', adapterDelta: state.health?.adapterDelta || 'UNKNOWN',
     pwa: own ? { input: own.input, response: own.content, status: own.status, ttftMs: own.ttftMs, totalMs: own.totalMs, meta: own.meta } : { status: 'NOT_RUN' },
     other: { platform: $('other-platform').value, observedModelReasoning: $('other-model').value || 'UNKNOWN', response: $('other-answer').value,
-      skillImport: { version: 'v16/v0.1.6', evidence: $('copilot-import-evidence').value, status: 'USER_REPORTED_NOT_INDEPENDENTLY_VERIFIED' },
+      skillImport: { version: 'v16/v0.1.6', zipSha256:$('partner-zip-hash').value.trim().toLowerCase(), evidence: $('partner-import-evidence').value, status: 'USER_REPORTED_NOT_INDEPENDENTLY_VERIFIED' },
       timing: timing ? { startedAt: timing.startedAt, ttftMs: timing.first === null ? 'UNKNOWN' : timing.first - timing.start, totalMs: timing.end === null ? 'UNKNOWN' : timing.end - timing.start, method: 'manual_observation' } : 'UNKNOWN',
       contextAndSkillEvidence: contextNotes || 'UNKNOWN', usage: 'UNKNOWN', cost: 'UNKNOWN' },
     equivalence: own?.input?.inputHash === hash && contextNotes ? 'USER_RECORDED_REQUIRES_REVIEW' : 'CONTEXT_NOT_PROVEN_EQUAL',
@@ -409,13 +584,15 @@ async function saveComparison() {
 }
 
 function initCards() {
-  for (const prompt of PROMPTS) {
+  for (const prompt of WORK_MODES) {
     const nav = element('button'); nav.type = 'button'; nav.dataset.mode = prompt.mode; nav.append(element('span', '', prompt.symbol), document.createTextNode(prompt.short)); nav.onclick = () => { clearFrozen(); setMode(prompt.mode); localWrite(); }; $('mode-nav').append(nav);
+  }
+  for (const [index,prompt] of STARTERS.slice(0,3).entries()) {
     const button = element('button', 'card'); button.type = 'button'; button.dataset.prompt = prompt.id;
-    button.append(element('span', 'number', prompt.symbol), element('strong', '', prompt.title), element('p', '', prompt.description), element('span', 'arrow', '↗'));
+    button.append(element('span', 'number', String(index+1).padStart(2,'0')), element('strong', '', prompt.title), element('p', '', ['Pomoč pri delu v CPQ in z B2B storitvami.','Pokritost, omejitve in preverjeni viri znanja.','Preverjeni povezavi v STAGE in PRODUKCIJO.'][index]), element('span', 'arrow', '↗'));
     button.onclick = () => setDraft(prompt.message, prompt.mode, prompt.id); $('start-cards').append(button);
   }
-  for (const prompt of SECONDARY) { const b = element('button', '', prompt.title); b.dataset.prompt = prompt.id; b.onclick = () => { setDraft(prompt.message, prompt.mode, prompt.id); if (prompt.capture) $('context-panel').open = true; }; $('quick-actions').append(b); }
+  for (const prompt of STARTERS.slice(3)) { const b = element('button', '', prompt.title); b.dataset.prompt = prompt.id; b.onclick = () => { setDraft(prompt.message, prompt.mode, prompt.id); if (prompt.id === 'SCREEN_CONTEXT') $('browser-setup').open = !state.browserConnected; }; $('quick-actions').append(b); }
   for (const p of PILOT) $('pilot-task').add(new Option(`${p.id} · ${p.title}`, p.id));
 }
 
@@ -423,11 +600,32 @@ async function installWorker() {
   if (!('serviceWorker' in navigator) || !window.isSecureContext) { $('install-status').textContent += ' To okolje ne omogoča preverjanja service workerja.'; return; }
   try {
     registration = await navigator.serviceWorker.register(new URL('./sw.js', location.href), { scope: new URL('./', location.href).pathname });
-    const waiting = () => { if (registration.waiting) $('update-bar').hidden = false; };
-    waiting(); registration.addEventListener('updatefound', () => registration.installing?.addEventListener('statechange', waiting));
+    const waiting = () => {
+      if (registration.waiting) { $('update-bar').hidden = false; $('worker-status').textContent = 'Nov offline paket je preverjen in čaka na varno posodobitev.'; }
+      else if (registration.active?.state === 'activated') {
+        $('worker-status').textContent = 'Offline paket je aktiviran; njegovo različico še preverjam.';
+        if (typeof MessageChannel === 'function' && registration.active.postMessage) {
+          const channel = new MessageChannel();
+          const timeout = setTimeout(() => { channel.port1.close(); channel.port2.close(); },3000);
+          channel.port1.onmessage = event => {
+            const data = event.data;
+            if (data?.schema === 'omnicpq.shell-status.v1' && /^[a-f0-9]{20}$/.test(data.release)) {
+              $('worker-status').textContent = data.appVersion === APP_VERSION ? `Offline paket ${data.appVersion} je preverjen in aktiviran · ${data.release}.` : `Aktiven offline paket ${data.appVersion || 'UNKNOWN'} se razlikuje od aplikacije ${APP_VERSION}. Preveri posodobitev.`;
+            }
+            clearTimeout(timeout); channel.port1.close(); channel.port2.close();
+          };
+          registration.active.postMessage({type:'SHELL_STATUS'},[channel.port2]);
+        }
+      }
+      else if (registration.installing?.state === 'redundant') $('worker-status').textContent = 'Novega offline paketa ni bilo mogoče aktivirati. Prejšnja različica ostane na voljo.';
+      else $('worker-status').textContent = 'Brskalnik preverja celovitost offline paketa.';
+    };
+    waiting(); registration.addEventListener('updatefound', () => { waiting(); registration.installing?.addEventListener('statechange', waiting); });
+    navigator.serviceWorker.addEventListener('controllerchange',waiting);
     $('apply-update').onclick = () => {
       if (state.busy || state.snapshot) { notice('Posodobitev počaka: najprej dokončaj odgovor in uporabi ali odstrani priloženo sliko.'); return; }
-      if ($('other-answer').value.trim() || $('comparison-review').value.trim() || $('other-context').value.trim()) { notice('Pred posodobitvijo shrani in izvozi razdelano primerjavo ter počisti njena vnosna polja.'); return; }
+      if (state.capture || state.browserConnected) { notice('Pred posodobitvijo prekini deljenje zaslona in CPQ povezavo. Pogovor lahko ohraniš z lokalnim shranjevanjem ali izvozom.'); return; }
+      if (hasComparisonDraft() || state.pendingDraft) { notice('Pred posodobitvijo shrani in izvozi razdelano primerjavo ter dokončaj izbiro osnutka.'); return; }
       if (!state.persist && (state.messages.length || state.comparisons.length || $('message').value.trim() || $('context-text').value.trim() || $('manual-url').value.trim())) { notice('Za ohranitev pogovora med posodobitvijo vklopi lokalno shranjevanje v nastavitvah ali najprej izvozi in odpri nov pogovor.'); return; }
       if (!localWrite()) return;
       if (registration.waiting) { registration.waiting.postMessage({ type: 'APPLY_UPDATE' });
@@ -458,8 +656,13 @@ setMode(state.mode); renderMessages(); fitComposer();
 $('composer').addEventListener('submit', send);
 $('message').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
 for (const id of ['message', 'context-text', 'manual-url', 'environment', 'service']) $(id).addEventListener('input', () => { if (id === 'message') state.promptId = null; clearFrozen(); fitComposer(); localWrite(); });
-$('cancel').onclick = () => state.controller?.abort();
+$('cancel').onclick = () => { state.browserStop = true; state.controller?.abort(); };
+$('browser-connect').onclick = connectBrowser;
+$('browser-read').onclick = () => { if (!state.busy) readBrowserObservation().catch(e => notice(browserProblem(e))); };
+$('browser-disconnect').onclick = () => { state.controller?.abort(); disconnectBrowser(); };
+for (const id of ['browser-include','browser-auto']) $(id).onchange = () => { clearFrozen(); if (!$('browser-auto').checked) state.browserStop = true; };
 $('settings-open').onclick = () => $('settings-dialog').showModal(); $('settings-close').onclick = () => $('settings-dialog').close();
+$('refresh-status').onclick = async () => { if (!state.busy) { await health(); await readReleaseInfo(); } };
 $('context-toggle').onclick = $('welcome-context').onclick = () => { $('context-panel').open = true; $('context-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 $('profile').onchange = () => { state.profile = $('profile').value; localWrite(); };
 $('theme').onchange = () => { document.documentElement.dataset.theme = $('theme').value; localWrite(); };
@@ -467,9 +670,14 @@ $('persist').onchange = () => { state.persist = $('persist').checked; localWrite
 $('clear-data').onclick = () => { if (!confirm('Počistim lokalno shranjeni pogovor in nastavitve te aplikacije? Pogovor v odprtem zavihku ostane.')) return;
   localStorage.removeItem(STORAGE); localStorage.removeItem(PREFS); state.persist = false; $('persist').checked = false; notice('Lokalno shranjeni podatki te aplikacije so počiščeni.'); };
 $('new-chat').onclick = () => {
-  if (state.messages.length && !confirm('Začnem nov pogovor? Pred tem izvozi podatke, ki jih želiš ohraniti.')) return;
-  state.messages = []; clearFrozen(); setSnapshot(null); $('message').value = ''; $('context-text').value = ''; renderMessages(); localWrite(); $('message').focus();
+  if (state.busy || !state.ownerVerified) return;
+  if (hasBusinessContext()) $('new-chat-dialog').showModal(); else startNewChat(false);
 };
+for(const id of ['draft-cancel','draft-keep']) $(id).onclick=()=>{state.pendingDraft=null;$('draft-dialog').close();};
+$('draft-replace').onclick=()=>{const p=state.pendingDraft;if(!p||!state.ownerVerified||state.busy)return;state.pendingDraft=null;$('draft-dialog').close();applyDraft(p.message,p.mode,p.promptId);};
+$('draft-add').onclick=()=>{const p=state.pendingDraft;if(!p||!state.ownerVerified||state.busy)return;state.pendingDraft=null;$('draft-dialog').close();applyDraft($('message').value+'\n\n'+p.message,p.mode,null);};
+for(const id of ['new-chat-cancel','new-chat-stay']) $(id).onclick=()=>$('new-chat-dialog').close();
+$('new-chat-reset').onclick=()=>startNewChat(false);$('new-chat-keep').onclick=()=>startNewChat(true);
 $('export-md').onclick = () => saveSession('md'); $('export-json').onclick = () => saveSession('json');
 $('connect-screen').onclick = connectScreen; $('disconnect-screen').onclick = disconnect;
 $('capture-frame').onclick = () => captureFrame().catch(e => notice(e.message));
@@ -485,7 +693,8 @@ $('freeze-input').onclick = freeze; $('unfreeze-input').onclick = clearFrozen;
 $('copy-comparison').onclick = () => copy(comparisonText());
 $('export-snapshot').onclick = () => { if (!mayExport()) return; const snapshot = state.frozen?.body?.snapshot || state.snapshot; if (!snapshot) { notice('Ni slike za izvoz.'); return; } const a = element('a'); a.href = snapshot.dataUrl; a.download = `CPQ_${snapshot.id}.${snapshot.dataUrl.includes('image/jpeg') ? 'jpg' : 'png'}`; a.click(); };
 $('save-comparison').onclick = saveComparison;
-for (const id of ['copilot-v16-confirmed','copilot-import-evidence']) $(id).addEventListener('input', updateComparisonGate);
+for (const id of ['partner-v16-confirmed','partner-import-evidence','partner-zip-hash']) $(id).addEventListener('input', updateComparisonGate);
+$('other-platform').onchange=switchComparisonPartner;
 updateComparisonGate();
 $('export-comparison').onclick = () => download('OmniCPQ_primerjava.json', JSON.stringify({ schema: 'omnicpq.comparison.v1', exportedAt: new Date().toISOString(), records: state.comparisons, unrunPilot: PILOT.filter(p => !state.comparisons.some(c => c.taskId === p.id)).map(p => ({ ...p, status: 'NOT_RUN' })) }, null, 2));
 $('other-start').onclick = () => { state.otherTiming = { start: performance.now(), startedAt: new Date().toISOString(), first: null, end: null }; $('other-first').disabled = false; $('other-end').disabled = false; $('other-timing').textContent = 'Začetek označen ročno. Opazuj prvi vidni tekst.'; };
@@ -498,6 +707,7 @@ $('login-form').onsubmit = async event => {
     const data = await response.json(); if (!response.ok) throw Error(issue(data.error?.code));
     if (data.authenticated && data.account?.role === 'owner') {
       const nextId = data.account.id || 'owner';
+      if (state.accountId !== nextId) disconnectBrowser();
       if (state.accountId !== nextId) {
         state.messages = []; state.comparisons = []; $('message').value = ''; $('context-text').value = '';
         $('manual-url').value = ''; clearFrozen(); setSnapshot(null);
@@ -524,7 +734,7 @@ $('logout').onclick = async () => {
 };
 window.addEventListener('offline', () => { state.controller?.abort(); notice('Brez povezave. Osnutek ostane; vprašanj ne pošiljamo samodejno.'); health(); });
 window.addEventListener('online', () => { notice('Povezava je obnovljena. Vprašanje pošlji, ko želiš.'); health(); });
-window.addEventListener('beforeunload', event => { if (state.busy || (!state.persist && (state.messages.length || $('message').value.trim() || $('context-text').value.trim() || state.snapshot))) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('beforeunload', event => { if (state.busy || state.snapshot || hasComparisonDraft() || (!state.persist && hasBusinessContext())) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', disconnect);
 window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installEvent = event; $('install').hidden = false; });
 $('install').onclick = async () => { if (!installEvent) return; await installEvent.prompt(); await installEvent.userChoice; installEvent = null; $('install').hidden = true; };
@@ -540,4 +750,6 @@ const invitation = new URLSearchParams(location.hash.slice(1)).get('demo');
 if (/^[a-f0-9]{64}$/.test(invitation || '')) { $('demo-code').value = invitation; $('demo-code-details').open = true; history.replaceState(null, '', location.pathname + location.search); }
 setInterval(() => { if (state.role === 'demo' && !state.busy && navigator.onLine) health(); }, 30000);
 health(); installWorker();
+readReleaseInfo();
+
 

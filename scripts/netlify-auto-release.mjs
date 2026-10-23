@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { resolve, relative, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+import { verifyShell } from './omnicpq/verify-shell.mjs';
 
 export const SITES = Object.freeze({
   mdlxdcc: { id: '17b4124d-c197-4c0a-a711-8b2c08d91088', url: 'https://www.mdlxdcc.org' },
@@ -56,6 +57,8 @@ export async function prepare(root, output, sha, sites = Object.keys(SITES)) {
     if (site === 'bd-chess') await cp(join(root, 'public/chess'), dir, { recursive: true, force: true });
     for (const path of ['index.html', 'Trip/index.html', 'S/index.html']) await readFile(join(dir, path));
     if (site === 'bd-chess') requireValue((await readFile(join(dir, 'index.html'))).equals(await readFile(join(root, 'public/chess/index.html'))), 'Wrong ChessBest root');
+    // Inspect the exact copied final artifact, after every HTML transformation.
+    await verifyShell(join(dir,'OmniCPQ'));
     const files = await inventory(dir);
     const fp = fingerprint(site, files, functions, config);
     await mkdir(join(dir, '.well-known'), { recursive: true });
@@ -216,3 +219,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     else throw Error('Usage: netlify-auto-release.mjs prepare OUTPUT SHA [all|mdlxdcc|bd-chess] | publish OUTPUT');
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
+

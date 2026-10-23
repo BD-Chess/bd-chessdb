@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { catalogExtracts } from '../../functions/lib/omnicpq/catalog.mjs';
+import { catalogExtracts, resolveCatalogQuery } from '../../functions/lib/omnicpq/catalog.mjs';
 // Entirely synthetic public fixture. Real workbook assertions run privately.
 const shard='references/plm/B2B_01.json';
 const offers=[{code:'SYNTH.RACK',name:'Synthetic rack',shard},{code:'SYNTH.FREE',name:'Synthetic free capacity',shard}];
@@ -28,3 +28,16 @@ test('name results are marked candidates and bounded',()=>{
   const r=catalogExtracts(files,'Synthetic',{requested:true});assert.equal(r.length,2);
   assert(r.every(x=>JSON.parse(x.text).candidateOnly));
 });
+test('sentence punctuation does not erase internal identifier dots or match an extended code',()=>{
+  for(const suffix of ['.','...','?','!',',',');','.”'])assert.deepEqual(JSON.parse(catalogExtracts(files,'Poišči šifro SYNTH.RACK'+suffix)[0].text).rows.map(r=>r.row),[2,3]);
+  for(const text of ['xSYNTH.RACK','SYNTH.RACK.X','SYNTH.RACK-2','SYNTH.RACK_2'])assert.equal(catalogExtracts(files,text).length,0);
+});
+test('elliptical price followup carries one exact prior identifier; new, ambiguous or unknown current context wins',()=>{
+  const options={allowCarry:true,previous:'Poišči SYNTH.RACK.'};
+  assert.match(resolveCatalogQuery(files,'Kaj pa cena?',options),/SYNTH\.RACK/);
+  assert.match(resolveCatalogQuery(files,'Kaj pa cena?',{...options,context:'SYNTH.FREE'}),/SYNTH\.FREE/);
+  for(const change of [{allowCarry:false},{context:'SYNTH.UNKNOWN'},{context:'SYNTH.RACK in SYNTH.FREE'},{previous:'SYNTH.RACK in SYNTH.FREE'}])
+    assert.equal(resolveCatalogQuery(files,'Kaj pa cena?',{...options,...change}),'Kaj pa cena?');
+  assert.equal(resolveCatalogQuery(files,'Kaj pa cena SYNTH.UNKNOWN?',options),'Kaj pa cena SYNTH.UNKNOWN?');
+});
+

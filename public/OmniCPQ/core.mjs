@@ -1,4 +1,5 @@
-export const APP_VERSION = '1.3.0-r4';
+import { APP_VERSION } from './version.mjs';
+export { APP_VERSION };
 export const uuid = () => {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
   const bytes = crypto.getRandomValues(new Uint8Array(16));
@@ -32,11 +33,12 @@ export async function digest(value) {
   if (!globalThis.crypto?.subtle) return sha256Portable(bytes);
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
 }
-export function canonicalInput({ message, mode, service, context, snapshot, history = [] }) {
+export function canonicalInput({ message, mode, service, context, snapshot, browser = null, history = [] }) {
   return JSON.stringify({ message: message.trim(), mode, service: service || null,
     history: history.map(({ role, content }) => ({ role, content })),
     context: { text: context.text || '', manualUrl: context.manualUrl || '', environment: context.environment || 'UNKNOWN' },
-    snapshot: snapshot ? { id: snapshot.id, sha256: snapshot.sha256, capturedAt: snapshot.capturedAt, method: snapshot.method } : null });
+    snapshot: snapshot ? { id: snapshot.id, sha256: snapshot.sha256, capturedAt: snapshot.capturedAt, method: snapshot.method } : null,
+    ...(browser ? {browser} : {}) });
 }
 export async function* sseEvents(body, signal) {
   const reader = body.getReader(), decoder = new TextDecoder(); let buffer = '';
@@ -93,6 +95,8 @@ export function csv(rows) {
 export function exportSession(state) {
   // Explicit export is the only path out of memory. No cookies, images, or credentials.
   return { schema: 'omnicpq.session.v1', appVersion: APP_VERSION, exportedAt: new Date().toISOString(),
+    release: state.release || {source_sha:'UNKNOWN',fingerprint:'UNKNOWN'},
     mode: state.mode, messages: state.messages.map(({ role, content, meta, status, input, startedAt, ttftMs, totalMs }) =>
       ({ role, content, meta, status, input, startedAt, ttftMs, totalMs })), comparisons: state.comparisons || [] };
 }
+

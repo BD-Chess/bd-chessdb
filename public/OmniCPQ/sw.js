@@ -1,10 +1,10 @@
 // Only this application's reviewed, hash-verified shell. No API/auth/CPQ interception.
-const RELEASE = '09e6833f142a3a17b27b';
+const RELEASE = '7873fc3bd7cd81b0e62e';
+const APP_VERSION = '1.5.0-r6';
 const ROOT = new URL('./', self.registration.scope);
 const PREFIX = 'omnicpq-shell:' + ROOT.pathname + ':';
 const CACHE = PREFIX + RELEASE;
-const FILES = ['index.html','app.css','app.mjs','core.mjs','lifecycle-validation.mjs','prompts.mjs','manifest.webmanifest',
-  'icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','icons/original.png'];
+const FILES = ["index.html","app.css","app.mjs","core.mjs","version.mjs","lifecycle-validation.mjs","prompts.mjs","starters.mjs","browser-bridge.mjs","browser-help.html","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png","icons/favicon-32.png","icons/original.png"];
 const PATHS = new Map(FILES.map(name => [new URL(name, ROOT).pathname, name]));
 PATHS.set(ROOT.pathname, 'index.html');
 const hex = bytes => [...new Uint8Array(bytes)].map(x => x.toString(16).padStart(2, '0')).join('');
@@ -27,10 +27,14 @@ self.addEventListener('activate', event => event.waitUntil((async () => {
   for (const key of await caches.keys()) if (key.startsWith(PREFIX) && key !== CACHE) await caches.delete(key);
   await self.clients.claim();
 })()));
-self.addEventListener('message', event => { if (event.data?.type === 'APPLY_UPDATE') self.skipWaiting(); });
+self.addEventListener('message', event => {
+  if (event.data?.type === 'APPLY_UPDATE') self.skipWaiting();
+  if (event.data?.type === 'SHELL_STATUS') event.ports?.[0]?.postMessage({schema:'omnicpq.shell-status.v1',release:RELEASE,appVersion:APP_VERSION,files:FILES.length});
+});
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url), name = PATHS.get(url.pathname);
   if (event.request.method !== 'GET' || url.origin !== ROOT.origin || !name) return;
   event.respondWith((async () => (await (await caches.open(CACHE)).match(new URL(name, ROOT).href)) || fetch(event.request))());
 });
+
 

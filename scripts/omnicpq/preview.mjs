@@ -12,6 +12,7 @@ const port = Number(process.env.PORT || 4173), root = resolve('public/OmniCPQ');
 const prefix = process.env.OMNICPQ_PREVIEW_PREFIX || '/OmniCPQ/';
 if (!prefix.startsWith('/') || !prefix.endsWith('/') || prefix.includes('..')) throw Error('Invalid preview prefix');
 const allow = new Set(['index.html','app.css','app.mjs','core.mjs','lifecycle-validation.mjs','prompts.mjs','manifest.webmanifest','sw.js','shell-integrity.json',
+  'version.mjs','starters.mjs','browser-bridge.mjs','browser-help.html','OmniCPQ_Browser_Bridge_R6.zip','browser-extension-integrity.json','OMNICPQ_ZACETNI_POZIVI_12_R6.txt',
   'icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','icons/original.png']);
 if (demo) {
   process.env.OMNICPQ_KNOWLEDGE_MODE = 'file';
@@ -83,4 +84,5 @@ const server = createServer(async (incoming, outgoing) => {
 });
 server.listen(port, process.env.OMNICPQ_PREVIEW_HOST || '127.0.0.1', () => console.log(`OmniCPQ ${demo ? 'SIMULATED' : 'shell only'} preview: http://localhost:${port}${prefix}`));
 for (const signal of ['SIGTERM','SIGINT']) process.on(signal, () => server.close(() => process.exit(0)));
+
 

@@ -3,12 +3,19 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import {createHash} from 'node:crypto';
+import {SHELL_FILES} from '../scripts/omnicpq/shell-contract.mjs';
 import { prepare, fingerprint, inventory, isAlreadyPublished, checkRuns, deployArgs, verifyFunctionInventory, MARKER } from '../scripts/netlify-auto-release.mjs';
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), 'bd-netlify-release-'));
   for (const dir of ['public/chess', 'public/Trip', 'public/S', 'public/BD/O', 'functions', 'scripts']) await mkdir(join(root, dir), { recursive: true });
   const files = { 'public/index.html': 'MDL', 'public/chess/index.html': 'CHESS', 'public/Trip/index.html': 'TRIP', 'public/S/index.html': 'S', 'public/BD/O/encrypted.json': 'ciphertext', 'functions/auth.mjs': 'export const handler=()=>{}', 'netlify.toml': 'headers', 'package.json': '{}', 'package-lock.json': '{}', 'scripts/netlify-auto-release.mjs': 'release-v1' };
   for (const [name, text] of Object.entries(files)) await writeFile(join(root, name), text);
+  const shell=join(root,'public/OmniCPQ'),hashes={};
+  for(const name of SHELL_FILES){const path=join(shell,name);await mkdir(join(path,'..'),{recursive:true});const bytes=Buffer.from('SYNTHETIC '+name);await writeFile(path,bytes);hashes[name]=createHash('sha256').update(bytes).digest('hex');}
+  const release=createHash('sha256').update(JSON.stringify(hashes)).digest('hex').slice(0,20);
+  await writeFile(join(shell,'shell-integrity.json'),JSON.stringify({schema:'omnicpq.shell_integrity.v1',release,files:hashes}));
+  await writeFile(join(shell,'sw.js'),`const RELEASE = '${release}';\nconst FILES = ${JSON.stringify(SHELL_FILES)};`);
   return root;
 }
 const sha = 'a'.repeat(40);
@@ -78,3 +85,9 @@ test('actual Netlify compact function inventory confirms all handlers and reject
   assert.throws(() => verifyFunctionInventory({available_functions:[{n:'auth'}]}, files), /incomplete: maps/);
   assert.throws(() => verifyFunctionInventory({}, files), /incomplete: auth, maps/);
 });
+test('final-artifact gate rejects HTML transformed after shell sealing',async t=>{
+  const root=await fixture();t.after(()=>rm(root,{recursive:true,force:true}));
+  await writeFile(join(root,'public/OmniCPQ/index.html'),'TRANSFORMED_AFTER_HASH');
+  await assert.rejects(prepare(root,join(root,'out'),sha),/final shell hash mismatch: index.html/);
+});
+

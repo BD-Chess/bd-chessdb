@@ -4,12 +4,15 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import * as core from '../../public/OmniCPQ/core.mjs';
 import * as prompts from '../../public/OmniCPQ/prompts.mjs';
+import * as starters from '../../public/OmniCPQ/starters.mjs';
+import * as bridge from '../../public/OmniCPQ/browser-bridge.mjs';
+import {starterMetadata} from '../../functions/lib/omnicpq/browser.mjs';
 
 // Deterministic application event tests with a small DOM. Real browser/Edge QA: NOT_RUN.
 const source = await readFile(new URL('../../public/OmniCPQ/app.mjs', import.meta.url), 'utf8');
 const STORAGE = 'omnicpq:workspace:v1', PREFS = 'omnicpq:preferences:v1';
 const marker = 'SYNTHETIC_OWNER_PRIVATE_MARKER';
-const metadata = () => ({ available: true, simulation: false, account: { id: 'owner', role: 'owner' }, adapterDelta: 'TEST_ONLY', services: [{ id: 'VPI', title: 'VPI' }, { id: 'TS_SO', title: 'SO' }],
+const metadata = () => ({ available: true,version:core.APP_VERSION, simulation: false, account: { id: 'owner', role: 'owner' }, adapterDelta: 'TEST_ONLY', starterPrompts:starterMetadata, services: [{ id: 'VPI', title: 'VPI' }, { id: 'TS_SO', title: 'SO' }],
   skill: { version: 'v0.1.6', release: 'v16', files: 184, zipSha256: 'FIXTURE', promptsSha256: prompts.PROMPTS_SHA256 } });
 const denied = status => Response.json({ error: { code: status === 401 ? 'AUTH_REQUIRED' : 'OWNER_REQUIRED' } }, { status });
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
@@ -37,7 +40,7 @@ async function harness() {
     messages: [{ role: 'user', content: marker }], comparisons: [], draft: 'UNSAVED_DRAFT', context: { text: 'PRIVATE_CONTEXT', manualUrl: 'https://example.test/private', environment: 'STAGE' } })]]);
   const events = new Map(), boot = deferred(), calls = [], clipboard = [];
   let fetcher = () => boot.promise, downloads = 0;
-  const context = vm.createContext({ ...core, ...prompts,
+  const context = vm.createContext({ ...core, ...prompts, ...starters, ...bridge,
     document: { getElementById: $, createElement: tag => new Element(tag), createTextNode: text => ({ textContent: text }), querySelectorAll: () => [], addEventListener() {}, documentElement: { dataset: {} } },
     window: { isSecureContext: false, addEventListener: (name, fn) => events.set(name, fn) },
     navigator: { onLine: true, clipboard: { writeText: async text => clipboard.push(text) } },
@@ -136,4 +139,5 @@ test('comparison copy includes the exact canonical mode and service, including a
   input.service = null; assert(h.app.comparisonText().includes(JSON.stringify({ mode: 'work', service: null })));
   assert(h.app.comparisonText().includes('BREZ SLIKE'));
 });
+
 

@@ -1,5 +1,5 @@
 import { validateLifecycleAnswer } from './lifecycle.mjs';
-import { catalogExtracts } from './catalog.mjs';
+import { catalogExtracts, resolveCatalogQuery } from './catalog.mjs';
 import { resolve } from 'node:path';
 import { SKILL, error, hash } from './identity.mjs';
 import { SKILL_V15 } from './v15.mjs';
@@ -205,7 +205,8 @@ export function createRetriever({ files, manifest, packSha256 }) {
       if (request.promptId === 'COVERAGE') add('references/SERVICE_COVERAGE.md');
       if (request.promptId === 'SOURCES' || /viri znanja|izvor.{0,20}znanj|od kod.{0,20}znan/.test(question)) add('references/KNOWLEDGE_ORIGINS.md');
       const catalogRequested = request.promptId === 'PLM_CATALOG' || /\b(?:plm|cenik|sifr[a-z]*|katalog[a-z]*|kategorij[a-z]*|copa|co-pa)\b/.test(question);
-      const extracts = catalogExtracts(files, request.message, { requested: catalogRequested && service?.service_id !== 'TS_SO' && request.promptId !== 'SO_RELATIONS' });
+      const catalogQuestion = resolveCatalogQuery(files,request.message,{allowCarry:Boolean(carry && !current.row && !current.ambiguous && !selection.conflict && !unknownNewService && service?.service_id !== 'TS_SO'),context:contextFits ? request.context.text : '',previous:previous?.content || ''});
+      const extracts = catalogExtracts(files, catalogQuestion, { requested: catalogRequested && service?.service_id !== 'TS_SO' && request.promptId !== 'SO_RELATIONS' });
       if (catalogRequested || extracts.length || service?.service_id === 'TS_SO' || request.promptId === 'SO_RELATIONS') add('references/PLM_EXPORTS_20261022.md');
       if (service?.service_id === 'TS_SO' || request.promptId === 'SO_RELATIONS' || /ikt\.so\./.test(question)) add('references/PLM_SO_20261022.json');
       if (/promo_type|mmer-5890|ecm-13407|standard request|sinhronizacij.{0,30}(?:plm|mcrm)|ikt oprem/.test(question)) add('references/PILOT_R2_DIAGNOSTICS_DELNI.md');
@@ -267,4 +268,5 @@ export function createRetriever({ files, manifest, packSha256 }) {
     },
   };
 }
+
 

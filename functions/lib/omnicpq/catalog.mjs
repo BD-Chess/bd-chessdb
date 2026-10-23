@@ -6,7 +6,9 @@ export function catalogExtracts(files, question, { requested = false } = {}) {
   if (!files['references/PLM_B2B_INDEX.json']) return [];
   const index = JSON.parse(files['references/PLM_B2B_INDEX.json']);
   const q = norm(question);
-  const exact = index.offers.filter(o => o.code.length >= 3 && new RegExp(`(^|[^a-z0-9_.-])${escape(norm(o.code))}(?=$|[^a-z0-9_.-])`).test(q));
+  // Internal dots/hyphens remain identifier characters. A trailing run of full
+  // stops is punctuation only when it ends at a non-identifier boundary.
+  const exact = index.offers.filter(o => o.code.length >= 3 && new RegExp(`(^|[^a-z0-9_.-])${escape(norm(o.code))}(?=$|[^a-z0-9_.-]|\\.+(?=$|[^a-z0-9_.-]))`).test(q));
   if (!requested && !exact.length) return [];
   const terms = [...new Set(q.match(/[a-z0-9]+/g) || [])].filter(x => x.length > 2 && !stop.has(x));
   const ranked = exact.length ? exact.map(offer => ({ offer, score: 1000 })) : index.offers.map(offer => {
@@ -29,3 +31,14 @@ export function catalogExtracts(files, question, { requested = false } = {}) {
       instruction:'Ask for the offer code or distinctive name; do not invent a code, price or relationship.' }) });
   return results;
 }
+export function resolveCatalogQuery(files,question,{allowCarry=false,context='',previous=''}={}) {
+  if(!allowCarry || !/^(?:kaj pa|in|pa)\s+(?:(?:njena?|njegova?)\s+)?(?:cen[aeo]|cenik|znesek|enot[ae]|veljavnost|ddv)\s*[?!.]*$/.test(norm(question).trim()))return question;
+  // Current explicit context wins. Ambiguous/unknown current context never
+  // silently falls back to a product from an earlier conversation turn.
+  const source=context.trim() ? context : previous;
+  const found=catalogExtracts(files,source);
+  if(found.length!==1)return question;
+  const data=JSON.parse(found[0].text);
+  return data.exactCodeMatch ? question+'\nPreverjeno prenesena šifra iz '+(context.trim()?'trenutnega konteksta':'prejšnjega uporabnikovega vprašanja')+': '+data.offer.code : question;
+}
+

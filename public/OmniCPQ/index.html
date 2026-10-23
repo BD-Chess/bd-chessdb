@@ -33,10 +33,25 @@
   </section>
   <main id="workspace" hidden>
     <nav id="mode-nav" class="mode-nav" aria-label="Vrsta naloge"></nav>
+    <div class="workspace-status"><span id="workspace-status">Prijava, znanje in API še niso preverjeni.</span><button id="refresh-status">Osveži stanje</button></div>
+    <section class="browser-panel" aria-label="CPQ upravljanje">
+      <div class="browser-heading"><div><strong>CPQ upravljanje</strong><p id="browser-status" role="status">Ni povezano · priklopi izbrani CPQ zavihek za branje in klikanje.</p></div><button id="browser-connect">Preveri povezavo s CPQ</button></div>
+      <details id="browser-setup"><summary>Poveži CPQ zavihek</summary>
+        <p>Za standalone uporabi namensko razširitev OmniCPQ. Obstoječa razširitev ChatGPT povezuje brskalnik s pogovorom v ChatGPT.</p>
+        <ol><li><a href="./OmniCPQ_Browser_Bridge_R6.zip" download>Prenesi razširitev OmniCPQ</a>, razširi ZIP in v Edge odpri upravljanje razširitev. V razvijalskem načinu izberi »Load unpacked / Naloži razširjeno« ter mapo z manifest.json.</li><li>Na tej strani klikni »Preveri povezavo s CPQ«.</li><li>Na odprtem CPQ zavihku klikni ikono razširitve »OmniCPQ · povezava«, izberi Naročila ali Ponudbe in klikni »Poveži izbrana zavihka«.</li><li>Vrni se sem in ponovno preveri povezavo. Spodaj preglej prebrano vsebino, nato pošlji vprašanje.</li></ol>
+        <p class="hint">Povezava velja do 30 minut samo za izbrana zavihka. Razširitev dobi začasen dostop po kliku njene ikone na CPQ; nima dostopa do vseh strani ali gesel. <a href="./browser-help.html" target="_blank" rel="noopener noreferrer">Navodilo in obseg dostopa ↗</a></p>
+      </details>
+      <div id="browser-tools" hidden><div class="button-row"><button id="browser-read" disabled>Osveži CPQ zaslon</button><button id="browser-disconnect" hidden>Prekini CPQ povezavo</button></div>
+      <label class="check-row"><input type="checkbox" id="browser-include" disabled> Ob pošiljanju priloži svežo vsebino povezanega CPQ zavihka</label>
+      <label class="check-row"><input type="checkbox" id="browser-auto" disabled> Dovoli samodejno vodenje do 5 klikov; vsak naslednji odgovor je nov klic AI</label>
+      <details id="browser-preview" hidden><summary>Vsebina CPQ za naslednje vprašanje</summary><pre id="browser-observation"></pre></details>
+      <p class="hint" id="browser-result">Navigacija omogoča odpiranje obstoječih pogledov. Vnos, shranjevanje, potrjevanje in oddaja ostanejo uporabniški koraki.</p>
+      </div>
+    </section>
     <section id="welcome" class="welcome" aria-labelledby="welcome-heading">
       <div class="eyebrow"><span class="tiny-square"></span> TVOJ DELOVNI PROSTOR</div>
       <h1 id="welcome-heading">Kaj želiš urediti?</h1>
-      <p class="intro">Od prvega koraka v CPQ do jasne poslovne zahteve.<br class="desktop-br"> Izberi nalogo ali preprosto napiši vprašanje.</p>
+      <p class="intro">Ponudbe, naročila in konfiguracija B2B storitev.<br class="desktop-br"> Izberi enega od 12 pozivov ali napiši vprašanje.</p>
       <div class="cards" id="start-cards"></div>
       <div class="quick-label">LAHKO ZAČNEŠ TUDI TAKO</div><div class="quick-actions" id="quick-actions"></div>
       <div class="context-tip"><span class="tip-symbol">▣</span><div><strong>Pokaži, pri čem si.</strong><p>Dodaj sliko ali poveži izbrani CPQ zaslon. Pred pošiljanjem vidiš, kaj bo prejel pomočnik.</p></div><button id="welcome-context" class="text-button">Dodaj kontekst <span>↗</span></button></div>
@@ -60,8 +75,9 @@
       <div class="panel-body">
         <p class="hint">Primerjaj enak zamrznjeni vhod ali delo v živo. Odgovora drugega pomočnika ne dodaj prvemu pred zaključkom.</p>
         <p id="comparison-gate" class="hint">Primerjava je zadržana do potrditve, da oba pomočnika uporabljata isti v16 ZIP.</p>
-        <label class="check-row"><input type="checkbox" id="copilot-v16-confirmed"> Preverjen je dejanski Copilotov uvoz v16/v0.1.6, znanja, navodil in pozivov</label>
-        <label for="copilot-import-evidence">Dokaz uvoza Copilota</label><textarea id="copilot-import-evidence" rows="2" placeholder="Datum preizkusa, identiteta v16 ZIP in opaženi selektivni priklic; pripravljena datoteka sama ni dokaz uvoza."></textarea>
+        <label class="check-row"><input type="checkbox" id="partner-v16-confirmed"> <span id="partner-confirm-label">Preverjen je dejanski uvoz v16/v0.1.6 v izbranega pomočnika</span></label>
+        <label for="partner-import-evidence" id="partner-evidence-label">Dokaz uvoza · Copilot</label><textarea id="partner-import-evidence" rows="2" placeholder="Datum preizkusa, identiteta v16 ZIP in opaženi selektivni priklic; pripravljena datoteka sama ni dokaz uvoza."></textarea>
+        <label for="partner-zip-hash">SHA-256 dejansko uvoženega ZIP-a v drugem pomočniku</label><input id="partner-zip-hash" maxlength="64" autocomplete="off" spellcheck="false" placeholder="64-mestni hash skupnega v16 ZIP-a">
         <div class="form-grid"><div><label for="pilot-task">Pilotna naloga</label><select id="pilot-task"></select></div><div><label for="comparison-mode">Način primerjave</label><select id="comparison-mode"><option value="frozen">Enak zamrznjeni vhod</option><option value="live">Delo v živo</option></select></div></div>
         <div class="button-row"><button id="load-pilot">Pripravi vprašanje</button><button id="freeze-input">Zamrzni vhod</button><button id="unfreeze-input" hidden>Odstrani zamrznitev</button><button id="copy-comparison">Kopiraj skupni vhod</button><button id="export-snapshot">Izvozi sliko</button></div>
         <p id="frozen-status" class="hint">Ni zamrznjenega vhoda. Pilot: NOT_RUN.</p>
@@ -83,6 +99,8 @@
     </form>
     <p class="privacy-line" id="privacy-line">Vprašanje in izbrano sliko ob pošiljanju obdeluje <strong>OpenAI</strong>. Zgodovina se privzeto ne shranjuje.</p>
   </footer>
+  <dialog id="draft-dialog" aria-labelledby="draft-title"><div class="dialog-heading"><h2 id="draft-title">Osnutek že vsebuje besedilo</h2><button id="draft-cancel" class="icon-button" aria-label="Ohrani osnutek">×</button></div><p>Izbrani poziv lahko dodaš obstoječemu osnutku ali ga izrecno zamenjaš.</p><div class="button-row"><button id="draft-add">Dodaj k osnutku</button><button id="draft-replace">Zamenjaj osnutek</button><button id="draft-keep">Ohrani osnutek</button></div></dialog>
+  <dialog id="new-chat-dialog" aria-labelledby="new-chat-title"><div class="dialog-heading"><h2 id="new-chat-title">Nov pogovor</h2><button id="new-chat-cancel" class="icon-button" aria-label="Ohrani pogovor">×</button></div><p>Pred začetkom izvozi pogovor in primerjave, ki jih želiš ohraniti. Privzeti nov pogovor počisti tudi storitev, okolje, povezave, izsek, sliko in oba načina zajema CPQ.</p><div class="button-row"><button id="new-chat-reset" class="primary">Nov pogovor brez konteksta</button><button id="new-chat-keep">Nov pogovor z istim kontekstom</button><button id="new-chat-stay">Ohrani pogovor</button></div></dialog>
   <dialog id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-heading"><h2 id="settings-title">Nastavitve</h2><button id="settings-close" class="icon-button" aria-label="Zapri nastavitve">×</button></div>
     <section><h3>Dostop</h3><p id="account-status" class="hint">Dostop še ni potrjen.</p><button id="logout" hidden>Odjava</button></section>
     <section><h3>Pomočnik</h3><p id="knowledge-status" class="hint">Znanje: še ni potrjeno.</p><label for="profile">Profil odgovora</label><select id="profile"><option value="fast">Hiter</option><option value="careful">Premišljen</option></select><p class="hint">API profil; ni ista seja kot ChatGPT Instant. Dejanski vrnjeni model je v podatkih odgovora.</p><label for="service">Storitev</label><select id="service"><option value="">Samodejna izbira iz vprašanja</option></select></section>
@@ -92,9 +110,11 @@
       <div id="demo-invitation" hidden><label for="demo-link">Nova povezava · prikaže se samo ob izdelavi</label><input id="demo-link" type="text" readonly autocomplete="off"><button id="demo-copy">Kopiraj povezavo</button></div><div id="demo-list"></div>
     </section>
     <section><h3>Aplikacija in CPQ</h3><button id="install" hidden>Namesti aplikacijo</button><p id="install-status" class="hint">Če brskalnik podpira namestitev, uporabi njegov meni »Namesti aplikacijo«. Na iPhonu v Safariju: Deli → Dodaj na začetni zaslon.</p><div class="button-row"><a href="https://cpq-stg.apps.test-ocp.ts.telekom.si/sl/dashboard" target="_blank" rel="noopener noreferrer">OmniCPQ STAGE ↗</a><a href="https://cpq.apps.prod-ocp.ts.telekom.si/sl" target="_blank" rel="noopener noreferrer">OmniCPQ PROD ↗</a></div><p class="hint">V Edge odpri to stran in CPQ v split pogledu. Nameščeno PWA postavi ob CPQ z razporeditvijo oken. Copilot ostane ob CPQ.</p></section>
+    <p id="worker-status" class="hint" role="status">Offline paket v tem brskalniku še ni preverjen.</p>
     <details><summary>Napredni podatki</summary><pre id="technical-info">Model in znanje še nista preverjena.</pre></details>
   </dialog>
   <dialog id="crop-dialog" aria-labelledby="crop-title"><div class="dialog-heading"><h2 id="crop-title">Obreži sliko</h2><button id="crop-close" class="icon-button" aria-label="Zapri obrezovanje">×</button></div><p class="hint">Izberi izsek v odstotkih izvorne slike. Predogled spodaj je dejanski rezultat obreza.</p><div class="crop-fields"><label>X %<input id="crop-x" type="number" min="0" max="99" value="0"></label><label>Y %<input id="crop-y" type="number" min="0" max="99" value="0"></label><label>Širina %<input id="crop-width" type="number" min="1" max="100" value="100"></label><label>Višina %<input id="crop-height" type="number" min="1" max="100" value="100"></label></div><canvas id="crop-canvas"></canvas><button id="crop-apply" class="primary">Uporabi izsek</button></dialog>
   <noscript>Za klepet, dodajanje slik in shranjevanje osnutka vključi JavaScript.</noscript>
 </body></html>
+
 
