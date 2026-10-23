@@ -1,3 +1,4 @@
+import {fetchPublished} from '../scripts/published-fetch.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,mkdtemp,cp,rm} from 'node:fs/promises';
@@ -142,4 +143,41 @@ test('password-manager preparation preserves every byte in the sealed account lo
   execFileSync('python3',['-c',transform,fileURLToPath(new URL('../scripts/inject_password_manager.py',import.meta.url)),target],{stdio:'pipe'});
   for(const asset of assets){const name=asset.replace(/^\.\//,'').split('?')[0];assert.deepEqual(await readFile(path.join(target,name)),await bytes(name),'host preparation changed sealed asset '+name);}
  }finally{await rm(directory,{recursive:true,force:true});}
+});
+
+test('published GET recovers from HTTP 503 and returns the actual successful bytes',async()=>{
+ const url=new URL('https://example.test/asset.json'),init={cache:'no-store',redirect:'error'};
+ let calls=0;const waits=[];
+ const response=await fetchPublished(url,init,{fetcher:async(actual,options)=>{
+  assert.equal(actual,url);assert.equal(options,init);calls++;
+  return new Response(calls<3?'temporarily unavailable':'verified source bytes',{status:calls<3?503:200});
+ },wait:async ms=>waits.push(ms)});
+ assert.equal(await response.text(),'verified source bytes');assert.equal(calls,3);assert.deepEqual(waits,[1000,2000]);
+});
+test('persistent HTTP 503 remains a failure after exactly three public GET attempts',async()=>{
+ let calls=0;const waits=[];
+ const response=await fetchPublished('https://example.test/asset.json',{},{
+  fetcher:async()=>{calls++;return new Response('still unavailable',{status:503});},wait:async ms=>waits.push(ms)});
+ assert.equal(response.ok,false);assert.equal(response.status,503);assert.equal(await response.text(),'still unavailable');
+ assert.equal(calls,3);assert.deepEqual(waits,[1000,2000]);
+});
+test('published GET does not retry authentication, missing-file, rate-limit or other HTTP failures',async()=>{
+ for(const status of [401,403,404,429,500]){
+  let calls=0,waits=0;
+  const response=await fetchPublished('https://example.test/asset.json',{},{
+   fetcher:async()=>{calls++;return new Response('failure',{status});},wait:async()=>{waits++;}});
+  assert.equal(response.status,status);assert.equal(calls,1);assert.equal(waits,0);
+ }
+});
+test('published GET preserves network and redirect rejection instead of retrying them',async()=>{
+ const original=new TypeError('redirect not allowed');let calls=0;
+ await assert.rejects(fetchPublished('https://example.test/asset.json',{redirect:'error'},{
+  fetcher:async()=>{calls++;throw original;},wait:async()=>assert.fail('unexpected retry')}),err=>err===original);
+ assert.equal(calls,1);
+});
+test('published verification refuses mutation methods before making any request',async()=>{
+ for(const method of ['POST','post','PUT','DELETE']){
+  await assert.rejects(fetchPublished('https://example.test/asset.json',{method},{
+   fetcher:async()=>assert.fail('mutation request attempted')}),/PUBLISHED_FETCH_GET_ONLY/);
+ }
 });

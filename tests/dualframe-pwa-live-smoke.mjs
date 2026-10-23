@@ -1,10 +1,11 @@
+import {fetchPublished} from '../scripts/published-fetch.mjs';
 import {verifyDFC} from '../scripts/dfc-verify-live.mjs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const raw=process.env.PWA_BASE_URL||'https://bd-chess.github.io/bd-chessdb/';
 const base=new URL(raw.endsWith('/')?raw:raw+'/',raw);
 const appRoot=new URL('Nara/dualframe-lab/',base);
-const get=async path=>{const response=await fetch(new URL(path,appRoot),{cache:'no-store',redirect:'error'});if(!response.ok)throw Error('PWA_LIVE_HTTP_'+response.status+' '+path);return response;};
+const get=async path=>{const response=await fetchPublished(new URL(path,appRoot),{cache:'no-store',redirect:'error'});if(!response.ok)throw Error('PWA_LIVE_HTTP_'+response.status+' '+path);return response;};
 const [htmlResponse,manifestResponse,releaseResponse,workerResponse]=await Promise.all(['','manifest.webmanifest','release.json','sw.js'].map(get));
 const html=await htmlResponse.text(),manifest=await manifestResponse.json(),release=await releaseResponse.json(),worker=await workerResponse.text();
 const found=worker.match(/const ASSETS=(\[[\s\S]*?\]);/);if(!found)throw Error('PWA_LIVE_ASSET_LIST_MISSING');
