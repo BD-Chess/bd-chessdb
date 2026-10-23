@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {webcrypto} from 'node:crypto';
 import vm from 'node:vm';
 import {APP_VERSION} from '../../public/OmniCPQ/version.mjs';
-import {verifyShell} from '../../scripts/omnicpq/verify-shell.mjs';
+import {verifyShell,verifyLiveShell} from '../../scripts/omnicpq/verify-shell.mjs';
 test('final protected PWA bytes pass integrity; fresh install and explicit old-worker update preserve foreign caches and never intercept APIs',async()=>{
   const root='public/OmniCPQ',source=await readFile(root+'/sw.js','utf8'),manifest=JSON.parse(await readFile(root+'/shell-integrity.json','utf8'));
   assert.equal((await verifyShell(root)).status,'PASS');
@@ -23,8 +23,19 @@ test('final protected PWA bytes pass integrity; fresh install and explicit old-w
     assert(stores.has(foreign));assert(!stores.has(old));assert.equal(claims,1);
     let status;listeners.message({data:{type:'SHELL_STATUS'},ports:[{postMessage:v=>{status=v;}}]});
     assert.equal(status.release,manifest.release);assert.equal(status.appVersion,APP_VERSION);assert.equal(status.files,Object.keys(manifest.files).length);
+    let help;listeners.fetch({request:new Request('https://example.test'+prefix+'browser-help'),respondWith:p=>{help=p;}});assert.equal((await help).ok,true);
     for(const url of ['https://example.test/.netlify/functions/omnicpq-assistant','https://cpq.example.test/sl/order']){
       let intercepted=false;listeners.fetch({request:new Request(url),respondWith:()=>{intercepted=true;}});assert.equal(intercepted,false);
     }
   }
+});
+test('live byte verification includes HTML, worker, manifest and downloads; a provider URL rewrite cannot pass',async()=>{
+  let altered=false;const fetcher=async value=>{
+    const name=new URL(value).pathname.slice('/omnicpq/'.length);let bytes=await readFile('public/OmniCPQ/'+name);
+    if(altered && name==='index.html')bytes=Buffer.concat([bytes,Buffer.from('PROVIDER_REWRITE')]);
+    return new Response(bytes);
+  };
+  const result=await verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher});
+  assert.equal(result.status,'PASS');assert.equal(result.shell_files,17);assert.equal(result.public_files_checked,22);
+  altered=true;await assert.rejects(verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher}),/live shell differs.*index.html/);
 });

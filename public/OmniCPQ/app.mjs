@@ -620,7 +620,17 @@ async function installWorker() {
       else if (registration.installing?.state === 'redundant') $('worker-status').textContent = 'Novega offline paketa ni bilo mogoče aktivirati. Prejšnja različica ostane na voljo.';
       else $('worker-status').textContent = 'Brskalnik preverja celovitost offline paketa.';
     };
-    waiting(); registration.addEventListener('updatefound', () => { waiting(); registration.installing?.addEventListener('statechange', waiting); });
+    let installationGeneration = 0;
+    const watchInstalling = () => {
+      const worker = registration.installing; if (!worker) return;
+      const generation = ++installationGeneration;
+      worker.addEventListener('statechange', () => {
+        if (generation !== installationGeneration) return;
+        if (worker.state === 'redundant') $('worker-status').textContent = 'Novega offline paketa ni bilo mogoče aktivirati. Prejšnja različica ostane na voljo.';
+        else waiting();
+      });
+    };
+    watchInstalling(); waiting(); registration.addEventListener('updatefound', () => { watchInstalling(); waiting(); });
     navigator.serviceWorker.addEventListener('controllerchange',waiting);
     $('apply-update').onclick = () => {
       if (state.busy || state.snapshot) { notice('Posodobitev počaka: najprej dokončaj odgovor in uporabi ali odstrani priloženo sliko.'); return; }

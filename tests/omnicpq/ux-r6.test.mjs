@@ -89,3 +89,12 @@ test('safe update waits for an unsaved draft and a connected CPQ, then requests 
     assert.match(h.w.localStorage.getItem('omnicpq:workspace:v1'),/UNSAVED_SYNTHETIC_DRAFT/);
   }finally{h.dom.window.close();}
 });
+test('first-install state listener reports a failed integrity install even when updatefound preceded registration',async()=>{
+  const h=await harness();try{
+    let changed;const worker={state:'installing',addEventListener:(name,fn)=>{changed=fn;}};
+    const registration={installing:worker,addEventListener:()=>{}};
+    Object.defineProperty(h.w,'isSecureContext',{value:true});Object.defineProperty(h.w.navigator,'serviceWorker',{value:{register:async()=>registration,addEventListener:()=>{}}});
+    await h.app.installWorker();assert.equal(typeof changed,'function');worker.state='redundant';registration.installing=null;changed();
+    assert.match(h.$('worker-status').textContent,/ni bilo mogoče aktivirati/);
+  }finally{h.dom.window.close();}
+});

@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { resolve, relative, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { verifyShell } from './omnicpq/verify-shell.mjs';
+import { verifyShell, verifyLiveShell } from './omnicpq/verify-shell.mjs';
 
 export const SITES = Object.freeze({
   mdlxdcc: { id: '17b4124d-c197-4c0a-a711-8b2c08d91088', url: 'https://www.mdlxdcc.org' },
@@ -205,6 +205,7 @@ export async function publish(root, output) {
     requireValue(liveAsset, 'No static verification asset');
     const response = await fetch(SITES[site].url + '/' + liveAsset.path + '?release=' + id, { cache: 'no-store', signal: AbortSignal.timeout(30000) });
     requireValue(response.ok && sha256(Buffer.from(await response.arrayBuffer())) === liveAsset.sha256, 'Live static asset does not match');
+    receipt.omnicpq_live = await verifyLiveShell(SITES[site].url,join(prepared.dir,'OmniCPQ'));
     receipt.status = 'LIVE_VERIFIED'; receipt.completed_at = new Date().toISOString(); receipt.function_count = expectedFunctions.length; receipt.static_files = prepared.files.length; receipt.live_asset = liveAsset.path; await save();
     console.log(JSON.stringify({ site, status: receipt.status, deploy_id: id, source_sha: sha, build_id: null }));
   }

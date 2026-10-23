@@ -48,3 +48,5 @@ The 2026-10-23 review and its evidence ZIP were read and their eleven internal h
 
 Desktop/mobile changes include a compact disconnected browser panel, larger mobile privacy text and touch targets, visible login/knowledge/API/service/environment status and a GET-only refresh. Native PWA installation, mobile keyboard behavior and real extension installation require separate device checks and are not implied by synthetic tests.
 
+R6.1 additionally accounts for actual provider processing. On the first R6 deploy the final prepared HTML hash was correct, but Netlify Pretty URLs rewrote the new browser-help.html link in served HTML. The source now uses an extensionless relative help link, retaining site-wide Pretty URLs and security settings. The publisher compares all 17 live shell assets plus the manifest, worker and three downloads against the exact prepared bytes before recording LIVE_VERIFIED. The live checker shares only the existing bounded public GET recovery for HTTP 503; it never normalizes altered HTML into an accepted hash.
+

@@ -1,12 +1,13 @@
 // Only this application's reviewed, hash-verified shell. No API/auth/CPQ interception.
-const RELEASE = '7873fc3bd7cd81b0e62e';
-const APP_VERSION = '1.5.0-r6';
+const RELEASE = '5e20bc06657ad3b797fc';
+const APP_VERSION = '1.5.1-r6.1';
 const ROOT = new URL('./', self.registration.scope);
 const PREFIX = 'omnicpq-shell:' + ROOT.pathname + ':';
 const CACHE = PREFIX + RELEASE;
 const FILES = ["index.html","app.css","app.mjs","core.mjs","version.mjs","lifecycle-validation.mjs","prompts.mjs","starters.mjs","browser-bridge.mjs","browser-help.html","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png","icons/favicon-32.png","icons/original.png"];
 const PATHS = new Map(FILES.map(name => [new URL(name, ROOT).pathname, name]));
 PATHS.set(ROOT.pathname, 'index.html');
+PATHS.set(new URL('browser-help',ROOT).pathname,'browser-help.html');
 const hex = bytes => [...new Uint8Array(bytes)].map(x => x.toString(16).padStart(2, '0')).join('');
 self.addEventListener('install', event => event.waitUntil((async () => {
   const manifestResponse = await fetch(new URL('shell-integrity.json', ROOT), { cache: 'no-store', credentials: 'omit' });

@@ -77,6 +77,7 @@ const server = createServer(async (incoming, outgoing) => {
     }
     let filename = url.pathname.startsWith(prefix) ? decodeURIComponent(url.pathname.slice(prefix.length)) : null;
     if (filename === '') filename = 'index.html';
+    if (filename === 'browser-help') filename = 'browser-help.html';
     if (!filename || !allow.has(filename) || !resolve(root, filename).startsWith(root + sep)) { outgoing.writeHead(404); outgoing.end('Not found'); return; }
     const bytes = await readFile(resolve(root, filename));
     outgoing.writeHead(200, { 'Content-Type':mime[extname(filename)] || 'application/octet-stream','Cache-Control':'no-store','X-Content-Type-Options':'nosniff' }); outgoing.end(bytes);
