@@ -98,3 +98,13 @@ test('first-install state listener reports a failed integrity install even when 
     assert.match(h.$('worker-status').textContent,/ni bilo mogoče aktivirati/);
   }finally{h.dom.window.close();}
 });
+test('activation clears a previously visible update banner when no waiting worker remains',async()=>{
+  const h=await harness();try{
+    let controllerChanged;const registration={waiting:{postMessage:()=>{}},active:{state:'activated'},addEventListener:()=>{}};
+    Object.defineProperty(h.w,'isSecureContext',{value:true});
+    Object.defineProperty(h.w.navigator,'serviceWorker',{value:{register:async()=>registration,addEventListener:(name,fn)=>{if(name==='controllerchange')controllerChanged=fn;}}});
+    await h.app.installWorker();assert.equal(h.$('update-bar').hidden,false);
+    registration.waiting=null;controllerChanged();
+    assert.equal(h.$('update-bar').hidden,true);assert.match(h.$('worker-status').textContent,/aktiviran/);
+  }finally{h.dom.window.close();}
+});

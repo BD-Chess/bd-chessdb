@@ -601,6 +601,7 @@ async function installWorker() {
   try {
     registration = await navigator.serviceWorker.register(new URL('./sw.js', location.href), { scope: new URL('./', location.href).pathname });
     const waiting = () => {
+      $('update-bar').hidden = !registration.waiting;
       if (registration.waiting) { $('update-bar').hidden = false; $('worker-status').textContent = 'Nov offline paket je preverjen in čaka na varno posodobitev.'; }
       else if (registration.active?.state === 'activated') {
         $('worker-status').textContent = 'Offline paket je aktiviran; njegovo različico še preverjam.';
