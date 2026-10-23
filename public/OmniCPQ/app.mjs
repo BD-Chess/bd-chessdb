@@ -454,12 +454,12 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   const a={...proposal,actionId:uuid(),observationId:before.id,revision:before.revision,expectedDocument:before.documentKey,offset:before.paging?.offset??0,limit:before.paging?.limit??180};
   const prepared=await browserBridge.preview(a);
   if (!prepared || prepared.revision !== before.revision || prepared.documentKey !== before.documentKey) throw Error('CPQ_SCREEN_CHANGED');
-  const isMaterial=['business_write','irreversible','lose_unsaved'].includes(prepared.risk) || ['fill','check','selectNative'].includes(a.operation);
+  const isMaterial=['business_write','irreversible','lose_unsaved','unknown_impact'].includes(prepared.risk) || ['fill','check','selectNative'].includes(a.operation);
   if (isMaterial && state.role !== 'owner') throw Error('CPQ_OWNER_REQUIRED');
   let humanApproved=!guided;
-  if (['irreversible','lose_unsaved'].includes(prepared.risk)) {
+  if (['irreversible','lose_unsaved','unknown_impact'].includes(prepared.risk)) {
     if (guided) throw Error('CPQ_EXPLICIT_APPROVAL_REQUIRED');
-    const description=prepared.risk==='lose_unsaved'?'Odhod lahko izgubi neshranjene spremembe.':'Nepovratno ali zunanje poslovno dejanje.';
+    const description=prepared.risk==='lose_unsaved'?'Odhod lahko izgubi neshranjene spremembe.':prepared.risk==='unknown_impact'?'Učinka neoznačene kontrole ni mogoče vnaprej zanesljivo določiti.':'Nepovratno ali zunanje poslovno dejanje.';
     humanApproved=confirm(`${description}\n\nCPQ: ${prepared.label}\nDokument: ${before.documentKey||'nov dokument'}\nDejanje: ${a.operation}\n\nIzvedem?`);
     if (!humanApproved) throw Error('CPQ_ACTION_CANCELLED_BY_USER');
     if (prepared.risk==='lose_unsaved') a.leaveConfirmed=true;

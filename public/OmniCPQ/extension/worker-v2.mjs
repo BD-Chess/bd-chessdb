@@ -6,7 +6,7 @@ const fail=error=>({ok:false,error});
 export function assistantUrl(value){try{const u=new URL(value);return u.origin===APP_ORIGIN && /^\/omnicpq\/(?:index\.html)?$/i.test(u.pathname) && !u.username&&!u.password;}catch{return false;}}
 export function cpqUrl(value){try{const u=new URL(value);return CPQ_ORIGINS.includes(u.origin)&&/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname)&&!u.username&&!u.password;}catch{return false;}}
 const keyNames=new Set(['Enter','Tab','Escape','ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Backspace','Delete','Home','End','PageUp','PageDown','Space','Ctrl+A','Ctrl+C','Ctrl+V','Shift+Tab']);
-const operations=new Set(['click','doubleClick','hover','contextClick','focus','scroll','drag','fill','key','check','selectNative','upload']);
+const operations=new Set(['click','doubleClick','hover','contextClick','focus','scroll','drag','fill','key','check','selectNative','upload','ensureVisible']);
 export function validateAction(action) {
   const a=action;
   if(!a||a.schema!=='omnicpq.gui.action.v2'||typeof a.actionId!=='string'||!/^[a-f0-9-]{36}$/i.test(a.actionId)||
@@ -18,7 +18,7 @@ export function validateAction(action) {
   if(a.operation==='key'&&!keyNames.has(a.key))return false;
   if(a.operation==='check'&&typeof a.checked!=='boolean')return false;
   if(a.operation==='scroll'&&(!Number.isFinite(a.deltaY)||Math.abs(a.deltaY)>1800||Math.abs(a.deltaX||0)>1800))return false;
-  if(a.operation==='drag'&&(!Number.isFinite(a.endX)||!Number.isFinite(a.endY)))return false;
+  if(a.operation==='drag'&&(!Number.isFinite(a.endX)||!Number.isFinite(a.endY)||a.endX<0||a.endY<0||a.endX>10000||a.endY>10000))return false;
   if(a.operation==='upload'&&(!a.file || typeof a.file.name!=='string'||a.file.name.length>160||typeof a.file.dataUrl!=='string'||a.file.dataUrl.length>2700000))return false;
   const whitelist=['schema','actionId','observationId','revision','targetId','operation','reason','value','key','checked','deltaY','deltaX',
     'endX','endY','expectedDocument','offset','limit','file','commit','leaveConfirmed'];
@@ -27,7 +27,7 @@ export function validateAction(action) {
 }
 const cap = Object.freeze({
   schema:'omnicpq.gui.capabilities.v2',protocol:PROTOCOL,observation:true,
-  pointer:['click','doubleClick','hover','contextClick','scroll','drag'],keyboard:['key','fill','focus'],
+  pointer:['click','doubleClick','hover','contextClick','scroll','drag','ensureVisible'],keyboard:['key','fill','focus'],
   forms:['fill','check','selectNative','upload'],execution:'CDP_WHEN_ALLOWED',
   frames:'MAIN_FRAME_ONLY',trustedCDP:'probe_required',maxBatchActions:1,
   noArbitraryJavascript:true,noArbitraryCDP:true,approvalGate:true
@@ -49,16 +49,16 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
   };
   const key=async(target,keyName)=>{
     const ctrl=keyName==='Ctrl+A'||keyName==='Ctrl+C'||keyName==='Ctrl+V';const shift=keyName==='Shift+Tab';
-    const k=ctrl?keyName.slice(5):shift?'Tab':keyName;
+    const k=ctrl?keyName.slice(5).toLowerCase():shift?'Tab':keyName;
     const aliases={Enter:['Enter',13],Tab:['Tab',9],Escape:['Escape',27],Backspace:['Backspace',8],Delete:['Delete',46],
       Space:[' ',32],ArrowDown:['ArrowDown',40],ArrowUp:['ArrowUp',38],ArrowLeft:['ArrowLeft',37],ArrowRight:['ArrowRight',39],
       Home:['Home',36],End:['End',35],PageUp:['PageUp',33],PageDown:['PageDown',34],a:['a',65],c:['c',67],v:['v',86]};
     const [name,code]=aliases[k]||[k,0],modifiers=(ctrl?2:0)|(shift?8:0);
-    const fields={key:name,code:name===' '?'Space':name,windowsVirtualKeyCode:code,nativeVirtualKeyCode:code,modifiers};
+    const fields={key:name,code:/^[acv]$/.test(name)?'Key'+name.toUpperCase():name===' '?'Space':name,windowsVirtualKeyCode:code,nativeVirtualKeyCode:code,modifiers};
     if(ctrl)await cdp(target,'Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17,modifiers:2});
     if(shift)await cdp(target,'Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Shift',code:'ShiftLeft',windowsVirtualKeyCode:16,nativeVirtualKeyCode:16,modifiers:8});
     await cdp(target,'Input.dispatchKeyEvent',{type:'rawKeyDown',...fields});
-    if(!ctrl&&!shift && ['Enter','Tab','Space'].includes(keyName))await cdp(target,'Input.dispatchKeyEvent',{type:'char',...fields,text:k===' '?' ':k==='Enter'?'\r':''});
+    if(!ctrl&&!shift && ['Enter','Space'].includes(keyName))await cdp(target,'Input.dispatchKeyEvent',{type:'char',...fields,text:k===' '?' ':k==='Enter'?'\r':''});
     await cdp(target,'Input.dispatchKeyEvent',{type:'keyUp',...fields});
     if(shift)await cdp(target,'Input.dispatchKeyEvent',{type:'keyUp',key:'Shift',code:'ShiftLeft',windowsVirtualKeyCode:16,nativeVirtualKeyCode:16});
     if(ctrl)await cdp(target,'Input.dispatchKeyEvent',{type:'keyUp',key:'Control',code:'ControlLeft',windowsVirtualKeyCode:17,nativeVirtualKeyCode:17});
@@ -66,6 +66,8 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
   async function act(target,action,prepared,tabId,scope,origin){
     const r=prepared.rect;
     if(!r || r.w<=0||r.h<=0||r.cx<0||r.cy<0)return fail('CPQ_TARGET_OFFSCREEN');
+    if(action.operation==='ensureVisible')return page(tabId,scope,origin,'domApply',{action});
+    if(!prepared.visibleInViewport)return fail('CPQ_TARGET_OFFSCREEN');
     if(['selectNative','upload'].includes(action.operation))return page(tabId,scope,origin,'domApply',{action});
     if(action.operation==='check' && prepared.checked===action.checked)return {ok:true,method:'ALREADY_MATCHES'};
     if(!target)return fail('BRIDGE_DEBUGGER_UNAVAILABLE');
@@ -90,7 +92,7 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
     if(internal){
       if(sender.id!==api.runtime.id||sender.url!==api.runtime.getURL('popup.html'))return fail('BRIDGE_SENDER_NOT_ALLOWED');
       if(message.type==='unpair'){await api.storage.session.remove('guiPair');return {ok:true};}
-      if(message.type!=='pair'||!Number.isInteger(message.cpqTabId)||!Number.isInteger(message.assistantTabId)||!['order','quote'].includes(message.scope))return fail('BRIDGE_INVALID_COMMAND');
+      if(message.type!=='pair'||!Number.isInteger(message.cpqTabId)||!Number.isInteger(message.assistantTabId)||!['order','quote'].includes(message.scope)||typeof message.allowWrites!=='boolean')return fail('BRIDGE_INVALID_COMMAND');
       const tab=await api.tabs.get(message.cpqTabId),{guiRequests=[]}=await api.storage.session.get('guiRequests');
       const host=guiRequests.find(r=>r.id===message.assistantTabId && r.createdAt>now()-600000);
       if(!tab?.active||!cpqUrl(tab.url)||!host||!assistantUrl(host.url)||tab.incognito)return fail('BRIDGE_TARGET_NOT_ALLOWED');
@@ -99,9 +101,9 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
       let cdpAvailable=false;
       try {const t=await attach(tab.id);if(t){cdpAvailable=true;await api.debugger.detach(t);}}catch{cdpAvailable=false;}
       const pair={cpqTabId:tab.id,assistantTabId:host.id,origin,scope:message.scope,token:crypto.randomUUID(),
-        expiresAt:now()+30*60_000,cdpAvailable,attempted:[],lastObserved:null};
+        expiresAt:now()+30*60_000,cdpAvailable,allowWrites:message.allowWrites,attempted:[],lastObserved:null};
       await api.storage.session.set({guiPair:pair});
-      return {ok:true,protocol:PROTOCOL,capabilities:{...cap,cdpAvailable},expiresAt:pair.expiresAt};
+      return {ok:true,protocol:PROTOCOL,capabilities:{...cap,cdpAvailable,allowWrites:pair.allowWrites},expiresAt:pair.expiresAt};
     }
     if(!assistantUrl(sender.url)||sender.frameId!==0||!Number.isInteger(sender.tab?.id)||sender.tab.incognito)return fail('BRIDGE_SENDER_NOT_ALLOWED');
     const {guiPair}=await api.storage.session.get('guiPair');
@@ -111,7 +113,7 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
         {id:sender.tab.id,url:sender.url,createdAt:now()}]});
     }
     if(!guiPair||guiPair.expiresAt<=now()||guiPair.assistantTabId!==sender.tab.id)return fail('BRIDGE_NOT_PAIRED');
-    if(message.type==='status')return {ok:true,protocol:PROTOCOL,token:guiPair.token,scope:guiPair.scope,expiresAt:guiPair.expiresAt,capabilities:{...cap,cdpAvailable:guiPair.cdpAvailable}};
+    if(message.type==='status')return {ok:true,protocol:PROTOCOL,token:guiPair.token,scope:guiPair.scope,expiresAt:guiPair.expiresAt,capabilities:{...cap,cdpAvailable:guiPair.cdpAvailable,allowWrites:guiPair.allowWrites}};
     if(message.token!==guiPair.token)return fail('BRIDGE_NOT_PAIRED');
     if(message.type==='disconnect'){await api.storage.session.remove('guiPair');return {ok:true};}
     if(!['observe','preview','execute'].includes(message.type))return fail('BRIDGE_INVALID_COMMAND');
@@ -123,7 +125,7 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
       if(!current||current.token!==guiPair.token||current.expiresAt<=now())return fail('BRIDGE_NOT_PAIRED');
       if(message.type==='observe'){
         const result=await page(tab.id,guiPair.scope,guiPair.origin,'observe',{offset:message.offset,limit:message.limit});
-        if(result.ok){result.observation.capabilities={...cap,cdpAvailable:current.cdpAvailable};
+        if(result.ok){result.observation.capabilities={...cap,cdpAvailable:current.cdpAvailable,allowWrites:current.allowWrites};
           await api.storage.session.set({guiPair:{...current,lastObserved:{id:result.observation.observationId,revision:result.observation.revision,at:now(),url:result.observation.url}}});}
         return result;
       }
@@ -132,32 +134,44 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
       if(message.type==='execute'&&current.attempted.includes(a.actionId))return fail('CPQ_ACTION_ALREADY_ATTEMPTED');
       if(!current.lastObserved || current.lastObserved.id!==a.observationId ||current.lastObserved.revision!==a.revision ||
         current.lastObserved.at<now()-120000 || new URL(current.lastObserved.url).origin!==guiPair.origin)return fail('CPQ_SCREEN_CHANGED');
-      if(['fill','selectNative','upload'].includes(a.operation)&&!['owner'].includes(message.authorizedRole))return fail('CPQ_OWNER_REQUIRED');
+      // Permission to write is granted only by the extension's own pairing popup, not by a client-supplied role.
+      
       const pre=await page(tab.id,guiPair.scope,guiPair.origin,'prepare',{action:a,offset:a.offset,limit:a.limit});
       if(!pre.ok)return pre;
       const prepared=pre.prepared;
       if(message.type==='preview')return {ok:true,prepared};
-      if(['irreversible','lose_unsaved'].includes(prepared.risk) && message.humanApproved!==true)return fail('CPQ_EXPLICIT_APPROVAL_REQUIRED');
+      // Read-only pairing permits navigational tabs/links; all forms, creation and writes need extension-side opt-in.
+      if(!current.allowWrites && !(['hover','scroll','ensureVisible'].includes(a.operation) ||
+        (['click','doubleClick'].includes(a.operation)&&['link','tab'].includes(prepared.kind)&&prepared.risk==='ordinary')))
+        return fail('CPQ_WRITE_MODE_NOT_PAIRED');
+      if(['irreversible','lose_unsaved','unknown_impact'].includes(prepared.risk) && message.humanApproved!==true)return fail('CPQ_EXPLICIT_APPROVAL_REQUIRED');
       if(prepared.risk==='business_write'&&!(message.humanApproved===true||message.guidedAuthorization===true))return fail('CPQ_WRITE_APPROVAL_REQUIRED');
+
       // one attempt is durably recorded BEFORE an effect. On timeout, observe; do not retry.
       const attempted=[...current.attempted.slice(-149),a.actionId];
       await api.storage.session.set({guiPair:{...current,attempted}});
       let debuggerTarget=null;
       try{
-        if(!['selectNative','upload'].includes(a.operation)){debuggerTarget=await attach(tab.id);if(!debuggerTarget)return fail('BRIDGE_DEBUGGER_UNAVAILABLE');}
-        const recheck=await page(tab.id,guiPair.scope,guiPair.origin,'prepare',{action:a,offset:a.offset,limit:a.limit});
-        if(!recheck.ok)return recheck;
-        if(recheck.prepared.risk!==prepared.risk || recheck.prepared.rect.cx!==prepared.rect.cx || recheck.prepared.rect.cy!==prepared.rect.cy)return fail('CPQ_SCREEN_CHANGED');
-        const result=await act(debuggerTarget,a,recheck.prepared,tab.id,guiPair.scope,guiPair.origin);
+        if(!['selectNative','upload','ensureVisible'].includes(a.operation)){debuggerTarget=await attach(tab.id);if(!debuggerTarget)return fail('BRIDGE_DEBUGGER_UNAVAILABLE');}
+        // Re-read DOM revision, label, document and viewport AFTER debugger attach and immediately before input.
+        const checked=await page(tab.id,guiPair.scope,guiPair.origin,'prepare',{action:a,offset:a.offset,limit:a.limit});
+        if(!checked.ok || checked.prepared?.label!==prepared.label || checked.prepared?.risk!==prepared.risk ||
+           checked.prepared?.rect?.cx!==prepared.rect.cx || checked.prepared?.rect?.cy!==prepared.rect.cy)return fail('CPQ_SCREEN_CHANGED');
+        const result=await act(debuggerTarget,a,checked.prepared,tab.id,guiPair.scope,guiPair.origin);
         if(!result.ok)return result;
         const after=await page(tab.id,guiPair.scope,guiPair.origin,'observe',{offset:a.offset,limit:a.limit});
         if(!after.ok)return fail('CPQ_ACTION_OUTCOME_UNKNOWN');
+        const observedTarget=after.observation.controls.find(c=>c.id===a.targetId && c.label===prepared.label);
+        const observedValueMatch=a.operation==='fill'?observedTarget?.value===a.value:
+          a.operation==='check'?observedTarget?.checked===a.checked:
+          a.operation==='selectNative'?observedTarget?.value===a.value:null;
+        const outcome=observedValueMatch===true?'OBSERVED_UI_VALUE_MATCH':observedValueMatch===false?'OUTCOME_UNKNOWN':'OBSERVATION_AVAILABLE_NOT_BUSINESS_ATTESTED';
         // Dispatch result != business success. Expose both, never promise saved/created.
         return {ok:true,receipt:{schema:'omnicpq.gui.receipt.v2',actionId:a.actionId,at:new Date().toISOString(),
           status:result.method==='ALREADY_MATCHES'?'ALREADY_MATCHES':'DISPATCHED',method:result.method,
           target:{id:a.targetId,label:prepared.label,operation:a.operation},risk:prepared.risk,beforeRevision:a.revision,
           afterRevision:after.observation.revision,documentKey:after.observation.documentKey,
-          outcome:'OBSERVATION_AVAILABLE_NOT_BUSINESS_ATTESTED'},observation:after.observation};
+          outcome},observation:after.observation};
       }catch{return fail('CPQ_ACTION_OUTCOME_UNKNOWN');}
       finally{if(debuggerTarget)try{await api.debugger.detach(debuggerTarget);}catch{}}
     }catch{return fail('BRIDGE_UNAVAILABLE');}

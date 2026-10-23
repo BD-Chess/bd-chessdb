@@ -25,11 +25,11 @@ export async function cpqPageV2(command) {
     if (!n && e.labels?.length) n=norm([...e.labels].map(l=>l.textContent).join(' '));
     if (!n && e.id && e.ownerDocument.querySelector('label[for="'+CSS.escape(e.id)+'"]')) n=norm(e.ownerDocument.querySelector('label[for="'+CSS.escape(e.id)+'"]').textContent);
     if (!n && e.matches('[role="tab"],mat-step-header'))n=norm(e.querySelector('.mat-step-text-label')?.textContent);
-    if (!n)n=norm(e.getAttribute('placeholder')||e.getAttribute('title'));
+    if (!n)n=norm(e.getAttribute('placeholder')||e.getAttribute('title')||e.getAttribute('mattooltip')||e.getAttribute('data-tooltip')||e.querySelector('svg title')?.textContent);
     if (!n && e.matches('input[type=submit],input[type=button]'))n=norm(e.value);
-    if (!n) {const clone=e.cloneNode(true);
+    if (!n) {const icons=[...e.querySelectorAll('mat-icon,.material-icons,.material-symbols-outlined')].map(m=>norm(m.textContent||m.getAttribute('fontIcon')));
+      const clone=e.cloneNode(true);
       clone.querySelectorAll('svg,[hidden],[aria-hidden="true"],.cdk-visually-hidden,script,style').forEach(node=>node.remove());
-      const icons=[...clone.querySelectorAll('mat-icon,.material-icons,.material-symbols-outlined')].map(m=>norm(m.textContent||m.getAttribute('fontIcon')));
       clone.querySelectorAll('mat-icon,.material-icons,.material-symbols-outlined').forEach(node=>node.remove());
       n=norm(clone.textContent);
       if (!n && icons.length) {
@@ -50,7 +50,8 @@ export async function cpqPageV2(command) {
   };
   // Angular/Material overlays are outside the component DOM tree. Include all visible controls.
   const activeDialog=[...document.querySelectorAll('dialog[open],[role="dialog"],[aria-modal="true"]')].find(visible);
-  const root=activeDialog||document;
+  const activeOverlay=[...document.querySelectorAll('.cdk-overlay-pane,[role="listbox"],[role="menu"]')].find(visible);
+  const root=activeDialog||activeOverlay||document;
   const selector='button,a[href],input,textarea,select,[contenteditable="true"],[role="button"],[role="tab"],[role="combobox"],[role="option"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="checkbox"],[role="radio"],[role="switch"],[role="treeitem"],[role="textbox"],[role="spinbutton"],[role="slider"],[tabindex]';
   const candidates=[...root.querySelectorAll(selector)].filter(e=>visible(e)&&!isSecret(e)&&!e.matches('input[type=hidden]')&&!e.matches('option'));
   const controls=[];const refs=[];const cap=Math.max(60,Math.min(350,Number(command.limit)||180));
@@ -104,15 +105,19 @@ export async function cpqPageV2(command) {
   const at=rect(e);if(Math.abs(at.cx-control.rect.cx)>1||Math.abs(at.cy-control.rect.cy)>1)return fail('CPQ_TARGET_CHANGED');
   const label=control.label;
   const sensitive=/(?:izbriši|briši|delete|storniraj|prekliči naročilo|realiziraj|oddaj|submit|podpiši|pošlji stranki|plačaj|place order)/i.test(label);
+  const unknownImpact=/^(?:Neoznačen|Ikonski gumb)/i.test(label);
   const saving=/(?:shrani|save|potrdi|confirm|ustvari|create|dodaj|add|generiraj|generate)/i.test(label);
-  const leaving=dirty && (control.kind==='link' || (control.kind==='tab' && !activeDialog));
-  const risk=sensitive?'irreversible':leaving?'lose_unsaved':saving?'business_write':'ordinary';
-  if(leaving && a.leaveConfirmed!==true)return fail('CPQ_UNSAVED_WORK_PROTECTED');
+  const leaving=dirty && (control.kind==='link' || (control.kind==='tab' && !activeDialog) ||
+    ['click','doubleClick','key'].includes(a.operation)&&/(?:nazaj|zapri|zavrzi|na seznam|back|close|discard|exit)/i.test(label));
+  const risk=sensitive?'irreversible':leaving?'lose_unsaved':unknownImpact?'unknown_impact':saving?'business_write':'ordinary';
+  // Before execution preview exposes lose_unsaved risk; only actual dispatch checks explicit leave authorization.
   if(command.type==='prepare')return {ok:true,prepared:{schema:'omnicpq.gui.prepared.v2',targetId:a.targetId,kind:control.kind,
-    label,rect:at,risk,revision,documentKey,enabled:control.enabled,value:control.value??null,checked:control.checked??null}};
+    label,rect:at,risk,revision,documentKey,enabled:control.enabled,value:control.value??null,checked:control.checked??null,visibleInViewport:control.visibleInViewport}};
+  if(leaving && a.leaveConfirmed!==true)return fail('CPQ_UNSAVED_WORK_PROTECTED');
   // DOM-only native selects/check reads. Trusted keyboard/pointer input is in the extension debugger transport.
   if(command.type==='domApply') {
-    if(a.operation!=='selectNative' && a.operation!=='upload')return fail('BRIDGE_INVALID_COMMAND');
+    if(!['selectNative','upload','ensureVisible'].includes(a.operation))return fail('BRIDGE_INVALID_COMMAND');
+    if(a.operation==='ensureVisible'){e.scrollIntoView({block:'center',inline:'nearest'});return {ok:true,method:'VIEWPORT_SCROLL'};}
     if(a.operation==='selectNative') {
       if(e.tagName!=='SELECT'||typeof a.value!=='string'||![...e.options].some(o=>o.value===a.value))return fail('CPQ_INVALID_SELECT');
       e.value=a.value;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));

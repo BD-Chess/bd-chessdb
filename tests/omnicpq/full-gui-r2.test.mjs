@@ -14,7 +14,7 @@ const observation=()=>({schema:'omnicpq.gui.observation.v2',observationId:random
   viewport:{width:1200,height:800,scrollX:0,scrollY:0},paging:{offset:0,limit:180,totalFound:5,hasMore:false}});
 const action=(o,targetId,operation,extra={})=>({schema:'omnicpq.gui.action.v2',actionId:randomUUID(),observationId:o.observationId,revision:o.revision,
   targetId,operation,expectedDocument:doc,reason:'SINTETIČNI TEST',...extra});
-function env({allowCdp=true}={}){
+function env({allowCdp=true,allowWrites=true,changeGeometryOnAttach=false}={}){
   const storage={},events=[],pages=[],tab={id:13,active:true,url:origin+'/sl/order/details/view/'+doc+'/info'};
   const obs=observation(),api={runtime:{id:BRIDGE_EXTENSION_ID,getURL:x=>'chrome-extension://'+BRIDGE_EXTENSION_ID+'/'+x},
     tabs:{get:async id=>id===13?tab:{id:23,url:app,incognito:false}},
@@ -22,8 +22,8 @@ function env({allowCdp=true}={}){
       const command=p.args[0];let result;
       if(command.type==='observe')result={ok:true,observation:{...obs,observationId:randomUUID()}};
       else if(command.type==='prepare')result={ok:true,prepared:{targetId:command.action.targetId,revision:sha,documentKey:doc,
-        label:obs.controls.find(c=>c.id===command.action.targetId).label,rect:obs.controls.find(c=>c.id===command.action.targetId).rect,
-        risk:command.action.targetId==='c3'?'irreversible':command.action.targetId==='c2'?'business_write':'ordinary',
+        label:obs.controls.find(c=>c.id===command.action.targetId).label,rect:changeGeometryOnAttach&&events.filter(x=>x==='attach').length>=2?{...obs.controls.find(c=>c.id===command.action.targetId).rect,cx:33}:obs.controls.find(c=>c.id===command.action.targetId).rect,
+        visibleInViewport:true,risk:command.action.targetId==='c3'?'irreversible':command.action.targetId==='c2'?'business_write':'ordinary',
         checked:command.action.targetId==='c4'?false:null}};
       else result={ok:true,method:'DOM_VALUE_EVENTS'};
       return [{frameId:0,result}];}},
@@ -32,7 +32,7 @@ function env({allowCdp=true}={}){
       sendCommand:async (_,name,params)=>events.push({name,params}),detach:async()=>events.push('detach')}};
   const handler=makeGuiBridgeHandler(api),sender={url:app,frameId:0,tab:{id:23}},popup={id:BRIDGE_EXTENSION_ID,url:api.runtime.getURL('popup.html')};
   const request=(type,other={})=>({protocol:BRIDGE_PROTOCOL,type,...other});
-  const pair=async()=>{await handler(request('status'),sender);const r=await handler(request('pair',{cpqTabId:13,assistantTabId:23,scope:'order'}),popup,true);assert.equal(r.ok,true);return (await handler(request('status'),sender)).token};
+  const pair=async()=>{await handler(request('status'),sender);const r=await handler(request('pair',{cpqTabId:13,assistantTabId:23,scope:'order',allowWrites}),popup,true);assert.equal(r.ok,true);return (await handler(request('status'),sender)).token};
   return {handler,sender,popup,request,pair,storage,events,pages,obs,api};
 }
 test('validation preserves bounded scope and rejects foreign origin, stale and forged controls',()=>{
@@ -83,7 +83,7 @@ test('form fill issues focus, Ctrl+A, text via CDP and never uses arbitrary DOM 
   const e=env(),token=await e.pair(),o=(await e.handler(e.request('observe',{token}),e.sender)).observation;
   const a=action(o,'c1','fill',{value:'SINTETIČNA VREDNOST'}),r=await e.handler(e.request('execute',{token,action:a,authorizedRole:'owner'}),e.sender);
   assert.equal(r.ok,true);assert(e.events.some(x=>x.name==='Input.insertText'&&x.params.text==='SINTETIČNA VREDNOST'));
-  assert(e.events.some(x=>x.name==='Input.dispatchKeyEvent'&&x.params.modifiers===2));
+  assert(e.events.some(x=>x.name==='Input.dispatchKeyEvent'&&x.params.modifiers===2&&x.params.key==='a'&&x.params.windowsVirtualKeyCode===65));
 });
 test('denied debugger fails closed; does not claim full GUI despite pairing',async()=>{
   const e=env({allowCdp:false}),token=await e.pair();
@@ -99,4 +99,45 @@ test('client transport requires the v2 handshake and preserves evidence boundary
   const a=action(o,'c0','click');const preview=await client.preview(a);assert.equal(preview.targetId,'c0');
   const result=await client.execute(a,{authorizedRole:'owner'});assert.equal(result.receipt.status,'DISPATCHED');
   await client.disconnect();assert.equal(e.storage.guiPair,undefined);
+});
+
+test('read-only pairing rejects spoofed owner writes but allows harmless navigation proposals',async()=>{
+  const e=env({allowWrites:false}),token=await e.pair(),o=(await e.handler(e.request('observe',{token}),e.sender)).observation;
+  const a=action(o,'c1','fill',{value:'NE SME SPREMENITI'});
+  const denied=await e.handler(e.request('execute',{token,action:a,authorizedRole:'owner',humanApproved:true,guidedAuthorization:true}),e.sender);
+  assert.equal(denied.error,'CPQ_WRITE_MODE_NOT_PAIRED');assert(!e.events.some(x=>x.name==='Input.insertText'));
+  const add=action(o,'c0','click');assert.equal((await e.handler(e.request('execute',{token,action:add,authorizedRole:'owner'}),e.sender)).error,'CPQ_WRITE_MODE_NOT_PAIRED');
+});
+test('changed geometry at dispatch after debugger attach rejects stale target before pointer event',async()=>{
+  const e=env({changeGeometryOnAttach:true}),token=await e.pair(),o=(await e.handler(e.request('observe',{token}),e.sender)).observation;
+  const r=await e.handler(e.request('execute',{token,action:action(o,'c0','click')}),e.sender);
+  assert.equal(r.error,'CPQ_SCREEN_CHANGED');assert(!e.events.some(x=>x.name==='Input.dispatchMouseEvent'));
+});
+
+test('synthetic Angular Material DOM exposes icon-only plus, fields and masks credentials',async t=>{
+  let JSDOM;try{({JSDOM}=await import('jsdom'));}catch{return t.skip('jsdom is installed by locked CI dependencies');}
+  const {cpqPageV2}=await import('../../public/OmniCPQ/extension/page-v2.mjs');
+  const dom=new JSDOM(`<main><h1>Naročila</h1><button id="new"><mat-icon aria-hidden="true">add</mat-icon></button>
+    <label for="vm">VM vCPU</label><input id="vm" type="number" value="8"><input type="password" value="SECRET_MUST_NOT_APPEAR">
+    <button id="save" disabled><mat-icon aria-hidden="true">save</mat-icon></button></main>`,
+    {url:origin+'/sl/order/list/table',runScripts:'outside-only'});
+  const w=dom.window;try{
+    Object.defineProperty(w,'crypto',{value:(await import('node:crypto')).webcrypto});
+    w.TextEncoder=TextEncoder;w.CSS=w.CSS||{escape:x=>x};
+    w.HTMLElement.prototype.getBoundingClientRect=function(){return {x:10,y:10,left:10,top:10,width:70,height:30,right:80,bottom:40}};
+    Object.defineProperty(w.HTMLElement.prototype,'innerText',{get(){return this.textContent}});
+    const page=w.eval('('+cpqPageV2.toString()+')');
+    const first=await page({type:'observe',scope:'order',origin});assert.equal(first.ok,true);
+    const o=first.observation;assert.equal(o.controls.find(c=>c.label==='Dodaj (+)')?.enabled,true);
+    assert.equal(o.controls.find(c=>c.label==='VM vCPU')?.value,'8');
+    assert.equal(o.controls.find(c=>c.label==='Ikona save')?.enabled,false);
+    assert(!JSON.stringify(o).includes('SECRET_MUST_NOT_APPEAR'));
+    const plus=o.controls.find(c=>c.label==='Dodaj (+)');
+    const a={schema:'omnicpq.gui.action.v2',actionId:randomUUID(),observationId:o.observationId,revision:o.revision,targetId:plus.id,
+      operation:'click',expectedDocument:null,reason:'Odpri nov dokument'};
+    const pre=await page({type:'prepare',scope:'order',origin,action:a});assert.equal(pre.ok,true);
+    assert.equal(pre.prepared.risk,'business_write');
+    w.document.getElementById('new').disabled=true;
+    const stale=await page({type:'prepare',scope:'order',origin,action:a});assert.equal(stale.ok,false);
+  }finally{dom.window.close();}
 });
