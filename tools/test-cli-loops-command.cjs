@@ -12,3 +12,11 @@ for(const v of [{topic:''},{limit:'custom',customLimit:'101',customUnit:''},{lim
 assert.equal(build(spec,{...basic,topic:'<script>alert(1)</script>'}).command,'LOOP HOME: <script>alert(1)</script>');
 if(process.argv[2])fs.writeFileSync(process.argv[2],JSON.stringify(commands));
 process.stdout.write('PASS: defaults, 9 profile/topology combinations, explicit build effects, bounds, exact topic preservation.\n');
+
+for(const mode of ['AUTO','MAX'])assert.equal(build(spec,{...basic,host:'WORK',mode}).errors.length,0);
+assert.ok(build(spec,{...basic,host:'WORK',mode:'MIN'}).errors.some(x=>x.includes('MIN')));
+assert.equal(build(spec,{...basic,host:'HOME',mode:'MIN'}).errors.length,0);
+const html=fs.readFileSync(path.join(root,'cli-loops.html'),'utf8');
+assert.match(html,/<option value="WORK">WORK<\/option>/);
+assert.doesNotMatch(html,/<option value="WORK" disabled/);
+process.stdout.write('PASS: WORK enabled, AUTO/MAX accepted, MIN rejected, HOME MIN preserved.\n');

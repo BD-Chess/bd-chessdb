@@ -131,6 +131,7 @@
   let commandSpec=null,currentPlan=null;
   function values(){return {host:$('host').value,mode:$('mode').value,collaboration:$('collaboration').value,depth:$('depth').value,limit:$('limit').value,customLimit:$('custom-limit').value,customUnit:$('custom-unit').value,topic:$('topic').value,build:$('build').checked,buildProject:$('build-project').value,buildPackage:$('build-package').value,activate:$('activate').checked,calls:$('call-budget').value,tokens:$('token-budget').value};}
   function updateCommand(){
+    $('mode').querySelector('option[value="MIN"]').disabled=$('host').value==='WORK';
     $('custom-limit-fields').hidden=$('limit').value!=='custom';$('build-fields').hidden=!$('build').checked;
     for(const id of ['build-project','build-package','activate'])$(id).disabled=!$('build').checked;
     $('collaboration-help').textContent=$('collaboration').value==='FullRHP'?'Šest ločenih sej. S je vključen. Oba avtorja uporabljata interni RHP-11 na začetku in ob sintezah.':$('collaboration').value==='S'?'Štiri ločene seje: dva avtorja in dva skeptika.':'Dva avtorja primerjata predloge in ohranita nesoglasja.';

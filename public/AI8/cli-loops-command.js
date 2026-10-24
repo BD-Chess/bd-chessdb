@@ -7,6 +7,7 @@
     const host=v.host||defaults.host,mode=v.mode||defaults.mode,full=v.collaboration==="FullRHP",skeptics=full||v.collaboration==="S";
     if(!["HOME","WORK","VM"].includes(host))errors.push("Izberi veljaven računalnik.");
     if(!["AUTO","MIN","MAX"].includes(mode))errors.push("Izberi AUTO, MIN ali MAX.");
+    if(host==="WORK"&&mode==="MIN")errors.push("WORK podpira AUTO/HIGH in MAX; MIN še ni sprejet.");
     if(!["","S","FullRHP"].includes(v.collaboration||""))errors.push("Neveljaven način sodelovanja.");
     parts.push(host);
     let limit=v.limit||"";
