@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="sl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DGTE — zemljevid uporab v4 · BD × AI Lab</title>
+<meta name="description" content="Prvi piloti naj bodo stacionarni. Izbiramo posamezen toplotni tok, dejanski ponor in sočasen odjem; elektrika, hlad, voda in črpanje potrebujejo ločene primerjalnike. Pred gradnjo je prvi korak pregled podatkov ene lokacije. Avtor koncepta Bojan Dobrečevič. Ročni računi STATIC; brez izvedenih testov.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0c171a">
+<link rel="canonical" href="https://www.mdlxdcc.org/crp/dgte-uporabe.html">
+<script>try{const t=localStorage.getItem('mdlxdcc-theme');document.documentElement.dataset.theme=t==='light'||t==='dark'?t:matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}catch(_){}</script>
+<style>
+:root{color-scheme:dark;--bg:#0c171a;--paper:#112025;--surface:#142428;--ink:#eaf0e8;--muted:#abbcb9;--line:#31484c;--accent:#c5d6a4;--teal:#7fc9bc;--hot:#efb184;font-family:'Avenir Next','Segoe UI',Arial,sans-serif}
+:root[data-theme=light]{color-scheme:light;--bg:#f6f3ec;--paper:#faf9f5;--surface:#eeece3;--ink:#203c38;--muted:#566e66;--line:#c7d0c5;--accent:#456c37;--teal:#216d64;--hot:#9e4e24}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--bg);color:var(--ink);line-height:1.75;-webkit-text-size-adjust:100%}a{color:var(--teal);text-underline-offset:4px}button{font:inherit;cursor:pointer}a:focus-visible,button:focus-visible,.table-scroll:focus-visible{outline:2px solid var(--teal);outline-offset:4px}.wrap{width:calc(100% - 80px);max-width:1100px;margin-inline:auto}.skip{position:absolute;left:20px;top:-100px;background:var(--paper);padding:12px;z-index:2}.skip:focus{top:12px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 0;border-bottom:1px solid var(--line)}.brand{font-size:1.1rem;letter-spacing:-.04em;text-decoration:none;color:var(--ink)}.brand em{font-style:normal;color:var(--accent)}.theme{min-width:44px;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--surface)}.breadcrumb{display:flex;flex-wrap:wrap;gap:12px 24px;font-size:.83rem;padding:20px 0}.hero{padding:40px 0 30px;max-width:930px}.eyebrow{font:500 .72rem/1.6 Consolas,monospace;letter-spacing:.12em;color:var(--accent);margin:0 0 20px}h1{font-size:clamp(2.1rem,5.4vw,4.25rem);line-height:1.12;font-weight:450;letter-spacing:-.045em;margin:0 0 28px}.authorship{color:var(--muted);max-width:72ch}.status{border-left:3px solid var(--hot);background:var(--surface);padding:18px 22px;border-radius:0 10px 10px 0}.status strong{color:var(--hot)}.status p{margin:5px 0}.edition{font-size:.84rem;color:var(--muted)}.section-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;padding:22px 0 28px;border-bottom:1px solid var(--line)}.section-nav a{font-size:.84rem;text-decoration:none;border-bottom:1px solid var(--line);padding:8px 0}.section-nav a:hover{color:var(--accent)}article{max-width:940px;margin:36px 0 70px;overflow-wrap:anywhere}article p{margin:16px 0}article h2{font-size:clamp(1.45rem,3vw,2rem);line-height:1.3;font-weight:500;letter-spacing:-.025em;margin:54px 0 24px;padding-top:24px;border-top:1px solid var(--line);color:var(--accent)}article li{margin:8px 0}article ul,article ol{padding-left:24px}article code{font:.88em/1.7 Consolas,monospace;color:var(--teal);overflow-wrap:anywhere}article strong{font-weight:650}.table-scroll{max-width:100%;overflow-x:auto;margin:26px 0;border:1px solid var(--line);border-radius:10px;overscroll-behavior-x:contain}table{width:100%;min-width:720px;border-collapse:collapse;font-size:.85rem;line-height:1.55}th,td{text-align:left;padding:13px 15px;vertical-align:top;border-bottom:1px solid var(--line)}th{background:var(--surface);font-weight:600}tbody tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:var(--paper)}footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:.82rem}footer p{margin:0}.source-hash{font:.72rem/1.6 Consolas,monospace;overflow-wrap:anywhere}
+@media(max-width:600px){.wrap{width:calc(100% - 36px)}.hero{padding-top:24px}.section-nav{grid-template-columns:1fr;gap:0}.status{padding:16px}.breadcrumb{gap:8px 18px}article{font-size:.95rem}article h2{margin-top:38px}th,td{padding:10px 12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{.theme,.skip,.section-nav{display:none}body{background:white;color:black}.wrap{width:100%}.table-scroll{overflow:visible}table{min-width:0;font-size:8pt}h2{break-after:avoid}tr{break-inside:avoid}a{color:inherit}}
+
+.section-nav{grid-template-columns:repeat(3,minmax(0,1fr))}.section-nav a{min-width:0}h3{font-weight:550;color:var(--teal);line-height:1.4;margin-top:32px}.variant-links{display:flex;flex-wrap:wrap;gap:12px}.variant-links a{display:block;padding:12px 18px;background:var(--surface);border:1px solid var(--line);border-radius:9px}.source-hash{display:block}.document-body{white-space:normal}.document-body p{white-space:pre-line}table{min-width:620px}summary{cursor:pointer;padding:16px;background:var(--surface)}summary:focus-visible{outline:2px solid var(--teal)}.comparison-note{font-size:.88rem;color:var(--muted)}
+@media(max-width:600px){.section-nav{grid-template-columns:1fr}.topbar{gap:10px}.brand{font-size:1rem}.theme{padding:8px 10px}.variant-links{display:grid}.source-hash{font-size:.7rem}}
+
+.summary-copy{font-size:1.06rem;max-width:74ch}.publication-note{font-size:.88rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<a class="skip" href="#document">Na vsebino</a>
+<div class="wrap">
+<header class="topbar"><a class="brand" href="./DGTE.html">BD × <em>AI Lab</em> / DGTE</a><button type="button" class="theme" id="theme" aria-label="Preklopi temo">Svetla / temna</button></header>
+<nav class="breadcrumb" aria-label="Povezane strani"><a href="./DGTE.html">← Izvirni DGTE</a><a href="./dgte-bd-r2.html">Krog 2 / R2</a><a href="./dgte-prosto-raziskovanje.html">Sinteza prostega raziskovanja</a></nav>
+<main id="document">
+<header class="hero"><p class="eyebrow">24.–25. 10. 2026 · DGTE · ANALITIČNI DOKUMENT</p>
+<h1>DGTE — zemljevid uporab v4</h1>
+<p class="authorship">Avtor izvirnega koncepta: <strong>Bojan Dobrečevič (BD)</strong>.</p>
+<p class="summary-copy"><strong>Kratko za BD:</strong> Prvi piloti naj bodo stacionarni. Izbiramo posamezen toplotni tok, dejanski ponor in sočasen odjem; elektrika, hlad, voda in črpanje potrebujejo ločene primerjalnike. Pred gradnjo je prvi korak pregled podatkov ene lokacije.</p>
+<div class="status" role="note"><p><strong>Ročni računi STATIC · noben test ni bil izveden</strong></p><p>Vsi računi v dokumentu so ročni STATIC. Programski, EOS in fizični testi niso bili izvedeni. Analitični sprejem besedila ne potrjuje delovanja ali gospodarnosti naprave.</p></div>
+<p class="edition"><strong>Izid pregleda:</strong> SA je dokument vsebinsko sprejel (agree/accept). Zadnji glas SB ni bil oddan: tek je prekinila napaka ContextCompaction v 8zListener 0.4.5, popravljena v različici 0.4.7. Zaključnega soglasja vseh sedežev zato ne pripisujemo.</p>
+<p class="publication-note">Sledi celotno besedilo dokumenta. Interna provenienca je povzeta zgoraj; notranje oznake in lokalni ukaz so prilagojeni javni objavi. Zapisi o še čakajočem pregledu in dostavi so ohranjeni kot zgodovinski del dokumenta. Omenjeni načrti testov niso izvedeni testi.</p>
+</header>
+<nav class="section-nav" aria-label="Poglavja dokumenta"><a href="#celotno-besedilo">Celotno besedilo</a><a href="#poglavje-1">1. Kratko za BD in merila</a><a href="#poglavje-2">2. Viri in razredi</a><a href="#poglavje-3">3. Faktorizirana matrika vseh variant × virov</a><a href="#poglavje-4">4. Hlad in voda</a><a href="#poglavje-5">5. Pet razvojnih kombinacij in bilance</a><a href="#poglavje-6">6. Izločitve, nesoglasja in dostava</a></nav>
+<article class="document-body"><h2 id="celotno-besedilo">DGTE — zemljevid uporab v4</h2>
+<p>STATIC; brez izvedenih testov ali zapisa datotek. Izvirni koncept pripada Bojanu Dobrečeviču. [D] dokazano: fizične potrditve predlaganih DGTE naprav tukaj ni. [I] ročni račun; [P] predpostavka ali posredovani razvojni model; [L] literatura po spominu, nepreverjena. Zunanji dokumenti in hashi niso ponovno preverjeni. Ločeni konteksti niso neodvisna empirična evidenca ali SEALED izolacija. Konkretnih ladij/podjetij ne opisujemo.</p>
+<h2 id="poglavje-1">1. Kratko za BD in merila</h2>
+<p>Prvi piloti naj bodo stacionarni. Velik motor ne zagotovi uporabnega vira: odločajo posamezen tok, T–Q, dovoljeni izstop, ure presežka, ponor, gibanje in sočasna potreba. Izpuh, plašč, olje in polnilni zrak vodimo ločeno. Hlad/voda sta alternativna produkta, katerih vrednost in dodatek DGTE zahtevata svoj primerjalnik.</p>
+<p>Izotermni odjem zahteva T_izstop,odseka≥T_odjem+ΔT_min. Pri stalnem c_p je zajeti delež senzibilnega toka f=clip[(T_in−T_odjem−ΔT_min)/(T_in−T_out),0,1]. Kopel 102 °C iz toka 110→70 °C pri približku 3/5 K neposredno zajame 12,5/7,5 % toplote [I/P]. Preostanek lahko služi hladnejšemu predgrevanju, če je to zasnovano; pravilo ni veto za ves vir.</p>
+<p>Neposredno toploto primerjamo tudi z zaporedno rabo. Hipotetičnih 10 kW neto elektrike+990 kW uporabne toplote proti 1000 kW toplote pri cenah 0,12/0,03 €/kWh da +0,90 €/h pred dodatnimi stroški [I/P]. Temperatura odvoda spremeni cikel: Carnotove meje pri notranjih 65/60, 65/40 in 100/60 °C so 1,48/7,39/10,72 % [I], ne napoved neto moči.</p>
+<p>Gospodarsko sito ni fizikalni veto. Pri 0,12 €/kWh, 8000 koristnih urah in petih letih je okvir 4800 €/kW_e [I/P]. Če toplotna oprema stane c=30–100 €/kW_th in sme porabiti polovico proračuna, je η_prag=c/2400≈1,25–4,17 %. Prag raste kot 1/h; dodata se drugi CAPEX in OPEX. Polovični delež je predpostavka: 30 k€ pri 11 kW_e/MW porabi 56,8 % tega proračuna [I/P]. Ure motorja niso ure presežka ali odjema.</p>
+<h2 id="poglavje-2">2. Viri in razredi</h2>
+<p>Vsi razponi tabele so orientacijski [L], ne meritve ali zagotovljen presežek. MW_th pomeni toploto navedenega sklopa, ne gredi. J=tekočinski hladilni profil približno 75–95→55–80 °C [L]; dejanski dovoljeni povratek se preveri. Kondenzacijski odsek je približno izotermen. Časi so v TISOČ h/leto.</p>
+<p>Razredi odsekov: E&gt;150 °C; A=100–150; B=70–100; C=45–70; Dn≤45. Referenci B/C sta 90→70/60→50 °C. M/V sta ladijska/mobilna omejitev. R1 zahteva še A_R: vir nad 105/107 °C za kopel 102 °C pri približku 3/5 K.</p>
+<p>Ponori m/z/v=morje/zrak/voda; produkti e/c/w/p/h=elektrika/hlad/voda/črpanje/toplota. Poševnica loči tokove, katerih moči ne seštevamo samodejno.</p>
+<div aria-label="Tabela 1; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Vir</th>
+<th scope="col">MW_th; profil °C</th>
+<th scope="col">tisoč h; razred</th>
+<th scope="col">Ponor; produkt; omejitev</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trajekti</td>
+<td>0,3–10; J</td>
+<td>2–7; B/C+M</td>
+<td>m; e,c,h; breme, prostor</td>
+</tr>
+<tr>
+<td>Križarke</td>
+<td>3–40; J</td>
+<td>6–8,5; B/C+M</td>
+<td>m; c,w,e,h; hotelska raba</td>
+</tr>
+<tr>
+<td>Kontejnerske/tovorne</td>
+<td>2–30; J</td>
+<td>5–8; B/C+M</td>
+<td>m; e,p; servis, razred</td>
+</tr>
+<tr>
+<td>Tankerji</td>
+<td>1–20; J</td>
+<td>4–8; B/C+M</td>
+<td>m; p,h,e; tovor, požar</td>
+</tr>
+<tr>
+<td>LNG ladje</td>
+<td>2–30; J po pogonu</td>
+<td>5–8; B/C+M</td>
+<td>m; e,w; Ex, pogon</td>
+</tr>
+<tr>
+<td>Vojaške, dizel</td>
+<td>0,3–20; J</td>
+<td>1–6; B/C+M</td>
+<td>m; e,c,w; šok, redundanca</td>
+</tr>
+<tr>
+<td>Vojaške, plinska turbina</td>
+<td>5–100; izpuh 400–600→150–250</td>
+<td>1–6; E+M</td>
+<td>m; e,c; certifikacija</td>
+</tr>
+<tr>
+<td>Jedrske, tudi letalonosilke</td>
+<td>red 100–1000; kondenzacija 25–45</td>
+<td>4–8; Dn+M</td>
+<td>m; e,c,w; majhen ΔT, integracija</td>
+</tr>
+<tr>
+<td>Konvencionalni parni ladijski pogon</td>
+<td>10–100; kondenzacija 25–50; izpuh posebej</td>
+<td>1–8; Dn/C,E+M</td>
+<td>m; e,w; uporabna para ni odpadek</td>
+</tr>
+<tr>
+<td>Dizelske lokomotive</td>
+<td>0,3–3; J</td>
+<td>2–6; B/C+V</td>
+<td>z; e,h; profil, masa, vibracije</td>
+</tr>
+<tr>
+<td>Tovornjaki/avtobusi</td>
+<td>0,05–0,5; voda 75–100→60–85</td>
+<td>1,5–5; B/C+V</td>
+<td>z; c,e,h; pospeški, hlajenje</td>
+</tr>
+<tr>
+<td>Rudarski/gradbeni stroji</td>
+<td>0,05–3; voda 75–100→55–85</td>
+<td>1–7; B/C+V</td>
+<td>z/v; c,e; nakloni, prah</td>
+</tr>
+<tr>
+<td>Agregati stalni/rezervni</td>
+<td>0,05–20; J</td>
+<td>4–8/0,01–0,3; B/C</td>
+<td>z/v/m; vsi; rezervni malo ur</td>
+</tr>
+<tr>
+<td>Bioplinarne/KTE</td>
+<td>0,1–10; voda 80–95→65–80</td>
+<td>6–8,5; B/C</td>
+<td>z/v; h,c,e; proces, sezona</td>
+</tr>
+<tr>
+<td>Kompresorji zraka</td>
+<td>0,02–10; olje 70–95→50–75, voda 30–50</td>
+<td>2–8; B/C/Dn</td>
+<td>z/v; h,e,p; 110 °C ni privzeto</td>
+</tr>
+<tr>
+<td>Kompresorske postaje plina</td>
+<td>0,1–30; proces 60–150→35–70</td>
+<td>4–8,5; A/B/C/Dn</td>
+<td>z/v; e,p,h; Ex, padci tlaka</td>
+</tr>
+<tr>
+<td>Talilnice/livarne</td>
+<td>1–100; voda 60–100→40–80, plini 200–800</td>
+<td>3–8; E/B/C/Dn</td>
+<td>z/v; h,c,e; šarže, prah</td>
+</tr>
+<tr>
+<td>Steklarne</td>
+<td>5–100; plini 200–700→120–250</td>
+<td>7–8,5; E/A</td>
+<td>z/v; h,e; regeneratorji</td>
+</tr>
+<tr>
+<td>Cementarne</td>
+<td>10–150; plini 180–400→100–200</td>
+<td>5–8; E/A</td>
+<td>z/v; h,e; sušenje, prah</td>
+</tr>
+<tr>
+<td>Jeklarne</td>
+<td>5–200; voda 40–100→30–80, plini 200–1000</td>
+<td>3–8,5; E/B/C/Dn</td>
+<td>z/v; h,e,c; šarže, nečistoče</td>
+</tr>
+<tr>
+<td>Rafinerije/kemija</td>
+<td>0,1–100 na tok; 60–150→35–100</td>
+<td>6–8,5; A/B/C/Dn</td>
+<td>z/v; vsi; proces, Ex</td>
+</tr>
+<tr>
+<td>Industrijski odparki/para</td>
+<td>0,01–0,5; kondenzacija 100–120</td>
+<td>3–8; A, preveri A_R</td>
+<td>z/v; h,e; obstoječa raba</td>
+</tr>
+<tr>
+<td>Pekarne</td>
+<td>0,02–3; plini 100–250→60–120</td>
+<td>2–6; E/A/B/C</td>
+<td>z/v; h,c; higiena, izmene</td>
+</tr>
+<tr>
+<td>Pralnice</td>
+<td>0,02–3; voda 40–80→25–50</td>
+<td>2–6; B/C/Dn</td>
+<td>z/v; h; umazanija</td>
+</tr>
+<tr>
+<td>Toplarne, povratni vod</td>
+<td>0,1–100 potencialnega odvzema; 40–70→30–55</td>
+<td>2–5; C/Dn</td>
+<td>z/v; h,c; ni nujno odpadek</td>
+</tr>
+<tr>
+<td>Geotermija</td>
+<td>0,1–50; 40–120→25–70</td>
+<td>7–8,76; A/B/C/Dn</td>
+<td>z/v; h,e; reinjekcija, obloge</td>
+</tr>
+<tr>
+<td>NT solar</td>
+<td>0,01–20; 50–100→35–75</td>
+<td>0,8–2,5 ekvivalentnih; B/C/Dn</td>
+<td>z/v; h,c; primarni vir, sezona</td>
+</tr>
+<tr>
+<td>Podatkovni centri</td>
+<td>0,1–100; zrak 25–45, tekočina 45–70→35–55</td>
+<td>7–8,76; C/Dn</td>
+<td>z/v; h; zanesljivost</td>
+</tr>
+<tr>
+<td>Strežniške sobe</td>
+<td>0,002–0,1; zrak 25–40→20–30</td>
+<td>6–8,76; Dn</td>
+<td>z; h; majhna moč</td>
+</tr>
+<tr>
+<td>Transformatorji</td>
+<td>0,003–1 izgub; olje 60–90, drsenje OPEN</td>
+<td>7–8,76; B/C</td>
+<td>z/v; h,e; varnost omrežja</td>
+</tr>
+</tbody>
+</table></div>
+<p>Motorni izpuh je ločen tok E, pri dizlih približno 250–450 °C [L]. Plinski kompresor ima lahko tudi tak pogonski vir. Pri deležih motorne bilance navesti osnovo gorivo/gred. FWG porablja del plašča; ostanek zahteva bilanco. LNG hlad je ločena eksergija; vodni sistemi potrebujejo zaščito pred zmrzovanjem.</p>
+<h2 id="poglavje-3">3. Faktorizirana matrika vseh variant × virov</h2>
+<p>Za vsak tok iz §2 uporabimo temperaturni stolpec ter omejitev M/V in ponor. G=dobro ujemanje produkta; P=pogojno; P−=nizka prioriteta; N=ne za sedanji scenarij; N1=ne za prvi mobilni pilot; N€=gospodarska izločitev pri referenčnih predpostavkah, ne fizikalni veto. * pri E pomeni najprej primerjavo visokotemperaturne izrabe, nato preostanek. Stolpec C pri električnih variantah ocenjuje elektriko; DGTE-C/W sta hlad/voda. Nobena ocena ni dokaz.</p>
+<div aria-label="Tabela 2; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Varianta</th>
+<th scope="col">E</th>
+<th scope="col">A</th>
+<th scope="col">B</th>
+<th scope="col">C</th>
+<th scope="col">Dn</th>
+<th scope="col">M</th>
+<th scope="col">V</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1/R2, 6 m voda</td>
+<td>P*</td>
+<td>P, A_R; demo</td>
+<td>N</td>
+<td>N</td>
+<td>N</td>
+<td>N1</td>
+<td>N1</td>
+</tr>
+<tr>
+<td>X/X1/X2</td>
+<td>P*</td>
+<td>P</td>
+<td>P, nov cikel</td>
+<td>N</td>
+<td>N</td>
+<td>N1</td>
+<td>N1</td>
+</tr>
+<tr>
+<td>VP-TW</td>
+<td>P*</td>
+<td>P</td>
+<td>P</td>
+<td>N€; rob/črpanje P−</td>
+<td>N</td>
+<td>P</td>
+<td>N1</td>
+</tr>
+<tr>
+<td>VL2</td>
+<td>P*</td>
+<td>P</td>
+<td>P, 20–40 m</td>
+<td>N€</td>
+<td>N</td>
+<td>N1</td>
+<td>N1</td>
+</tr>
+<tr>
+<td>Parni/fazni izpodrivnik</td>
+<td>P*</td>
+<td>P</td>
+<td>P, nov cikel</td>
+<td>N, cikel OPEN</td>
+<td>N</td>
+<td>P</td>
+<td>N1</td>
+</tr>
+<tr>
+<td>Membrana v celotnem ciklu</td>
+<td>P*</td>
+<td>P</td>
+<td>P, nov cikel</td>
+<td>N, cikel OPEN</td>
+<td>N</td>
+<td>P</td>
+<td>N1</td>
+</tr>
+<tr>
+<td>DGTE-C: cikel/dodatek</td>
+<td>P*/P</td>
+<td>G/P</td>
+<td>G/P</td>
+<td>P/N</td>
+<td>N/N</td>
+<td>P/N1</td>
+<td>N1/N1</td>
+</tr>
+<tr>
+<td>DGTE-W: cikel/dodatek</td>
+<td>P*/P</td>
+<td>G/P</td>
+<td>G/P</td>
+<td>P/OPEN</td>
+<td>N/N</td>
+<td>G/N1</td>
+<td>N1/N1</td>
+</tr>
+<tr>
+<td>Velika vreča, referenčni cikel</td>
+<td>P*</td>
+<td>P</td>
+<td>N</td>
+<td>N</td>
+<td>N</td>
+<td>N1</td>
+<td>N1</td>
+</tr>
+</tbody>
+</table></div>
+<p>Razlogi M/V: statični nagib 15/22,5° zmanjša osno komponento za 3,4/7,6 % [I]. Primer valjanja ±22,5°, perioda 12 s, oddaljenost 15 m da ~0,16 g [I/P], ne univerzalne vrednosti. Odločajo pljuskanje, ločevanje faz, mešanje slojev, bočne sile in certifikacija; klasifikacijske kote preveriti [L]. Tudi VP/membrana potrebujeta dinamično preverbo. Pri vozilih omejujejo prostor, masa, pospeški ~0,3–0,8 g [L], vibracije in prehodnost. H=1 m je projektni primer [P]: ob isti poti volumnov delo kapsule pade 80→~13 J [I/P], ne meja vseh vozil. Vojaške ladje/letalonosilke niso prvi pilot zaradi dostopa in integracije; jedrski kondenzator je Dn, turbinski izpuh E.</p>
+<p>R2 vključuje potisno vrv, skupni nosilec, toplotna vrata, mirujoče magnete z reluktančnim členom, prhe v suhem tunelu in stenj. Vsi podedujejo referenčno vrstico; koristi brez skupnega preračuna ne seštevamo. R-A je profil v delovnih stolpcih, R-B ločena tekočinska rekuperacija, R-C prhe. Novi tlaki/višina/medij zahtevajo nov cikel.</p>
+<p>Sidra na MW PREVZETE toplote so neizmerjeni modeli [P], ne napoved povečave:
+- R1 pri 110/25 °C: 3,8–6,4 kW neto [I/P iz 9–15 W ob 2,344 kW]; ~427 enakih posod/MW kaže slabo gostoto moči, ne univerzalne meje. R2: 6–21 iz različnih ciljev.
+- X: vroči primeri 13–45 kW neto; B ~9–36 BRUTO, odvisno od pregretja, višine in izgub; pri MW je olje lahko reda m³/s.
+- VP-TW: B ~4,7–33,7 kW neto, ugodnejši primeri 19–34; C ~1,3–11. Model hitrosti manjka.
+- VL2: B 16–26, C ~4,8 kW neto; višina in toplotno zaprtje sta ključna.
+- Izpodrivnik: ~21 kW neto pri 110/25 °C [I/P]. ~9 m³/s vodne pare/MW pri 38 °C obremeni ventile/kondenzator, ne določi trde meje moči. Membrana je komponenta; drug medij potrebuje svoj račun.
+- Velika vreča: izhod OPEN; V^(−1/3) ne določi debeline ovoja.</p>
+<p>Faktor 1,96 [P] je le posredovani primer izognjene elektrike pri črpanju. Primerjava zahteva isti pretok/tlačno razliko in pomožne vhode; hidravlike in elektrike istega izhoda ne seštevamo.</p>
+<p>Primerjalniki [L]: ladje kotli/FWG/absorpcija; KTE trigeneracija; kompresorji rekuperacija; industrija para/ORC/MVR/TČ; geotermija neposredna toplota/ORC; mali DC TEG. ORC 43,7 kW/MW pri B je STATIC model [P], ne ponudba. DC ni izključna prednost, robustnost je hipoteza. VP s HFO ni vodna izvedba; celotni sistemi niso potrjeno brez elektrike/gibljivih delov.</p>
+<h2 id="poglavje-4">4. Hlad in voda</h2>
+<p>Absorpcija s COP 0,5–0,75 [L/P] da 500–750 kW_c/MW. Pri COP_el=4–5 in intenzivnosti dodatnega odvoda k=0,02–0,03 kW_e/kW [P] je prihranek Q̇_c/COP_el−k·(Q̇_h−Q̇_c/COP_el), pred drugimi razlikami. Robova sta 73/171 kW_e/MW [I/P]; to je korist cikla, ne DGTE črpalke.</p>
+<p>Primer 300 kW pogona, COP=0,65: 195 kW_c in ~31–44 kW prihranka oziroma 9,4–13,1 k€/leto pri 2500 h ter 0,12 €/kWh [I/P], pred naložbo/drugimi razlikami. Potrebna je karta pri dejanskem ponoru, orientacijsko hladilna voda ≤30–32 °C [P]. ~90 kW_c pri vročem ponoru je le občutljivostni primer. Hipotetičnih 3–7 kW prihranka črpalke/MW [L/P] lahko izniči padec COP ~0,012–0,035 [I/P]; merilo je celotna poraba pri istem hladu, ne univerzalna toleranca. Adsorpcija pri C ne potrdi mehurčne črpalke. Letna vrednost šteje dejanski odjem.</p>
+<p>DGTE-W: ~1,5·GOR m³/h/MW [I/P]; GOR ni število učinkov in ostaja OPEN. RO/MED/MVR/FWG primerjamo pri isti kakovosti, napajalni vodi, koncentratu in elektriki. Barometrski krak odvaja tekočino, ne samodejno NCG: dn/dt=dotok−odtok. Začetno izčrpavanje in trajni odvod predvidevata vakuumsko črpalko z merjeno energijo ali ejektor z obračunanim pogonom. Posebni prihranek DGTE je OPEN.</p>
+<h2 id="poglavje-5">5. Pet razvojnih kombinacij in bilance</h2>
+<p>Najprej pregled obstoječih urnih podatkov vira, ponora, rabe, potreb in cen. Prioriteta ni dokazan donos.</p>
+<ol>
+<li>VP-TW + celoletni presežek kompresorske/procesne zanke ~90→70 °C → DC/črpanje. Ena celica 1–5 kW_th v ustrezni obstoječi opremi, ~0,5–2 k€ dodatkov [P]. Meriti ponovljiv cikel, čas, toploto, akumulacijo in vse uvoze. Merilo je neto koristni izhod nad negotovostjo; masa in indicirani W/Q≥3 % sta diagnostična cilja, ne alternativni dokaz. Indicirano delo ni neto DC. Tveganja: stena, regeneracija, počasnost, utrujanje.</li>
+<li>X + neporabljeni odparki ~110–120 °C → DC. C0x: vakuumska kolona 2–3 m, ~0,5–4 k€ [P], pri merjenem projektnem tlačnem razmerju ~4–6. Atmosferski vrh ni enakovreden. Meriti plinski dovod in hidravlično delo; η_dviga≥0,3 je razvojni cilj. Nato ločeno uparjanje/pregretje, pena in NCG. Zrak ne potrdi parnega cikla. Tveganje: zdrs in pomožne izgube.</li>
+<li>DGTE-C + poletni presežek bioplinarne/KTE → klimatizacijski hlad. Najprej karta ponora; nato zamenljiva mehurčna/mehanska cirkulacija na 2–5 kW_c [P]. Meriti tri toplotne tokove in vso elektriko. Merilo: dodatni prihranek nad negotovostjo pri istem produktu. Tveganje: COP/kristalizacija.</li>
+<li>DGTE-W + obalna industrija/stalni otoški agregat s presežkom 70–90 °C → procesna voda. Najprej analiza vode/primerjalnik; en učinek 5–10 kW_th, orientacijsko 7,5–15 L/h pred izgubami [I/P]. Meriti produkt, kakovost, kg/kWh, koncentrat, NCG in elektriko. En učinek ne potrdi večučinskega GOR. Tveganje: RO/MED ugodnejši.</li>
+<li>R1/R2 + stacionarni procesni oljni presežek A_R → mali DC/demonstrator. Ena kartuša z dejanskimi nosilci, ~200–800 € dodatkov ob ustrezni opremi [P]. Meriti C_cik, V(T,p), lokalno silo, histerezo, čas in prenos olja; preveriti tudi učinek bata v tesni stezi. Šestmetrski stolp ni prvi korak.</li>
+</ol>
+<p>Vse bilance spodaj so v MOČEH: Q̇/P v W, ṁ v kg/s, h v J/kg, dU/dt v W:
+- Splošno: ΣQ̇_in+P_imp+Σṁh_in=ΣQ̇_out+P_exp+Σṁh_out+dU/dt.
+- Zaprt motor: Q̇_hot+P_imp=Q̇_cold+P_exp+dU/dt.
+- Hladilnik brez delovnega izvoza: Q̇_pogon+Q̇_hlad+P_imp=Q̇_odvod+dU/dt. Pri zanemarljivem uvozu/akumulaciji je 1000+500=1500 kW [I].
+- Odprti destilator: Q̇_pogon+P_imp+ṁ_n h_n=Q̇_odvod+ṁ_d h_d+ṁ_k h_k+dU/dt; n/d/k so napajalna voda/destilat/koncentrat. Druge relevantne snovne tokove dodamo po splošni enačbi.</p>
+<p>Po potrebi dodamo kinetične/višinske tokove in akumulacijo. Iste energije ne štejemo dvakrat. Energijska oblika zahteva integracijo vseh členov čez isti interval: 1 kW v 10 s je 10 kJ [I]. Poročamo negotovost in spremembo hranilnikov. Načrti niso izvedeni testi ali dovoljenje za izvajanje/nakup.</p>
+<h2 id="poglavje-6">6. Izločitve, nesoglasja in dostava</h2>
+<p>Prvi izbor izloči vozila, vojaške ladje/letalonosilke, gravitacijski ladijski pilot pred kopenskim dokazom, sedanji 6 m vodni cikel pri prenizki temperaturi, elektriko iz C po referenčnem situ, tokove blizu ponora, rezervne agregate z malo urami in hlad/vodo brez odjema. Geotermija/solar/povratni vod niso samodejno brezplačni odpadni viri. Vroče tokove najprej primerjamo z obstoječo izrabo. To niso univerzalne prepovedi novih zasnov.</p>
+<p>Kabine v talilnicah so pogojne po preverbi vodnega ponora; primerjalnik je električna klima. LiBr/voda ni izvedba za −20 °C, univerzalna meja vira za vse sorpcijske cikle ni dokazana. Polnilni zrak zahteva procesni/kondenzacijski pregled. Ladijski C/W primerjamo z absorpcijo/FWG, dinamiko in klasifikacijo.</p>
+<p>Ohranjena nesoglasja: elektrika/hlad/voda; kapsule/stacionarne celice; S/L kontrola/voda–para; linearni/skupni odjem; masa/magnetna sklopitev; R-A/R-B/R-C; velika vreča/nosilnost; kopenski/ladijski začetek; fizikalna možnost/gospodarsko sito. SB ne zagovarja brezpogojnega prvenstva C. η_max≈½√(ΔpΔV/(C·T)) brez potrjene domene ni univerzalni filter. Skupna mnenja ne nadomestijo meritev.</p>
+<p>TESTING=MINIMAL_REQUIRED_ONLY. Pričakovano trajanje približno 30 minut ali več zahteva izrecno BD-odobritev. Nepričakovano dolg test ustaviti in označiti LOCAL_ACCEPTANCE_PENDING. Serije niso avtomatično odobrene; fizični testi niso pogoj analitičnega sprejema. Končni pregled ne sme biti samo avtorjev.</p>
+<p>Spremenjeno: v4, zgoščena vsebina in skladne bilance. Branch/commit/paket: ni. BUILDER_TESTS_RUN: noben izvršen test; ročni STATIC pregled. BUILDER_TESTS_NOT_RUN: zunanji, programski in fizični testi. LOCAL_ACCEPTANCE_PENDING: podatki lokacij in prihodnje meritve. CMD za izhodišče: <a href="./dgte-bd-r1.html">odprite DGTE BD R1</a>. Odprto: preverjeni razponi, komponente, gospodarnost in končni pregled.</p></article>
+</main>
+<footer><div><p>DGTE · avtor koncepta Bojan Dobrečevič · BD × AI Lab</p><p>Dokument iz 24.–25. 10. 2026 · analitični sprejem, meritve ostajajo odprte</p></div><a href="#document">Na vrh ↑</a></footer>
+</div>
+<script>
+document.getElementById('theme').addEventListener('click',()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';document.querySelector('meta[name="theme-color"]').content=r.dataset.theme==='dark'?'#0c171a':'#f6f3ec';try{localStorage.setItem('mdlxdcc-theme',r.dataset.theme);}catch(_){}});
+</script>
+</body>
+</html>
