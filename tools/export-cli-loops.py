@@ -13,11 +13,14 @@ import re
 import sqlite3
 import tempfile
 
-APPROVED = frozenset({'37eaccbf', 'cb6e872a', 'aa80baa6', '4c3670cb', '25bf1d08'})
+APPROVED = frozenset({'aa80baa6', 'cb6e872a', '25bf1d08', 'd3f8f22b', '4c3670cb', '37eaccbf'})
+# Existing reviewed editorial IDs, bound to one exact historical source.
+APPROVED_ALIASES = {'cli-loop-nove-uporabe': '5f7e5552',
+                    '8zlistener-021-max-rhp': 'b35f75f3'}
 STATES = {
     'VALIDATED': 'queued', 'QUEUED': 'queued',
     'STARTING': 'running', 'RUNNING': 'running', 'READY_NEXT': 'running',
-    'PAUSED_QUOTA': 'paused', 'COMPLETE': 'complete', 'PARTIAL': 'partial',
+    'PAUSED_QUOTA': 'paused', 'PAUSED_USER': 'paused', 'COMPLETE': 'complete', 'PARTIAL': 'partial',
     'ARCHIVE_PENDING': 'pending', 'UNKNOWN': 'unknown',
     'FAILED': 'blocked', 'BLOCKED': 'blocked', 'CONFLICT': 'blocked',
     'STOPPED': 'partial', 'CANCELLED': 'partial',
@@ -25,7 +28,21 @@ STATES = {
 EFFORTS = {'low', 'medium', 'high', 'xhigh', 'max', 'ultra'}
 FIELDS = {'id', 'state', 'mode', 'rhp', 'observed_at', 'turns', 'title',
           'summary', 'outcome', 'events', 'next_step', 'executor_state',
-          'active_seconds', 'next_author', 'effort', 'product_status'}
+          'active_seconds', 'next_author', 'effort', 'product_status','usage','full_rhp','deep','skeptics','seats','next_seat','stage','role_findings'}
+
+
+SEATS={'GPT','CLAUDE','SA','SB','CX','CM'}
+def public_usage(value):
+    if not isinstance(value,dict) or value.get('schema')!='8zlistener.usage.v1':raise ValueError('Invalid typed usage source')
+    result={k:value.get(k) for k in ('measured_tokens','attempts','measured_attempts','unknown_attempts','coverage')}
+    if result['coverage'] not in ('COMPLETE','PARTIAL','UNKNOWN') or any(type(result[k]) is not int or result[k]<0 or result[k]>10**12 for k in ('measured_tokens','attempts','measured_attempts','unknown_attempts')):raise ValueError('Invalid measured usage')
+    for key,allowed in [('by_provider',{'GPT','CLAUDE'}),('by_seat',SEATS),('by_phase',{'debate','build','review','startup'})]:
+        result[key]={}
+        for label,row in value.get(key,{}).items():
+            if label not in allowed:raise ValueError('Unapproved usage group')
+            result[key][label]={k:row.get(k) for k in ('input_tokens','output_tokens','cached_input_tokens','cache_write_input_tokens','reasoning_output_tokens','total_tokens')}
+            if any(type(v) is not int or v<0 or v>10**12 for v in result[key][label].values()):raise ValueError('Invalid usage counter')
+    return result
 
 
 def safe_text(value):
@@ -52,6 +69,13 @@ def validate_public(data):
             raise ValueError('Observation time must include timezone')
         for key in ['title', 'summary', 'outcome', 'next_step']:
             safe_text(d[key])
+        if 'usage' in d:public_usage(dict(d['usage'],schema='8zlistener.usage.v1'))
+        if 'seats' in d and d['seats'] not in (2,4,6):raise ValueError('Invalid seat count')
+        if 'next_seat' in d and d['next_seat'] not in SEATS|{None}:raise ValueError('Invalid next seat')
+        if 'stage' in d and d['stage'] not in (None,'map','alternatives','challenge','synthesis'):raise ValueError('Invalid stage')
+        for flag in ('deep','full_rhp','skeptics'):
+            if flag in d and type(d[flag]) is not bool:raise ValueError('Invalid public flag')
+        for finding in d.get('role_findings',[]):safe_text(finding)
         if 'product_status' in d:
             safe_text(d['product_status'])
         for e in d['events']:
@@ -68,9 +92,12 @@ def read_statuses(journal, debates, observed_at):
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
         for d in debates:
-            if d['id'] not in APPROVED:
+            if d['id'] not in APPROVED and d['id'] not in APPROVED_ALIASES:
                 continue
-            rows = db.execute('SELECT request_id,state,runtime_json FROM jobs WHERE substr(request_id,1,8)=?', (d['id'],)).fetchall()
+            if d['id'] in APPROVED_ALIASES:
+                rows = db.execute('SELECT request_id,state,runtime_json FROM jobs WHERE substr(request_id,1,8)=?', (APPROVED_ALIASES[d['id']],)).fetchall()
+            else:
+                rows = db.execute('SELECT request_id,state,runtime_json FROM jobs WHERE substr(request_id,1,8)=?', (d['id'],)).fetchall()
             if len(rows) != 1:
                 raise ValueError('Approved job missing or ambiguous')
             rid, state, raw_runtime = rows[0]
@@ -78,8 +105,20 @@ def read_statuses(journal, debates, observed_at):
                 raise ValueError('Unrecognized executor state; review required')
             runtime = json.loads(raw_runtime or '{}')
             turns = db.execute('SELECT author FROM turns WHERE request_id=? ORDER BY turn_id', (rid,)).fetchall()
-            if len(turns) > 100 or any(t[0] not in {'GPT', 'CLAUDE'} for t in turns):
+            if len(turns) > 100 or any(t[0] not in SEATS for t in turns):
                 raise ValueError('Invalid confirmed turns')
+            req=runtime.get('effective_request',{})
+            full=req.get('full_rhp') is True;skeptics=req.get('skeptics') is True
+            d.update(full_rhp=full,skeptics=skeptics,deep=req.get('deep') is True,seats=6 if full else 4 if skeptics else 2,
+                stage=runtime.get('flow_040',{}).get('stage'),next_seat=runtime.get('next_seat'))
+            columns={r[1] for r in db.execute('PRAGMA table_info(jobs)')}
+            if 'run_path' in columns:
+                row=db.execute('SELECT run_path FROM jobs WHERE request_id=?',(rid,)).fetchone()
+                # The only extra source is the typed numeric sidecar; never traverse PRIVATE or read turn bodies.
+                path=Path(row[0])/'USAGE.json'
+                if path.is_file():
+                    if path.stat().st_size>65536:raise ValueError('Oversized usage source')
+                    d['usage']=public_usage(json.loads(path.read_bytes()))
             tier = runtime.get('tier_state', {})
             mode = tier.get('mode', d['mode'])
             work = runtime.get('work_used_s', 0)
@@ -96,7 +135,8 @@ def read_statuses(journal, debates, observed_at):
                 effort[label] = {'requested': requested, 'reported': reported}
             next_author = None
             if STATES[state] in {'queued', 'running', 'paused'}:
-                next_author = 'GPT' if not turns or turns[-1][0] == 'CLAUDE' else 'Claude'
+                if not full and not skeptics:next_author = 'GPT' if not turns or turns[-1][0] == 'CLAUDE' else 'Claude'
+                elif d['next_seat'] in ('GPT','CLAUDE'):next_author='GPT' if d['next_seat']=='GPT' else 'Claude'
             d.update(state=STATES[state], executor_state=state, turns=len(turns),
                      mode=mode, rhp=mode == 'MAX' or d['rhp'],
                      active_seconds=int(work), next_author=next_author,

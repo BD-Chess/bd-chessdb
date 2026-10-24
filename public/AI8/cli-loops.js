@@ -7,9 +7,9 @@
   let data = null, selected = new URL(location.href).searchParams.get('debate'), filter = 'all', busy = false;
   const text = (tag, cls, value) => { const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el; };
   const fmt = value => date.format(new Date(value));
-  const states = {queued:'V vrsti',running:'V razpravi',paused:'Premor · kvota',pending:'Čaka arhiv',complete:'Zaključeno',partial:'Delno zaključeno',blocked:'Blokirano',unknown:'Stanje negotovo'};
+  const states = {queued:'V vrsti',running:'V razpravi',paused:'Premor',pending:'Čaka arhiv',complete:'Zaključeno',partial:'Delno zaključeno',blocked:'Blokirano',unknown:'Stanje negotovo'};
   const activeStates = new Set(['queued','running','paused','pending']);
-  const executorStates = new Set(['VALIDATED','QUEUED','STARTING','RUNNING','READY_NEXT','PAUSED_QUOTA','COMPLETE','PARTIAL','ARCHIVE_PENDING','UNKNOWN','FAILED','BLOCKED','CONFLICT','STOPPED','CANCELLED']);
+  const executorStates = new Set(['VALIDATED','QUEUED','STARTING','RUNNING','READY_NEXT','PAUSED_QUOTA','PAUSED_USER','COMPLETE','PARTIAL','ARCHIVE_PENDING','UNKNOWN','FAILED','BLOCKED','CONFLICT','STOPPED','CANCELLED']);
   const efforts = new Set(['low','medium','high','xhigh','max','ultra',null]);
   const badge = value => text('span','state '+value,states[value]);
   function validate(value) {
@@ -20,6 +20,7 @@
       for(const key of ['title','summary','outcome','next_step'])if(typeof d[key]!=='string'||d[key].length>3000)throw Error('Neveljavno besedilo.');
       if(!Number.isInteger(d.turns)||d.turns<0||d.turns>100||!Array.isArray(d.events)||d.events.length>100)throw Error('Neveljavna časovnica.');
       for(const e of d.events)if(!['GPT','Claude','BD','8zListener'].includes(e.author)||typeof e.label!=='string'||typeof e.text!=='string'||e.text.length>3000)throw Error('Neveljaven dogodek.');
+      if(d.usage!==undefined){const u=d.usage;if(!['COMPLETE','PARTIAL','UNKNOWN'].includes(u.coverage)||!['measured_tokens','attempts','measured_attempts','unknown_attempts'].every(k=>Number.isSafeInteger(u[k])&&u[k]>=0))throw Error('Neveljavna poraba.');for(const key of ['by_provider','by_seat','by_phase']){if(!u[key]||typeof u[key]!=='object'||Object.keys(u[key]).length>8)throw Error('Neveljavna razčlenitev.');for(const row of Object.values(u[key]))if(!['input_tokens','output_tokens','total_tokens'].every(k=>Number.isSafeInteger(row[k])&&row[k]>=0))throw Error('Neveljavni tokeni.');}}
       if(typeof d.rhp!=='boolean')throw Error('Neveljaven način.');
       if(d.executor_state!==undefined&&!executorStates.has(d.executor_state))throw Error('Neveljavno stanje izvajalnika.');
       if(d.active_seconds!==undefined&&(!Number.isInteger(d.active_seconds)||d.active_seconds<0||d.active_seconds>43200))throw Error('Neveljaven aktivni čas.');
@@ -32,11 +33,25 @@
     }
     return value;
   }
+
+  const number=new Intl.NumberFormat('sl-SI');
+  function usageLabel(u){return !u||!u.measured_attempts?'Tokeni: meritev še ni na voljo':'Tokeni: '+(u.coverage==='COMPLETE'?'':'najmanj ')+number.format(u.measured_tokens)+(u.coverage==='COMPLETE'?'':' · nepopolni podatki');}
+  function usageTable(rows){const table=text('table','usage-table'),head=text('tr');for(const h of ['Skupina','Vhod','Izhod','Skupaj'])head.append(text('th','',h));table.append(head);for(const [name,u] of Object.entries(rows)){const row=text('tr');row.append(text('th','',name));for(const k of ['input_tokens','output_tokens','total_tokens'])row.append(text('td','',Number.isSafeInteger(u[k])?number.format(u[k]):'—'));table.append(row);}return table;}
+  function renderUsage(){
+    const measured=data.debates.filter(d=>d.usage?.measured_attempts),complete=measured.filter(d=>d.usage.coverage==='COMPLETE');
+    const total=measured.reduce((n,d)=>n+d.usage.measured_tokens,0),all=complete.length===data.debates.length;
+    $('usage-total').textContent=measured.length?(all?'':'najmanj ')+number.format(total)+' tokenov':'Meritve še niso na voljo';
+    $('usage-coverage').textContent='Objavljenih debat: '+data.debates.length+' · popolne meritve: '+complete.length+' · delne meritve: '+(measured.length-complete.length)+' · brez meritev: '+(data.debates.length-measured.length)+'.';
+    const providers={},modes={};for(const d of measured){for(const [p,u] of Object.entries(d.usage.by_provider||{})){const row=providers[p]||(providers[p]={input_tokens:0,output_tokens:0,total_tokens:0});for(const k of Object.keys(row))row[k]+=u[k]||0;}const key=d.full_rhp?'FullRHP':d.skeptics?'S':'Običajni';const row=modes[key]||(modes[key]={input_tokens:0,output_tokens:0,total_tokens:0});for(const u of Object.values(d.usage.by_provider||{}))for(const k of Object.keys(row))row[k]+=u[k]||0;}
+    $('usage-providers').replaceChildren(text('h3','','Po ponudnikih'),usageTable(providers));$('usage-modes').replaceChildren(text('h3','','Po načinu sodelovanja'),usageTable(modes));
+  }
+
   function choose(id) {
     selected=id;const url=new URL(location.href);url.searchParams.set('debate',id);history.replaceState(null,'',url);render();
   }
   function render() {
     if(!data)return;
+    renderUsage();
     $('all-count').textContent=String(data.debates.length);
     const list=data.debates.filter(d=>filter==='all'||(filter==='running'?activeStates.has(d.state):d.state===filter));
     if(!list.some(d=>d.id===selected))selected=list[0]?.id||null;
@@ -44,9 +59,9 @@
     if(!list.length)host.append(text('p','snapshot-note','V tem izboru še ni objavljenih debat.'));
     for(const d of list){
       const card=text('button','debate-card');card.type='button';card.setAttribute('aria-pressed',String(d.id===selected));card.setAttribute('aria-controls','debate-detail');
-      const meta=text('div','card-meta');meta.append(badge(d.state),text('span','mode-tag',d.mode+(d.rhp?' + RHP':'')));
+      const meta=text('div','card-meta');meta.append(badge(d.state),text('span','mode-tag',d.mode+(d.full_rhp?' · FullRHP · 6 sej':d.skeptics?' · S · 4 seje':d.rhp?' + RHP':'')+(d.deep?' · DEEP':'')));
       const bottom=text('div','card-bottom');bottom.append(text('span','',d.turns+' '+(d.turns===1?'potrjen odgovor':d.turns===2?'potrjena odgovora':d.turns<5?'potrjeni odgovori':'potrjenih odgovorov')),text('span','arrow','↗'));
-      card.append(meta,text('h3','',d.title),text('p','',d.summary),bottom);card.addEventListener('click',()=>choose(d.id));host.append(card);
+      card.append(meta,text('h3','',d.title),text('p','',d.summary),text('span','usage-chip',usageLabel(d.usage)),bottom);card.addEventListener('click',()=>choose(d.id));host.append(card);
     }
     const d=list.find(x=>x.id===selected),panel=$('debate-detail');panel.replaceChildren();
     if(!d){const empty=text('div','empty-state');const title=text('h3','','Izberi drug pogled.');title.id='detail-title';empty.append(title,text('p','','Spremeni filter za objavljene debate.'));panel.append(empty);return;}
@@ -65,6 +80,10 @@
       }
       head.append(status);
     }
+    head.append(text('p','usage-chip',usageLabel(d.usage)));
+    if(d.stage)head.append(text('p','role-note','Faza: '+({map:'podvprašanja',alternatives:'alternative',challenge:'ugovori in preverjanje',synthesis:'sinteza'}[d.stage]||d.stage)));
+    if(d.usage){const details=text('details','detail-usage');details.append(text('summary','','Razčlenitev porabe po ponudnikih, vlogah in fazah'));for(const [label,key] of [['Ponudniki','by_provider'],['Vloge','by_seat'],['Faze','by_phase']])if(d.usage[key]&&Object.keys(d.usage[key]).length){details.append(text('h4','',label),usageTable(d.usage[key]));}details.append(text('p','role-note',d.usage.measured_attempts+' od '+d.usage.attempts+' klicev z meritvami. Neznana poraba ni nič.'));head.append(details);}
+    if(d.full_rhp||d.skeptics){const roles=text('details','detail-usage');roles.append(text('summary','','Vloge in njihov doprinos'));for(const r of d.role_findings||[])roles.append(text('p','role-note',r));if(!(d.role_findings||[]).length)roles.append(text('p','role-note','Vsebinski prispevki so prikazani v izbranih uredniških korakih spodaj. Število sej ali soglasje samo po sebi ne dokazuje uspeha naloge.'));head.append(roles);}
     if(d.product_status)head.append(text('p','product-status',d.product_status));
     const body=text('div','detail-body');body.append(text('h4','','IZBRANI KORAKI POGOVORA'));
     const timeline=text('ol','timeline');
@@ -89,19 +108,23 @@
   document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{
     filter=button.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));render();
   }));
-  function command() {
-    const topic=$('topic').value.trim()||'Primerjajta dve zasnovi. Poiščita slabosti, ohranita nesoglasja in predlagajta naslednji preverljivi korak.';
-    return ['LOOP CLI',$('host').value,$('limit').value,$('mode').value].filter(Boolean).join(' ')+': '+topic;
+
+  let commandSpec=null,currentPlan=null;
+  function values(){return {host:$('host').value,mode:$('mode').value,collaboration:$('collaboration').value,depth:$('depth').value,limit:$('limit').value,customLimit:$('custom-limit').value,customUnit:$('custom-unit').value,topic:$('topic').value,build:$('build').checked,buildProject:$('build-project').value,buildPackage:$('build-package').value,activate:$('activate').checked,calls:$('call-budget').value,tokens:$('token-budget').value};}
+  function updateCommand(){
+    $('custom-limit-fields').hidden=$('limit').value!=='custom';$('build-fields').hidden=!$('build').checked;
+    for(const id of ['build-project','build-package','activate'])$(id).disabled=!$('build').checked;
+    $('collaboration-help').textContent=$('collaboration').value==='FullRHP'?'Šest ločenih sej. S je vključen. Oba avtorja uporabljata interni RHP-11 na začetku in ob sintezah.':$('collaboration').value==='S'?'Štiri ločene seje: dva avtorja in dva skeptika.':'Dva avtorja primerjata predloge in ohranita nesoglasja.';
+    if(!commandSpec){$('copy-command').disabled=true;return;}
+    currentPlan=LoopCommand.build(commandSpec,values());$('command').value=currentPlan.command;$('plan-summary').textContent=currentPlan.summary;$('command-warning').textContent=currentPlan.errors.join(' ');$('copy-command').disabled=!!currentPlan.errors.length;
+    $('copy-status').textContent='Kopiranje še ne odda naloge; pred zagonom sledi pregled načrta.';
   }
-  function updateCommand(){$('command').value=command();$('copy-status').textContent='Priprava ukaza še ne odda naloge.';}
-  ['host','limit','mode','topic'].forEach(id=>$(id).addEventListener('input',updateCommand));
-  $('command-form').addEventListener('submit',async event=>{
-    event.preventDefault();$('command').value=command();
-    try{await navigator.clipboard.writeText(command());$('copy-status').textContent='Kopirano. Prilepi v povezano GPT ali Claude sejo. Naloga še ni oddana.';}
-    catch(error){$('command').focus();$('command').select();$('copy-status').textContent='Označeni ukaz kopiraj ročno in prilepi v povezano sejo.';}
-  });
+  async function loadSpec(){try{const r=await fetch(new URL('../AI8/cli-loops-command-spec.json',location.href),{credentials:'omit',cache:'no-store'});if(!r.ok)throw Error();commandSpec=await r.json();if(commandSpec.schema!=='8zlistener.command_spec.v1'||!Array.isArray(commandSpec.arguments))throw Error();$('grammar').textContent=commandSpec.grammar;const list=$('argument-list');list.replaceChildren();for(const a of commandSpec.arguments){const row=text('div');row.append(text('dt','',a.name),text('dd','',a.description));list.append(row);}updateCommand();}catch(e){$('copy-command').disabled=true;$('command-warning').textContent='Specifikacije ukaza ni mogoče prebrati; kopiranje je zadržano.';}}
+  $('command-form').addEventListener('input',updateCommand);$('command-form').addEventListener('change',updateCommand);
+  $('command-form').addEventListener('submit',async event=>{event.preventDefault();updateCommand();if(!currentPlan||currentPlan.errors.length)return;try{await navigator.clipboard.writeText(currentPlan.command);$('copy-status').textContent='Kopirano. Prilepi v povezano sejo in potrdi prikazani načrt.';}catch(e){$('command').focus();$('command').select();$('copy-status').textContent='Označeni ukaz kopiraj ročno; naloga še ni oddana.';}});
+  $('reset-options').addEventListener('click',()=>{const topic=$('topic').value;$('command-form').reset();$('topic').value=topic;updateCommand();});
   $('refresh').addEventListener('click',refresh);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
   window.addEventListener('popstate',()=>{selected=new URL(location.href).searchParams.get('debate');render();});
-  updateCommand();refresh();setInterval(()=>{if(!document.hidden)refresh();},180000);
+  updateCommand();loadSpec();refresh();setInterval(()=>{if(!document.hidden)refresh();},180000);
 })();

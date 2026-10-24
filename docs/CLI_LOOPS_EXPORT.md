@@ -1,57 +1,42 @@
-# CLI Loops public status export
+# CLI Loops public status and command builder
 
-The public page shows published snapshots, not a live connection to the listener.
-`tools/export-cli-loops.py` opens the operator-supplied journal using SQLite
-`mode=ro`, `query_only=ON`, and one consistent read transaction. It does not import
-listener code, inspect ACTIVE, read requests or turn files, traverse PRIVATE,
-start a listener, call a model, or install a scheduled task.
+The page shows reviewed published snapshots, not a direct listener connection.
+The exporter reads SQLite in read-only mode and the bounded typed USAGE.json
+sidecar. It never reads PRIVATE, turn bodies, credentials or request content,
+and never starts a model or listener.
 
-Only four explicitly approved short job IDs in `APPROVED` can be updated. Titles,
-summaries, selected events and next steps stay editorial in
-`public/AI8/cli-loops-data.json`. New jobs require an explicit editorial review and
-addition to that allowlist. Runtime JSON is parsed locally; only validated mode,
-effort enums and accumulated work seconds are copied. Session details, bodies,
-paths, Drive IDs, emails and all other runtime data are discarded.
+Six approved short IDs and two exact historical aliases bind the eight existing
+published debates. New runs require editorial approval. Text, selected events
+and role contribution findings remain curated in the public feed.
 
-Exported fields: short public ID, executor state, presentation state, mode/RHP,
-confirmed turn count, accumulated active seconds at the last checkpoint,
-next author, requested/client-reported effort, observation time. The next author
-follows the current two-author protocol; a future multi-seat protocol requires
-review before exporting. `null` reported effort means the client did not confirm
-it. `VALIDATED` is shown as queued. `READY_NEXT`/`STARTING` remain in progress.
-Only COMPLETE is shown as complete; partial, paused and uncertain states retain
-their own labels. Queue waiting is excluded from active work.
+Only validated enums and numbers are exported: state, mode, confirmed turns,
+active seconds, effort, S/FullRHP/DEEP flags, 2/4/6 seats, phase and next seat.
+Only COMPLETE is complete. Unknown effort and missing usage remain unknown.
+Usage is a numeric whitelist by provider, seat and phase: no private identifiers.
 
-From a clean checkout, using CMD (replace the journal placeholder locally):
+Codex resume counters use one cumulative high-water value per native session.
+Claude counters are per invocation, including cache read/write input. Cached
+input and reasoning are subsets, never added again. Partial sums are measured
+lower bounds, not exact bills. Global sums cover only the displayed debates.
+Historical recovery adds sidecars without rewriting original evidence. Future
+0.4 calls also meter failures, repairs and build/review calls when usage exists.
+Missing counters are not zero.
 
-```bat
-py -3 tools\test-export-cli-loops.py
-py -3 tools\export-cli-loops.py --journal "<absolute journal.sqlite path>"
-```
+The command builder uses the shared release cli-loops-command-spec.json. Basic
+controls remain visible; build target, activation and budgets are collapsible.
+It previews/copies commands only; it never submits jobs. Reset keeps the topic.
+HOME supports 0.4 after verified activation; WORK needs its first local bootstrap.
+VM remains unavailable.
 
-The exporter prints `CHANGED`, `UNCHANGED` or `THROTTLED`. It writes atomically,
-refuses concurrent editorial changes, and has no throttle override: at least 15
-minutes must have passed since the previous export. Observation time alone never
-triggers another export. An error leaves the feed intact and emits no private
-source details. The source journal is never modified.
+Minimal CMD checks:
 
-When `CHANGED`, review the public diff, run the small syntax/boundary checks, then
-commit only the feed on main and push through the existing Pages/Netlify path:
+    py -3 tools\test-export-cli-loops.py
+    node tools\test-cli-loops-command.cjs
+    py -3 tools\export-cli-loops.py --journal "<absolute journal.sqlite path>"
 
-```bat
-node --check public\AI8\cli-loops.js
-git diff -- public/AI8/cli-loops-data.json
-git add public/AI8/cli-loops-data.json
-git commit -m "Refresh approved CLI loop status snapshots"
-git push origin main
-```
-
-There is no automatic commit/push or scheduler. Repeated local invocations can
-automatically extract status, but publishing remains an explicit reviewed step.
-The page checks for a newly published feed every three minutes while visible.
-An old snapshot must never be interpreted as proof that a job is still running.
-
-DGTE's four-turn loop produced a local reviewed HTML file. At this release the
-public DGTE page still contains an older version, so no product link claims that
-the LOOP output is deployed. The S option is disabled until installation is
-confirmed separately.
+Export writes atomically, refuses concurrent editorial changes and retains the
+15-minute throttle. Observation time alone never triggers export. There is no
+automatic commit/push or scheduled export. Review the diff and use the existing
+Pages/Netlify GitHub pipeline. The visible page polls the published feed every
+three minutes; an old snapshot is not evidence of a currently active run.
+Product deployment remains separate from debate completion.

@@ -1,0 +1,81 @@
+{
+  "schema": "8zlistener.command_spec.v1",
+  "version": "0.4.0",
+  "grammar": "LOOP [CLI] [HOME|WORK|VM] [N|Nh|Nm|Ns] [AUTO|MIN|MAX] [S] [B] [DEEP] [FullRHP] [PROJECT=key PACKAGE=name ACTIVATE] [CALLS=N TOKENS=N]: topic",
+  "defaults": {
+    "transport": "CLI",
+    "host": "HOME",
+    "mode": "AUTO",
+    "max_turns": 100,
+    "max_active_seconds": 43200,
+    "skeptics": false,
+    "build_requested": false,
+    "deep": false,
+    "full_rhp": false,
+    "max_native_calls": 160
+  },
+  "arguments": [
+    {
+      "name": "HOME / WORK / VM",
+      "description": "Ciljni računalnik. Brez samodejnega preklopa na drug host."
+    },
+    {
+      "name": "N / Nh / Nm / Ns",
+      "description": "N posameznih vsebinskih odgovorov vseh sej ali meja aktivnega dela v urah, minutah, sekundah. Največ 100 / 12 h."
+    },
+    {
+      "name": "AUTO / MIN / MAX",
+      "description": "Profil modelov in reasoninga. AUTO začne HIGH; MIN/MAX sta fiksna. MIN pri Codexu ne pomeni drugega modela."
+    },
+    {
+      "name": "S",
+      "description": "Dva avtorja in dva skeptika, skupaj štiri ločene seje."
+    },
+    {
+      "name": "FullRHP",
+      "description": "Šest sej, 3 Codex + 3 Code. Vključuje S. Avtorja uporabljata interni RHP-11 na začetku, ob sintezah in težjih korakih."
+    },
+    {
+      "name": "DEEP",
+      "description": "Podvprašanja, alternative, protiargumenti in sinteza pred zaključkom. Čas/poteze/STOP ostanejo omejitve."
+    },
+    {
+      "name": "B",
+      "description": "Gradnja in pregled izrecno izbranega lokalnega projekta/paketa. Cilj in aktivacija sta del potrjenega načrta."
+    },
+    {
+      "name": "PROJECT=key / PACKAGE=name / ACTIVATE",
+      "description": "Pri B izrecen ciljni projekt in ime paketa. ACTIVATE je dovoljen samo za preverjeni Listener adapter; drugi projekti dobijo pregledan paket."
+    },
+    {
+      "name": "CALLS=N / TOKENS=N",
+      "description": "Meja native klicev (privzeto 160, največ 400) in izmerjenih tokenov. Brez dodatnih klicev po doseženi meji; tekoči klic lahko porabo preseže."
+    }
+  ],
+  "controls": [
+    "HELP",
+    "STATUS",
+    "PAUSE",
+    "RESUME",
+    "STOP"
+  ],
+  "other_transports": [
+    "EMAIL",
+    "DRIVE",
+    "BROWSER"
+  ],
+  "rhp11": [
+    "Crystallizer",
+    "Physicist",
+    "Naturalist",
+    "Engineer",
+    "Falsifier",
+    "Dreamer",
+    "Cartographer",
+    "Historian",
+    "Child",
+    "Claustrum/DCC",
+    "Empiricist"
+  ],
+  "confirmation": "Pred oddajo pokaži celoten načrt in vprašaj, ali želi BD kaj spremeniti. Ne = oddaj prikazane nastavitve. Sprememba zahteva nov pregled/hash. Citati in pomoč ne oddajo ničesar."
+}
