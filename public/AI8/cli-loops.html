@@ -5,17 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="CLI Loops: Claude Code in Codex izmenjata poglede, 8zListener vodi pogovor. Pregled debat, predlogov in naslednjih korakov.">
   <meta name="theme-color" content="#0b1220">
-  <meta name="cli-loops-release" content="20261024-gui-rhp-r2">
+  <meta name="cli-loops-release" content="20261024-github-r1">
   <title>AI8 CLI Loops · Dva pogleda, naslednji korak</title>
   <link rel="canonical" href="https://www.mdlxdcc.org/ai8/cli-loops">
   <meta name="color-scheme" content="dark light">
   <script>document.documentElement.classList.add('js');try{const r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),v=localStorage.getItem('mdlxdcc-font'),n=v===null||v.trim()===''?1:Number(v);r.dataset.theme=['light','dark'].includes(t)?t:matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';r.style.setProperty('--scale',Number.isFinite(n)?Math.max(.8,Math.min(1.5,n)):1);}catch(_){document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}</script>
-  <link rel="stylesheet" href="../AI8/cli-loops.css?v=20261024-gui-rhp-r2">
-  <script src="../AI8/cli-loops-command.js?v=20261024-gui-rhp-r2" defer></script>
-  <script src="../AI8/cli-loops-preferences.js?v=20261024-gui-rhp-r2" defer></script>
-  <script src="../AI8/cli-loops-view.js?v=20261024-gui-rhp-r2" defer></script>
-  <script src="../AI8/cli-loops-cost.js?v=20261024-gui-rhp-r2" defer></script>
-  <script src="../AI8/cli-loops.js?v=20261024-gui-rhp-r2" defer></script>
+  <link rel="stylesheet" href="../AI8/cli-loops.css?v=20261024-github-r1">
+  <script src="../AI8/cli-loops-command.js?v=20261024-github-r1" defer></script>
+  <script src="../AI8/cli-loops-preferences.js?v=20261024-github-r1" defer></script>
+  <script src="../AI8/cli-loops-view.js?v=20261024-github-r1" defer></script>
+  <script src="../AI8/cli-loops-cost.js?v=20261024-github-r1" defer></script>
+  <script src="../AI8/cli-loops.js?v=20261024-github-r1" defer></script>
+  <script type="module" src="../AI8/cli-loops-submit.mjs?v=20261024-github-r1"></script>
 </head>
 <body>
   <a class="skip" href="#debate">Na debate</a>
@@ -53,7 +54,7 @@
       <section class="uses-section" aria-labelledby="uses-title"><div class="section-heading"><div><p class="eyebrow">VEČ KOT DRUGO MNENJE</p><h2 id="uses-title">Kje pomaga drugi pogled?</h2></div><p class="section-aside">Jasen vhod. Konkreten ugovor.<br>Preverljiv naslednji korak.</p></div><div class="uses-grid"><article><span class="use-number">01 / KODA</span><h3>Predlagaj. Preglej. Popravi.</h3><p>En model pripravi spremembo, drugi išče napake in manjkajoče primere.</p></article><article><span class="use-number">02 / DIAGNOSTIKA</span><h3>Dve razlagi, en ločilni test.</h3><p>Primerjava vzrokov napake in najmanjši preizkus, ki pokaže, katera razlaga drži.</p></article><article><span class="use-number">03 / ZASNOVA</span><h3>Preveri odločitev z obeh strani.</h3><p>Arhitektura, podatkovne pogodbe, kompromisi in pogoji za ponovno presojo.</p></article><article><span class="use-number">04 / DOKAZI</span><h3>Loči idejo od rezultata.</h3><p>Kaj je predlagano, kaj je bilo preverjeno in kaj še potrebuje dejansko izvedbo.</p></article></div></section>
 
       <section class="composer" id="nov-loop" aria-labelledby="composer-title">
-        <div class="composer-intro"><p class="eyebrow">IZBERI NAČIN SODELOVANJA</p><h2 id="composer-title">Kaj naj preverita?</h2><p>Izberi nastavitve, kopiraj ukaz in ga prilepi v GPT, Codex, Claude ali Code. Pred zagonom prejmeš pregled načrta. Na vprašanje »Želiš kaj spremeniti?« odgovor »ne« pomeni zagon prikazanega načrta.</p><p class="snapshot-note">Sestavljalnik sam ne odda naloge. Privzeto: HOME · AUTO · 2 seji · največ 100 potez / 12 ur aktivnega dela.</p><p id="installation-note" class="snapshot-note">HOME in WORK 0.4.1 sta nameščena in preverjeno delujeta: do pet različnih debat hkrati, zaporedne poteze znotraj vsake. WORK podpira AUTO/HIGH in MAX; MIN še ni sprejet.</p></div>
+        <div class="composer-intro"><p class="eyebrow">IZBERI NAČIN SODELOVANJA</p><h2 id="composer-title">Kaj naj preverita?</h2><p>Izberi računalnik in nastavitve, preglej celoten načrt ter ga potrdi za oddajo v zasebni GitHub Inbox. Kopiranje ukaza ostaja na voljo za uporabo v povezani seji.</p><p class="snapshot-note">Neposredna oddaja je na voljo prijavljenemu lastniku. Privzeto: HOME · AUTO · 2 seji · največ 100 potez / 12 ur aktivnega dela.</p><p id="installation-note" class="snapshot-note">HOME in WORK 0.4.1 sta nameščena in preverjeno delujeta: do pet različnih debat hkrati, zaporedne poteze znotraj vsake. WORK podpira AUTO/HIGH in MAX; MIN še ni sprejet.</p></div>
         <form id="command-form" novalidate>
           <p id="host-adjustment" class="field-notice" role="status"></p>
           <fieldset class="settings"><legend>Osnovne nastavitve</legend><div class="settings-grid">
@@ -74,7 +75,8 @@
             <details class="argument-help"><summary>Vsi argumenti in privzete nastavitve</summary><p id="grammar" class="command-grammar"></p><dl id="argument-list"></dl><p>HELP, STATUS, PAUSE, RESUME, STOP in CAPACITY so upravljalni ukazi. Primeri: <code>LOOP HELP</code>, <code>LOOP STATUS</code>, <code>LOOP PAUSE &lt;UUID&gt;</code>, <code>LOOP RESUME &lt;UUID&gt;</code>, <code>LOOP STOP &lt;UUID&gt;</code>. Uporabi točen zasebni ID naloge iz prejemka in njen računalnik. <code>LOOP CAPACITY</code> pokaže mejo različnih debat na hostu; <code>LOOP CAPACITY 5</code> jo nastavi. Znižanje pusti tekoče odgovore dokončati. EMAIL, DRIVE in BROWSER ostanejo izrecno ločeni kanali.</p></details>
           </details>
           <div class="plan-preview"><strong>Tvoj načrt</strong><p id="plan-summary"></p><p id="command-warning" tabindex="-1" role="status"></p><label for="command">Ukaz za kopiranje</label><textarea id="command" class="command-output" rows="4" readonly></textarea></div>
-          <div class="copy-row"><span id="copy-status" role="status" aria-live="polite">Priprava ukaza še ne odda naloge.</span><div class="composer-buttons"><button id="review-errors" class="button subtle" type="button" hidden>Pokaži prvo napako</button><button type="button" id="reset-options" class="button subtle">Privzete nastavitve</button><button class="button primary" id="copy-command" type="submit">Kopiraj ukaz ↗</button></div></div>
+          <div class="inbox-submit"><p id="inbox-status" role="status" aria-live="polite">Preverjam povezavo z zasebnim Inboxom …</p><div class="inbox-actions"><button type="button" class="button subtle" id="inbox-login-open">Prijava lastnika</button><button type="button" class="button primary" id="submit-plan" disabled>Preglej in oddaj ↗</button><button type="button" class="button subtle" id="inbox-check" hidden>Preveri oddajo</button><button type="button" class="button subtle" id="inbox-new" hidden>Nova zahteva</button><a id="inbox-receipt" target="_blank" rel="noopener noreferrer" hidden>Odpri zasebni zapis ↗</a></div><p class="inbox-note">Potrditev pošlje zahtevo izbranemu računalniku. Zapis v Inboxu še ne potrjuje zagona. Isti ID se ne sme izvršiti dvakrat.</p></div>
+          <div class="copy-row"><span id="copy-status" role="status" aria-live="polite">Priprava ukaza še ne odda naloge.</span><div class="composer-buttons"><button id="review-errors" class="button subtle" type="button" hidden>Pokaži prvo napako</button><button type="button" id="reset-options" class="button subtle">Privzete nastavitve</button><button class="button subtle" id="copy-command" type="submit">Kopiraj ukaz ↗</button></div></div>
         </form>
       </section>
 
@@ -82,5 +84,9 @@
     </main>
     <footer><span>AI8 · CLI Loops <span class="footer-separator">/</span> BD × GPT × Claude</span><div><a href="https://drive.google.com/drive/folders/18tIIMLA6ElyegSuAFkKgM4MmF7dLyIWG" target="_blank" rel="noopener noreferrer">Drive · izvirniki ↗</a><a href="../AI8/browser-loops.html">Browser loops ↗</a><a href="../AI8/cli-loops-data.json">Javni podatki ↗</a><a href="../index.html">MDL×DCC ↗</a></div></footer>
   </div>
+
+  <dialog id="inbox-login" aria-labelledby="inbox-login-title"><form id="inbox-login-form"><h2 id="inbox-login-title">Prijava lastnika</h2><p>Uporabi obstoječo prijavo lastnika MDL×DCC.</p><label for="inbox-email">E-poštni naslov</label><input id="inbox-email" type="email" autocomplete="username" required><label for="inbox-password">Geslo</label><input id="inbox-password" type="password" autocomplete="current-password" required><p id="inbox-login-status" role="status"></p><div class="inbox-actions"><button id="inbox-login-cancel" type="button" class="button subtle">Prekliči</button><button id="inbox-login-send" type="submit" class="button primary">Prijava</button></div></form></dialog>
+  <dialog id="inbox-plan" aria-labelledby="inbox-plan-title"><h2 id="inbox-plan-title">Pregled pred oddajo</h2><p>Ta potrditev pošlje spodnji načrt. Preveri računalnik, meje in morebitno gradnjo ali aktivacijo.</p><dl id="inbox-plan-fields"></dl><h3>Celotna tema</h3><pre id="inbox-plan-topic" tabindex="0" role="region" aria-label="Celotna tema zahteve"></pre><details><summary>Prstni odtis načrta</summary><code id="inbox-plan-hash"></code></details><p id="inbox-plan-status" role="status"></p><div class="inbox-actions"><button id="inbox-plan-cancel" type="button" class="button subtle">Prekliči</button><button id="inbox-confirm" type="button" class="button primary">Potrdi in oddaj v GitHub Inbox</button></div></dialog>
+
 </body>
 </html>
