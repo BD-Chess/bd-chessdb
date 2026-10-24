@@ -20,3 +20,10 @@ const html=fs.readFileSync(path.join(root,'cli-loops.html'),'utf8');
 assert.match(html,/<option value="WORK">WORK<\/option>/);
 assert.doesNotMatch(html,/<option value="WORK" disabled/);
 process.stdout.write('PASS: WORK enabled, AUTO/MAX accepted, MIN rejected, HOME MIN preserved.\n');
+
+r=build(spec,{...basic,mode:'XHIGH',collaboration:'S'});assert.equal(r.errors.length,0);assert.equal(r.command,'LOOP HOME XHIGH S: '+basic.topic);
+assert.ok(build(spec,{...basic,host:'WORK',mode:'XHIGH'}).errors.some(x=>x.includes('XHIGH')));
+assert.ok(build(spec,{...basic,mode:'ULTRA'}).errors.length);
+assert.match(html,/<option value="XHIGH">XHIGH/);
+assert.match(spec.grammar,/\[AUTO\|MIN\|XHIGH\|MAX\]/);
+process.stdout.write('PASS: XHIGH accepted on HOME, refused on WORK until accepted there, ULTRA is not a selector.\n');

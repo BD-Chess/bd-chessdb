@@ -23,6 +23,8 @@
   const activeStates = new Set(['queued','running','paused','pending']);
   const executorStates = new Set(['VALIDATED','QUEUED','STARTING','RUNNING','READY_NEXT','PAUSED_QUOTA','PAUSED_USER','COMPLETE','PARTIAL','ARCHIVE_PENDING','UNKNOWN','FAILED','BLOCKED','CONFLICT','STOPPED','CANCELLED']);
   const efforts = new Set(['low','medium','high','xhigh','max','ultra',null]);
+  const seatEfforts = ['GPT','Claude','SA','SB','CX','CM'];
+  const seatNames = {GPT:'GPT',Claude:'Claude',SA:'Claude-S (SA)',SB:'GPT-S (SB)',CX:'GPT-X (CX)',CM:'Claude-M (CM)'};
   const badge = value => text('span','state '+value,states[value]);
   function validate(value) {
     if(value?.schema!=='ai8.cli-loops.public.v1'||!Number.isFinite(Date.parse(value.published_at))||!Array.isArray(value.debates)||value.debates.length>100)throw Error('Neveljaven javni posnetek.');
@@ -30,7 +32,7 @@
     for(const [host,s] of Object.entries(value.current_hosts||{}))if(!['HOME','WORK'].includes(host)||!Number.isInteger(s.capacity)||s.capacity<1||s.capacity>16||!Number.isFinite(Date.parse(s.observed_at)))throw Error('Neveljavna kapaciteta.');
     const ids=new Set();
     for(const d of [...value.debates,...(value.current_debates||[])]){
-      if(!/^[a-z0-9-]{1,80}$/.test(d.id)||ids.has(d.id)||!states[d.state]||!['AUTO','MIN','MAX'].includes(d.mode)||!Number.isFinite(Date.parse(d.observed_at)))throw Error('Neveljavna debata.');ids.add(d.id);
+      if(!/^[a-z0-9-]{1,80}$/.test(d.id)||ids.has(d.id)||!states[d.state]||!['AUTO','MIN','XHIGH','MAX'].includes(d.mode)||!Number.isFinite(Date.parse(d.observed_at)))throw Error('Neveljavna debata.');ids.add(d.id);
       for(const key of ['title','summary','outcome','next_step'])if(typeof d[key]!=='string'||d[key].length>3000)throw Error('Neveljavno besedilo.');
       if(!Number.isInteger(d.turns)||d.turns<0||d.turns>100||!Array.isArray(d.events)||d.events.length>100)throw Error('Neveljavna časovnica.');
       for(const e of d.events)if(!['GPT','Claude','BD','8zListener'].includes(e.author)||typeof e.label!=='string'||typeof e.text!=='string'||e.text.length>3000)throw Error('Neveljaven dogodek.');
@@ -40,7 +42,8 @@
       if(d.active_seconds!==undefined&&(!Number.isInteger(d.active_seconds)||d.active_seconds<0||d.active_seconds>43200))throw Error('Neveljaven aktivni čas.');
       if(d.next_author!==undefined&&!['GPT','Claude',null].includes(d.next_author))throw Error('Neveljaven naslednji avtor.');
       if(d.effort!==undefined){
-        for(const author of ['GPT','Claude'])if(!efforts.has(d.effort?.[author]?.requested)||!efforts.has(d.effort?.[author]?.reported))throw Error('Neveljaven effort.');
+        if(Object.keys(d.effort||{}).some(k=>!seatEfforts.includes(k)))throw Error('Neveljaven effort.');
+        for(const author of Object.keys(d.effort||{}).concat(['GPT','Claude']))if(!efforts.has(d.effort?.[author]?.requested)||!efforts.has(d.effort?.[author]?.reported))throw Error('Neveljaven effort.');
       }
       if(d.executor_state!==undefined&&(d.active_seconds===undefined||d.next_author===undefined||d.effort===undefined))throw Error('Nepopoln status izvajalnika.');
       if(d.product_status!==undefined&&(typeof d.product_status!=='string'||d.product_status.length>3000))throw Error('Neveljaven rezultat.');
@@ -114,9 +117,9 @@
       item('Potrjene poteze',String(d.turns));
       item('Aktivno delo',Math.floor(d.active_seconds/60)+' min '+d.active_seconds%60+' s · ob zadnji potrditvi');
       item('Na potezi / naslednji',d.next_seat||d.next_author||'—');
-      for(const author of ['GPT','Claude']){
+      for(const author of seatEfforts.filter(k=>d.effort[k])){
         const e=d.effort[author];
-        item(author+' · effort',(e.requested?'zahtevan '+e.requested:'ni podatka o zahtevi')+' · '+(e.reported?'klient potrdil '+e.reported:'klient ni potrdil'));
+        item(seatNames[author]+' · effort',(e.requested?'zahtevan '+e.requested:'ni podatka o zahtevi')+' · '+(e.reported?'klient potrdil '+e.reported:'klient ni potrdil'));
       }
       head.append(status);
     }
@@ -168,8 +171,10 @@
   function values(){return {host:$('host').value,mode:$('mode').value,collaboration:$('collaboration').value,depth:$('depth').value,limit:$('limit').value,customLimit:$('custom-limit').value,customUnit:$('custom-unit').value,topic:$('topic').value,build:$('build').checked,buildProject:$('build-project').value,buildPackage:$('build-package').value,activate:$('activate').checked,calls:$('call-budget').value,tokens:$('token-budget').value};}
   function updateCommand(){
     if($('host').value!==lastHost){$('host-adjustment').textContent='';lastHost=$('host').value;}
-    if($('host').value==='WORK'&&$('mode').value==='MIN'){$('mode').value='';$('host-adjustment').textContent='Za WORK je izbran AUTO. MIN na tem računalniku še ni sprejet.';}
+    const workXhigh=(commandSpec?.host_modes?.WORK||[]).includes('XHIGH');
+    if($('host').value==='WORK'&&($('mode').value==='MIN'||$('mode').value==='XHIGH'&&!workXhigh)){const m=$('mode').value;$('mode').value='';$('host-adjustment').textContent='Za WORK je izbran AUTO. '+m+' na tem računalniku še ni sprejet.';}
     $('mode').querySelector('option[value="MIN"]').disabled=$('host').value==='WORK';
+    $('mode').querySelector('option[value="XHIGH"]').disabled=$('host').value==='WORK'&&!workXhigh;
     $('custom-limit-fields').hidden=$('limit').value!=='custom';$('custom-limit').disabled=$('custom-unit').disabled=$('limit').value!=='custom';$('build-fields').hidden=!$('build').checked;
     for(const id of ['build-project','build-package'])$(id).disabled=!$('build').checked;
     $('activate').disabled=!$('build').checked||$('build-project').value.trim().toUpperCase()!=='LISTENER';if($('activate').disabled)$('activate').checked=false;

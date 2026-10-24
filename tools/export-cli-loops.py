@@ -27,6 +27,9 @@ STATES = {
     'STOPPED': 'partial', 'CANCELLED': 'partial',
 }
 EFFORTS = {'low', 'medium', 'high', 'xhigh', 'max', 'ultra'}
+MODES = {'AUTO', 'MIN', 'XHIGH', 'MAX'}
+# Listener 0.4.3: effort per seat; GPT/Claude keep their historical public labels.
+SEAT_LABELS = (('GPT', 'GPT'), ('CLAUDE', 'Claude'), ('SA', 'SA'), ('SB', 'SB'), ('CX', 'CX'), ('CM', 'CM'))
 FIELDS = {'id', 'state', 'mode', 'rhp', 'observed_at', 'turns', 'title',
           'summary', 'outcome', 'events', 'next_step', 'executor_state',
           'active_seconds', 'next_author', 'effort', 'product_status','usage','full_rhp','deep','skeptics','seats','next_seat','stage','role_findings',
@@ -38,7 +41,7 @@ def public_usage(value):
     if not isinstance(value,dict) or value.get('schema')!='8zlistener.usage.v1':raise ValueError('Invalid typed usage source')
     result={k:value.get(k) for k in ('measured_tokens','attempts','measured_attempts','unknown_attempts','coverage')}
     if result['coverage'] not in ('COMPLETE','PARTIAL','UNKNOWN') or any(type(result[k]) is not int or result[k]<0 or result[k]>10**12 for k in ('measured_tokens','attempts','measured_attempts','unknown_attempts')):raise ValueError('Invalid measured usage')
-    for key,allowed in [('by_provider',{'GPT','CLAUDE'}),('by_seat',SEATS),('by_phase',{'debate','build','review','startup'})]:
+    for key,allowed in [('by_provider',{'GPT','CLAUDE'}),('by_seat',SEATS),('by_phase',{'debate','build','review','startup','delegation'})]:
         result[key]={}
         for label,row in value.get(key,{}).items():
             if label not in allowed:raise ValueError('Unapproved usage group')
@@ -71,7 +74,7 @@ def validate_public(data):
         if set(d) - FIELDS or not re.fullmatch(r'[a-z0-9-]{1,80}', d['id']) or d['id'] in ids:
             raise ValueError('Unexpected public fields or IDs')
         ids.add(d['id'])
-        if d['state'] not in set(STATES.values()) or d['mode'] not in {'AUTO', 'MIN', 'MAX'} or type(d['rhp']) is not bool:
+        if d['state'] not in set(STATES.values()) or d['mode'] not in MODES or type(d['rhp']) is not bool:
             raise ValueError('Invalid public state or mode')
         if type(d['turns']) is not int or not 0 <= d['turns'] <= 100 or not isinstance(d['events'], list) or len(d['events']) > 100:
             raise ValueError('Invalid public turn count')
@@ -175,10 +178,11 @@ def read_statuses(journal, debates, observed_at, snapshot=None):
             tier = runtime.get('tier_state', {})
             mode = tier.get('mode', d['mode'])
             work = runtime.get('work_used_s', 0)
-            if mode not in {'AUTO', 'MIN', 'MAX'} or type(work) not in {int, float} or not math.isfinite(work) or not 0 <= work <= 43200:
+            if mode not in MODES or type(work) not in {int, float} or not math.isfinite(work) or not 0 <= work <= 43200:
                 raise ValueError('Invalid status value')
             effort = {}
-            for author, label in [('GPT', 'GPT'), ('CLAUDE', 'Claude')]:
+            seat_set = {'GPT','CLAUDE'} | ({'SA','SB'} if skeptics or full else set()) | ({'CX','CM'} if full else set())
+            for author, label in [x for x in SEAT_LABELS if x[0] in seat_set]:
                 applied = tier.get('applied', {}).get(author, {})
                 requested, reported = applied.get('effort'), applied.get('client_reported_effort')
                 if requested is not None and requested not in EFFORTS:

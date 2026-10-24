@@ -1,7 +1,7 @@
 {
   "schema": "8zlistener.command_spec.v1",
-  "version": "0.4.1",
-  "grammar": "LOOP [CLI] [HOME|WORK|VM] [N|Nh|Nm|Ns] [AUTO|MIN|MAX] [S] [B] [DEEP] [FullRHP] [PROJECT=key PACKAGE=name ACTIVATE] [CALLS=N TOKENS=N]: topic",
+  "version": "0.4.3",
+  "grammar": "LOOP [CLI] [HOME|WORK|VM] [N|Nh|Nm|Ns] [AUTO|MIN|XHIGH|MAX] [S] [B] [DEEP] [FullRHP] [PROJECT=key PACKAGE=name ACTIVATE] [CALLS=N TOKENS=N]: topic",
   "defaults": {
     "transport": "CLI",
     "host": "HOME",
@@ -25,8 +25,8 @@
       "description": "N posameznih vsebinskih odgovorov vseh sej ali meja aktivnega dela v urah, minutah, sekundah. Največ 100 / 12 h."
     },
     {
-      "name": "AUTO / MIN / MAX",
-      "description": "Profil modelov in reasoninga. AUTO začne HIGH; MIN/MAX sta fiksna. MIN pri Codexu ne pomeni drugega modela."
+      "name": "AUTO / MIN / XHIGH / MAX",
+      "description": "Profil modelov in reasoninga. AUTO začne HIGH; MIN, XHIGH in MAX so fiksni za ves tek. XHIGH = Claude opus/xhigh in GPT gpt-6.1-sol/xhigh, oba en agent brez delegacije (pošten primerjalni nivo, manj tokenov). MAX = Claude opus/max in GPT gpt-6.1-sol/ultra (ultra sme delegirati samo bralnim pomožnim agentom; RHP samodejno). MIN pri Codexu ne pomeni drugega modela."
     },
     {
       "name": "S",
@@ -55,6 +55,10 @@
     {
       "name": "CAPACITY [N]",
       "description": "Upravljanje hosta: LOOP CAPACITY pokaže mejo; LOOP CAPACITY 5 nastavi do pet različnih debat hkrati. Poteze vsake debate ostanejo zaporedne."
+    },
+    {
+      "name": "--note <request_id> --text \"…\"",
+      "description": "BD_NOTE: avtenticirana dopolnitev naloge za tekoči LOOP; vstavi se v naslednji prompt vsakega sedeža (čas, hash) in v RESULT.md."
     }
   ],
   "controls": [

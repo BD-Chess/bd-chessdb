@@ -66,6 +66,37 @@ class ExportTest(unittest.TestCase):
             self.assertEqual(output.read_bytes(), saved)
             db.close()
 
+    def test_042_s_run_xhigh_seat_efforts_and_delegation_usage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); run = root/'run'; run.mkdir()
+            journal, output = root/'journal.sqlite', root/'feed.json'
+            usage = {'schema': '8zlistener.usage.v1', 'measured_tokens': 30, 'attempts': 2, 'measured_attempts': 2, 'unknown_attempts': 0, 'coverage': 'COMPLETE',
+                     'by_provider': {'GPT': dict(input_tokens=20, output_tokens=10, cached_input_tokens=5, cache_write_input_tokens=0, reasoning_output_tokens=2, total_tokens=30)},
+                     'by_seat': {'SB': dict(input_tokens=20, output_tokens=10, cached_input_tokens=5, cache_write_input_tokens=0, reasoning_output_tokens=2, total_tokens=30)},
+                     'by_phase': {'debate': dict(input_tokens=12, output_tokens=6, cached_input_tokens=3, cache_write_input_tokens=0, reasoning_output_tokens=1, total_tokens=18),
+                                  'delegation': dict(input_tokens=8, output_tokens=4, cached_input_tokens=2, cache_write_input_tokens=0, reasoning_output_tokens=1, total_tokens=12)}}
+            (run/'USAGE.json').write_text(json.dumps(usage), encoding='utf-8')
+            db = sqlite3.connect(journal)
+            db.executescript('CREATE TABLE jobs(request_id TEXT,state TEXT,runtime_json TEXT,run_path TEXT); CREATE TABLE turns(request_id TEXT,turn_id TEXT,author TEXT);')
+            runtime = {'work_used_s': 60, 'next_seat': 'SB', 'effective_request': {'skeptics': True, 'full_rhp': False},
+                       'tier_state': {'mode': 'XHIGH', 'applied': {s: {'effort': 'xhigh'} for s in ('GPT', 'CLAUDE', 'SA', 'SB')}}}
+            db.execute('INSERT INTO jobs VALUES(?,?,?,?)', ('37eaccbf-test', 'READY_NEXT', json.dumps(runtime), str(run)))
+            for n, seat in enumerate(('GPT', 'CLAUDE', 'SA')):db.execute('INSERT INTO turns VALUES(?,?,?)', ('37eaccbf-test', f'T00{n+1}', seat))
+            db.commit(); db.close()
+            now = dt.datetime(2026, 10, 24, tzinfo=dt.timezone.utc)
+            feed = {'schema': 'ai8.cli-loops.public.v1', 'published_at': (now-dt.timedelta(hours=1)).isoformat(),
+                    'debates': [{'id': '37eaccbf', 'state': 'running', 'mode': 'AUTO', 'rhp': False, 'observed_at': now.isoformat(), 'turns': 0,
+                                 'title': 'Approved title', 'summary': 'Approved summary', 'outcome': 'Status only', 'events': [], 'next_step': 'Review later'}]}
+            output.write_text(json.dumps(feed), encoding='utf-8')
+            self.assertEqual(exporter.export(journal, output, now), 'CHANGED')
+            d = json.loads(output.read_bytes())['debates'][0]
+            self.assertEqual((d['mode'], d['seats'], d['turns'], d['next_seat'], d['rhp']), ('XHIGH', 4, 3, 'SB', False))
+            self.assertEqual(set(d['effort']), {'GPT', 'Claude', 'SA', 'SB'})
+            self.assertEqual(d['effort']['SB']['requested'], 'xhigh')
+            self.assertEqual(d['usage']['by_phase']['delegation']['input_tokens'], 8)
+            usage['by_phase']['private_phase'] = usage['by_phase']['debate']; (run/'USAGE.json').write_text(json.dumps(usage), encoding='utf-8')
+            with self.assertRaises(ValueError):exporter.export(journal, output, now+dt.timedelta(hours=1))
+
     def test_editorial_identifiers_are_refused(self):
         for value in ['PRIVATE', 'D:\\secret', 'user@example.test', 'https://drive.google.com/test', 'abcdefghijklmnopqrstuvwxy12345']:
             with self.assertRaises(ValueError):

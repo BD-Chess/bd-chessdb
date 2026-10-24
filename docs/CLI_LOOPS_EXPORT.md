@@ -60,3 +60,5 @@ three minutes; an old snapshot is not evidence of a currently active run.
 Product deployment remains separate from debate completion.
 
 0.4.1: host default is 5 concurrent DIFFERENT debates, one journal writer. Turns inside each debate stay serial. CAPACITY is a host control, separate from request budgets.
+
+0.4.3: modes AUTO/MIN/XHIGH/MAX. MAX means Claude max and GPT ultra; ultra may delegate only to read-only sub-agents, whose tokens appear in usage phase delegation. S/FullRHP exports requested effort per seat (GPT, Claude, SA, SB, CX, CM), next seat, turns, active time and tokens. The command builder offers XHIGH on HOME; WORK keeps it disabled until a verified WORK 0.4.3 XHIGH acceptance adds host_modes.
