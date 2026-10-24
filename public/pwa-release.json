@@ -1,11 +1,11 @@
 {
   "schema": "mdlxdcc.root-pwa.release.v2",
-  "release_id": "root-20261020-r5",
+  "release_id": "root-20261024-r6",
   "canonical_entry": "index.html",
   "manifest": "manifest.webmanifest",
   "service_worker": "sw.js",
   "service_worker_scope": "./index.html",
-  "manifest_scope": "./index.html",
+  "manifest_scope": "./",
   "manifest_start_url": "./index.html",
   "fallback_url": "index.html",
   "legacy_redirects": [
@@ -13,7 +13,7 @@
     "PWA/index.html",
     "index-pwa.html"
   ],
-  "architecture": "Landing-only PWA: top-level index.html (including in-document dialogs and embedded Guide), never sibling apps. /PWA/ remains a compatibility route.",
+  "architecture": "Site navigation PWA: same-origin pages under the site root stay in the installed app. The service worker and offline cache remain landing-only; /PWA/ remains a compatibility route.",
   "cache_policy": {
     "root_navigation": "index.html network-first, no-store request, offline cache fallback; bare directory URL normalized to index.html by the page",
     "public_shell_and_gallery": "network-first, no-store request, offline cache fallback",
@@ -49,4 +49,3 @@
   },
   "notice": "This static descriptor does not prove that a separate Netlify host has deployed the release."
 }
-

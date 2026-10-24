@@ -1,6 +1,6 @@
 (()=>{'use strict';
 // One installable app: the site's primary index.html, never a /PWA/ clone.
-const RELEASE='root-20261020-r5';
+const RELEASE='root-20261024-r6';
 const ROOT=new URL('./',document.currentScript?.src||document.baseURI);
 const ENTRY=new URL('index.html',ROOT);
 const SW=new URL('sw.js',ROOT);
@@ -10,13 +10,13 @@ let registration=null,deferredPrompt=null,lastUpdate=0,reloading=false,pendingRe
 let hadController=!!navigator.serviceWorker?.controller;
 let started=false;
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-// A single-page PWA: sibling apps and project pages open as normal browser tabs.
-// Native dialogs, the AI Guide panel and its embedded iframe stay in index.html.
+// Internal navigation stays in the installed app; only URLs outside its
+// manifest scope open in the browser. The service worker remains landing-only.
 function outOfScope(url){
  try{
   const u=new URL(url,document.baseURI);
   if(!['http:','https:'].includes(u.protocol))return false;
-  return u.origin!==location.origin || (u.pathname!==ENTRY.pathname && u.pathname!==ROOT.pathname);
+  return u.origin!==ROOT.origin || !u.pathname.startsWith(ROOT.pathname);
  }catch(_){return false;}
 }
 function openOutside(url){

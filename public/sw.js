@@ -1,7 +1,7 @@
 'use strict';
 // MDLxDCC landing PWA v3. The registration is scoped to index.html, never sibling apps.
 // Only the homepage and its public assets are cached; APIs and other apps are untouched.
-const VERSION='root-20261020-r5';
+const VERSION='root-20261024-r6';
 const FAMILY='mdlxdcc-landing-pwa:';
 const BASE=new URL('./',self.registration.scope);
 const CACHE=FAMILY+BASE.pathname+':'+VERSION;

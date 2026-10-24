@@ -16,14 +16,14 @@ const release=JSON.parse(read('pwa-release.json'));
 const manifest=JSON.parse(read('manifest.webmanifest'));
 const oldManifest=JSON.parse(read('PWA/manifest.webmanifest'));
 assert.equal(manifest.start_url,'./index.html');
-assert.equal(manifest.scope,'./index.html');
+assert.equal(manifest.scope,'./');
 assert.equal(manifest.id,'./');
 assert.equal(oldManifest.start_url,'../index.html');
-assert.equal(oldManifest.scope,'../index.html');
+assert.equal(oldManifest.scope,'../');
 assert.equal(oldManifest.id,'../');
-assert.match(html,/name="mdlxdcc-pwa-release" content="root-20261020-r5"/);
-assert.match(html,/manifest\.webmanifest\?v=root-20261020-r5/);
-assert.match(html,/pwa\.js\?v=root-20261020-r5/);
+assert.match(html,/name="mdlxdcc-pwa-release" content="root-20261024-r6"/);
+assert.match(html,/manifest\.webmanifest\?v=root-20261024-r6/);
+assert.match(html,/pwa\.js\?v=root-20261024-r6/);
 assert.match(bootstrap,/updateViaCache:'none'/);
 assert.match(bootstrap,/scope:ENTRY.pathname/);
 assert.match(bootstrap,/MDLxDCCPWAOpenExternal/);
@@ -37,15 +37,15 @@ for(const base of ['https://www.mdlxdcc.org/','https://example.github.io/bd-ches
 }
 assert.ok(html.indexOf('id="mdlxdcc-pwa-entry-alias"')<html.indexOf('rel="manifest"'),'Canonical URL before manifest');
 assert.equal(release.service_worker_scope,'./index.html');
-assert.equal(release.manifest_scope,'./index.html');
+assert.equal(release.manifest_scope,'./');
 assert.equal(release.manifest_start_url,'./index.html');
 assert.match(bootstrap,/controllerchange/);
 assert.match(bootstrap,/pageshow/);
 assert.match(bootstrap,/visibilitychange/);
 assert.match(bootstrap,/cache:'no-store'/);
-assert.equal(release.release_id,'root-20261020-r5');
-assert.match(workerSource,/const VERSION='root-20261020-r5'/);
-assert.match(bootstrap,/const RELEASE='root-20261020-r5'/);
+assert.equal(release.release_id,'root-20261024-r6');
+assert.match(workerSource,/const VERSION='root-20261024-r6'/);
+assert.match(bootstrap,/const RELEASE='root-20261024-r6'/);
 for(const variant of ['Clean','Caption'])assert.ok(fs.existsSync(path.join(pub,'assets/human-middle/v5/Human_in_the_Middle_Questions_Meadow_Tower_'+variant+'_R1.webp')),'Questions '+variant);
 assert.match(legacy,/location\.replace/);
 assert.doesNotMatch(legacy,/class="human-middle-card"/);
@@ -66,6 +66,36 @@ assert.ok(scriptUrls.some(x=>x.includes('explanations')),'Bilingual explanations
 new vm.Script(workerSource,{filename:'public/sw.js'});
 new vm.Script(bootstrap,{filename:'public/pwa.js'});
 new vm.Script(legacyWorker,{filename:'public/PWA/sw.js'});
+// Exercise the actual click handler and search navigation helper in standalone
+// and browser modes, including a site hosted below a GitHub Pages path.
+for(const base of ['https://www.mdlxdcc.org/','https://example.github.io/bd-chessdb/']){
+ for(const standalone of [true,false]){
+  const listeners=new Map(),opened=[];
+  const window={addEventListener(){},open(...args){opened.push(args)}};
+  const document={baseURI:base+'index.html',currentScript:{src:base+'pwa.js'},readyState:'loading',
+   addEventListener(name,handler){listeners.set(name,handler)}};
+  vm.runInNewContext(bootstrap,{URL,window,document,navigator:{},matchMedia:()=>({matches:standalone})});
+  function click(href,extra={}){
+   const link={href:new URL(href,document.baseURI).href,target:'',rel:'',hasAttribute:()=>false};
+   listeners.get('click')({button:0,target:{closest:()=>link},...extra});
+   return link;
+  }
+  for(const page of ['Start/','start/','index-atlas.html','chess/','Trip/','#main']){
+   const url=new URL(page,base).href;
+   assert.equal(click(url).target,'','Internal click stays in app: '+url);
+   assert.equal(window.MDLxDCCPWAOpenExternal(url),false,'Internal search stays in app: '+url);
+  }
+  assert.equal(opened.length,0,'Internal navigation never opens another window');
+  const external='https://outside.example/page';
+  assert.equal(click(external).target,standalone?'_blank':'','External link behavior');
+  assert.equal(window.MDLxDCCPWAOpenExternal(external),standalone,'External search behavior');
+  assert.equal(opened.length,standalone?1:0);
+  assert.equal(click(external,{ctrlKey:true}).target,'','Modified clicks retain browser behavior');
+  assert.equal(click('mailto:bd@siol.net').target,'','Non-HTTP links retain native behavior');
+  if(new URL(base).pathname!=='/')
+   assert.equal(click('/another-site/').target,standalone?'_blank':'','Sibling Pages site stays outside app');
+ }
+}
 // The existing Pages release gate also checks the four-axis public gallery.
 require('./human-middle-questions.test.cjs');
 
@@ -166,6 +196,6 @@ async function harness(base){
   await harness('https://www.mdlxdcc.org/index.html'),
   await harness('https://example.github.io/bd-chessdb/index.html')
  ];
- console.log('PASS landing-only PWA: manifest, dialogs, legacy identity, offline, narrow scope and bounded media cache');
+ console.log('PASS PWA: internal navigation, manifest identity, landing-only offline worker and bounded media cache');
  for(const x of cases)console.log('PASS scope '+x.scope+' cached='+x.cacheEntries+' media='+x.mediaEntries);
 })().catch(error=>{console.error(error);process.exitCode=1});
