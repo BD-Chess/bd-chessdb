@@ -8,7 +8,7 @@
   const text = (tag, cls, value) => { const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el; };
   // Only reviewed local destinations become links; editorial content stays text.
   const editorial = (cls, value) => {
-    const el=text('p',cls), pattern=/\/crp\/dgte-bd-r1\.html|\/ai8\/cli-loops\?debate=[a-z0-9-]{1,80}/g;
+    const el=text('p',cls), pattern=/\/crp\/dgte-bd-r[12]\.html|\/ai8\/cli-loops\?debate=[a-z0-9-]{1,80}/g;
     let end=0;
     for(const match of value.matchAll(pattern)){
       el.append(document.createTextNode(value.slice(end,match.index)));
