@@ -26,6 +26,7 @@ async function openSef(raw){
  const extra=await openExtra(raw);if(extra)obj.html+=extra.html;
  const startme=await openExtra(raw,'sef-startme.json');if(startme)obj.html+=startme.html;
  const cliInbox=await openExtra(raw,'sef-cli-inbox.json');if(cliInbox)obj.html+=cliInbox.html;
+ const apiKeys=await openExtra(raw,'sef-api-keys.json');if(apiKeys)obj.html+=apiKeys.html;
  const kindle=await openExtra(raw,'sef-kindle.json');if(kindle)obj.kindleHtml=kindle.html;
  return obj;
 }
@@ -98,7 +99,7 @@ function installSearch(){
   if(/\b(družina|family|otrok|šola|šolsko)\b/.test(t))return 'family';
   return 'other';
  };
- const nodes=[...document.querySelectorAll('#register table tbody tr,#register li,#register p,#all213 table tbody tr,#all213 li,#startme-import table tbody tr,#cli-inbox-secrets table tbody tr')]
+ const nodes=[...document.querySelectorAll('#register table tbody tr,#register li,#register p,#all213 table tbody tr,#all213 li,#startme-import table tbody tr,#cli-inbox-secrets table tbody tr,#api-keys-secrets table tbody tr')]
   .filter(el=>!(el.tagName==='P'&&el.closest('li')));
  const entries=nodes.map(el=>{const text=safeText(el);return {el,text,category:classify(el,text),inArchive:!!el.closest('#all213')};});
  const archive=$('all213'),initialArchiveOpen=!!(archive&&archive.open);

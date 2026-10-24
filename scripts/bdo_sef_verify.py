@@ -82,7 +82,20 @@ def fixture():
     cli = {'format': 'BD-O-SEF-EXTRA-CONFIG-1', 'vault': vault, 'compression': 'gzip',
            'plaintext_sha256': h(cli_plain), 'cipher': {'iv': b64(cli_iv), 'aad': cli_aad},
            'data': {'path': 'fixture-cli.enc.txt', 'sha256': h(cli_part)}}
+    api_iv = os.urandom(12)
+    api_html = ('<section id="api-keys-secrets" data-sef-category="other">'
+                '<h2>API keys fixture</h2><table><tbody><tr>'
+                '<td>Synthetic Gemini MAL CLI</td><td><code class="secret-value" '
+                'role="button" tabindex="0" aria-label="Skrita vrednost; klikni za prikaz">'
+                'NOT-REAL-GEMINI-SECRET</code></td></tr></tbody></table></section>')
+    api_plain = compact({'format': 'BD-O-SEF-EXTRA-1', 'html': api_html})
+    api_aad = 'BD/O:sef:api-keys:synthetic:' + vault
+    api_part = b64(AESGCM(key).encrypt(api_iv, gzip.compress(api_plain), api_aad.encode())).encode()
+    api_keys = {'format': 'BD-O-SEF-EXTRA-CONFIG-1', 'vault': vault, 'compression': 'gzip',
+                'plaintext_sha256': h(api_plain), 'cipher': {'iv': b64(api_iv), 'aad': api_aad},
+                'data': {'path': 'fixture-api-keys.enc.txt', 'sha256': h(api_part)}}
     return password, {'vault.json': compact(portal), 'sef-config.json': compact(sef),
+                      'sef-api-keys.json': compact(api_keys), 'fixture-api-keys.enc.txt': api_part,
                       'sef-cli-inbox.json': compact(cli), 'fixture-cli.enc.txt': cli_part,
                       'sef-startme.json': compact(startme), 'fixture-startme.enc.txt': startme_part,
                       'fixture-portal.enc.txt': part, 'fixture-sef.enc.txt': sef_part}
@@ -117,17 +130,18 @@ def live_integrity():
         data, final, _ = get(path)
         assert h(data) == h(source), 'Sef alias returned different HTML'
         record('live_alias', path=path, final_url=final, passed=True)
-    for filename in ['sef.js', 'vault.js', 'vault.json', 'sef-config.json']:
+    for filename in ['sef.js', 'vault.js', 'vault.json', 'sef-config.json', 'sef-api-keys.json']:
         data, _, _ = get(ROOT + filename)
         expected = Path('public/BD/O', filename).read_bytes()
         assert h(data) == h(expected), filename + ' differs from checkout'
         record('live_asset_exact', file=filename, passed=True, sha256=h(data))
-    for filename in ['vault.json', 'sef-config.json']:
+    for filename in ['vault.json', 'sef-config.json', 'sef-api-keys.json']:
         cfg = json.loads(Path('public/BD/O', filename).read_bytes())
-        for part in cfg['data']['parts']:
+        parts = cfg['data'].get('parts') or [cfg['data']]
+        for part in parts:
             data, _, _ = get(ROOT + part['path'])
             assert h(data) == part['sha256'], 'Ciphertext part integrity failure'
-        record('live_ciphertext_integrity', config=filename, parts=len(cfg['data']['parts']), passed=True)
+        record('live_ciphertext_integrity', config=filename, parts=len(parts), passed=True)
 
 def verify_browser(browser, live=False):
     mode = 'live' if live else 'local'
@@ -180,6 +194,16 @@ def verify_browser(browser, live=False):
         assert cli.locator('tr.search-hidden').count() == 1, 'Secret must stay outside the search index'
         page.locator('#vaultSearch').fill('')
         record(mode + '_synthetic_cli_inbox_encrypted_masked_search', viewport=[width, height], passed=True)
+        api_keys = page.locator('#api-keys-secrets')
+        assert api_keys.count() == 1, 'Encrypted API keys fixture was not rendered'
+        assert api_keys.locator('.secret-value.revealed').count() == 0
+        assert api_keys.locator('.copy-secret').count() == 1
+        page.locator('#vaultSearch').fill('Gemini MAL CLI')
+        assert api_keys.locator('tr.search-hidden').count() == 0
+        page.locator('#vaultSearch').fill('NOT-REAL-GEMINI-SECRET')
+        assert api_keys.locator('tr.search-hidden').count() == 1, 'API key must stay outside the search index'
+        page.locator('#vaultSearch').fill('')
+        record(mode + '_synthetic_api_keys_encrypted_masked_search', viewport=[width, height], passed=True)
         state = page.evaluate("()=>({display:getComputedStyle(document.getElementById('loading')).display,top:document.getElementById('content').getBoundingClientRect().top,sessionPresent:!!sessionStorage.getItem('bd-o-v2-session')})")
         assert state['display'] == 'none' and state['top'] < height and state['sessionPresent'], state
         record(mode + '_portal_to_sef_synthetic_session', viewport=[width, height], passed=True, **state)
