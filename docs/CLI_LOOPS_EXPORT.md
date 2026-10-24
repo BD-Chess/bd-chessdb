@@ -40,3 +40,5 @@ automatic commit/push or scheduled export. Review the diff and use the existing
 Pages/Netlify GitHub pipeline. The visible page polls the published feed every
 three minutes; an old snapshot is not evidence of a currently active run.
 Product deployment remains separate from debate completion.
+
+0.4.1: host default is 5 concurrent DIFFERENT debates, one journal writer. Turns inside each debate stay serial. CAPACITY is a host control, separate from request budgets.

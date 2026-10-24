@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="CLI Loops: Claude Code in Codex izmenjata poglede, 8zListener vodi pogovor. Pregled debat, predlogov in naslednjih korakov.">
   <meta name="theme-color" content="#0a111c">
-  <meta name="cli-loops-release" content="20261024-040-r3">
+  <meta name="cli-loops-release" content="20261024-041-r1">
   <title>AI8 CLI Loops · Dva pogleda, naslednji korak</title>
   <link rel="canonical" href="https://www.mdlxdcc.org/ai8/cli-loops">
-  <link rel="stylesheet" href="../AI8/cli-loops.css?v=20261024-040-r3">
-  <script src="../AI8/cli-loops-command.js?v=20261024-040-r3" defer></script>
-  <script src="../AI8/cli-loops.js?v=20261024-040-r3" defer></script>
+  <link rel="stylesheet" href="../AI8/cli-loops.css?v=20261024-041-r1">
+  <script src="../AI8/cli-loops-command.js?v=20261024-041-r1" defer></script>
+  <script src="../AI8/cli-loops.js?v=20261024-041-r1" defer></script>
 </head>
 <body>
   <a class="skip" href="#debate">Na debate</a>
@@ -26,7 +26,7 @@
         <div class="loop-map" aria-label="Claude Code in Codex sodelujeta prek 8zListenerja">
           <div class="map-top"><span class="mono">KAKO TEČE POGOVOR</span><span class="map-label">zaporedno</span></div>
           <div class="agent-row"><div class="agent claude"><span class="agent-symbol" aria-hidden="true">C</span><strong>Claude Code</strong><small>predlog · ugovor</small></div><span class="connector" aria-hidden="true">↔</span><div class="agent gpt"><span class="agent-symbol" aria-hidden="true">G</span><strong>Codex</strong><small>pregled · izboljšava</small></div></div>
-          <div class="orchestrator"><span class="listener-icon" aria-hidden="true">⌘</span><div><strong>8zListener</strong><small>naslednja poteza · meje · zapis</small></div><span class="version">v0.4.0</span></div>
+          <div class="orchestrator"><span class="listener-icon" aria-hidden="true">⌘</span><div><strong>8zListener</strong><small>naslednja poteza · meje · zapis</small></div><span class="version">v0.4.1</span></div>
           <div class="map-bottom"><span>01 <b>Razprava</b></span><span>02 <b>Dogovor</b></span><span>03 <b>Naslednji korak</b></span></div>
         </div>
       </section>
@@ -45,7 +45,7 @@
 
       <section class="composer" id="nov-loop" aria-labelledby="composer-title">
         <div class="composer-intro"><p class="eyebrow">IZBERI NAČIN SODELOVANJA</p><h2 id="composer-title">Kaj naj preverita?</h2><p>Izberi nastavitve, kopiraj ukaz in ga prilepi v GPT, Codex, Claude ali Code. Pred zagonom prejmeš pregled načrta. Na vprašanje »Želiš kaj spremeniti?« odgovor »ne« pomeni zagon prikazanega načrta.</p><p class="snapshot-note">Sestavljalnik sam ne odda naloge. Privzeto: HOME · AUTO · 2 seji · največ 100 potez / 12 ur aktivnega dela.</p></div>
-        <p id="installation-note" class="snapshot-note">Izdaja 0.4.0 je pripravljena. HOME čaka na zaključek tekoče debate in preverjeno namestitev; nove možnosti uporabi po potrditvi nadgradnje. WORK potrebuje enkraten lokalni zagon namestitve.</p>
+        <p id="installation-note" class="snapshot-note">HOME 0.4.1 je nameščen in preverjeno deluje: do pet različnih debat hkrati, zaporedne poteze znotraj vsake. WORK potrebuje prvo lokalno namestitev; nato podpira pripete nadgradnje prek Drive.</p>
         <form id="command-form">
           <fieldset class="settings"><legend>Osnovne nastavitve</legend><div class="settings-grid">
             <label>Računalnik<select id="host"><option value="HOME">HOME</option><option value="WORK" disabled>WORK · prva nadgradnja čaka</option><option value="VM" disabled>VM · še ni sprejet</option></select><small>Vedno izbrani host; brez samodejnega preklopa.</small></label>
@@ -62,7 +62,7 @@
             </fieldset>
             <fieldset class="settings"><legend>Proračun klicev in tokenov</legend><div class="settings-grid"><label>Največ native klicev<input id="call-budget" type="number" min="1" max="400" value="160"><small>Vključuje branja in popravke; privzeto 160.</small></label><label>Meja izmerjenih tokenov<input id="token-budget" type="number" min="1" max="100000000" placeholder="brez dodatne omejitve"><small>Po doseženi meji ni novih klicev. Tekoči klic lahko mejo preseže; manjkajoče meritve ostanejo označene.</small></label></div></fieldset>
             <details class="argument-help"><summary>FullRHP: šest sej in njihove naloge</summary><dl><dt>Codex · avtor</dt><dd>Formalizacija, predpostavke in izvedljivost.</dd><dt>Code · avtor</dt><dd>Samostojen predlog, primerjava in sinteza.</dd><dt>Codex · raziskovalec alternativ</dt><dd>Drugačen mehanizem ter perspektive Physicist, Dreamer in Child.</dd><dt>Code · zemljevid rešitev</dt><dd>Cartographer in Naturalist: razlike, vrzeli, odvisnosti in uporabni deli.</dd><dt>Codex · skeptik</dt><dd>Falsifier in Historian: protiprimeri, znani vzorci in najcenejši ločilni test.</dd><dt>Code · preverjevalec dokazov</dt><dd>Empiricist: pregled zamrznjenega kandidata in dejansko razpoložljivih dokazov.</dd></dl><p>Prvih šest odgovorov je slepih. Avtorja nato vključujeta specialiste po konkretni potrebi; vsi štejejo v isto mejo porabe. Interni RHP-11 avtorjev so perspektive znotraj njunih sej.</p></details>
-            <details class="argument-help"><summary>Vsi argumenti in privzete nastavitve</summary><p id="grammar" class="command-grammar"></p><dl id="argument-list"></dl><p>HELP, STATUS, PAUSE, RESUME in STOP so upravljalni ukazi. Primeri: <code>LOOP HELP</code>, <code>LOOP STATUS</code>, <code>LOOP PAUSE &lt;UUID&gt;</code>, <code>LOOP RESUME &lt;UUID&gt;</code>, <code>LOOP STOP &lt;UUID&gt;</code>. Uporabi točen zasebni ID naloge iz prejemka in njen računalnik. EMAIL, DRIVE in BROWSER ostanejo izrecno ločeni kanali.</p></details>
+            <details class="argument-help"><summary>Vsi argumenti in privzete nastavitve</summary><p id="grammar" class="command-grammar"></p><dl id="argument-list"></dl><p>HELP, STATUS, PAUSE, RESUME, STOP in CAPACITY so upravljalni ukazi. Primeri: <code>LOOP HELP</code>, <code>LOOP STATUS</code>, <code>LOOP PAUSE &lt;UUID&gt;</code>, <code>LOOP RESUME &lt;UUID&gt;</code>, <code>LOOP STOP &lt;UUID&gt;</code>. Uporabi točen zasebni ID naloge iz prejemka in njen računalnik. <code>LOOP CAPACITY</code> pokaže mejo različnih debat na hostu; <code>LOOP CAPACITY 5</code> jo nastavi. Znižanje pusti tekoče odgovore dokončati. EMAIL, DRIVE in BROWSER ostanejo izrecno ločeni kanali.</p></details>
           </details>
           <div class="plan-preview"><strong>Tvoj načrt</strong><p id="plan-summary"></p><p id="command-warning" role="status"></p><label for="command">Ukaz za kopiranje</label><textarea id="command" class="command-output" rows="4" readonly></textarea></div>
           <div class="copy-row"><span id="copy-status" role="status" aria-live="polite">Priprava ukaza še ne odda naloge.</span><div class="composer-buttons"><button type="button" id="reset-options" class="button subtle">Privzete nastavitve</button><button class="button primary" id="copy-command" type="submit">Kopiraj ukaz ↗</button></div></div>
