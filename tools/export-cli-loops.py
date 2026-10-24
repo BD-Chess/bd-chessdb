@@ -13,7 +13,7 @@ import re
 import sqlite3
 import tempfile
 
-APPROVED = frozenset({'37eaccbf', 'cb6e872a', '4c3670cb', '25bf1d08'})
+APPROVED = frozenset({'37eaccbf', 'cb6e872a', 'aa80baa6', '4c3670cb', '25bf1d08'})
 STATES = {
     'VALIDATED': 'queued', 'QUEUED': 'queued',
     'STARTING': 'running', 'RUNNING': 'running', 'READY_NEXT': 'running',
