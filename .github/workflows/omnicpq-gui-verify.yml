@@ -1,0 +1,46 @@
+name: OmniCPQ Full GUI static and synthetic acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'public/OmniCPQ/**'
+      - 'functions/lib/omnicpq/**'
+      - 'functions/omnicpq-assistant.mjs'
+      - 'scripts/omnicpq/**'
+      - 'tests/omnicpq/**'
+      - '.github/workflows/omnicpq-gui-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: No-deploy GUI acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Rebuild deterministic public extension and PWA shell
+        run: |
+          node scripts/omnicpq/materialize-icons.mjs
+          node scripts/omnicpq/build-shell.mjs
+          node scripts/omnicpq/verify-shell.mjs
+      - name: Parse all changed JavaScript layers
+        run: |
+          node --check public/OmniCPQ/extension/page-v2.mjs
+          node --check public/OmniCPQ/extension/worker-v2.mjs
+          node --check public/OmniCPQ/browser-bridge-v2.mjs
+          node --check public/OmniCPQ/app.mjs
+          node --check functions/lib/omnicpq/browser-v2.mjs
+          node --check functions/lib/omnicpq/browser.mjs
+          node --check functions/lib/omnicpq/instructions.mjs
+      - name: Synthetic GUI and legacy navigation regression
+        run: |
+          node --test tests/omnicpq/full-gui-r2.test.mjs tests/omnicpq/browser-r6.test.mjs tests/omnicpq/pwa-r6.test.mjs
+      - name: Secret boundary (no real CPQ or paid model calls)
+        run: python3 scripts/check_secret_boundary.py

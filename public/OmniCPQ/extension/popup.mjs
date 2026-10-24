@@ -1,6 +1,6 @@
 const $=id=>document.getElementById(id);
 const status=text=>{$('status').textContent=text;};
-const send=data=>chrome.runtime.sendMessage({protocol:'omnicpq.browser.v1',...data});
+const send=data=>chrome.runtime.sendMessage({protocol:'omnicpq.gui.v2',...data});
 async function tabs(){
   const [active]=await chrome.tabs.query({active:true,currentWindow:true});
   if(active && /^https:\/\/(?:cpq-stg\.apps\.test-ocp|cpq\.apps\.prod-ocp)\.ts\.telekom\.si\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(active.url||'') && !active.incognito) {
@@ -13,7 +13,7 @@ async function tabs(){
   status($('pair').disabled?'V pomočniku zahtevaj povezavo, nato to ikono odpri na CPQ zavihku.':'Preveri navigacijo in klikni Poveži.');
 }
 $('pair').onclick=async()=>{try{
-  const r=await send({type:'pair',cpqTabId:Number($('cpq').value),assistantTabId:Number($('assistant').value),scope:$('scope').value});
+  const r=await send({type:'pair',cpqTabId:Number($('cpq').value),assistantTabId:Number($('assistant').value),scope:$('scope').value,allowWrites:$('allow-writes').checked});
   status(r.ok?'Povezano. V pomočniku klikni »Preveri povezavo s CPQ«.':'Povezava ni uspela: '+r.error);
 }catch{status('Povezava ni uspela. Dostop odobri z odpiranjem te ikone na CPQ zavihku.');}};
 $('unpair').onclick=async()=>{await send({type:'unpair'});status('Povezava je prekinjena.');};
