@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="CLI Loops: Claude Code in Codex izmenjata poglede, 8zListener vodi pogovor. Pregled debat, predlogov in naslednjih korakov.">
+  <meta name="theme-color" content="#0a111c">
+  <title>AI8 CLI Loops · Dva pogleda, naslednji korak</title>
+  <link rel="canonical" href="https://www.mdlxdcc.org/ai8/cli-loops">
+  <link rel="stylesheet" href="../AI8/cli-loops.css">
+  <script src="../AI8/cli-loops.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#debate">Na debate</a>
+  <div class="shell">
+    <header class="site-header">
+      <a class="brand" href="../AI8/" aria-label="AI8, domov"><span class="brand-mark" aria-hidden="true">↔</span><span>AI8 <b>CLI Loops</b></span></a>
+      <nav aria-label="Povezani načini dela"><a href="../AI8/browser-loops.html">Browser loops <span aria-hidden="true">↗</span></a><a class="archive-link" href="https://drive.google.com/drive/folders/18tIIMLA6ElyegSuAFkKgM4MmF7dLyIWG" target="_blank" rel="noopener noreferrer">Drive · izvirniki ↗</a></nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy"><p class="eyebrow"><span class="tiny-line"></span> DVA MODELA. EN SKUPEN POTEK.</p><h1 id="hero-title">Dva pogleda.<br><span>Boljši naslednji korak.</span></h1><p class="hero-description">Claude Code predlaga. Codex preveri. In obratno. 8zListener vodi izmenjavo, ohrani ugovore in shrani rezultat.</p><div class="hero-actions"><a class="button primary" href="#debate">Poglej debate <span aria-hidden="true">↓</span></a><a class="button subtle" href="#nov-loop">Pripravi svoj LOOP <span aria-hidden="true">↗</span></a></div></div>
+        <div class="loop-map" aria-label="Claude Code in Codex sodelujeta prek 8zListenerja">
+          <div class="map-top"><span class="mono">KAKO TEČE POGOVOR</span><span class="map-label">zaporedno</span></div>
+          <div class="agent-row"><div class="agent claude"><span class="agent-symbol" aria-hidden="true">C</span><strong>Claude Code</strong><small>predlog · ugovor</small></div><span class="connector" aria-hidden="true">↔</span><div class="agent gpt"><span class="agent-symbol" aria-hidden="true">G</span><strong>Codex</strong><small>pregled · izboljšava</small></div></div>
+          <div class="orchestrator"><span class="listener-icon" aria-hidden="true">⌘</span><div><strong>8zListener</strong><small>naslednja poteza · meje · zapis</small></div><span class="version">v0.2.1</span></div>
+          <div class="map-bottom"><span>01 <b>Razprava</b></span><span>02 <b>Dogovor</b></span><span>03 <b>Naslednji korak</b></span></div>
+        </div>
+      </section>
+
+      <section class="debates-section" id="debate" aria-labelledby="debates-title">
+        <div class="section-heading"><div><p class="eyebrow">IZ POGOVORA V UPORABEN REZULTAT</p><h2 id="debates-title">Debate in njihov izkupiček</h2></div><div class="snapshot"><span class="snapshot-dot" aria-hidden="true"></span><div><strong>Objavljeni posnetki</strong><span id="updated-at">Preverjam podatke …</span></div><button type="button" id="refresh" class="icon-button" aria-label="Osveži objavljene podatke">↻</button></div></div>
+        <p class="snapshot-note" id="feed-note">Prikazan je javni izbor, ne neposreden prenos zasebnih terminalov. Podatki se preverijo vsakih 30 sekund, ko je stran odprta.</p>
+        <div class="filters" role="group" aria-label="Filtriraj debate"><button type="button" data-filter="all" aria-pressed="true">Vse <span id="all-count">–</span></button><button type="button" data-filter="running" aria-pressed="false">V razpravi</button><button type="button" data-filter="complete" aria-pressed="false">Zaključene</button></div>
+        <p id="feed-status" class="feed-status" role="status" aria-live="polite">Nalagam objavljene debate …</p>
+        <div class="debate-layout"><div id="debate-list" class="debate-list" role="group" aria-label="Izberi debato"></div><article id="debate-detail" class="detail-panel" aria-labelledby="detail-title"><div class="empty-state"><span aria-hidden="true">↔</span><h3 id="detail-title">Vsaka ideja ima svojo sled.</h3><p>Tu se pokažejo predlogi, ugovori in naslednji korak iz izbrane debate.</p></div></article></div>
+        <noscript><p>Za seznam debat omogoči JavaScript ali <a href="../AI8/cli-loops-data.json">odpri javni podatkovni posnetek</a>.</p></noscript>
+      </section>
+
+      <section class="uses-section" aria-labelledby="uses-title"><div class="section-heading"><div><p class="eyebrow">VEČ KOT DRUGO MNENJE</p><h2 id="uses-title">Kje pomaga drugi pogled?</h2></div><p class="section-aside">Jasen vhod. Konkreten ugovor.<br>Preverljiv naslednji korak.</p></div><div class="uses-grid"><article><span class="use-number">01 / KODA</span><h3>Predlagaj. Preglej. Popravi.</h3><p>En model pripravi spremembo, drugi išče napake in manjkajoče primere.</p></article><article><span class="use-number">02 / DIAGNOSTIKA</span><h3>Dve razlagi, en ločilni test.</h3><p>Primerjava vzrokov napake in najmanjši preizkus, ki pokaže, katera razlaga drži.</p></article><article><span class="use-number">03 / ZASNOVA</span><h3>Preveri odločitev z obeh strani.</h3><p>Arhitektura, podatkovne pogodbe, kompromisi in pogoji za ponovno presojo.</p></article><article><span class="use-number">04 / DOKAZI</span><h3>Loči idejo od rezultata.</h3><p>Kaj je predlagano, kaj je bilo preverjeno in kaj še potrebuje dejansko izvedbo.</p></article></div></section>
+
+      <section class="composer" id="nov-loop" aria-labelledby="composer-title"><div class="composer-intro"><p class="eyebrow">NASLEDNJI POGOVOR JE TVOJ</p><h2 id="composer-title">Kaj naj preverita?</h2><p>Pripravi ukaz in ga prilepi v povezano GPT ali Claude sejo. Seja z dostopom do Drive odda nalogo listenerju.</p><div class="mode-explainer"><span>brez oznake <b>AUTO</b></span><span>MIN <b>varčen način</b></span><span>MAX <b>najvišji omogočeni effort + RHP</b></span></div></div><form id="command-form"><div class="form-row"><label>Računalnik<select id="host"><option value="HOME">HOME</option><option disabled>WORK · še ni pripravljen</option><option disabled>VM · še ni pripravljen</option></select></label><label>Meja<select id="limit"><option value="1h">1 ura</option><option value="30m">30 minut</option><option value="10">10 odgovorov</option><option value="">Privzeto · 100 / 12 h</option></select></label><label>Način<select id="mode"><option value="">AUTO</option><option value="MIN">MIN</option><option value="MAX">MAX + RHP</option></select></label></div><label for="topic">Tema in želeni rezultat</label><textarea id="topic" rows="3" maxlength="4000" placeholder="Primerjajta dve zasnovi. Poiščita slabosti, ohranita nesoglasja in predlagajta naslednji preverljivi korak."></textarea><label class="sr-only" for="command">Pripravljen ukaz</label><textarea id="command" class="command-output" rows="3" readonly></textarea><div class="copy-row"><span id="copy-status" role="status" aria-live="polite">Priprava ukaza še ne odda naloge.</span><button class="button primary" id="copy-command" type="submit">Kopiraj ukaz <span aria-hidden="true">↗</span></button></div></form></section>
+
+      <aside class="boundary"><span class="boundary-symbol" aria-hidden="true">→</span><p><strong>Dogovor je začetek naslednjega koraka.</strong> Zaključena debata še ne pomeni zgrajenega ali objavljenega izdelka. Izvedba sledi tvojemu naročilu.</p></aside>
+    </main>
+    <footer><span>AI8 · CLI Loops <span class="footer-separator">/</span> BD × GPT × Claude</span><div><a href="../AI8/browser-loops.html">Browser loops ↗</a><a href="../AI8/cli-loops-data.json">Javni podatki ↗</a><a href="../index.html">MDL×DCC ↗</a></div></footer>
+  </div>
+</body>
+</html>
