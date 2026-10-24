@@ -33,11 +33,11 @@
     for(const d of list){
       const card=text('button','debate-card');card.type='button';card.setAttribute('aria-pressed',String(d.id===selected));card.setAttribute('aria-controls','debate-detail');
       const meta=text('div','card-meta');meta.append(badge(d.state),text('span','mode-tag',d.mode+(d.rhp?' + RHP':'')));
-      const bottom=text('div','card-bottom');bottom.append(text('span','',d.turns+' '+(d.turns===1?'potrjen odgovor':'potrjeni odgovori')),text('span','arrow','↗'));
+      const bottom=text('div','card-bottom');bottom.append(text('span','',d.turns+' '+(d.turns===1?'potrjen odgovor':d.turns===2?'potrjena odgovora':d.turns<5?'potrjeni odgovori':'potrjenih odgovorov')),text('span','arrow','↗'));
       card.append(meta,text('h3','',d.title),text('p','',d.summary),bottom);card.addEventListener('click',()=>choose(d.id));host.append(card);
     }
     const d=list.find(x=>x.id===selected),panel=$('debate-detail');panel.replaceChildren();
-    if(!d){const empty=text('div','empty-state');empty.append(text('h3','','Izberi drug pogled.'),text('p','','Spremeni filter za objavljene debate.'));panel.append(empty);return;}
+    if(!d){const empty=text('div','empty-state');const title=text('h3','','Izberi drug pogled.');title.id='detail-title';empty.append(title,text('p','','Spremeni filter za objavljene debate.'));panel.append(empty);return;}
     const head=text('div','detail-head'),meta=text('div','detail-meta');meta.append(badge(d.state),text('span','detail-date','Stanje ob '+fmt(d.observed_at)));
     const title=text('h3','',d.title);title.id='detail-title';head.append(meta,title,text('p','',d.outcome));
     const body=text('div','detail-body');body.append(text('h4','','IZBRANI KORAKI POGOVORA'));
@@ -54,7 +54,7 @@
       $('updated-at').textContent='Objava '+fmt(data.published_at);
       $('feed-status').textContent='';
       const last=new Date(data.published_at).getTime();
-      $('feed-note').textContent='Javni izbor · objava '+fmt(data.published_at)+'. '+(Date.now()-last>15*60*1000?'Posnetek ni v živo; stanje se je lahko spremenilo. ':'To je objavljeni posnetek, ne živi status terminalov. ')+'Preverjanje nove objave vsakih 30 sekund.';
+      $('feed-note').textContent='Javni izbor · objava '+fmt(data.published_at)+'. '+(Date.now()-last>15*60*1000?'Posnetek ni v živo; stanje se je lahko spremenilo. ':'To je objavljeni posnetek, ne živi status terminalov. ')+'Preverjanje nove objave vsake tri minute.';
     } catch(error) {
       $('feed-status').textContent=data?'Osvežitev ni uspela. Prikazan je zadnji uspešno prebrani posnetek.':'Objavljenih podatkov ni mogoče prebrati. Poskusi osvežiti pozneje.';
       $('updated-at').textContent=data?'Zadnja objava '+fmt(data.published_at):'Podatki niso dosegljivi';
@@ -77,5 +77,5 @@
   $('refresh').addEventListener('click',refresh);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
   window.addEventListener('popstate',()=>{selected=new URL(location.href).searchParams.get('debate');render();});
-  updateCommand();refresh();setInterval(()=>{if(!document.hidden)refresh();},30000);
+  updateCommand();refresh();setInterval(()=>{if(!document.hidden)refresh();},180000);
 })();
