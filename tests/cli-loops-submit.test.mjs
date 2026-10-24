@@ -15,9 +15,12 @@ test('full UI preview/cancel/confirm uses a frozen WORK plan and one create on d
  const server=backend(),dom=page(server);try{
   await until(()=>el(dom,'inbox-status').textContent.includes('Pripravljeno'));input(dom,'host','WORK');input(dom,'mode','MAX');input(dom,'topic','Celoten testni brief: A < B; šumniki ostanejo.');
   el(dom,'submit-plan').click();await until(()=>el(dom,'inbox-plan').open);assert.match(el(dom,'inbox-plan-fields').textContent,/WORK/);assert.match(el(dom,'inbox-plan-topic').textContent,/šumniki/);assert.equal(server.puts,0);
+  assert.match(el(dom,'inbox-plan-fields').textContent,/sama poiščeta.*Drive/);
   el(dom,'inbox-plan-cancel').click();assert.equal(el(dom,'inbox-plan').open,false);assert.equal(server.puts,0);
   el(dom,'submit-plan').click();await until(()=>el(dom,'inbox-plan').open);el(dom,'inbox-confirm').click();el(dom,'inbox-confirm').click();await until(()=>el(dom,'inbox-status').textContent.includes('je zapisana'));
   assert.equal(server.puts,1);assert.equal(server.files.size,1);assert.equal(el(dom,'submit-plan').disabled,true);assert.equal(el(dom,'inbox-receipt').hidden,false);
+  const stored=JSON.parse(Buffer.from([...server.files.values()][0].content,'base64'));const request=JSON.parse(Buffer.from(stored.request_base64,'base64'));
+  assert.deepEqual(request.projects,['DRIVE']);assert.deepEqual(request.context,[]);assert.deepEqual(request.seed_files,[]);
  }finally{dom.window.close();}
 });
 test('lost response survives reload with only identity/hash persisted and no second upload',async()=>{

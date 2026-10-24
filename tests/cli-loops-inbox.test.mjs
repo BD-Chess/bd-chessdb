@@ -44,6 +44,19 @@ test('frozen preview binds user, full request, host and expiry',()=>{
  assert.throws(()=>confirmPlan(native,token,'different-owner',key,new Date()),/PLAN_CHANGED/);
  assert.throws(()=>confirmPlan(native,token,'owner',key,new Date(Date.now()+660000)),/PREVIEW_EXPIRED/);
 });
+
+test('WORK FullRHP DEEP enables independent Drive discovery with no injected task sources',()=>{
+ const topic='Pregled ToE daily in log in če je kaj dobrega za nadgraditi main /CRP/ToE.html';
+ const req=buildRequest({...basic,mode:'AUTO',collaboration:'FullRHP',depth:'DEEP',limit:'',topic});
+ assert.equal(req.action,'cli_loop_workspace');assert.deepEqual(req.projects,['DRIVE']);
+ assert.deepEqual(req.context,[]);assert.deepEqual(req.seed_files,[]);assert.equal(req.full_rhp,true);assert.equal(req.deep,true);assert.equal(req.skeptics,true);
+ assert.equal(req.topic,topic);assert.equal(req.max_duration_s,43200);assert.equal(req.max_cli_turns,100);
+ const token=planToken(req,'owner',key);confirmPlan(req,token,'owner',key,new Date());
+ assert.throws(()=>confirmPlan({...req,projects:[]},token,'owner',key,new Date()),/PLAN_CHANGED/);
+ const carrier=envelope(req,key);assert.deepEqual(JSON.parse(Buffer.from(carrier.request_base64,'base64')),req);
+ assert.deepEqual(buildRequest({...basic,host:'HOME'}).projects,[]);
+ const build=buildRequest({...basic,build:true,buildProject:'LISTENER',buildPackage:'test',activate:false});assert.deepEqual(build.projects,[]);
+});
 test('create-only retry, concurrent duplicate and lost response produce one stored request',async()=>{
  for(const lostReply of [false,true]){const remote=fakeGitHub({lostReply});const r=await submit(remote.api,native,key);assert.equal(r.state,'QUEUED_GITHUB');const again=await submit(remote.api,native,key);assert.equal(again.blob_sha,r.blob_sha);assert.equal(remote.puts,1);assert.equal(remote.files.size,1);}
  const remote=fakeGitHub();await Promise.all([submit(remote.api,native,key),submit(remote.api,native,key)]);assert.equal(remote.files.size,1);
