@@ -1,15 +1,33 @@
 # CLI Loops public status and command builder
 
-The page shows reviewed published snapshots, not a direct listener connection.
+The page shows published snapshots, not a direct listener connection.
 The exporter reads SQLite in read-only mode and the bounded typed USAGE.json
 sidecar. It never reads PRIVATE, turn bodies, credentials or request content,
 and never starts a model or listener.
 
 Six approved short IDs and two exact historical aliases bind the eight existing
-published debates. New runs require editorial approval. Text, selected events
+published debates. New run content requires editorial approval. Text, selected events
 and role contribution findings remain curated in the public feed.
 
-Only validated enums and numbers are exported: state, mode, confirmed turns,
+Current discussions use one detail panel, a 1 / N counter and left/right arrows.
+The default view is Current; archive links still open their selected debate.
+Zero discussions shows 0 / 0, and one discussion disables both arrows. Selection
+survives refresh by public ID; previous/next wrap around without auto-advancing.
+The archive keeps its list. Capacity is shown separately (HOME: occupied / limit),
+so a single active debate is 1 / 1, not five fictional discussions.
+
+Beside the read-only journal, an optional 8zlistener.status.v2 listener_status.json
+provides the exact admitted request_ids and host capacity. The exporter copies
+only typed host/capacity/time fields. It does not discover unapproved jobs by SQL
+state. Leased unreviewed runs get stable hashed public aliases, generic titles
+and numeric status in current_debates; their topics and turn bodies stay private.
+Reviewed active entries are marked current, without duplicating their usage.
+Exporting one host preserves the other host's current snapshot. Stopped listeners
+clear their own current selection. Current counters cover returned calls only;
+the in-flight call is not yet included. These are published observations, not
+a real-time monitor, and retain their source observation time.
+
+Only validated enums, numbers and generated aliases are exported: state, mode, confirmed turns,
 active seconds, effort, S/FullRHP/DEEP flags, 2/4/6 seats, phase and next seat.
 Only COMPLETE is complete. Unknown effort and missing usage remain unknown.
 Usage is a numeric whitelist by provider, seat and phase: no private identifiers.

@@ -1,10 +1,11 @@
-"""Read-only listener status export for explicitly approved public debate IDs.
+"""Read-only reviewed debate export and anonymous current status snapshots.
 
 Never imports listener code, reads PRIVATE/turn bodies, or starts processes.
 Editorial text lives in the reviewed public feed, never in listener requests.
 """
 import argparse
 import datetime as dt
+import hashlib
 import json
 import math
 import os
@@ -28,7 +29,8 @@ STATES = {
 EFFORTS = {'low', 'medium', 'high', 'xhigh', 'max', 'ultra'}
 FIELDS = {'id', 'state', 'mode', 'rhp', 'observed_at', 'turns', 'title',
           'summary', 'outcome', 'events', 'next_step', 'executor_state',
-          'active_seconds', 'next_author', 'effort', 'product_status','usage','full_rhp','deep','skeptics','seats','next_seat','stage','role_findings'}
+          'active_seconds', 'next_author', 'effort', 'product_status','usage','full_rhp','deep','skeptics','seats','next_seat','stage','role_findings',
+          'host', 'status_only', 'current'}
 
 
 SEATS={'GPT','CLAUDE','SA','SB','CX','CM'}
@@ -56,8 +58,16 @@ def safe_text(value):
 def validate_public(data):
     if data.get('schema') != 'ai8.cli-loops.public.v1' or not 1 <= len(data['debates']) <= 100:
         raise ValueError('Invalid public feed')
+    current = data.get('current_debates', [])
+    if not isinstance(current, list) or len(current)>32:
+        raise ValueError('Invalid current selection')
+    for host, status in data.get('current_hosts', {}).items():
+        if host not in {'HOME','WORK'} or set(status)!={'capacity','observed_at'} or type(status['capacity']) is not int or not 1<=status['capacity']<=16:
+            raise ValueError('Invalid host capacity')
+        if dt.datetime.fromisoformat(status['observed_at']).tzinfo is None:
+            raise ValueError('Host time must include timezone')
     ids = set()
-    for d in data['debates']:
+    for d in data['debates'] + current:
         if set(d) - FIELDS or not re.fullmatch(r'[a-z0-9-]{1,80}', d['id']) or d['id'] in ids:
             raise ValueError('Unexpected public fields or IDs')
         ids.add(d['id'])
@@ -75,6 +85,9 @@ def validate_public(data):
         if 'stage' in d and d['stage'] not in (None,'map','alternatives','challenge','synthesis'):raise ValueError('Invalid stage')
         for flag in ('deep','full_rhp','skeptics'):
             if flag in d and type(d[flag]) is not bool:raise ValueError('Invalid public flag')
+        for flag in ('status_only','current'):
+            if flag in d and type(d[flag]) is not bool:raise ValueError('Invalid status flag')
+        if 'host' in d and d['host'] not in {'HOME','WORK'}:raise ValueError('Invalid public host')
         for finding in d.get('role_findings',[]):safe_text(finding)
         if 'product_status' in d:
             safe_text(d['product_status'])
@@ -85,16 +98,54 @@ def validate_public(data):
             safe_text(e['text'])
 
 
-def read_statuses(journal, debates, observed_at):
+def read_current_snapshot(path):
+    """Read only the typed lease fields. Never copy nonce, PID or other leaves."""
+    if not path.is_file():
+        return None
+    if path.stat().st_size>65536:raise ValueError('Oversized listener status')
+    value=json.loads(path.read_bytes())
+    if value.get('schema')!='8zlistener.status.v2':return None
+    host=value.get('host');parallel=value.get('parallel',{})
+    capacity=parallel.get('capacity');ids=parallel.get('request_ids')
+    observed=value.get('last_poll_utc')
+    if host not in {'HOME','WORK'} or type(capacity) is not int or not 1<=capacity<=16:
+        raise ValueError('Invalid listener capacity')
+    if not isinstance(ids,list) or len(ids)>16 or len(set(ids))!=len(ids) or any(not isinstance(rid,str) or not re.fullmatch(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}',rid) for rid in ids):
+        raise ValueError('Invalid listener leases')
+    if dt.datetime.fromisoformat(observed).tzinfo is None:raise ValueError('Invalid listener time')
+    return dict(host=host,capacity=capacity,observed_at=observed,ids=[] if value.get('stopped_at_utc') else ids)
+
+
+def read_statuses(journal, debates, observed_at, snapshot=None):
     """One consistent SQL read transaction; only enum/number leaves are copied."""
     db = sqlite3.connect(journal.resolve().as_uri() + '?mode=ro', uri=True, timeout=2)
     try:
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
-        for d in debates:
+        targets=[(d,None) for d in debates]
+        current=[]
+        if snapshot:
+            host=snapshot['host']
+            for d in debates:
+                if d.get('host')==host:d.pop('current',None)
+            for rid in snapshot['ids']:
+                reviewed=next((d for d in debates if rid[:8]==APPROVED_ALIASES.get(d['id'],d['id']) and (d['id'] in APPROVED or d['id'] in APPROVED_ALIASES)),None)
+                if reviewed is not None:
+                    reviewed.update(current=True,host=host)
+                    continue
+                alias='live-'+host.lower()+'-'+hashlib.sha256(rid.encode('ascii')).hexdigest()[:12]
+                d=dict(id=alias,host=host,status_only=True,current=True,state='running',mode='AUTO',rhp=False,
+                       observed_at=snapshot['observed_at'],turns=0,title='CLI '+host+' \u00b7 '+alias[-6:],
+                       summary='Trenutna debata \u00b7 javni status brez vsebine pogovora.',
+                       outcome='Stanje izvajalnika in poraba ob zadnjem izvozu.',events=[],
+                       next_step='Po\u010dakaj na naslednji potrjeni odgovor; vsebinski izkupi\u010dek zahteva uredni\u0161ki pregled.')
+                current.append(d);targets.append((d,rid))
+        for d, source_id in targets:
             if d['id'] not in APPROVED and d['id'] not in APPROVED_ALIASES:
-                continue
-            if d['id'] in APPROVED_ALIASES:
+                if source_id is None:continue
+            if source_id is not None:
+                rows=db.execute('SELECT request_id,state,runtime_json FROM jobs WHERE request_id=?',(source_id,)).fetchall()
+            elif d['id'] in APPROVED_ALIASES:
                 rows = db.execute('SELECT request_id,state,runtime_json FROM jobs WHERE substr(request_id,1,8)=?', (APPROVED_ALIASES[d['id']],)).fetchall()
             else:
                 rows = db.execute('SELECT request_id,state,runtime_json FROM jobs WHERE substr(request_id,1,8)=?', (d['id'],)).fetchall()
@@ -104,6 +155,8 @@ def read_statuses(journal, debates, observed_at):
             if state not in STATES:
                 raise ValueError('Unrecognized executor state; review required')
             runtime = json.loads(raw_runtime or '{}')
+            if d.get('current') and STATES[state] not in {'queued','running','pending'}:
+                d.pop('current',None)
             turns = db.execute('SELECT author FROM turns WHERE request_id=? ORDER BY turn_id', (rid,)).fetchall()
             if len(turns) > 100 or any(t[0] not in SEATS for t in turns):
                 raise ValueError('Invalid confirmed turns')
@@ -115,8 +168,8 @@ def read_statuses(journal, debates, observed_at):
             if 'run_path' in columns:
                 row=db.execute('SELECT run_path FROM jobs WHERE request_id=?',(rid,)).fetchone()
                 # The only extra source is the typed numeric sidecar; never traverse PRIVATE or read turn bodies.
-                path=Path(row[0])/'USAGE.json'
-                if path.is_file():
+                path=Path(row[0])/'USAGE.json' if row[0] else None
+                if path and path.is_file():
                     if path.stat().st_size>65536:raise ValueError('Oversized usage source')
                     d['usage']=public_usage(json.loads(path.read_bytes()))
             tier = runtime.get('tier_state', {})
@@ -138,9 +191,11 @@ def read_statuses(journal, debates, observed_at):
                 if not full and not skeptics:next_author = 'GPT' if not turns or turns[-1][0] == 'CLAUDE' else 'Claude'
                 elif d['next_seat'] in ('GPT','CLAUDE'):next_author='GPT' if d['next_seat']=='GPT' else 'Claude'
             d.update(state=STATES[state], executor_state=state, turns=len(turns),
-                     mode=mode, rhp=mode == 'MAX' or d['rhp'],
+                     mode=mode, rhp=mode == 'MAX' or d['rhp'] or req.get('rhp') is True,
                      active_seconds=int(work), next_author=next_author,
                      effort=effort, observed_at=observed_at)
+            if source_id is not None:d['observed_at']=snapshot['observed_at']
+        return [d for d in current if d.get('current')]
     finally:
         db.close()
 
@@ -149,8 +204,9 @@ def comparable(data):
     copy = json.loads(json.dumps(data))
     copy.pop('published_at', None)
     copy.pop('revision', None)
-    for d in copy['debates']:
+    for d in copy['debates']+copy.get('current_debates',[]):
         d.pop('observed_at', None)
+    for status in copy.get('current_hosts',{}).values():status.pop('observed_at',None)
     return copy
 
 
@@ -159,7 +215,13 @@ def export(journal, output, now=None):
     original = json.loads(output.read_bytes())
     validate_public(original)
     candidate = json.loads(json.dumps(original))
-    read_statuses(journal, candidate['debates'], now.isoformat())
+    snapshot=read_current_snapshot(journal.parent/'listener_status.json')
+    current=read_statuses(journal, candidate['debates'], now.isoformat(), snapshot)
+    if snapshot:
+        # Exporting HOME never drops the separately published WORK selection.
+        host=snapshot['host']
+        candidate['current_debates']=[d for d in candidate.get('current_debates',[]) if d['host']!=host]+current
+        candidate.setdefault('current_hosts',{})[host]={k:snapshot[k] for k in ('capacity','observed_at')}
     validate_public(candidate)
     if comparable(candidate) == comparable(original):
         return 'UNCHANGED'
