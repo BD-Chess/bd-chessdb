@@ -6,6 +6,18 @@
   const date = new Intl.DateTimeFormat('sl-SI', {timeZone:'Europe/Ljubljana',day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'});
   let data = null, selected = new URL(location.href).searchParams.get('debate'), filter = 'running', busy = false, initialView = true;
   const text = (tag, cls, value) => { const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el; };
+  // Only reviewed local destinations become links; editorial content stays text.
+  const editorial = (cls, value) => {
+    const el=text('p',cls), pattern=/\/crp\/dgte-bd-r1\.html|\/ai8\/cli-loops\?debate=[a-z0-9-]{1,80}/g;
+    let end=0;
+    for(const match of value.matchAll(pattern)){
+      el.append(document.createTextNode(value.slice(end,match.index)));
+      const path=match[0],link=text('a','',path);
+      link.href=new URL(path.startsWith('/crp/')?'..'+path:'../AI8/cli-loops.html'+path.slice(path.indexOf('?')),location.href).href;
+      el.append(link);end=match.index+path.length;
+    }
+    el.append(document.createTextNode(value.slice(end)));return el;
+  };
   const fmt = value => date.format(new Date(value));
   const states = {queued:'V vrsti',running:'V razpravi',paused:'Premor',pending:'Čaka arhiv',complete:'Zaključeno',partial:'Delno zaključeno',blocked:'Blokirano',unknown:'Stanje negotovo'};
   const activeStates = new Set(['queued','running','paused','pending']);
@@ -94,7 +106,7 @@
     const d=list.find(x=>x.id===selected),panel=$('debate-detail');panel.replaceChildren();
     if(!d){const empty=text('div','empty-state');const title=text('h3','',$('debate-search').value.trim()?'Ni zadetkov za to iskanje.':currentView?'V tem posnetku ni trenutnih debat.':'Izberi drug pogled.');title.id='detail-title';empty.append(title,text('p','',$('debate-search').value.trim()?'Poskusi krajši izraz, počisti iskanje ali izberi pogled Vse.':'Pretekle objave najdeš v pogledu Vse ali Zaključene.'));panel.append(empty);restoreView();return;}
     const head=text('div','detail-head'),meta=text('div','detail-meta');meta.append(badge(d.state),text('span','detail-date','Stanje ob '+fmt(d.observed_at)));
-    const title=text('h3','',d.title);title.id='detail-title';head.append(meta,title,text('p','mode-tag',d.mode+(d.full_rhp?' · FullRHP · 6 sej':d.skeptics?' · S · 4 seje':d.rhp?' + RHP':'')+(d.deep?' · DEEP':'')),text('p','',d.outcome));
+    const title=text('h3','',d.title);title.id='detail-title';head.append(meta,title,text('p','mode-tag',d.mode+(d.full_rhp?' · FullRHP · 6 sej':d.skeptics?' · S · 4 seje':d.rhp?' + RHP':'')+(d.deep?' · DEEP':'')),editorial('',d.outcome));
     if(d.executor_state){
       const status=text('dl','executor-status');
       const item=(label,value)=>{const row=text('div');row.append(text('dt','',label),text('dd','',value));status.append(row);};
@@ -112,11 +124,11 @@
     if(d.stage)head.append(text('p','role-note','Faza: '+({map:'podvprašanja',alternatives:'alternative',challenge:'ugovori in preverjanje',synthesis:'sinteza'}[d.stage]||d.stage)));
     if(d.usage){const details=text('details','detail-usage');details.append(text('summary','','Razčlenitev porabe po ponudnikih, vlogah in fazah'));for(const [label,key] of [['Ponudniki','by_provider'],['Vloge','by_seat'],['Faze','by_phase']])if(d.usage[key]&&Object.keys(d.usage[key]).length){details.append(text('h4','',label),usageTable(d.usage[key]));}details.append(text('p','role-note',d.usage.measured_attempts+' od '+d.usage.attempts+' klicev z meritvami. Neznana poraba ni nič.'));head.append(details);}
     if(!d.status_only&&(d.full_rhp||d.skeptics)){const roles=text('details','detail-usage');roles.append(text('summary','','Vloge in njihov doprinos'));for(const r of d.role_findings||[])roles.append(text('p','role-note',r));if(!(d.role_findings||[]).length)roles.append(text('p','role-note','Vsebinski prispevki so prikazani v izbranih uredniških korakih spodaj. Število sej ali soglasje samo po sebi ne dokazuje uspeha naloge.'));head.append(roles);}
-    if(d.product_status)head.append(text('p','product-status',d.product_status));
+    if(d.product_status)head.append(editorial('product-status',d.product_status));
     const body=text('div','detail-body');if(d.events.length)body.append(text('h4','','IZBRANI KORAKI POGOVORA'));
     const timeline=text('ol','timeline');
-    for(const e of d.events){const li=text('li');li.dataset.author=e.author;const top=text('div','timeline-top');top.append(text('strong','',e.author),text('span','',e.label));li.append(top,text('p','',e.text));timeline.append(li);}
-    const next=text('div','next-step');next.append(text('h4','','NASLEDNJI KORAK'),text('p','',d.next_step));
+    for(const e of d.events){const li=text('li');li.dataset.author=e.author;const top=text('div','timeline-top');top.append(text('strong','',e.author),text('span','',e.label));li.append(top,editorial('',e.text));timeline.append(li);}
+    const next=text('div','next-step');next.append(text('h4','','NASLEDNJI KORAK'),editorial('',d.next_step));
     if(d.events.length)body.append(timeline);
     body.append(next,text('p','detail-footnote',d.status_only?'Javni prikaz vsebuje samo stanje in števce. Naslov teme in vsebina zasebne debate nista objavljena.':'Uredniški povzetek izbranih zapisov. Celotni izvirniki ostajajo v arhivu; neobjavljena vsebina ni del tega izvoza.'));panel.append(head,body);restoreView();
   }

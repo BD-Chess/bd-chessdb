@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="sl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DGTE BD R1 · nadgradnja izvirnika · BD × AI Lab</title>
+<meta name="description" content="Celoten analitični predlog DGTE BD R1: omejena kapsula voda–para, tabela stanj, celotna bilanca, prototipi in odprte meritve. LOOP CLI MAX S, 24. 10. 2026.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0c171a">
+<meta name="dgte-source-sha256" content="0927557abd623481bba39583066654f9f73b1dd4f3cfb0a620b099ff4459564b">
+<link rel="canonical" href="https://www.mdlxdcc.org/crp/dgte-bd-r1.html">
+<script>try{const t=localStorage.getItem('mdlxdcc-theme');document.documentElement.dataset.theme=t==='light'||t==='dark'?t:matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}catch(_){}</script>
+<style>
+:root{color-scheme:dark;--bg:#0c171a;--paper:#112025;--surface:#142428;--ink:#eaf0e8;--muted:#abbcb9;--line:#31484c;--accent:#c5d6a4;--teal:#7fc9bc;--hot:#efb184;font-family:'Avenir Next','Segoe UI',Arial,sans-serif}
+:root[data-theme=light]{color-scheme:light;--bg:#f6f3ec;--paper:#faf9f5;--surface:#eeece3;--ink:#203c38;--muted:#566e66;--line:#c7d0c5;--accent:#456c37;--teal:#216d64;--hot:#9e4e24}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--bg);color:var(--ink);line-height:1.75;-webkit-text-size-adjust:100%}a{color:var(--teal);text-underline-offset:4px}button{font:inherit;cursor:pointer}a:focus-visible,button:focus-visible,.table-scroll:focus-visible{outline:2px solid var(--teal);outline-offset:4px}.wrap{width:calc(100% - 80px);max-width:1100px;margin-inline:auto}.skip{position:absolute;left:20px;top:-100px;background:var(--paper);padding:12px;z-index:2}.skip:focus{top:12px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 0;border-bottom:1px solid var(--line)}.brand{font-size:1.1rem;letter-spacing:-.04em;text-decoration:none;color:var(--ink)}.brand em{font-style:normal;color:var(--accent)}.theme{min-width:44px;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--surface)}.breadcrumb{display:flex;flex-wrap:wrap;gap:12px 24px;font-size:.83rem;padding:20px 0}.hero{padding:40px 0 30px;max-width:930px}.eyebrow{font:500 .72rem/1.6 Consolas,monospace;letter-spacing:.12em;color:var(--accent);margin:0 0 20px}h1{font-size:clamp(2.1rem,5.4vw,4.25rem);line-height:1.12;font-weight:450;letter-spacing:-.045em;margin:0 0 28px}.authorship{color:var(--muted);max-width:72ch}.status{border-left:3px solid var(--hot);background:var(--surface);padding:18px 22px;border-radius:0 10px 10px 0}.status strong{color:var(--hot)}.status p{margin:5px 0}.edition{font-size:.84rem;color:var(--muted)}.section-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;padding:22px 0 28px;border-bottom:1px solid var(--line)}.section-nav a{font-size:.84rem;text-decoration:none;border-bottom:1px solid var(--line);padding:8px 0}.section-nav a:hover{color:var(--accent)}article{max-width:940px;margin:36px 0 70px;overflow-wrap:anywhere}article p{margin:16px 0}article h2{font-size:clamp(1.45rem,3vw,2rem);line-height:1.3;font-weight:500;letter-spacing:-.025em;margin:54px 0 24px;padding-top:24px;border-top:1px solid var(--line);color:var(--accent)}article li{margin:8px 0}article ul,article ol{padding-left:24px}article code{font:.88em/1.7 Consolas,monospace;color:var(--teal);overflow-wrap:anywhere}article strong{font-weight:650}.table-scroll{max-width:100%;overflow-x:auto;margin:26px 0;border:1px solid var(--line);border-radius:10px;overscroll-behavior-x:contain}table{width:100%;min-width:720px;border-collapse:collapse;font-size:.85rem;line-height:1.55}th,td{text-align:left;padding:13px 15px;vertical-align:top;border-bottom:1px solid var(--line)}th{background:var(--surface);font-weight:600}tbody tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:var(--paper)}footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:.82rem}footer p{margin:0}.source-hash{font:.72rem/1.6 Consolas,monospace;overflow-wrap:anywhere}
+@media(max-width:600px){.wrap{width:calc(100% - 36px)}.hero{padding-top:24px}.section-nav{grid-template-columns:1fr;gap:0}.status{padding:16px}.breadcrumb{gap:8px 18px}article{font-size:.95rem}article h2{margin-top:38px}th,td{padding:10px 12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{.theme,.skip,.section-nav{display:none}body{background:white;color:black}.wrap{width:100%}.table-scroll{overflow:visible}table{min-width:0;font-size:8pt}h2{break-after:avoid}tr{break-inside:avoid}a{color:inherit}}
+</style>
+</head>
+<body>
+<a class="skip" href="#document">Na dokument</a>
+<div class="wrap">
+<header class="topbar"><a class="brand" href="./DGTE.html">BD × <em>AI Lab</em> / DGTE</a><button type="button" class="theme" id="theme" aria-label="Preklopi temo">Svetla / temna</button></header>
+<nav class="breadcrumb" aria-label="Povezani strani"><a href="./DGTE.html">← Izvirni DGTE</a><a href="https://www.mdlxdcc.org/ai8/cli-loops?debate=3cf4c6ae">LOOP CLI · tek 3cf4c6ae ↗</a></nav>
+<main id="document">
+<header class="hero"><p class="eyebrow">24. 10. 2026 · LOOP CLI MAX S · COMPLETE · 17 POTEZ</p>
+<h1>DGTE BD R1 — nadgradnja izvirnika Bojana Dobrečeviča</h1>
+<p class="authorship">Avtorstvo koncepta: <strong>Bojan Dobrečevič (BD)</strong>. Nadgradnja je nastala v LOOP CLI MAX S: Claude + GPT + dva skeptika (SA: Claude, SB: GPT). Vsi štirje sedeži so sprejeli končno različico.</p>
+<div class="status" role="note"><p><strong>Analitični predlog · STATIC</strong></p><p>Nobena meritev ni izvedena. Številke so ročni računi in predpostavke, ne rezultati izdelane naprave.</p></div>
+<p class="edition">Sledi celoten dogovorjeni dokument R1 z nespremenjenim besedilom. Stanje dostave v §8 opisuje izvirni dokument; ta HTML izdaja je objava z dne 24. 10. 2026.</p></header>
+<nav class="section-nav" aria-label="Poglavja R1"><a href="#r1-1">1. BD-jevo jedro in merila</a>
+<a href="#r1-2">2. Meje in izboljšave</a>
+<a href="#r1-3">3. Referenčna omejena kapsula in tabela stanj</a>
+<a href="#r1-4">4. Čas, toplota in električna moč istega scenarija</a>
+<a href="#r1-5">5. Najcenejši prototip in pet meritev</a>
+<a href="#r1-6">6. Ohranjena nesoglasja in semenska banka</a>
+<a href="#r1-7">7. Statične opombe k izvirniku [I]</a>
+<a href="#r1-8">8. RHP sled in dostava</a></nav>
+<article id="r1-document">
+<p>Razvojna revizija T011 na osnovi T008. Izhodišče pregleda: contract_epoch 3. Status: analitični predlog STATIC; noben programski ali fizični poskus ni izveden. Številke opisujejo predpostavljeni model, ne izdelane naprave.</p>
+<p>Vira, prebrana v celoti:</p>
+<ul>
+<li><code>DGTE:crp/DGTE_ORIGINAL_BD_2025.md</code>, SHA256 <code>c3480fa9c05274b9e81541a12a41d68da80721c7d70244dff45b95576e3c453a</code>;</li>
+<li><code>RHP:RHP_WORK_PROFILE_v0_2.md</code>, SHA256 <code>c0a44296e5295ba91f74ab19a26ff2d86f7c32b992272b86f3e83aba3a1384fa</code>.</li>
+</ul>
+<p>Hashi so dostavljeni metapodatki, brez ponovnega izračuna. Izvirnikov ne spreminjamo. Ta dokument se dostavi create-only kot <code>crp/DGTE_BD_UPGRADE_R1.md</code>.</p>
+<p>Oznake: [V] navedba iz vira; [I] ročni izračun STATIC; [P] predpostavka; [M] prihodnja meritev. Izvedljivost neizmerjenih sestavnih delov je OPEN. Navedba v viru sama ne potrjuje delovanja.</p>
+<h2 id="r1-1">1. BD-jevo jedro in merila</h2>
+<p>Zaprta kapsula s faznim medijem se v topli osrednji poti razširi in dvigne, na vrhu preide v hladni obroč, se skrči in pade, spodaj pa sklene zanko. Magnet in segmentirane tuljave zajemajo energijo obeh hodov; usmernik in hranilnik omogočata DC. Toplotni vir ostaja nizkotemperaturna odpadna toplota.</p>
+<p>Dobri elementi so:</p>
+<ul>
+<li>oba uporabna hoda;</li>
+<li>hidrostatično delovanje brez batnega drsnega tesnila;</li>
+<li>koaksialna posoda, v kateri hladni obroč ščiti vročo sredico;</li>
+<li>zamenljivi prehodi;</li>
+<li>BD-jevo seme: »kapsule ne potujejo skozi izmenjevalnik; potuje tekočina«.</li>
+</ul>
+<p>Ohranijo se tudi protiEMS brez tipal, stroj stanj, KPI, preizkusi D2–D10 in pot C→A→B. Izvirnik sam imenuje prvo manjkajočo meritev: m, V(T,p), gostote kopeli in silo pod bremenom.</p>
+<p>Rekuperacija lahko zmanjša dovod toplote, pozitivno neto delovanje pa določa celotna bilanca. Odsotnost rekuperacije sama ne dokazuje nedelovanja.</p>
+<p>Merila A1–A5:</p>
+<ul>
+<li>A1: ohraniti BD-jevo identiteto in avtorstvo;</li>
+<li>A2: zapreti sledljivo bilanco;</li>
+<li>A3: predlagati najmanjši odločilni prototip;</li>
+<li>A4: ohraniti podprta nesoglasja;</li>
+<li>A5: dostaviti novo slovensko datoteko.</li>
+</ul>
+<p>Analitični sprejem ne zahteva izvedbe prihodnjih fizičnih testov.</p>
+<h2 id="r1-2">2. Meje in izboljšave</h2>
+<p><strong>I-1 Fazna kartuša.</strong> Za majhen trdno–tekoči raztezek velja približek W/Q≈ρgH·ΔV/Q. Parafinski ΔV/Q reda 5–8·10⁻¹⁰ m³/J daje pri nekaj metrih majhen izkoristek.</p>
+<ul>
+<li>S/L ostane izvirna kontrolna kartuša. Tanke celice ohranijo mehanizem; zmanjšanje prevodne razdalje z 10 na 2 mm skrajša samo prevodno časovno skalo, približno 25-krat.</li>
+<li>Voda–para je razvojna kartuša z večjim ΔV/Q. Ohrani zaprtost, fazni medij in oba hoda.</li>
+<li>Tveganja: meh, omejevalniki, kondenzacija in nekondenzabilni plini.</li>
+</ul>
+<p><strong>I-2 Tlak.</strong> Olje z ustrezno nizkim parnim tlakom omogoča p_vrh≈0,1 bar abs. Pri H=6 m in ρ=870 kg/m³ je p_dno≈0,612 bar.</p>
+<ul>
+<li>Podtlak zniža potrebno temperaturo vrenja; posoda mora prenesti zunanji tlak.</li>
+<li>Vodne kopeli pri navedenih temperaturah in tlakih ne privzamemo.</li>
+<li>Razplinjevanje, puščanje in energija vakuumske naprave ostajajo merilne postavke.</li>
+<li>Dvig p_vrh je poceni detektor puščanja kapsul.</li>
+<li>Sam ln(p_dno/p_vrh) ne določa dela kapsule z omejenim volumnom.</li>
+</ul>
+<p><strong>I-3 Dejanski sili.</strong> Splošno za navpična hoda:</p>
+<p>W_z=g∫₀ᴴ[ρ_h(z)V_h(z)−ρ_c(z)V_c(z)]dz.</p>
+<p>Masa se v zaprti poti pokrajša; ne pokrajšajo pa se upor, vodila, prehodi in izgube meha. W=gH(ρ_hV_h−ρ_cV_c) je poseben primer stalnih parametrov. Oba hoda zahtevata lokalno pozitivno pogonsko rezervo nad uporom in obremenitvijo. Raztezanje kopeli zmanjšuje rezervo; uporabimo dejansko ρ(T), gladini in tlačno razliko prehodov.</p>
+<p><strong>I-4 Magnet in toplota.</strong> Referenčna možnost je podolgovata kapsula premera okoli 0,10 m:</p>
+<ul>
+<li>magnetni trak ob koži in kapsulirani statorski segmenti ob poti;</li>
+<li>ciljna magnetna reža 2–5 mm;</li>
+<li>izolirani balast ostane v jedru; cilja sta τ_jedra≥5000 s in G_jedra≤0,05 W/K [P].</li>
+</ul>
+<p>Premik 50–100 g magneta na kožo lahko doda približno 20–45 J/K. Zato račun spodaj uporablja skupni C_cik=50 J/K, ne prejšnjih 15–25 J/K. Meh 25–50 µm je predlog; njegova utrudljivost in nosilnost sta OPEN.</p>
+<p>Za k_e iz protiEMS in upor R definiramo K_m=k_e/√R. V idealnem uporovnem modelu je η_Cu=1−F_em/(K_m²v), kjer je F_em elektromagnetna zavorna sila. Za η_Cu≥0,5 potrebujemo K_m²≥2F_em/v; pri 7,3 N in 0,25 m/s je prag približno 7,6 N/√W. Cilj K_m≥8 pri dejanski reži se preveri skupaj z izgubami usmernika in železa. Predpostavka η_gen=0,5 ni meritev.</p>
+<p>Pogoj za 8 J/cikel izgub upora in vodil v §4 je eden od treh: brezželezni stator, simetrični stator ali valjčna vodila z μ≤~0,01. Enostranski železni stator pri traku ~20 cm² in 0,2–0,4 T privlači magnet s ~B²A/(2μ₀)≈30–130 N. Pri μ≈0,05 to pomeni ~2–6 N trenja proti pogonu ~7 N [I/P]. Brezželezni stator zniža K_m (N-9).</p>
+<p><strong>I-5 Rekuperator in mešanje.</strong> Ohranimo dve enakovredni izvedbi:</p>
+<ul>
+<li>R-A: segmentirana koaksialna stena in profil okoli T_sat(p(z));</li>
+<li>R-B: izolacija delovnih poti, tekočinska kroga iz območij predhlajenja/predgrevanja ter koaksialni protitočni vložek v sklopu stene.</li>
+</ul>
+<p>R-A je [P/OPEN]: topel spodnji del je nestabilen, kapsule in vrata pregrad pa povzročajo osno mešanje. Število pregrad ne določa ε. SA-jev približek Λ≈ρc_pπa⁴/(2C_cikH) je opozorilni model; za a=0,05 m in C_cik=50 J/K da okoli 0,06 brez sledi. Dejanska sled in utesnjenost zahtevata meritev. Prednost nobene izvedbe ni dokazana.</p>
+<p>Bilančni primer spodaj uporablja R-B, najprej brez priznanega vračanja toplote, nato z ločenim ciljem za aktivni vložek. Latentne toplote ne šteje med samodejno vrnjeno toploto.</p>
+<p><strong>I-6 Prehodi.</strong></p>
+<ul>
+<li>Spodaj ima začetno prednost BD-jev V1 z izpodrivnim vložkom; U-koleno ostane alternativa po meritvi mešanja.</li>
+<li>Zgoraj primerjamo V1 in odcejen suhi prehod pod skupnim podtlakom. Gladek ovoj, brisalni obroč in odcejanje so predlogi; njihovo delo in čas se obračunata.</li>
+<li>Cilj: toplota na prehod ≤0,3Q_lat, mehansko delo za oba prehoda ≤5 % W_z. Pri lokalni razliki olja 72 K (125 J/mL) pomeni 0,28 kJ le približno 2,2 mL olja.</li>
+<li>SA-jeva ocena [P]: gladek 2 L ovoj po 4–9 s odcejanja nese ~7–10 mL, žep V1 z realno režo 0,3–0,5 mm pa ~10–20 mL. Skupaj je to 17–30 mL/cikel oziroma 2,1–3,8 kJ, ≈4–8× nad proračunom 0,50 kJ/cikel.</li>
+<li>Vzvodi:<ul>
+<li>aktivno brisanje gladke kože (≤2 mL);</li>
+<li>žep z izpodrivnim vložkom in najmanjšo režo;</li>
+<li>cone predgrevanja/predhlajenja R-B neposredno ob prehodih (ΔT ~30–40 K);</li>
+<li>profil R-A (~16 K, ≈4,5× manj toplote na mL).</li>
+</ul>
+</li>
+<li>Doseganje cilja ostaja OPEN, ne zagotovljeni prihranek.</li>
+</ul>
+<h2 id="r1-3">3. Referenčna omejena kapsula in tabela stanj</h2>
+<p>[I/P] Računski približek: idealna vodna para, zanemarljiva elastična histereza, konstantna gostota olja 870 kg/m³ na obeh poteh. To ni izbrana materialna karakteristika pri različnih temperaturah. Korekcije dejanskih gostot in tlakov prehodov sledijo v M1/M4.</p>
+<p>Parametri:</p>
+<ul>
+<li>H=6 m; p(z)=10000+8534,7(6−z) Pa;</li>
+<li>skupna masa 1,00 kg; voda 0,400 g;</li>
+<li>togo telo V₀=0,290 L; najmanjša komora 0,010 L;</li>
+<li>največji celotni volumen 2,000 L; skrčeni celotni volumen 0,300 L. Kletka omejuje zunanji volumen.</li>
+</ul>
+<p>Kapsula v topli poti ima ciljnih 94 °C, v hladni 38 °C. Kopeli za prestop toplote imata približno 102/30 °C; zunanji vir okoli 110 °C, ponor okoli 25 °C. Za vročo suho paro je K=m_vR_vT≈67,8 J in V_h=V₀+min(K/p,1,710 L). Omejevalnik doseže pri z≈2,53 m.</p>
+<p>Tabela [I]; tlaki v bar abs, sila s pozitivno smerjo navzgor, x je masni delež pare:</p>
+<div aria-label="Tabela stanj kapsule" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Stanje</th>
+<th style="text-align: right;">z m</th>
+<th style="text-align: right;">p_kopeli</th>
+<th style="text-align: right;">p_notranji</th>
+<th style="text-align: right;">T °C</th>
+<th style="text-align: right;">x</th>
+<th style="text-align: right;">V_zunanji L</th>
+<th style="text-align: right;">F_z N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vroč začetek dviga</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0,612</td>
+<td style="text-align: right;">0,612</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1,397</td>
+<td style="text-align: right;">+2,1</td>
+</tr>
+<tr>
+<td>Prosto raztezanje</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">0,484</td>
+<td style="text-align: right;">0,484</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1,690</td>
+<td style="text-align: right;">+4,6</td>
+</tr>
+<tr>
+<td>Dosežen omejevalnik</td>
+<td style="text-align: right;">2,53</td>
+<td style="text-align: right;">0,396</td>
+<td style="text-align: right;">0,396</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2,000</td>
+<td style="text-align: right;">+7,3</td>
+</tr>
+<tr>
+<td>Vroč vrh</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0,100</td>
+<td style="text-align: right;">0,396</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2,000</td>
+<td style="text-align: right;">+7,3</td>
+</tr>
+<tr>
+<td>Hlajenje pri največjem V</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0,100</td>
+<td style="text-align: right;">0,100</td>
+<td style="text-align: right;">45,8</td>
+<td style="text-align: right;">≈0,29</td>
+<td style="text-align: right;">2,000</td>
+<td style="text-align: right;">+7,3</td>
+</tr>
+<tr>
+<td>Skrčen hladni vrh</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0,100</td>
+<td style="text-align: right;">≈0,066</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">≈0,001</td>
+<td style="text-align: right;">0,300</td>
+<td style="text-align: right;">−7,2</td>
+</tr>
+<tr>
+<td>Hladni spust</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0,356</td>
+<td style="text-align: right;">≈0,066</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">≈0,001</td>
+<td style="text-align: right;">0,300</td>
+<td style="text-align: right;">−7,2</td>
+</tr>
+<tr>
+<td>Hladno dno</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0,612</td>
+<td style="text-align: right;">≈0,066</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">≈0,001</td>
+<td style="text-align: right;">0,300</td>
+<td style="text-align: right;">−7,2</td>
+</tr>
+</tbody>
+</table></div>
+<p>Na vrhu se kapsula najprej ohlaja pri omejenem volumnu in del pare kondenzira; nato se pri približno 0,1 bar in 45,8 °C skrči ter dodatno ohladi. Spodaj se najprej segreje, nato vre okoli 86 °C in se nazadnje pregreje do 94 °C. Na omejevalniku notranji tlak ne sledi več tlaku kopeli. Nosilci morajo v tem približku prevzeti približno 0,30 bar notranje in 0,55 bar zunanje tlačne razlike; toplotna masa in izgube nosilcev niso potrjene.</p>
+<p>Integracija navedene poti da W_z≈80 J: približno 36 J pri dvigu in 44 J pri spustu. To je isto hidrostatično delo kot ∮p_zunanji dV, ne dodaten energijski vir. Delo prehodov in izgube meha se obračunajo posebej.</p>
+<p>Toplota za delovno vodo:</p>
+<ul>
+<li>segrevanje tekočine ≈80 J;</li>
+<li>latentna toplota ≈920 J;</li>
+<li>pregretje nekaj J;</li>
+<li>prosto izotermno raztezanje ≈29 J.</li>
+</ul>
+<p>Skupaj Q_voda,hot≈1,04 kJ. Idealizirano razmerje 80/1040≈7,7 % velja za to pot pred toplotno maso konstrukcije in izgubami. Carnotova meja pri zunanjih 110/25 °C je približno 22,2 %.</p>
+<h2 id="r1-4">4. Čas, toplota in električna moč istega scenarija</h2>
+<p>[P] Enota: koaksialna posoda aktivne višine 6 m, premera okoli 0,8–1,0 m, štiri steze in štiri mesta za vsak termični postanek. Cilj v=0,25 m/s pomeni 48 s prevoza. Pri približno 70 s/cikel ostane okoli 13 s za oba termična postanka in 9 s za prehode in odcejanje.</p>
+<p>To zahteva efektivni hA ≥ približno 25 W/K v postankih, npr. h≈500 W/m²K in A≈0,05 m². Grobi izračun vključuje C_cik=50 J/K in latentno toploto. Samo naravna konvekcija s hA≈3 W/K da bistveno daljše postanke in cikel reda 150–200 s ali več. Curek obstoječe zanke je predlog; vsa pripadajoča pomožna poraba se šteje. Čas ni potrjen.</p>
+<p>Pretok kapsul ν mora spoštovati N/t_cikel, zmogljivost obeh postankov in razmike v stezah. Pri ν=0,5/s in 70 s/cikel potrebujemo približno 35 kapsul; štiri postajna mesta z največ 8 s zadrževanja lahko podprejo ta pretok. Moč omejujejo postajna mesta, ne prostornina (delež nihaja izpodriva φ≈1,6 %). Z 8 mesti bi bil ν≈1/s in bruto ~36 W DC pri ~4,7 kW_th; fiksna lastna poraba bi se tedaj porazdelila na večjo moč [P]. Samo dodajanje kapsul moči ne zagotovi.</p>
+<p>Proračun na cikel brez priznane rekuperacije [P]:</p>
+<ul>
+<li>voda 1,04 kJ;</li>
+<li>ciklirana konstrukcija 50·56=2,80 kJ;</li>
+<li>oba toplotna prenosa olja skupaj 0,50 kJ (≈4 mL pri 125 J/mL);</li>
+<li>premostitev skozi jedro 0,06 kJ;</li>
+<li>neposredni obvod stene: cilj UA_bypass=2 W/K, pri 72 K torej 144 W oziroma 0,288 kJ/cikel pri navedenem ν.</li>
+</ul>
+<p>Skupaj je Q_hot≈4,69 kJ/cikel oziroma 2,34 kW. Od W_z≈80 J odštejemo predpostavljenih 8 J izgub upora in vodil (pogoj iz I-4), nato upoštevamo η_gen=0,5. Ostane približno 36 J DC na cikel, pri ν=0,5/s torej bruto ≈18 W DC. Neto = 18 W − P_lastna.</p>
+<p>Lastna poraba [P, ocena SA T009]:</p>
+<div aria-label="Tabela lastne porabe" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Postavka</th>
+<th style="text-align: right;">Samostojna enota, W</th>
+<th style="text-align: right;">Vgradnja v obstoječo črpano oljno zanko, W</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>elektronika, usmernik, protiEMS</td>
+<td style="text-align: right;">0,5–2</td>
+<td style="text-align: right;">0,5–2</td>
+</tr>
+<tr>
+<td>V1 s koračnim indeksiranjem</td>
+<td style="text-align: right;">0,5–2</td>
+<td style="text-align: right;">0,5–2</td>
+</tr>
+<tr>
+<td>suhi vrh (dvig ~1,6 J, delno povrnjen)</td>
+<td style="text-align: right;">~0,75</td>
+<td style="text-align: right;">~0,75</td>
+</tr>
+<tr>
+<td>zanki s curki (~0,135 L/s, Δp≤5–10 kPa)</td>
+<td style="text-align: right;">6–10</td>
+<td style="text-align: right;">1–3 (prirastek)</td>
+</tr>
+<tr>
+<td>podtlak</td>
+<td style="text-align: right;">0,1–1</td>
+<td style="text-align: right;">0,1–1</td>
+</tr>
+<tr>
+<td>skupaj</td>
+<td style="text-align: right;">≈8–16 (tipično 20–30)</td>
+<td style="text-align: right;">≈3–9</td>
+</tr>
+</tbody>
+</table></div>
+<p>Občutljivost [I]: P_lastna=2,5/8/16/20 W da neto ≈+15,5/+10/+2/−2 W oziroma η_neto≈0,66/0,43/0,09/&lt;0 %. Samostojna 6 m enota je zato pri tipični izvedbi lahko blizu ničle ali negativna (≈−2…−12 W).</p>
+<p>Pot do zanesljivo pozitivne enote:</p>
+<ul>
+<li>vgradnja v obstoječo črpano oljno zanko (BD-jev prvi vir: hladilniki olja kompresorjev); prirastek se obračuna glede na isto obratovanje brez DGTE, neto ≈+9…+15 W;</li>
+<li>V1 s koračnim indeksiranjem.</li>
+</ul>
+<p>Prenos olja [I/P]: Q_hot(mL)≈4,19 kJ+0,125 kJ·mL na cikel. Pri SA-jevi oceni 17–30 mL/cikel (I-6) je to 6,3–7,9 kJ.</p>
+<ul>
+<li>Pri nespremenjenem ν ostane P_e, η_neto pa pade na ≈0,4–0,5 %.</li>
+<li>Če je vir omejen na ~2,34 kW in obvod ostane 144 W, pade dosegljivi ν na ≈0,29–0,36/s, bruto DC pa sorazmerno na ≈10–13 W.</li>
+</ul>
+<p>Toplotna in električna občutljivost sta torej povezani.</p>
+<p>Ločen senzibilni model aktivnega R-B:</p>
+<ul>
+<li>Pri νC=25 W/K ima uravnotežen protitok za ε=0,5 NTU=1 in efektivni UA_rec≈25 W/K.</li>
+<li>Q_rec≈0,5·25·56=700 W; največji senzibilni tok je 1400 W. UA_rec vključuje celotno pot prenosa, ne samo kovinske stene.</li>
+<li>Ob doseženem vračanju in dodatnem 1 W črpalke bi Q_hot padel na približno 1,64 kW, neto moč na približno 17 W − P_lastna (pri P_lastna 2,5 W ≈14 W, ≈0,9 %).</li>
+<li>To je projektni cilj, ne dokaz dosegljive ε.</li>
+<li>Neposredni obvod 144 W ostane posebej obračunan.</li>
+<li>UA_rec se ne sme neposredno povezati med stalnima kopelma, kjer bi 25·72=1800 W pomenilo obvod.</li>
+</ul>
+<p>Merilni ovoj mora zapreti Q_hot+E_import=Q_cold+E_export+ΔU. Primanjkljaja ne nadomestimo s faktorjem α·η_C. Nekdanja pasova 1–3 % in 50–120 W ostaneta zgodovinska predloga Claude/SA za drugačne pogoje, brez potrditve. kW razred zahteva nov preračun pretoka, postankov in izgub.</p>
+<h2 id="r1-5">5. Najcenejši prototip in pet meritev</h2>
+<p>Prototipi:</p>
+<ul>
+<li><strong>C0a:</strong> ena zaprta kartuša 50–300 mL v ustrezni tlačni/podtlačni komori, dve kopeli, meritev sile/izpodriva in kalorimetrija. Primerjata se S/L in voda–para. Strošek dodatnih delov reda €200–800 [P], ob razpoložljivi ustrezni opremi.</li>
+<li><strong>C0b:</strong> približno 2 m oljna cev, RTD-lestev, lutka in ena tuljava; predhodna ocena €2–5k [P].</li>
+<li><strong>C:</strong> dvopotni demonstrator z nekaj kapsulami, šele po kratkih odločilnih meritvah. Njegovo moč določi lastna tabela stanj.</li>
+</ul>
+<ol>
+<li><strong>M1, kapsula:</strong> m, V(T,p), notranji tlak in sila na obeh poteh; polnitev ±10 %, masa 1,0/1,1 kg. Preveriti odlepitev, omejevalnika in rezervo sile nad izgubami. Samo V_h/V_c ne zadostuje.</li>
+<li><strong>M2, čas:</strong> vrenje in kondenzacija pri navedenih temperaturah, z naravno konvekcijo in s curkom; določiti hA in celotni čas. Za hitri scenarij je cilj vsota termičnih postankov ≤0,2·t_cikel. Odcejanje je obračunano posebej.</li>
+<li><strong>M3, toplota:</strong> Q_hot/Q_cold; primerjava aktivne in izolirane rekuperacije pri enakem delu in pretoku kapsul; sham z ustavljenimi kapsulami. Ločiti koristno vračanje, obvod, toploto prenesenega olja in akumulacijo; objaviti negotovost.</li>
+<li><strong>M4, elektrika in prehodi:</strong> k_e, R in K_m pri režah 3/10/20 mm ter normalna sila magneta glede na režo z železom in brez njega; sila/hitrost ter ∫UI dt z usmernikom. Meriti spremembo energije hranilnika, vse pomožne vhode (tabela v §4), delo prehodov in količino prenesenega olja. Cilj nadaljnje integracije je neto energija nad merilno negotovostjo.</li>
+<li><strong>M5, kratek profil:</strong> lutka pri projektni pogostosti prehodov, s pregradami in brez njih; primerjava gradienta z mirujočim izhodiščem. Za priznanje R-A je cilj ohranitev ≥70 % začetnega gradienta. Film se ločeno določi s tehtanjem po dogovorjenem času odcejanja.</li>
+</ol>
+<p>Vzdržljivost je ločen prihodnji preizkus: 10⁴ ciklov pri 70 s pomeni približno 194 ur.</p>
+<ul>
+<li>Stanje: NEIZVEDENO; LOCAL_ACCEPTANCE_PENDING; LONG_TEST_GATE=EXPLICIT_BD_APPROVAL_REQUIRED.</li>
+<li>Noben tek, daljši od približno 30 minut, se ne začne brez izrecne BD-odobritve.</li>
+<li>Dolgi test ni pogoj za sprejem tega analitičnega dokumenta.</li>
+<li>Privzeto velja TESTING=MINIMAL_REQUIRED_ONLY.</li>
+</ul>
+<h2 id="r1-6">6. Ohranjena nesoglasja in semenska banka</h2>
+<ul>
+<li><strong>N-1 Medij:</strong> Claude/SA sta predlagala vodo–paro; SB v T007 in GPT v T008 jo sprejemata za razvoj R1. Prejšnji GPT/SB S/L ostane izvirna kontrola. Razločevalni meritvi: M1/M3.</li>
+<li><strong>N-2 Rekuperator:</strong> R-A in R-B sta enakovredno OPEN. R-A je BD-jevo izvirno mesto s potencialno prednostjo pri prehodih in postankih (~16 K namesto ~72 K); R-B ima manjše tveganje osnega mešanja (stališče SA, T009). SB ohranja preklopljivo segmentiranje. Testa M3/M5; koristen tok in obvod sta ločena.</li>
+<li><strong>N-3 Prehodi:</strong> BD-jev V1 ostane referenca. SA predlaga skupen boben spodaj, Claude suhi vrh/U-koleno, GPT/SB uravnotežen vložek. Primerjava M4 v J in mL na prehod.</li>
+<li><strong>N-4 Izkoristek:</strong> BD-jevih 4–8 % je izvirni cilj, ne meritev. Claude/SA sta navedla višje razvojne pasove; tukajšnji konkreten proračun je nižji. Odločita M3/M4.</li>
+<li><strong>N-5 Moč:</strong> mW–W GPT/SB se nanaša na mali demonstrator; 6-metrska enota je ločen primer. 10–100 W in FOAK 2–3 kW ostajata nadaljnja cilja, vezana na dejanski pretok.</li>
+<li><strong>N-6 Podtlak/medij:</strong> alternativi brez podtlaka sta etanol (Claude, T001) in pentan (SA, T003). Obe spreminjata izbor medija in tveganja; pentan je vnetljiv in meji na »brez hladiv«. Nobena ni privzeta za R1; voda pod podtlakom ostane razvojna osnova.</li>
+<li><strong>N-7 Omejitev volumna:</strong> 2 L je tukajšnji računski primer; 3 L in prosta ekspanzija sta alternativi z novima p–V in silo. Dolžina testa je mandat izvajanja, ne osebno nesoglasje SB.</li>
+<li><strong>N-8 Identiteta:</strong> fazni medij, oba hoda, dve poti, koaksialna rekuperacija in DC so ohranjeni. Izvirna S/L izvedba ostane vidna; avtorstvo koncepta pripada BD.</li>
+<li><strong>N-9 Magnet in stator:</strong> izolirano magnetno jedro proti magnetu ob koži. Brezželezni ali simetrični stator (brez neto privlaka, nižji K_m) proti železnemu (višji K_m, privlak zahteva valjčna vodila z μ≤~0,01). Odloča skupna meritev K_m, normalne sile, C_cik in izgub, ne samo manjša toplotna masa.</li>
+<li><strong>N-10 Dno:</strong> V1 z izpodrivnim vložkom proti U-kolenu; odločata izmerjeno mešanje in poraba, vključno z odrinjeno tekočino.</li>
+</ul>
+<p>PCM s hidravličnim ojačevalnikom, plinska kapsula in kaskada ostanejo semena brez potrjenega izkoristka. Odprt zvon bi izgubil zahtevano zaprtost in zato ni neposredna zamenjava R1. Javni modeli drugih vej DGTE ne pomenijo potrditve tega sklopa.</p>
+<h2 id="r1-7">7. Statične opombe k izvirniku [I]</h2>
+<p>To so opombe o natančnosti, ne zavrnitev:</p>
+<ul>
+<li>0,30·0,2217·0,96·0,86·0,85=4,67 %, tabela pa navaja bruto ~4,9 %;</li>
+<li>FOAK primer €85k za 3,3 kW_e je ≈26 k€/kW_e, tabela pa navaja 40–80 k€/kW_e;</li>
+<li>0,25 % od 60 kW_th je 150 W, cilj lastne porabe pa je ≤100 W.</li>
+</ul>
+<h2 id="r1-8">8. RHP sled in dostava</h2>
+<p>Izvedeni koraki:</p>
+<ul>
+<li>PREFLIGHT;</li>
+<li>CONTRACT_AND_SOURCE_FREEZE (epoch 1–3);</li>
+<li>CONFIGURE_AND_RESERVE_CLOSEOUT;</li>
+<li>Work Divergence Prelude T001–T004;</li>
+<li>COVERAGE_AND_COUPLING_MAP;</li>
+<li>CONTROLLED_COLLISION (T005–T011);</li>
+<li>REFRAMING_GATE;</li>
+<li>CRYSTALLIZE.</li>
+</ul>
+<p>EMPIRICIST_GATE je omejen na ročne STATIC primere: tabelo stanj in bilanco (T008) ter tabelo lastne porabe in povezano občutljivost prenosa olja (T011, po O0009/O0010). Fizične meritve niso izvedene.</p>
+<p>Primerjava kandidatov:</p>
+<ul>
+<li>BEST_RAW ohrani močan predlog voda–para.</li>
+<li>SELECTION_ONLY popravi neutemeljene oznake.</li>
+<li>Predlagana FUSION doda omejeni volumen, UA, generator, pretok, lastno porabo in mandat testov.</li>
+</ul>
+<p>To je naknadna kvalitativna primerjava, brez dokazane zmage ali izmišljene predhodne ocene. Končni bralni pregled nove instance opravita skeptika; graditelj ga ne nadomesti. Ločeni konteksti niso neodvisna fizična evidenca ali SEALED izolacija.</p>
+<p>Oznake: IDEA_SCORE_NOT_COMPUTED; TRUE_SILENCE_UNAVAILABLE; MANUAL_DCC_CHECKLIST. Izvirni cilj in avtorstvo sta ohranjena; odprti ugovori ostanejo odprti do pregleda njihovih avtorjev.</p>
+<p>Stanje dostave:</p>
+<ul>
+<li>BUILDER_TESTS_RUN: noben izvršen test; navedeni ročni računi STATIC.</li>
+<li>BUILDER_TESTS_NOT_RUN: programski/EOS in fizični testi.</li>
+<li>LOCAL_ACCEPTANCE_PENDING: M1–M5 ter posebej odobrena prihodnja vzdržljivost.</li>
+<li>Branch/commit: ni.</li>
+<li>Paket: ta nova datoteka; hash in potrditev zapisa določi broker.</li>
+<li>Lokalni CMD po dostavi: <code>type crp\DGTE_BD_UPGRADE_R1.md</code>.</li>
+</ul></article>
+</main>
+<footer><div><p>DGTE · Bojan Dobrečevič · BD × AI Lab</p><p class="source-hash">SHA256 izvornega dokumenta: 0927557abd623481bba39583066654f9f73b1dd4f3cfb0a620b099ff4459564b</p></div><a href="#document">Na vrh ↑</a></footer>
+</div>
+<script>
+document.getElementById('theme').addEventListener('click',()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';document.querySelector('meta[name="theme-color"]').content=r.dataset.theme==='dark'?'#0c171a':'#f6f3ec';try{localStorage.setItem('mdlxdcc-theme',r.dataset.theme);}catch(_){}});
+</script>
+</body>
+</html>
