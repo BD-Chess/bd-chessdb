@@ -29,11 +29,17 @@
     if(!Number.isInteger(calls)||calls<1||calls>400)errors.push("Meja klicev mora biti med 1 in 400.");
     if(calls!==defaults.max_native_calls)parts.push("CALLS="+calls);
     if(v.tokens!==""&&v.tokens!==undefined&&v.tokens!==null){const n=Number(v.tokens);if(!Number.isInteger(n)||n<1||n>100000000)errors.push("Neveljavna meja tokenov.");else parts.push("TOKENS="+n);}
+    const ext=v.ext||"",mal=!!v.mal;
+    if((ext||mal)&&!spec.features?.external)errors.push("MAL in ostali LLM-ji pridejo z 8zListener 0.6.0.");
+    if(ext&&!["gemini","grok","deepseek","glm","all"].includes(ext))errors.push("Neveljaven zunanji model.");
+    if(ext&&host!=="HOME")errors.push("Ostali LLM-ji so zaenkrat samo na HOME.");
+    if(ext)parts.push("EXT="+ext);if(mal)parts.push("MAL");
+    if(ext)parts.push("EXTUSD="+String(spec.ext_defaults?.usd||"2"),"EXTCALLS="+Number(spec.ext_defaults?.calls||8));
     if(!topic)errors.push("Dodaj temo in želeni rezultat.");
     if(new TextEncoder().encode(topic).length>65536)errors.push("Tema presega 64 KiB; uporabi izvorno datoteko.");
     const seats=full?6:skeptics?4:2;
     return {command:parts.join(" ")+": "+topic,errors,seats,
-      summary:host+" · "+mode+" · "+seats+" "+(seats===2?"seji":"sej")+" · "+(v.depth==="DEEP"?"DEEP":"običajna globina")+" · "+(limit||"100 potez / 12 h")+" · "+calls+" klicev"+(full?" · S vključen; avtorja interni RHP-11":"")+(v.build?" · gradnja "+v.buildProject:" · analiza")};
+      summary:host+" · "+mode+" · "+seats+" "+(seats===2?"seji":"sej")+" · "+(v.depth==="DEEP"?"DEEP":"običajna globina")+" · "+(limit||"100 potez / 12 h")+" · "+calls+" klicev"+(full?" · S vključen; avtorja interni RHP-11":"")+(v.build?" · gradnja "+v.buildProject:" · analiza")+(ext?" · EXT "+ext:"")+(mal?" · MAL":"")};
   }
   if(typeof module!=="undefined"&&module.exports)module.exports={build};else root.LoopCommand={build};
 })(typeof globalThis!=="undefined"?globalThis:this);

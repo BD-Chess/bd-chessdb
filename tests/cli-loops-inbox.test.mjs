@@ -76,3 +76,15 @@ test('HTTP handler enforces owner, origin, preview token and performs the real c
  const cross=new Request('https://www.mdlxdcc.org/.netlify/functions/cli-loops-inbox',{method:'POST',headers:{Origin:'https://evil.example','Content-Type':'application/json'},body:'{}'});assert.equal((await handler(cross)).status,403);
  assert.equal((await handler(new Request(post({})),{site:{name:'bd-chess'}})).status,404);
 });
+
+test('MAL / EXT build request.v6 only when selected and round-trip through confirm',()=>{
+ const home={...basic,host:'HOME',mode:'AUTO'};
+ const plain=buildRequest(home);assert.equal(plain.schema,'8zlistener.request.v5');assert.equal('external_llms' in plain,false);
+ const v6=buildRequest({...home,ext:'all',mal:true});
+ assert.equal(v6.schema,'8zlistener.request.v6');assert.equal(v6.external_llms,'all');assert.equal(v6.use_mal,true);assert.equal(v6.ext_max_calls,8);assert.equal(v6.ext_max_usd,'2');
+ const malOnly=buildRequest({...home,mal:true});assert.equal(malOnly.external_llms,'none');assert.equal(malOnly.ext_max_calls,0);assert.equal(malOnly.ext_max_usd,'0');
+ confirmPlan(v6,planToken(v6,'owner',key),'owner',key,new Date(Date.parse(v6.requested_at_utc)+1000));
+ assert.throws(()=>buildRequest({...basic,ext:'gemini'}),{code:'UNSUPPORTED_PROFILE'});
+ assert.throws(()=>buildRequest({...home,ext:'minimax'}),{code:'INVALID_PLAN'});
+ assert.throws(()=>buildRequest({...home,mal:'yes'}),{code:'INVALID_PLAN'});
+});

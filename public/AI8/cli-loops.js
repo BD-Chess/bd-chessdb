@@ -168,7 +168,7 @@
     const limitError=currentPlan?.errors.some(x=>x.includes('Meja mora')||x.includes('Največ 100'));rules.push([$('limit').value==='custom'?'custom-limit':'limit',limitError]);
     for(const [id,invalid] of rules)if(invalid){$(id).setAttribute('aria-invalid','true');$(id).setAttribute('aria-describedby','command-warning');}
   }
-  function values(){return {host:$('host').value,mode:$('mode').value,collaboration:$('collaboration').value,depth:$('depth').value,limit:$('limit').value,customLimit:$('custom-limit').value,customUnit:$('custom-unit').value,topic:$('topic').value,build:$('build').checked,buildProject:$('build-project').value,buildPackage:$('build-package').value,activate:$('activate').checked,calls:$('call-budget').value,tokens:$('token-budget').value};}
+  function values(){return {host:$('host').value,mode:$('mode').value,collaboration:$('collaboration').value,depth:$('depth').value,limit:$('limit').value,customLimit:$('custom-limit').value,customUnit:$('custom-unit').value,topic:$('topic').value,build:$('build').checked,buildProject:$('build-project').value,buildPackage:$('build-package').value,activate:$('activate').checked,calls:$('call-budget').value,tokens:$('token-budget').value,ext:$('ext').value,mal:$('mal').checked};}
   function updateCommand(){
     if($('host').value!==lastHost){$('host-adjustment').textContent='';lastHost=$('host').value;}
     const workXhigh=(commandSpec?.host_modes?.WORK||[]).includes('XHIGH');
@@ -178,6 +178,8 @@
     $('custom-limit-fields').hidden=$('limit').value!=='custom';$('custom-limit').disabled=$('custom-unit').disabled=$('limit').value!=='custom';$('build-fields').hidden=!$('build').checked;
     for(const id of ['build-project','build-package'])$(id).disabled=!$('build').checked;
     $('activate').disabled=!$('build').checked||$('build-project').value.trim().toUpperCase()!=='LISTENER';if($('activate').disabled)$('activate').checked=false;
+    const extOn=!!commandSpec?.features?.external&&$('host').value==='HOME';$('ext').disabled=$('mal').disabled=!extOn;if(!extOn){$('ext').value='';$('mal').checked=false;}
+    $('ext-help').textContent=!commandSpec?.features?.external?'Na voljo z 8zListener 0.6.0 (MAL).':$('host').value!=='HOME'?'Ostali LLM-ji so zaenkrat samo na HOME.':'Zunanji modeli prek API svetujejo, ne glasujejo. Meja '+(commandSpec.ext_defaults?.usd||'2')+' USD in '+(commandSpec.ext_defaults?.calls||8)+' klicev na tek.';
     $('collaboration-help').textContent=$('collaboration').value==='FullRHP'?'Šest ločenih sej. S je vključen. Oba avtorja uporabljata interni RHP-11 na začetku in ob sintezah.':$('collaboration').value==='S'?'Štiri ločene seje: dva avtorja in dva skeptika.':'Dva avtorja primerjata predloge in ohranita nesoglasja.';
     if(!commandSpec){$('copy-command').disabled=true;return;}
     currentPlan=LoopCommand.build(commandSpec,values());$('command').value=currentPlan.command;$('plan-summary').textContent=currentPlan.summary;setLive($('command-warning'),currentPlan.errors.join(' '));$('copy-command').disabled=!!currentPlan.errors.length;markErrors();$('review-errors').hidden=!currentPlan.errors.length;

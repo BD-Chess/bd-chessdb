@@ -1,7 +1,7 @@
 {
   "schema": "8zlistener.command_spec.v1",
   "version": "0.4.3",
-  "grammar": "LOOP [CLI] [HOME|WORK|VM] [N|Nh|Nm|Ns] [AUTO|MIN|XHIGH|MAX] [S] [B] [DEEP] [FullRHP] [PROJECT=key PACKAGE=name ACTIVATE] [CALLS=N TOKENS=N]: topic",
+  "grammar": "LOOP [CLI] [HOME|WORK|VM] [N|Nh|Nm|Ns] [AUTO|MIN|XHIGH|MAX] [S] [B] [DEEP] [FullRHP] [PROJECT=key PACKAGE=name ACTIVATE] [CALLS=N TOKENS=N] [EXT=none|gemini|grok|deepseek|glm|all] [MAL] [EXTUSD=USD EXTCALLS=N]: topic",
   "defaults": {
     "transport": "CLI",
     "host": "HOME",
@@ -59,6 +59,18 @@
     {
       "name": "--note <request_id> --text \"…\"",
       "description": "BD_NOTE: avtenticirana dopolnitev naloge za tekoči LOOP; vstavi se v naslednji prompt vsakega sedeža (čas, hash) in v RESULT.md."
+    },
+    {
+      "name": "EXT=gemini|grok|deepseek|glm|all",
+      "description": "Ostali LLM-ji prek API kot svetovalni glasovi; ne glasujejo. Zaenkrat samo HOME. Na voljo z 8zListener 0.6.0."
+    },
+    {
+      "name": "MAL",
+      "description": "Mental Arena Lab način: slepi prvi krog, karta konfliktov in ena ciljna kritika. Brez EXT samo domača karta konfliktov."
+    },
+    {
+      "name": "EXTUSD=USD EXTCALLS=N",
+      "description": "Meja stroškov zunanjih klicev na tek; stran privzeto doda 2 USD in 8 klicev, ko izbereš EXT."
     }
   ],
   "controls": [
@@ -87,5 +99,12 @@
     "Claustrum/DCC",
     "Empiricist"
   ],
-  "confirmation": "Pred oddajo pokaži celoten načrt in vprašaj, ali želi BD kaj spremeniti. Ne = oddaj prikazane nastavitve. Sprememba zahteva nov pregled/hash. Citati in pomoč ne oddajo ničesar."
+  "confirmation": "Pred oddajo pokaži celoten načrt in vprašaj, ali želi BD kaj spremeniti. Ne = oddaj prikazane nastavitve. Sprememba zahteva nov pregled/hash. Citati in pomoč ne oddajo ničesar.",
+  "features": {
+    "external": false
+  },
+  "ext_defaults": {
+    "usd": "2",
+    "calls": 8
+  }
 }

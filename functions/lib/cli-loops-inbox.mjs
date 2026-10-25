@@ -20,11 +20,14 @@ export function buildRequest(v,{now=new Date(),id=randomUUID()}={}){
  else if(v.activate)fail('INVALID_BUILD');
  if(!target&&host==='WORK')projects=['DRIVE'];
  const req={schema:'8zlistener.request.v5',request_id:id,target_host:host,action:target?'cli_loop_build':projects.length?'cli_loop_workspace':'cli_loop',topic:text(v.topic,65536),desired_output:'Uskladita uporabne izboljšave, ohranita nesoglasja in shranita preverljiv rezultat.',context:[],requested_at_utc:now.toISOString(),expires_utc:new Date(now.getTime()+7*86400000).toISOString(),max_duration_s:seconds,max_cli_turns:turns,profile:'design_high_standard',lang:'sl',projects,seed_files:[],effort_mode:mode,skeptics,build_requested:!!target,public:false,deep:v.depth==='DEEP',full_rhp:full,max_native_calls:integer(v.calls,160,1,400),max_tokens:v.tokens===''||v.tokens===undefined||v.tokens===null?null:integer(v.tokens,null,1,100000000),build_target:target};
+ const ext=v.ext||'',mal=v.mal===undefined?false:v.mal;
+ if(typeof mal!=='boolean'||ext&&!['gemini','grok','deepseek','glm','all'].includes(ext))fail('INVALID_PLAN');
+ if(ext||mal){if(ext&&host!=='HOME')fail('UNSUPPORTED_PROFILE');req.schema='8zlistener.request.v6';req.external_llms=ext||'none';req.use_mal=mal;req.ext_max_calls=ext?8:0;req.ext_max_usd=ext?'2':'0';}
  req.approval={plan_sha256:digest(canonical(req))};return req;
 }
 export function checkRequest(req,now=new Date()){
  if(!req||typeof req!=='object')fail('INVALID_PLAN');
- const v={host:req.target_host,mode:req.effort_mode,collaboration:req.full_rhp?'FullRHP':req.skeptics?'S':'',depth:req.deep?'DEEP':'',topic:req.topic,build:req.build_requested,activate:req.build_target?.activate||false,buildProject:req.build_target?.project,buildPackage:req.build_target?.package_name,calls:req.max_native_calls,tokens:req.max_tokens};
+ const v={host:req.target_host,mode:req.effort_mode,collaboration:req.full_rhp?'FullRHP':req.skeptics?'S':'',depth:req.deep?'DEEP':'',topic:req.topic,build:req.build_requested,activate:req.build_target?.activate||false,buildProject:req.build_target?.project,buildPackage:req.build_target?.package_name,calls:req.max_native_calls,tokens:req.max_tokens,ext:req.external_llms&&req.external_llms!=='none'?req.external_llms:'',mal:!!req.use_mal};
  const asked=new Date(req.requested_at_utc);if(!Number.isFinite(asked.getTime())||asked>now||now-asked>600000)fail('PREVIEW_EXPIRED',409);
  const expected=buildRequest(v,{now:asked,id:req.request_id});expected.max_cli_turns=integer(req.max_cli_turns,null,1,100);expected.max_duration_s=integer(req.max_duration_s,null,1,43200);delete expected.approval;expected.approval={plan_sha256:digest(canonical(expected))};
  if(canonical(expected)!==canonical(req))fail('PLAN_CHANGED',409);return req;

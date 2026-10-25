@@ -27,3 +27,17 @@ assert.ok(build(spec,{...basic,mode:'ULTRA'}).errors.length);
 assert.match(html,/<option value="XHIGH">XHIGH/);
 assert.match(spec.grammar,/\[AUTO\|MIN\|XHIGH\|MAX\]/);
 process.stdout.write('PASS: XHIGH accepted on HOME, refused on WORK until accepted there, ULTRA is not a selector.\n');
+// MAL / ostali LLM-ji (8zListener 0.6.0): gated by spec.features.external
+{
+ const off={...spec,features:{external:false}},on={...spec,features:{external:true},ext_defaults:{usd:'2',calls:8}};
+ assert.ok(build(off,{...basic,ext:'gemini'}).errors.some(x=>x.includes('0.6.0')));
+ assert.ok(build(off,{...basic,mal:true}).errors.some(x=>x.includes('0.6.0')));
+ assert.equal(build(off,basic).command,'LOOP HOME: '+basic.topic);
+ let m=build(on,{...basic,ext:'all',mal:true});assert.equal(m.errors.length,0);assert.equal(m.command,'LOOP HOME EXT=all MAL EXTUSD=2 EXTCALLS=8: '+basic.topic);assert.match(m.summary,/EXT all · MAL$/);
+ m=build(on,{...basic,mal:true});assert.equal(m.command,'LOOP HOME MAL: '+basic.topic);
+ m=build(on,{...basic,ext:'grok'});assert.equal(m.command,'LOOP HOME EXT=grok EXTUSD=2 EXTCALLS=8: '+basic.topic);
+ assert.ok(build(on,{...basic,host:'WORK',mode:'MAX',ext:'glm'}).errors.some(x=>x.includes('samo na HOME')));
+ assert.ok(build(on,{...basic,ext:'minimax'}).errors.some(x=>x.includes('Neveljaven')));
+ assert.match(html,/<select id="ext">/);assert.match(html,/id="mal"/);assert.match(spec.grammar,/\[EXT=none\|gemini\|grok\|deepseek\|glm\|all\] \[MAL\]/);
+ process.stdout.write('PASS: EXT/MAL gated until 0.6.0, exact EXT/MAL/EXTUSD/EXTCALLS order, HOME only, unknown provider refused.\n');
+}
