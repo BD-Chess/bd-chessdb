@@ -171,3 +171,17 @@ test('pure price/explanation does not fetch the GUI flow; actual continuation an
   const result = await knowledge.retrieve(input(primary.message, { promptId: primary.id }));
   assert(paths(result).includes('references/CPQ_FLOW.md'));
 });
+
+test('A4 GUI navigation stays within retrieval bounds while actual PLM incidents retain complete evidence', async () => {
+  const k=createRetriever(await verifyPack(packText),{documentReader:async()=>{throw Error('Not seeded');}});
+  const message='Nadaljuj obstoječe testno naročilo. Odpri Dodaj postavko in A4 B2B kategorizacija, Data Center & cloud, Pisarna po meri, Najem virtualnega strežnika. Pravi produkt je TS Suvereni oblak (paket) Ikt.SO.Pck. Preberi konfigurator in pravo VM, model postavitve, OS, 32 vCPU, 128 GB RAM, 1 TB disk, meje, enote in validacijo. Ne shranjuj ali ugibaj manjkajočih vrednosti.';
+  const r=await k.retrieve(input(message));
+  assert(r.text.length<190_000);
+  assert(paths(r).includes('references/ts-suvereni-oblak/PLM_RULEBOOK_R2.md'));
+  assert(!paths(r).includes('references/V12_EVIDENCE.json'));
+  for(const question of ['Kategorizacija: napaka TOTAL_NO_OF_CHILD_INSTANCES in kardinalnost.','Napaka v A4 kategorizaciji; preveri Closed Fixed primer.']){
+    const incident=await k.retrieve(input(question));
+    assert(paths(incident).includes('references/JIRA_PLM_VALIDACIJA_IZIDI_DELNI.md'));
+    assert(paths(incident).includes('references/V12_EVIDENCE.json'));
+  }
+});
