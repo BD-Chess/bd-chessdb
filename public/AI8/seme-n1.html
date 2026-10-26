@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Prvi uspeh AI8 Seme N1: boljše napovedovanje bajtov od n-gramske kontrole na razvojnih podatkih. Kaj smo izmerili in česa še ne vemo.">
+<title>AI8 Seme · N1 — prvi učljivi organ</title>
+<style>
+:root{color-scheme:light dark;--bg:#f5f4ee;--card:#fffef9;--ink:#192c29;--muted:#4d625c;--line:#c7d5cd;--accent:#17634c;--tint:#e5f0e7;--warn:#775014;--shadow:0 8px 28px #153a2010}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101c19;--card:#192923;--ink:#e7f0e7;--muted:#b1c7bb;--line:#3d574a;--accent:#9bdbb8;--tint:#263c31;--warn:#edca86;--shadow:none}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#101c19;--card:#192923;--ink:#e7f0e7;--muted:#b1c7bb;--line:#3d574a;--accent:#9bdbb8;--tint:#263c31;--warn:#edca86;--shadow:none}
+:root[data-theme="light"]{color-scheme:light}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,sans-serif}a{color:var(--accent)}button,select,input{font:inherit;color:inherit}button,select{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:.5rem .8rem}button{cursor:pointer}button:hover{background:var(--tint)}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}header,main,footer{max-width:1080px;margin:auto;padding:22px}header{display:flex;align-items:center;justify-content:space-between;gap:12px}header a{text-decoration:none;font-weight:750}.brand{letter-spacing:.08em}.eyebrow{text-transform:uppercase;letter-spacing:.13em;font-size:.78rem;color:var(--accent);font-weight:750}h1{font-size:clamp(2.6rem,7vw,5rem);line-height:1.05;letter-spacing:-.05em;margin:.6em 0 .4em;max-width:850px}h2{font-size:clamp(1.55rem,4vw,2rem);line-height:1.2;margin:0 0 1rem}h3{line-height:1.3}p{max-width:76ch}.lead{font-size:1.23rem;color:var(--muted);max-width:66ch}.badge{display:inline-block;background:var(--tint);border:1px solid var(--line);border-radius:30px;padding:.25em .8em;font-size:.8rem;font-weight:650}.hero{padding:30px 0 45px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card,section.panel,details{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.card{padding:22px}.card strong.big{display:block;font-size:2.5rem;line-height:1.3;letter-spacing:-.04em;color:var(--accent)}.small,small{font-size:.86rem;color:var(--muted)}section{margin-bottom:28px}section.panel{padding:clamp(20px,4vw,36px)}.rule{border-left:4px solid var(--accent);padding-left:20px}.warning{border-left-color:var(--warn)}.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:30px}code{font: .95em ui-monospace,monospace;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--tint);padding:18px;border-radius:10px;max-width:100%}.meter-row{margin:16px 0}.meter-label{display:flex;justify-content:space-between;gap:15px;font-size:.92rem}.track{height:12px;border-radius:8px;background:var(--tint);margin-top:6px}.bar{height:100%;background:var(--accent);border-radius:8px}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}input[type="range"]{max-width:100%;accent-color:var(--accent)}.next{font-weight:750;font-size:1.3rem}.notice{color:var(--warn);font-weight:650}.number{font-variant-numeric:tabular-nums}details{margin:14px 0;padding:18px;min-width:0}summary{cursor:pointer;font-weight:750}details p{color:var(--muted)}.table-wrap{max-width:100%;overflow-x:auto;margin-top:20px;border:1px solid var(--line);border-radius:8px}table{border-collapse:collapse;font-size:.8rem;white-space:nowrap;width:100%}caption{text-align:left;padding:12px;font-weight:750}th,td{text-align:right;padding:8px 12px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}tbody tr:nth-child(2n){background:var(--tint)}.sizes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.sizes div{background:var(--tint);border-radius:12px;padding:16px}.sizes strong{display:block;font-size:1.3rem}.source{overflow-wrap:anywhere}footer{color:var(--muted);font-size:.85rem;padding-bottom:40px}.skip{position:absolute;left:12px;top:-90px;background:var(--card);padding:12px}.skip:focus{top:8px}ol,ul{padding-left:1.3rem}li{margin:.5em 0}button,select{min-height:44px}main>*{min-width:0}
+@media(max-width:650px){header,main,footer{padding:16px}.grid,.two{grid-template-columns:1fr}.sizes{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding-top:10px}h1{font-size:2.8rem}.card{padding:18px}header{flex-wrap:wrap}.meter-label{font-size:.85rem}select{max-width:100%}}
+@media(prefers-reduced-motion:no-preference){.bar{transition:width .2s}}
+</style>
+</head>
+<body>
+<a class="skip" href="#vsebina">Na vsebino</a>
+<header><a class="brand" href="../Start/index.html">AI8 / SEME</a><button type="button" id="theme" aria-label="Preklopi svetlo ali temno temo">Svetla / temna</button></header>
+<main id="vsebina">
+<section class="hero">
+<span class="eyebrow">Prvi uspeh · meritve R3</span>
+<h1>Majhen model.<br>Manj presenečenja.</h1>
+<p class="lead">AI8 Seme N1 na razvojnih podatkih napove naslednji bajt bolje kot pošteno izbrana n-gramska kontrola. To je prvi korak do učljivega merilnika stiskanja in novosti v AI8.</p>
+<span class="badge">Razvojni podatki (dev) · eno seme · test zaprt</span>
+</section>
+<section class="grid" aria-label="Glavni rezultat">
+<div class="card"><span class="small">N1 · L6 h128 residual</span><strong class="big">2,13 <small>bpb</small></strong><span>363.779 parametrov, približno 364 tisoč.</span></div>
+<div class="card"><span class="small">N-gram reda 4 · kontrola</span><strong class="big">2,41 <small>bpb</small></strong><span>Izbran na učnem holdoutu, pred primerjavo na dev.</span></div>
+<div class="card"><span class="small">Manj bitov za podatke</span><strong class="big">≈ 12 %</strong><span>Najboljši N1 proti kontroli. Brez cene modela.</span></div>
+</section>
+<section class="panel" id="biti"><h2>Kaj pomeni »bit na bajt«?</h2>
+<p>Bajt je enota podatkov, bit pa najmanjša odločitev: 0 ali 1. <strong>bpb</strong> pove, koliko bitov model v idealnem kodiranju povprečno potrebuje za en izvirni bajt. Boljša napoved pomeni krajši zapis: pogostemu nadaljevanju lahko namenimo manj bitov.</p>
+<p><strong>8 bpb</strong> je zapis brez prihranka: vsakemu od 256 možnih bajtov namenimo enako prostora — kot da ne poznamo vzorcev. <strong>4,87 bpb</strong> doseže že poznavanje pogostosti posameznih bajtov (približno: črk), brez njihovega vrstnega reda. <strong>2,41 bpb</strong> doseže n-gram reda 4; <strong>2,13 bpb</strong> najboljši N1 v R3.</p>
+<p class="small">Bajt ni vedno znak. Slovenski šumniki v UTF-8 porabijo več bajtov. Meritve so na mešanici besedil in kode, ne posebej na slovenščini. Nižje je bolje.</p>
+<div class="rule"><p><strong>N-gram je tabela kratkih nadaljevanj.</strong> Pri redu 4 uporablja zadnje tri bajte in iz njihovih pogostosti ocenjuje naslednjega. Je preprosta, močna kontrola: model mora preseči lokalno pomnjenje vzorcev.</p><p>Red in glajenje n-grama sta bila izbrana na ločenem delu učnih podatkov (<em>train-holdout</em>). N1 in kontrola se merita na istem dev razcepu. Testni podatki so ostali zaprti; pregledani so bili le hashi manifestov. Dev rezultat zato še ni neodvisna potrditev na testu.</p></div>
+</section>
+<section class="panel"><h2>Od zastoja do 9 od 9</h2><div class="two">
+<div><span class="eyebrow">R2 · težava</span><h3>Signal za učenje je ugašal.</h3><p>Pri globokem zaporedju blokov brez obvoza je gradient — navodilo, kako spremeniti uteži — do spodnjih plasti prišel zelo oslabljen. Del modelov se je ustavil blizu pogostosti posameznih bajtov. Nobeden od devetih uradnih modelov ni premagal kontrole.</p></div>
+<div><span class="eyebrow">R3 · residualna povezava</span><h3>Vhod dobi neposredno pot naprej.</h3><p>Sprememba <code>x + blok(x)</code> ohrani vhod in mu prišteje naučeni popravek. Diagnostika R2 je podprla razlago o gradientu; v R3 je vseh devet residualnih modelov preseglo kontrolo. Najboljši: L6 h128 pri 2,1316 bpb.</p></div></div>
+<p class="small">R3 ni spremenil le povezave: učil se je 360 sekund na konfiguracijo, R2 pa 110 sekund; R3 je dodal tudi kosinusno zmanjševanje učne stopnje. Celotne razlike zato ne pripisujemo samo residualni povezavi.</p>
+<p>Uteži int8 skoraj ohranijo rezultat: odstopanje v tabeli je največ 0,0012 bpb. Pri L6 h128 je rezultat 2,1314 bpb namesto 2,1316. To je meritev napovedi; samo po sebi ne dokazuje hitrejšega izvajanja.</p>
+</section>
+<section class="panel" id="igra"><span class="eyebrow">Poskusi sam · ilustracija</span><h2>Igra napovedi</h2>
+<p>Pomikaj se po kratkem nizu. Za vsak naslednji znak pokažemo, kako bi različna gotovost napovedi spremenila ceno zapisa.</p>
+<p class="notice">Vse verjetnosti in biti v tej igri so ilustrativni. V brskalniku ne teče N1; to niso meritve modelov na prikazanih nizih.</p>
+<div class="controls"><label for="sample">Niz</label><select id="sample"><option value="sl">Slovenski stavek</option><option value="py">Koda Python</option></select></div>
+<pre id="prefix"></pre>
+<label for="position">Položaj v nizu</label><br><input id="position" type="range" min="0" max="1" value="0" style="width:100%">
+<p class="next">Naslednji znak: <span id="next-char"></span></p>
+<div id="predictions" aria-live="polite"></div>
+<p class="small">Cena posameznega znaka = −log₂(verjetnost). Če mu model pripiše verjetnost 1/2, je cena 1 bit. Igra računa bite na prikazani znak; raziskovalne tabele merijo bite na bajt. N1 ni nujno najboljši pri vsakem znaku.</p>
+<noscript><p>Igra potrebuje JavaScript. Statična razlaga in vse merilne tabele ostanejo na voljo.</p></noscript>
+</section>
+<section class="panel"><h2>Koliko prostora bi zasedla datoteka 1 MB?</h2>
+<p><strong>Ilustracija</strong> za 1 MB = 1.000.000 bajtov: izvirni bajti × bpb ÷ 8. Uporabljamo zaokrožene stopnje iz razlage.</p>
+<div class="sizes"><div>8 bpb<strong>1.000.000 B</strong></div><div>4,87 bpb<strong>608.750 B</strong></div><div>2,41 bpb<strong>301.250 B</strong></div><div>2,13 bpb<strong>266.250 B</strong></div></div>
+<p class="small">To je idealna cena samo podatkov, če bi navedena stopnja veljala za to datoteko. Ni ustvarjen stisnjen arhiv. Uteži oziroma tabela modela, glave in izvedbena režija niso vključene.</p>
+</section>
+<section class="panel"><h2>Pošten račun: plačati je treba tudi slovar.</h2>
+<p>Predstavljaj si, da prijatelju pošlješ sporočilo v krajšavah. Sporočilo je kratko, vendar mu moraš poslati tudi <strong>slovar krajšav</strong>. Pri kratkem sporočilu je lahko velik slovar dražji od vsega prihranka.</p>
+<p><strong>MDL = cena modela + cena podatkov.</strong> Tudi N1 mora »poslati slovar«: svoje uteži. Na dev zbirki velikosti 399.438 B (približno 400 KB) skupno še zmaga n-gram reda 2: <strong>3,99 bita na bajt</strong>. Najboljši N1 po skupni ceni je manjši L6 h64 int8 pri <strong>4,50 bita na bajt</strong>, ne bpb-zmagovalec L6 h128.</p>
+<p class="rule warning">N1 je zmagal v napovedovanju na dev. Pri tej količini podatkov še ni skupni zmagovalec stiskanja po MDL.</p>
+<p class="small">Enota obračuna je izvirni dev bajt, ne znak. MDL vključuje idealni zapis dev podatkov z EOS; cena učenja oziroma prequentialni člen nista vključena. Kodiranje n-gramske tabele je preprosto in dekodirljivo, ne optimalno.</p>
+</section>
+<section class="panel"><h2>Zakaj je to za AI8 pomembno?</h2><p>N1 je prvi učljivi organ v tej smeri razvoja AI8: majhen napovedovalnik bajtov, namenjen merjenju stisljivosti in novosti. Ni klepetalnik in ta poskus ne meri kakovosti pogovora ali razumevanja sveta.</p>
+<h3>Ali je debata dodala kaj novega?</h3><p><strong>Predlagana uporaba, še ne dokazana:</strong> AI8 bi primerjal presenečenje ob novem odstavku s tem, kar že zna napovedati. Ponavljanje znanega bi bilo lažje napovedljivo; nova povezava bi lahko potrebovala več bitov. Nato bi preveril, ali novo informacijo lahko obdrži in z njo izboljša prihodnje napovedi.</p>
+<p>Veliko bitov lahko pomeni tudi šum, tipkarsko napako ali nesmisel. Zato »presenetljivo« še ne pomeni »koristno« ali »resnično«; potrebni so vsebinski pregled in ciljni preizkusi na debatah.</p>
+</section>
+<section class="panel"><h2>Kaj še ni dokazano?</h2><ul><li>Rezultati veljajo za dev in eno naključno seme (7); test ostaja zaprt.</li><li>Primerjava je časovno omejena na dani CPU: večje konfiguracije so opravile manj učnih korakov. To ni univerzalna razvrstitev zmogljivosti.</li><li>Manjša napovedna izguba še ne dokazuje manjšega celotnega arhiva, uporabne ocene debat ali posplošitve na drugo zbirko.</li></ul>
+<h3>Naslednji koraki · predlog</h3><ol><li>Zamrzniti izbor modela in protokol pred uporabo zaprtega testa.</li><li>Preveriti ponovljivost z več semeni in ločiti vpliv povezave od časa učenja ter urnika učne stopnje.</li><li>Meriti celotno ceno modela in podatkov na večjih zbirkah ter nato ciljno preveriti ocenjevanje novosti v debatah.</li></ol><p class="small">To so predlogi nadaljevanja, ne že opravljeni poskusi.</p>
+</section>
+<section aria-label="Merilne priloge"><h2>Za tiste, ki želijo preveriti številke</h2>
+<details id="r3"><summary>Priloga A · celotna tabela R3</summary><p>Stolpci so prepisani neposredno iz R3 RESULTS.md. Dev bpb je povprečje na bajt; params pomeni število parametrov, R pa doseg konteksta v bajtih. Čas v sekundah, RAM v MB. V tabeli ostaja izvirna decimalna pika.</p><div class="table-wrap" tabindex="0" role="region" aria-label="R3 · izvirne meritve na dev (decimalna pika)"><table><caption>R3 · izvirne meritve na dev (decimalna pika)</caption><thead><tr><th scope="col">model</th><th scope="col">params</th><th scope="col">R</th><th scope="col">train s</th><th scope="col">steps</th><th scope="col">train bytes seen</th><th scope="col">last-25% train bits/tok</th><th scope="col">dev bpb</th><th scope="col">fp16 dev bpb</th><th scope="col">int8 dev bpb</th><th scope="col">wall s</th><th scope="col">peak RAM MB</th></tr></thead><tbody><tr><td>L9 h256 residual</td><td>1,909,251</td><td>1023</td><td>359.5</td><td>597</td><td>2,444,977</td><td>1.959</td><td>2.3102</td><td>2.3102</td><td>2.3105</td><td>431.0</td><td>1022</td></tr><tr><td>L8 h256 residual</td><td>1,711,875</td><td>511</td><td>359.6</td><td>667</td><td>2,731,655</td><td>1.924</td><td>2.2772</td><td>2.2772</td><td>2.2774</td><td>417.8</td><td>990</td></tr><tr><td>L6 h256 residual</td><td>1,317,123</td><td>127</td><td>359.7</td><td>872</td><td>3,571,215</td><td>1.894</td><td>2.2052</td><td>2.2052</td><td>2.2055</td><td>399.9</td><td>950</td></tr><tr><td>L9 h128 residual</td><td>512,387</td><td>1023</td><td>359.9</td><td>1666</td><td>6,823,011</td><td>1.952</td><td>2.1994</td><td>2.1994</td><td>2.2000</td><td>386.4</td><td>900</td></tr><tr><td>L8 h128 residual</td><td>462,851</td><td>511</td><td>360.0</td><td>1852</td><td>7,584,735</td><td>1.899</td><td>2.1772</td><td>2.1772</td><td>2.1775</td><td>381.5</td><td>885</td></tr><tr><td>L6 h128 residual</td><td>363,779</td><td>127</td><td>360.0</td><td>2368</td><td>9,697,937</td><td>1.807</td><td>2.1316</td><td>2.1316</td><td>2.1314</td><td>376.7</td><td>860</td></tr><tr><td>L9 h64 residual</td><td>145,731</td><td>1023</td><td>359.9</td><td>3711</td><td>15,198,053</td><td>2.039</td><td>2.2890</td><td>2.2890</td><td>2.2898</td><td>370.9</td><td>847</td></tr><tr><td>L8 h64 residual</td><td>133,251</td><td>511</td><td>360.0</td><td>4100</td><td>16,791,143</td><td>1.987</td><td>2.2885</td><td>2.2885</td><td>2.2892</td><td>369.7</td><td>839</td></tr><tr><td>L6 h64 residual</td><td>108,291</td><td>127</td><td>360.0</td><td>5294</td><td>21,681,122</td><td>1.974</td><td>2.2545</td><td>2.2545</td><td>2.2557</td><td>366.9</td><td>823</td></tr><tr><td>n-gram order 1 alpha 0.003</td><td>1 ctx</td><td>0</td><td>-</td><td>-</td><td>3,999,989</td><td>-</td><td>4.8678</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>n-gram order 2 alpha 0.3</td><td>158 ctx</td><td>1</td><td>-</td><td>-</td><td>3,999,989</td><td>-</td><td>3.7109</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>n-gram order 3 alpha 0.1</td><td>6,013 ctx</td><td>2</td><td>-</td><td>-</td><td>3,999,989</td><td>-</td><td>2.8294</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>n-gram order 4 alpha 0.03 (selected on train-holdout)</td><td>54,488 ctx</td><td>3</td><td>-</td><td>-</td><td>3,999,989</td><td>-</td><td>2.4145</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>n-gram order 5 alpha 0.01</td><td>174,490 ctx</td><td>4</td><td>-</td><td>-</td><td>3,999,989</td><td>-</td><td>2.4861</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>n-gram order 6 alpha 0.01</td><td>345,021 ctx</td><td>5</td><td>-</td><td>-</td><td>3,999,989</td><td>-</td><td>2.7644</td><td>-</td><td>-</td><td>-</td><td>-</td></tr></tbody></table></div></details>
+<details id="mdl"><summary>Priloga B · celotna tabela MDL</summary><p>Razvrščeno po skupni ceni. Model bits + data bits = total bits; total / dev byte vključuje tudi model. V izvirnem obračunu je pri prvem n-gramu vsota ločeno zaokroženih delov za en bit drugačna od zaokrožene skupne vrednosti. Vrednosti ohranjamo kot v viru.</p><div class="table-wrap" tabindex="0" role="region" aria-label="MDL · izvirni dvodelni obračun na dev (decimalna pika)"><table><caption>MDL · izvirni dvodelni obračun na dev (decimalna pika)</caption><thead><tr><th scope="col">rank</th><th scope="col">model</th><th scope="col">params / table entries</th><th scope="col">model bits</th><th scope="col">dev bpb</th><th scope="col">data bits</th><th scope="col">total bits</th><th scope="col">total / dev byte</th></tr></thead><tbody><tr><td>1</td><td>n-gram order 2 (alpha 0.3)</td><td>6,013</td><td>110,728</td><td>3.7109</td><td>1,482,279</td><td>1,593,006</td><td>3.988</td></tr><tr><td>2</td><td>N1 L6 h64 res int8</td><td>108,291</td><td>895,808</td><td>2.2557</td><td>901,014</td><td>1,796,822</td><td>4.498</td></tr><tr><td>3</td><td>n-gram order 1 (alpha 0.003)</td><td>158</td><td>4,250</td><td>4.8678</td><td>1,944,380</td><td>1,948,630</td><td>4.878</td></tr><tr><td>4</td><td>N1 L8 h64 res int8</td><td>133,251</td><td>1,099,776</td><td>2.2892</td><td>914,399</td><td>2,014,175</td><td>5.043</td></tr><tr><td>5</td><td>n-gram order 3 (alpha 0.1)</td><td>54,508</td><td>892,543</td><td>2.8294</td><td>1,130,151</td><td>2,022,694</td><td>5.064</td></tr><tr><td>6</td><td>N1 L9 h64 res int8</td><td>145,731</td><td>1,201,760</td><td>2.2898</td><td>914,628</td><td>2,116,388</td><td>5.298</td></tr><tr><td>7</td><td>N1 L6 h64 res fp16</td><td>108,291</td><td>1,732,664</td><td>2.2545</td><td>900,540</td><td>2,633,204</td><td>6.592</td></tr><tr><td>8</td><td>N1 L8 h64 res fp16</td><td>133,251</td><td>2,132,024</td><td>2.2885</td><td>914,125</td><td>3,046,149</td><td>7.626</td></tr><tr><td>9</td><td>N1 L9 h64 res fp16</td><td>145,731</td><td>2,331,704</td><td>2.2890</td><td>914,305</td><td>3,246,009</td><td>8.126</td></tr><tr><td>10</td><td>N1 L6 h128 res int8</td><td>363,779</td><td>2,952,000</td><td>2.1314</td><td>851,373</td><td>3,803,373</td><td>9.522</td></tr><tr><td>11</td><td>N1 L8 h128 res int8</td><td>462,851</td><td>3,752,960</td><td>2.1775</td><td>869,790</td><td>4,622,750</td><td>11.573</td></tr><tr><td>12</td><td>n-gram order 4 (alpha 0.03)</td><td>174,565</td><td>3,852,169</td><td>2.4145</td><td>964,428</td><td>4,816,597</td><td>12.058</td></tr><tr><td>13</td><td>N1 L9 h128 res int8</td><td>512,387</td><td>4,153,440</td><td>2.2000</td><td>878,766</td><td>5,032,206</td><td>12.598</td></tr><tr><td>14</td><td>N1 L6 h128 res fp16</td><td>363,779</td><td>5,820,472</td><td>2.1316</td><td>851,437</td><td>6,671,909</td><td>16.703</td></tr><tr><td>15</td><td>N1 L8 h128 res fp16</td><td>462,851</td><td>7,405,624</td><td>2.1772</td><td>869,651</td><td>8,275,275</td><td>20.717</td></tr><tr><td>16</td><td>N1 L9 h128 res fp16</td><td>512,387</td><td>8,198,200</td><td>2.1994</td><td>878,515</td><td>9,076,715</td><td>22.724</td></tr><tr><td>17</td><td>N1 L6 h256 res int8</td><td>1,317,123</td><td>10,603,328</td><td>2.2055</td><td>880,974</td><td>11,484,302</td><td>28.751</td></tr><tr><td>18</td><td>n-gram order 5 (alpha 0.01)</td><td>345,159</td><td>10,740,222</td><td>2.4861</td><td>993,052</td><td>11,733,274</td><td>29.374</td></tr><tr><td>19</td><td>N1 L8 h256 res int8</td><td>1,711,875</td><td>13,777,920</td><td>2.2774</td><td>909,693</td><td>14,687,613</td><td>36.771</td></tr><tr><td>20</td><td>N1 L9 h256 res int8</td><td>1,909,251</td><td>15,365,216</td><td>2.3105</td><td>922,921</td><td>16,288,137</td><td>40.778</td></tr><tr><td>21</td><td>N1 L6 h256 res fp16</td><td>1,317,123</td><td>21,073,976</td><td>2.2052</td><td>880,852</td><td>21,954,828</td><td>54.964</td></tr><tr><td>22</td><td>n-gram order 6 (alpha 0.01)</td><td>547,971</td><td>22,101,569</td><td>2.7644</td><td>1,104,212</td><td>23,205,781</td><td>58.096</td></tr><tr><td>23</td><td>N1 L8 h256 res fp16</td><td>1,711,875</td><td>27,390,008</td><td>2.2772</td><td>909,615</td><td>28,299,623</td><td>70.849</td></tr><tr><td>24</td><td>N1 L9 h256 res fp16</td><td>1,909,251</td><td>30,548,024</td><td>2.3102</td><td>922,777</td><td>31,470,801</td><td>78.788</td></tr></tbody></table></div></details>
+<details><summary>Viri in natančne vrednosti</summary><p>Razlaga temelji samo na treh lokalnih zapisih meritev iz ai8-live:</p><ul class="source"><li><code>seme/n1/measure_r2/RESULTS.md</code> — kontrola 2,4145, unigram 4,8678; R2 0/9.</li><li><code>seme/n1/measure_r2/DIAG.md</code> — izginjajoči gradient in diagnostika povezave <code>x + blok(x)</code>.</li><li><code>seme/n1/measure_r3/RESULTS.md</code> — R3 9/9; L6 h128 363.779 parametrov, 2,1316 bpb; MDL 3,988 proti 4,498 bita/dev bajt.</li></ul><p>Izboljšanje: (2,4145 − 2,1316) / 2,4145 ≈ 11,72 %, v razlagi približno 12 %. Učna zbirka: 3.999.989 B; dev: 399.438 B. Test ni bil prebran.</p></details>
+</section>
+</main>
+<footer>AI8 Seme · N1 / Merilni korak R2 → R3 / Razlika med obetom in dokazom ostaja vidna.</footer>
+<script>
+(() => {
+  'use strict';
+  const root = document.documentElement;
+  document.getElementById('theme').addEventListener('click', () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+  });
+  const samples = {sl: 'Danes se ucimo nekaj novega.', py: 'for i in range(3):\n    print(i)'};
+  const select = document.getElementById('sample');
+  const position = document.getElementById('position');
+  const fmt = n => n.toLocaleString('sl-SI', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  function render() {
+    const text = samples[select.value];
+    position.max = text.length - 1;
+    const i = Math.min(Number(position.value), text.length - 1);
+    document.getElementById('prefix').textContent = text.slice(0, i) + '▌';
+    const char = text[i];
+    document.getElementById('next-char').textContent = char === ' ' ? '␣ (presledek)' : char === '\n' ? '↵ (nova vrstica)' : '»' + char + '«';
+    const p1 = char === ' ' ? 0.18 : /[aeiou]/.test(char) ? 0.09 : 0.03;
+    const p2 = i < 3 ? p1 : [0.35, 0.5, 0.22, 0.08][i % 4];
+    const p3 = i < 2 ? p1 : [0.55, 0.42, 0.65, 0.18][i % 4];
+    const box = document.getElementById('predictions');
+    box.replaceChildren();
+    [['Unigram', p1], ['N-gram', p2], ['N1', p3]].forEach(([name, p]) => {
+      const bits = -Math.log2(p);
+      const row = document.createElement('div'); row.className = 'meter-row';
+      const label = document.createElement('div'); label.className = 'meter-label';
+      const title = document.createElement('strong'); title.textContent = name;
+      const value = document.createElement('span'); value.className = 'number'; value.textContent = fmt(bits) + ' bit/znak · p = ' + fmt(p);
+      label.append(title, value);
+      const track = document.createElement('div'); track.className = 'track'; track.setAttribute('aria-hidden', 'true');
+      const bar = document.createElement('div'); bar.className = 'bar'; bar.style.width = Math.min(100, bits / 8 * 100) + '%';
+      track.append(bar); row.append(label, track); box.append(row);
+    });
+    position.setAttribute('aria-valuetext', 'Položaj ' + (i + 1) + ' od ' + text.length);
+  }
+  select.addEventListener('change', () => {position.value = 0; render();});
+  position.addEventListener('input', render);
+  render();
+})();
+</script>
+</body>
+</html>
