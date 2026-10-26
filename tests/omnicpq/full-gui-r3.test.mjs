@@ -143,6 +143,57 @@ test('actual popup consumes worker registration in split-screen and pairs once w
     await d.querySelector('#pair').onclick();assert.match(d.querySelector('#status').textContent,/Povezano/);assert((await f.client.connect()).capabilities.allowWrites);
   }finally{dom.window.close();f.dom.window.close();}
 });
+test('activeTab on CPQ does not require PWA URL visibility; fresh browser-verified request still binds every external call',async()=>{
+  const f=fixture();try{
+    const original=f.api.tabs.get;f.api.tabs.get=async id=>id===23?{id,incognito:false}:original(id);
+    await f.pair();assert.equal(f.storage.guiPair.pairingVerification,'VERIFIED_EXTERNAL_SENDER_URL_METADATA_WITHHELD');
+    assert.equal((await f.client.connect()).capabilities.workerVersion,'1.2.3');
+    assert((await f.client.observe()).controls.length>0);
+    const token=f.storage.guiPair.token;
+    for(const sender of [{url:'https://outside.invalid/',frameId:0,tab:{id:23}},
+      {url:app,frameId:1,tab:{id:23}},{url:app,frameId:0,tab:{id:23,incognito:true}}]){
+      assert.equal((await f.handle({protocol:BRIDGE_PROTOCOL,type:'observe',token},sender)).error,'BRIDGE_SENDER_NOT_ALLOWED');
+    }
+    assert.equal((await f.handle({protocol:BRIDGE_PROTOCOL,type:'observe',token},{url:app,frameId:0,tab:{id:99}})).error,'BRIDGE_NOT_PAIRED');
+  }finally{f.dom.window.close();}
+});
+
+test('pair diagnostic rejects visible foreign URL, closed tab, expired request, hidden CPQ URL and incognito without dispatch',async()=>{
+  for(const mode of ['foreign','closed','expired','cpqHidden','incognito']){
+    const f=fixture();try{
+      await f.client.connect().catch(()=>{});const original=f.api.tabs.get;
+      f.api.tabs.get=async id=>{
+        if(mode==='closed'&&id===23)throw Error('No tab');
+        if(mode==='foreign'&&id===23)return {id,url:'https://outside.invalid/'};
+        if(mode==='cpqHidden'&&id===13)return {id};
+        const tab=await original(id);return mode==='incognito'&&id===23?{...tab,incognito:true}:tab;
+      };
+      if(mode==='expired')f.storage.guiRequests[0].createdAt=Date.now()-600001;
+      const r=await f.handle({protocol:BRIDGE_PROTOCOL,type:'pair',cpqTabId:13,assistantTabId:23,scope:'order',allowWrites:true},f.popup,true);
+      assert.equal(r.error,'BRIDGE_TARGET_NOT_ALLOWED');assert(r.detail);assert.equal(f.storage.guiPair,undefined);assert.equal(f.sent.length,0);
+    }finally{f.dom.window.close();}
+  }
+});
+
+test('popup chooses newest protocol, filters closed requests and rechecks expiry at click',async()=>{
+  const f=fixture(),dom=new JSDOM(await readFile('public/OmniCPQ/extension/popup.html','utf8'),{url:'https://extension.synthetic/',runScripts:'outside-only'});
+  try{
+    await f.client.connect().catch(()=>{});f.storage.guiRequests[0].createdAt=Date.now()-5000;
+    f.storage.requests=[{id:23,url:app,createdAt:Date.now()},{id:99,url:app,createdAt:Date.now()}];
+    const original=f.api.tabs.get;let protocol;
+    Object.assign(dom.window,{PAIR_REQUESTS:'guiRequests',pendingRequests,chrome:{...f.api,
+      tabs:{get:async id=>{if(id===99)throw Error('closed');return id===23?{id}:original(id);},query:async()=>[{id:13,active:true,title:'CPQ',url:f.w.location.href}]},
+      runtime:{...f.api.runtime,sendMessage:async m=>{protocol=m.protocol;return {ok:true};}}}});
+    const source=(await readFile('public/OmniCPQ/extension/popup.mjs','utf8')).replace(/^import .*;\n/gm,'').replace("tabs().catch(()=>status('Izbranega zavihka ni mogoče prebrati.'));","window.ready=tabs();");
+    dom.window.eval(source);await dom.window.ready;const d=dom.window.document;
+    assert.equal(d.querySelector('#assistant').options.length,1);assert.match(d.querySelector('#assistant').textContent,/navigacija/);
+    await d.querySelector('#pair').onclick();assert.equal(protocol,'omnicpq.browser.v1');
+    f.storage.guiRequests[0].createdAt=Date.now()+1;await d.querySelector('#pair').onclick();assert.equal(protocol,'omnicpq.gui.v2');
+    protocol=null;f.storage.guiRequests=[];f.storage.requests=[];await d.querySelector('#pair').onclick();
+    assert.equal(protocol,null);assert.match(d.querySelector('#status').textContent,/potekla/);
+  }finally{dom.window.close();f.dom.window.close();}
+});
+
 test('integrated PWA -> synthetic model handler -> actual worker -> DOM inputs/validation/save -> observed result',async()=>{
   const f=fixture(),dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'});let calls=0;
   try{
@@ -176,7 +227,7 @@ test('visible same-origin frame observation binds frame geometry and retains the
     const top=(await f.page({type:'observe',origin,scope:'order'})).observation;assert.equal(top.frames[0].path,'0');assert(top.frames[0].accessible);
     const r=await f.page({type:'observe',origin,scope:'order',framePath:'0'});assert(r.ok);assert.equal(r.observation.framePath,'0');
     assert.equal(r.observation.controls.find(c=>c.label==='Embedded value').value,'kept');assert.equal(r.observation.documentKey,'SYNTHETIC');
-    assert.equal(r.observation.runtime.pageVersion,'1.2.2');assert.equal(f.d.querySelector('#cpu').value,'1');
+    assert.equal(r.observation.runtime.pageVersion,'1.2.3');assert.equal(f.d.querySelector('#cpu').value,'1');
     assert.equal((await f.page({type:'observe',origin,scope:'order',framePath:'99'})).error,'CPQ_FRAME_CHANGED');
   }finally{f.dom.window.close();}
 });

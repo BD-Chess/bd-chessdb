@@ -4,7 +4,7 @@ import {makeBridgeHandler} from './worker.mjs';
 const PROTOCOL='omnicpq.gui.v2';
 const APP_ORIGIN='https://www.mdlxdcc.org';
 const CPQ_ORIGINS=['https://cpq-stg.apps.test-ocp.ts.telekom.si','https://cpq.apps.prod-ocp.ts.telekom.si'];
-const fail=error=>({ok:false,error});
+const fail=(error,detail)=>({ok:false,error,...(detail?{detail}:{})});
 export function assistantUrl(value){try{const u=new URL(value);return u.origin===APP_ORIGIN && /^\/omnicpq\/(?:index\.html)?$/i.test(u.pathname) && !u.username&&!u.password;}catch{return false;}}
 export function cpqUrl(value){try{const u=new URL(value);return CPQ_ORIGINS.includes(u.origin)&&/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname)&&!u.username&&!u.password;}catch{return false;}}
 const keyNames=new Set(['Enter','Tab','Escape','ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Backspace','Delete','Home','End','PageUp','PageDown','Space','Ctrl+A','Shift+Tab']);
@@ -33,7 +33,7 @@ export function validateAction(action) {
   return true;
 }
 const cap = Object.freeze({
-  schema:'omnicpq.gui.capabilities.v2',protocol:PROTOCOL,apiRevision:3,workerVersion:'1.2.2',observation:true,targetedRead:true,cancel:true,
+  schema:'omnicpq.gui.capabilities.v2',protocol:PROTOCOL,apiRevision:3,workerVersion:'1.2.3',observation:true,targetedRead:true,cancel:true,
   pointer:['click','doubleClick','hover','contextClick','scroll','drag','ensureVisible'],keyboard:['key','fill','focus'],
   forms:['fill','check','selectNative','upload'],execution:'CDP_WHEN_ALLOWED',
   frames:'VISIBLE_SAME_ORIGIN',trustedCDP:'probe_required',maxBatchActions:1,
@@ -107,22 +107,33 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
       if(sender.id!==api.runtime.id||sender.url!==api.runtime.getURL('popup.html'))return fail('BRIDGE_SENDER_NOT_ALLOWED');
       if(message.type==='unpair'){const {guiPair:p}=await api.storage.session.get('guiPair');if(p){cancelled.set(p.cpqTabId,(cancelled.get(p.cpqTabId)||0)+1);tokenEpoch.set(p.token,(tokenEpoch.get(p.token)||0)+1);pausedTokens.add(p.token);}await api.storage.session.remove('guiPair');await api.storage.session.remove('pair');return {ok:true};}
       if(message.type!=='pair'||!Number.isInteger(message.cpqTabId)||!Number.isInteger(message.assistantTabId)||!['order','quote'].includes(message.scope)||typeof message.allowWrites!=='boolean')return fail('BRIDGE_INVALID_COMMAND');
-      const tab=await api.tabs.get(message.cpqTabId),savedRequests=await api.storage.session.get(PAIR_REQUESTS),guiRequests=pendingRequests(savedRequests[PAIR_REQUESTS],now());
+      let tab;try{tab=await api.tabs.get(message.cpqTabId);}catch{return fail('BRIDGE_TARGET_NOT_ALLOWED','CPQ_TAB_CLOSED');}
+      const savedRequests=await api.storage.session.get(PAIR_REQUESTS),guiRequests=pendingRequests(savedRequests[PAIR_REQUESTS],now());
       const host=guiRequests.find(r=>r.id===message.assistantTabId && r.createdAt>now()-600000);
       if(!host){
         const {requests=[]}=await api.storage.session.get('requests');
         if(pendingRequests(requests,now()).some(r=>r.id===message.assistantTabId))return legacy({...message,protocol:'omnicpq.browser.v1'},sender,true);
       }
-      const liveHost=host?await api.tabs.get(host.id):null;
-      if(!cpqUrl(tab?.url)||!host||!assistantUrl(host.url)||!assistantUrl(liveHost?.url)||tab.incognito||liveHost.incognito)return fail('BRIDGE_TARGET_NOT_ALLOWED');
+      if(!cpqUrl(tab?.url))return fail('BRIDGE_TARGET_NOT_ALLOWED',tab?.url?'CPQ_URL_NOT_ALLOWED':'CPQ_URL_UNAVAILABLE_OPEN_ICON_ON_CPQ');
+      if(!host)return fail('BRIDGE_TARGET_NOT_ALLOWED','ASSISTANT_REQUEST_MISSING_OR_EXPIRED');
+      if(!assistantUrl(host.url))return fail('BRIDGE_TARGET_NOT_ALLOWED','ASSISTANT_REQUEST_URL_NOT_ALLOWED');
+      let liveHost;try{liveHost=await api.tabs.get(host.id);}catch{return fail('BRIDGE_TARGET_NOT_ALLOWED','ASSISTANT_TAB_CLOSED');}
+      // activeTab is granted on CPQ, not on the PWA. Tabs API may omit the
+      // PWA URL. The fresh request was recorded ONLY from a browser-verified
+      // external sender above, and every later call revalidates sender URL,
+      // frame, tab, identity and token before reading or changing CPQ.
+      // Reject a visible changed URL; absent metadata is not a foreign URL.
+      if(liveHost.url!==undefined&&!assistantUrl(liveHost.url))return fail('BRIDGE_TARGET_NOT_ALLOWED','ASSISTANT_LIVE_URL_NOT_ALLOWED');
+      if(tab.incognito||liveHost.incognito)return fail('BRIDGE_TARGET_NOT_ALLOWED','INCOGNITO_NOT_ALLOWED');
       const origin=new URL(tab.url).origin;
       const observed=await page(tab.id,message.scope,origin,'observe');if(!observed.ok)return fail('BRIDGE_PERMISSION_REQUIRED');
       let cdpAvailable=false;
       try {const t=await attach(tab.id);if(t){cdpAvailable=true;await api.debugger.detach(t);}}catch{cdpAvailable=false;}
       const pair={cpqTabId:tab.id,assistantTabId:host.id,origin,scope:message.scope,token:crypto.randomUUID(),
-        expiresAt:now()+30*60_000,identity:host.identity||'legacy-unbound',cdpAvailable,allowWrites:message.allowWrites,attempted:[],lastObserved:null,paused:false};
+        expiresAt:now()+30*60_000,identity:host.identity||'legacy-unbound',cdpAvailable,allowWrites:message.allowWrites,attempted:[],lastObserved:null,paused:false,
+        pairingVerification:liveHost.url===undefined?'VERIFIED_EXTERNAL_SENDER_URL_METADATA_WITHHELD':'VERIFIED_EXTERNAL_SENDER_AND_LIVE_URL'};
       await api.storage.session.set({guiPair:pair});
-      return {ok:true,protocol:PROTOCOL,capabilities:{...cap,cdpAvailable,allowWrites:pair.allowWrites},expiresAt:pair.expiresAt};
+      return {ok:true,protocol:PROTOCOL,pairingVerification:pair.pairingVerification,capabilities:{...cap,cdpAvailable,allowWrites:pair.allowWrites},expiresAt:pair.expiresAt};
     }
     if(!assistantUrl(sender.url)||sender.frameId!==0||!Number.isInteger(sender.tab?.id)||sender.tab.incognito)return fail('BRIDGE_SENDER_NOT_ALLOWED');
     // Capture before the first storage/page await. A STOP during preparation must
@@ -141,7 +152,7 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
     if(!guiPair||guiPair.expiresAt<=now()||guiPair.assistantTabId!==sender.tab.id)return fail('BRIDGE_NOT_PAIRED');
     if(message.type==='status'){
       if(message.identity && guiPair.identity!==message.identity){cancelled.set(guiPair.cpqTabId,(cancelled.get(guiPair.cpqTabId)||0)+1);await api.storage.session.remove('guiPair');return fail('BRIDGE_NOT_PAIRED');}
-      return {ok:true,protocol:PROTOCOL,token:guiPair.token,scope:guiPair.scope,expiresAt:guiPair.expiresAt,paused:guiPair.paused,capabilities:{...cap,cdpAvailable:guiPair.cdpAvailable,allowWrites:guiPair.allowWrites}};
+      return {ok:true,protocol:PROTOCOL,token:guiPair.token,scope:guiPair.scope,expiresAt:guiPair.expiresAt,paused:guiPair.paused,capabilities:{...cap,cdpAvailable:guiPair.cdpAvailable,allowWrites:guiPair.allowWrites,pairingVerification:guiPair.pairingVerification}};
     }
     if(message.token!==guiPair.token)return fail('BRIDGE_NOT_PAIRED');
     if(message.type==='disconnect'){cancelled.set(guiPair.cpqTabId,(cancelled.get(guiPair.cpqTabId)||0)+1);await api.storage.session.remove('guiPair');return {ok:true};}
@@ -222,7 +233,7 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
           status:result.method==='ALREADY_MATCHES'?'ALREADY_MATCHES':'DISPATCHED',method:result.method,
           target:{id:a.targetId,label:prepared.label,operation:a.operation},risk:prepared.risk,beforeRevision:a.revision,
           afterRevision:after.observation.revision,documentKey:after.observation.documentKey,
-          approvalSource:message.approvalSource==='EXPLICIT_USER_GOAL'&&message.humanApproved?'EXPLICIT_USER_GOAL':message.humanApproved?'EXPLICIT_ACTION':'USER_GOAL',workerVersion:'1.2.2',apiRevision:3,
+          approvalSource:message.approvalSource==='EXPLICIT_USER_GOAL'&&message.humanApproved?'EXPLICIT_USER_GOAL':message.humanApproved?'EXPLICIT_ACTION':'USER_GOAL',workerVersion:'1.2.3',apiRevision:3,
           outcome},observation:{...after.observation,capabilities:{...cap,cdpAvailable:current.cdpAvailable,allowWrites:current.allowWrites}}};
       }catch{return fail('CPQ_ACTION_OUTCOME_UNKNOWN');}
       finally{if(debuggerTarget)try{await api.debugger.detach(debuggerTarget);}catch{}}

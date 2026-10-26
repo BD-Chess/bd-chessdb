@@ -119,7 +119,7 @@ export async function cpqPageV2(command) {
     text,controls,viewport:{width:topView.innerWidth,height:topView.innerHeight,scrollX:scrollX,scrollY:scrollY},
     framePath,frames:[...doc.querySelectorAll('iframe,frame')].filter(visible).slice(0,50).map((f)=>{const index=[...doc.querySelectorAll('iframe,frame')].indexOf(f);let accessible=false;try{accessible=!!f.contentDocument&&(['about:blank','about:srcdoc'].includes(f.contentDocument.URL)||f.contentDocument.location.origin===command.origin);}catch{}return {path:framePath?framePath+'.'+index:String(index),title:norm(f.title||f.getAttribute('aria-label')).slice(0,160),accessible};}),
     parentContext:framePath?[...topDoc.querySelectorAll('h1,h2,[role=heading]')].map(e=>norm(e.textContent)).join(' ').slice(0,500):'',
-    runtime:{pageVersion:'1.2.2',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
+    runtime:{pageVersion:'1.2.3',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
     paging:{offset,limit:cap,totalFound:candidates.length,hasMore:offset+controls.length<candidates.length,query:norm(command.query).slice(0,160)}};
   const encode=new TextEncoder().encode(JSON.stringify({...current,stateStamp}));
   const digest=await crypto.subtle.digest('SHA-256',encode);
