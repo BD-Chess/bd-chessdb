@@ -10,9 +10,9 @@
   <title>AI8 · Preizkusi modelov</title>
   <script>try{const r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
   <link rel="stylesheet" href="../AI8/ai8-toolbar.css?v=20261026-r1">
-  <link rel="stylesheet" href="../AI8/model-results.css?v=20261026-r1">
+  <link rel="stylesheet" href="../AI8/model-results.css?v=20261026-r2">
   <script src="../AI8/ai8-toolbar.js?v=20261026-r1" defer></script>
-  <script src="../AI8/model-results.js?v=20261026-r1" defer></script>
+  <script src="../AI8/model-results.js?v=20261026-r2" defer></script>
 </head>
 <body>
   <a class="skip" href="#content"><span data-lang="sl">Na vsebino</span><span data-lang="en" hidden>Skip to content</span></a>
@@ -20,7 +20,7 @@
     <div class="shell header-inner">
       <a class="brand" href="../AI8/">AI8 <span>·</span> <span data-lang="sl">Preizkusi modelov</span><span data-lang="en" hidden>Model tests</span></a>
       <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
-        <a href="#home">HOME</a><a href="#cloud">Cloud</a><a href="#slaif">SLAIF</a><a href="#method"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></a>
+        <a href="#home">HOME</a><a href="#home-plus"><span data-lang="sl">HOME dopolnila</span><span data-lang="en" hidden>HOME supplements</span></a><a href="#cloud">Cloud</a><a href="#slaif">SLAIF</a><a href="#method"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></a>
         <a href="../AI8/cli-loops.html">CLI Loops ↗</a><a href="../hmal/">HMAL ↗</a>
       </nav>
       <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance">
@@ -64,6 +64,12 @@
         <article><h3><span data-lang="sl">Kratek zagon ≠ celoten test</span><span data-lang="en" hidden>A smoke check is not a full test</span></h3><p data-lang="sl">Osem začetnih smoke preverjanj je uspelo. V ločenem HMAL enournem nizu je uspelo 12/13 klicev; Ministral je porabil kontekst 4096 brez končnega odgovora.</p><p data-lang="en" hidden>Eight initial smoke checks passed. In a separate one-hour HMAL series, 12/13 calls passed; Ministral used the 4096-token context without a final answer.</p></article>
       </div>
       <div class="details-list" id="home-details"></div>
+      <div id="home-plus" class="home-plus" role="region" aria-labelledby="home-plus-title">
+        <h3 id="home-plus-title"><span data-lang="sl">Dopolnilni HOME sklopi in poskusi po modelih</span><span data-lang="en" hidden>Supplementary HOME campaigns and per-model attempts</span></h3>
+        <p class="section-intro" data-lang="sl">Izvirni osnovni in RHP niz zgoraj ostaneta nespremenjena (osnovni 32 PASS, 36 FAIL, 12 INCOMPLETE; RHP 22 PASS, 20 FAIL, 15 INCOMPLETE, 13 prekinitev zaradi virov, 10 zadržanih). Enourne ponovitve štirih TIMEOUT in pet dodatnih sklopov so prikazani ločeno in se ne seštevajo z izvirniki. Zadržano (HELD) pomeni, da modela nismo poklicali. HTTP 200 je samo prenos; COMPLETE pomeni zaključen razpored, ne izvedenih vseh generacij. Časi odziva ne vključujejo nalaganja modela, minimumi virov so vzorčeni. Smoke 8/8 in HMAL 12/13 (22. 10.) ostajata ločena zgodovinska povzetka.</p>
+        <p class="section-intro" data-lang="en" hidden>The original basic and RHP series above are unchanged (basic 32 PASS, 36 FAIL, 12 INCOMPLETE; RHP 22 PASS, 20 FAIL, 15 INCOMPLETE, 13 resource interruptions, 10 held). One-hour retries of four TIMEOUTs and five additional campaigns are shown separately and are not added to the originals. HELD means the model was not called. HTTP 200 is transport only; COMPLETE means the schedule was finalized, not that every generation ran. Response times exclude model loading; resource minima are sampled. Smoke 8/8 and HMAL 12/13 (22 Oct) remain separate historical summaries.</p>
+        <div id="home-plus-body" class="plus-body loading" aria-live="polite"><p class="small"><span data-lang="sl">Dopolnilni podatki (≈0,5 MB) se naložijo enkrat, ko se približaš temu delu strani…</span><span data-lang="en" hidden>Supplementary data (≈0.5 MB) loads once as you approach this part of the page…</span></p></div>
+      </div>
     </section>
 
     <section id="cloud" aria-labelledby="cloud-title">
@@ -97,6 +103,7 @@
         <li><time datetime="2026-10-22">22. 10.</time><span data-lang="sl">HOME: 8/8 smoke, ločeno HMAL 12/13 kratkih odgovorov. MAL: pripravljena kampanja za deset ponudnikov, brez potrjenega enotnega izida.</span><span data-lang="en" hidden>HOME: 8/8 smoke, plus a separate HMAL 12/13 short-answer series. MAL: ten-provider campaign prepared, without a verified uniform result.</span></li>
         <li><time datetime="2026-10-24">24. 10.</time><span data-lang="sl">SLAIF GaMS3: zamrznjeni T001–T010, 7/10 PASS brez ponavljanj; primerjava pokaže tudi Qwenovih 7/7 na T001–T007.</span><span data-lang="en" hidden>SLAIF GaMS3: frozen T001–T010, 7/10 PASS with no retries; the comparison also records Qwen 7/7 on T001–T007.</span></li>
         <li><time datetime="2026-10-25">25. 10.</time><span data-lang="sl">HOME primerjalni osnovni in RHP izidi; SLAIF Qwen raziskovalni piloti in ujemajoča primerjava Qwen/Gemma.</span><span data-lang="en" hidden>HOME basic and RHP readout; SLAIF Qwen research pilots and matched Qwen/Gemma comparison.</span></li>
+        <li><time datetime="2026-10-26">26. 10.</time><span data-lang="sl">HOME dopolnilni sklopi (24.–26. 10.), posnetek 16:57 UTC: 309/321 zapisanih mest, 31 dejanskih novih zahtev, 25 HTTP 200, 1 PASS; nočni sklop je bil ob posnetku še v teku (25/37).</span><span data-lang="en" hidden>HOME supplementary campaigns (24–26 Oct), snapshot 16:57 UTC: 309/321 recorded slots, 31 actual new requests, 25 HTTP 200, 1 PASS; the night campaign was still running at snapshot time (25/37).</span></li>
         <li><time datetime="2026-10-26">26. 10.</time><span data-lang="sl">AI8 dokazni katalog sestavi 21 konfiguracij. Stanje današnje dosegljivosti pri vseh ostaja neznano.</span><span data-lang="en" hidden>The AI8 evidence catalog records 21 configurations. Current availability remains unknown for all.</span></li>
       </ol>
       <details><summary><span data-lang="sl">Kaj pomeni PASS in kaj manjka?</span><span data-lang="en" hidden>What does PASS mean, and what is still missing?</span></summary><div class="detail-body"><p data-lang="sl">HOME kakovostni PASS zahteva pravilen format, shemo in vsebino. HTTP 200 pomeni samo uspešen prenos. Osnovni testi so tekli po protokolu cold_per_test; neprekinjena serija na naloženem modelu ni dokazana. Cloud MAL nima potrjenega enotnega T001–T010 teka. SLAIF izidi pokrivajo različne naloge in zgodovinski dostop.</p><p data-lang="en" hidden>HOME quality PASS requires valid format, schema and content. HTTP 200 only confirms transport. The basic tests used cold_per_test; a continuously loaded series is unproven. Cloud MAL has no verified uniform T001–T010 run. SLAIF outcomes cover different tasks and historical access.</p></div></details>

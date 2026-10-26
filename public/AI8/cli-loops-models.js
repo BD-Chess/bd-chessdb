@@ -1,16 +1,20 @@
 /* AI8 model catalog: read-only evidence/status beside the LLM selectors.
    Source: static public projection ai8-model-catalog.json (ai8.model-catalog-public.v1).
    Fails closed: a missing or invalid file shows no model status; selectors and command stay unchanged.
-   The catalog grants no selection or routing; UNKNOWN availability is never shown as available. */
+   The catalog grants no selection or routing; UNKNOWN availability is never shown as available.
+   AVAILABLE/UNAVAILABLE are accepted only with a dated test observation (availability_observed_utc, ISO UTC,
+   not in the future) and are shown as that dated observation, never as live status. */
 "use strict";
 (function(root){
   const SCHEMA="ai8.model-catalog-public.v1",NATURE="historical_evidence_only_no_live_controls",MAX_BYTES=65536;
   const DEPLOYMENTS=new Set(["CLOUD_MAL","HOME_LOCAL","SLAIF_REMOTE_HISTORICAL"]);
   const EVIDENCE=new Set(["TESTED","UNKNOWN"]);
-  const AVAILABILITY=new Set(["UNKNOWN"]);
+  const AVAILABILITY=new Set(["UNKNOWN","AVAILABLE","UNAVAILABLE"]);
+  const ISO_UTC=/^20\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d{1,6})?(Z|\+00:00)$/;
+  const observedOk=v=>{if(typeof v!=="string"||!ISO_UTC.test(v))return false;const t=Date.parse(v);return Number.isFinite(t)&&t>=Date.UTC(2026,0,1)&&t<=Date.now()+600000;};
   const PROFILES=new Set(["efficient","frontier","max_final"]);
   const TOP_KEYS=["schema","as_of","nature","items"];
-  const ITEM_KEYS=new Set(["id","name","deployment","evidence_state","current_availability","advisory_matched_profiles"]);
+  const ITEM_KEYS=new Set(["id","name","deployment","evidence_state","current_availability","advisory_matched_profiles","availability_observed_utc"]);
   // Selector value -> catalog id. Selector order is the page's own; the catalog only describes.
   const CLOUD={gemini:"mal-gemini",grok:"mal-grok",deepseek:"mal-deepseek",glm:"mal-glm"};
   const LOCAL={gemma4:"home-gemma4-q6","qwen3.8":"home-qwen3.8-q6","gpt-oss":"home-gpt-oss-mxfp4","gemma4-q5":"home-gemma4-q5",ministral3:"home-ministral3-q8",magistral:"home-magistral-q6","mellum2.1":"home-mellum2.1-q8","lfm2.5":"home-lfm2.5-q6"};
@@ -37,6 +41,8 @@
       if(!DEPLOYMENTS.has(it.deployment))fail("neznana namestitev");
       if(!EVIDENCE.has(it.evidence_state))fail("neznano stanje dokaza");
       if(!AVAILABILITY.has(it.current_availability))fail("neznana dostopnost");
+      if("availability_observed_utc" in it&&!observedOk(it.availability_observed_utc))fail("neveljaven čas opažanja");
+      if(it.current_availability!=="UNKNOWN"&&!("availability_observed_utc" in it))fail("dostopnost brez datiranega rezultata");
       if("advisory_matched_profiles" in it){
         const p=it.advisory_matched_profiles;
         if(it.deployment!=="CLOUD_MAL"||!Array.isArray(p)||p.length>PROFILES.size||new Set(p).size!==p.length||!p.every(x=>PROFILES.has(x)))fail("neveljavni profili");
@@ -57,7 +63,9 @@
     const prof=it.advisory_matched_profiles;
     return [
       {kind:"evidence",state:it.evidence_state==="TESTED"?"tested":"none",label:"Dokaz",value:it.evidence_state==="TESTED"?"testiran (pretekli obseg)":"ni dokaza",title:"Zgodovinski dokaz. TESTED velja samo za navedeni preizkus; ni splošna ocena."},
-      {kind:"availability",state:"unknown",label:"Dostopnost",value:"neznana",title:"Trenutna dostopnost ni preverjena. Ne pomeni, da je model na voljo."},
+      it.current_availability==="UNKNOWN"?
+        {kind:"availability",state:"unknown",label:"Dostopnost",value:"neznana",title:"Trenutna dostopnost ni preverjena. Ne pomeni, da je model na voljo."}:
+        {kind:"availability",state:"observed",label:"Dostopnost",value:(it.current_availability==="AVAILABLE"?"odgovoril v testu ":"brez odgovora v testu ")+it.availability_observed_utc.slice(0,16).replace("T"," ")+" UTC",title:"Datirano opažanje iz testnega rezultata; ne pomeni trenutne dostopnosti."},
       {kind:"routing",state:route[0],label:"Usmerjanje",value:route[1],title:"Katalog ne podeljuje izbire ali usmerjanja; odloča stikalo te strani in lastnik izvajalnika."},
       {kind:"id",state:"id",label:"ID",value:it.id+(it.deployment==="CLOUD_MAL"?" · profil: "+(prof&&prof.length?prof.join(", "):"ni ujemanja"):""),title:"Stabilni ID zapisa v katalogu"+(it.deployment==="CLOUD_MAL"?" in točno ujemanje profilov MAL.":".")}
     ];
