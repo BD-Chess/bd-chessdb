@@ -1,8 +1,8 @@
 import { pbkdf2Sync, timingSafeEqual } from 'node:crypto';
 
-const WL_SALT = '666QQVR-KaMq-6zT3ShbB9J9CgfFR6nL';
+const WL_SALT = 'XxwTbo-NM9C76A6jRevw65WFYA1do7gm';
 const WL_ITERATIONS = 900000;
-const WL_EXPECTED = 'ugok6Ee3ktkqvXdwbw-RIO6xYC_mV6zhIBDufQL5_Lg';
+const WL_EXPECTED = 'T7FGZgHoRYr23aVKTlLNOvz9DxOZjWt4KPt7fAmC6oc';
 
 function fromBase64Url(value) {
   return Buffer.from(String(value).replace(/-/g, '+').replace(/_/g, '/'), 'base64');
