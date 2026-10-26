@@ -296,6 +296,8 @@
     return { counts: n, results: inbox.results, observations: obs };
   }
 
+  // Slovenian count forms: 1 / 2 / 3–4 / other (by the last two digits).
+  const slForm = (n, one, two, few, many) => { const m = Math.abs(n) % 100; return m === 1 ? one : m === 2 ? two : m === 3 || m === 4 ? few : many; };
   const pad2 = (v) => String(v).padStart(2, "0");
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function when(iso, withYear = true) {
@@ -344,7 +346,11 @@
       [`${passN}`, say("kakovostni PASS", "quality PASS")],
       [secs(cov.response_seconds_median), say(`mediana odziva, ${cov.response_time_samples} vzorcev, brez nalaganja`, `median response, ${cov.response_time_samples} samples, excl. loading`)],
     ].forEach(([value, text]) => { const box = el("div"); box.append(el("strong", "", value), el("span", "", text)); stats.append(box); });
-    if (inbox && inbox.counts.added) { const box = el("div"); box.append(el("strong", "", `+${inbox.counts.added}`), el("span", "", say("poskus iz inboxa po posnetku", "inbox attempt after snapshot"))); stats.append(box); }
+    if (inbox && inbox.counts.added) {
+      const n = inbox.counts.added, box = el("div");
+      box.append(el("strong", "", `+${n}`), el("span", "", say(`${slForm(n, "poskus", "poskusa", "poskusi", "poskusov")} iz inboxa po posnetku`, n === 1 ? "inbox attempt after snapshot" : "inbox attempts after snapshot")));
+      stats.append(box);
+    }
     out.push(stats);
     const legend = el("div", "vlegend");
     GROUPS.forEach(([key, , sl, en]) => { const item = el("span"); item.append(el("i", `v-${key}`), document.createTextNode(say(sl, en))); legend.append(item); });
@@ -428,8 +434,8 @@
     out.push(cards);
     if (plus.inboxError) out.push(el("p", "small", say("Oddani rezultati iz inboxa niso prikazani, ker niso prestali preverjanja.", "Inbox submissions are not shown because they failed validation.")));
     else if (inbox) out.push(el("p", "small", say(
-      `Inbox: sprejetih ${inbox.counts.accepted}, zavrnjenih ${inbox.counts.rejected}; ${inbox.counts.already_in_home_snapshot} je že v posnetku (ne štejejo se dvakrat), ${inbox.counts.added} dodan.`,
-      `Inbox: ${inbox.counts.accepted} accepted, ${inbox.counts.rejected} rejected; ${inbox.counts.already_in_home_snapshot} already in the snapshot (not double-counted), ${inbox.counts.added} added.`)));
+      `Inbox HOME: sprejetih ${inbox.counts.accepted}, zavrnjenih ${inbox.counts.rejected}; ${inbox.counts.already_in_home_snapshot} je že v posnetku (ne štejejo se dvakrat), ${inbox.counts.added} ${slForm(inbox.counts.added, "dodan", "dodana", "dodani", "dodanih")} po posnetku.`,
+      `HOME inbox: ${inbox.counts.accepted} accepted, ${inbox.counts.rejected} rejected; ${inbox.counts.already_in_home_snapshot} already in the snapshot (not double-counted), ${inbox.counts.added} added after the snapshot.`)));
     plusBody.replaceChildren(...out);
     plusBody.classList.remove("loading");
   }
@@ -463,15 +469,190 @@
     window.addEventListener("hashchange", () => { if (/^#home-plus/.test(location.hash)) loadPlus(); });
   }
 
-  document.addEventListener("ai8:display", () => { render(); renderPlus(); });
+  /* ---- SLAIF inbox runs (model-results-slaif.json): per-model aggregates, no row dump ---- */
+  const slaifBody = document.getElementById("slaif-plus-body");
+  const SLAIF_ORDER = ["slaif-qwen3.8-q8", "slaif-gams3-12b-q8", "slaif-gemma4-26b-q8"];
+  const POLICY_FAMILIES = new Set(["TSP_POLICY", "SCHED_POLICY", "CP_NATIVE_R1", "CP_NATIVE_R2", "CP_PLAN_CODE_R3"]);
+  const DESIGN_FAMILIES = new Set(["TSP_CREATIVITY"]);
+  const FAMILY_TEXT = {
+    EASY_NO: ["Lahki T001–T010, brez RHP", "Easy T001–T010, no RHP"],
+    EASY_RHP_FULL: ["Lahki T001–T010, polni RHP", "Easy T001–T010, full RHP"],
+    HARD_SCHED_LEGACY: ["Težko razporejanje, izvirni NO/MINI/FULL", "Hard scheduling, legacy NO/MINI/FULL"],
+    HARD_SCHED_CANONICAL: ["Težko razporejanje, kanonični NO/CLASSIC", "Hard scheduling, canonical NO/CLASSIC"],
+    FULLRHP_LEGACY: ["FullRHP, izvirni", "FullRHP, legacy"],
+    FULLRHP_BUDGET_R2: ["FullRHP s proračunom R2", "FullRHP with budget R2"],
+    TSP_POLICY: ["TSP politika + deterministični reševalnik", "TSP policy + deterministic solver"],
+    SCHED_POLICY: ["Razporejanje: politika + reševalnik", "Scheduling: policy + solver"],
+    CP_NATIVE_R1: ["CP native R1: politika + reševalnik", "CP native R1: policy + solver"],
+    CP_NATIVE_R2: ["CP native R2: politika + reševalnik", "CP native R2: policy + solver"],
+    CP_PLAN_CODE_R3: ["CP plan-koda R3: politika + reševalnik", "CP plan-code R3: policy + solver"],
+    TSP_CREATIVITY: ["TSP ustvarjalnost, slepa ocena zasnove", "TSP creativity, blind design review"],
+  };
+  const S_STATUS = [["PASS", "pass", "PASS", "PASS"], ["FAIL", "fail", "FAIL", "FAIL"], ["PARTIAL", "inc", "PARTIAL (tehnična vrzel, nepopolno, zasnova ali pilot)", "PARTIAL (technical gap, incomplete, design or pilot)"]];
+  function validateSlaif(doc, catalog) {
+    if (doc?.schema !== "ai8.model-results-slaif-public.v1" || doc.source_schema !== "ai8.model_result.v1") throw Error("slaif schema");
+    safeStrings(doc);
+    const ids = new Set(catalog.items.filter((row) => row.deployment === "SLAIF_REMOTE_HISTORICAL").map((row) => row.id));
+    const n = doc.counts;
+    if (!plainObj(n) || !["received", "accepted", "rejected"].every((k) => count(n[k])) || n.accepted + n.rejected !== n.received) throw Error("slaif counts");
+    if (!Array.isArray(doc.unit_sets) || !doc.unit_sets.every(plainObj) || !Array.isArray(doc.results) || doc.results.length !== n.accepted ||
+        !Array.isArray(doc.campaigns) || !Number.isFinite(utcMs(doc.generated_utc))) throw Error("slaif lists");
+    const seen = new Set();
+    doc.results.forEach((row) => {
+      if (!plainObj(row) || !ids.has(row.catalog_id) || !["PASS", "FAIL", "PARTIAL"].includes(row.status) ||
+          !Number.isFinite(utcMs(row.observed_utc)) || !datedAvailability(row.availability, row.observed_utc) ||
+          typeof row.test_suite !== "string" || typeof row.family !== "string" || !/^[A-Z0-9_]{1,40}$/.test(row.family) ||
+          !row.test_suite.startsWith(`${row.family} / `) || !/^[0-9a-f]{64}$/.test(row.submission_sha256) || seen.has(row.submission_sha256) ||
+          !Number.isInteger(row.units) || !doc.unit_sets[row.units] || !plainObj(row.metrics)) throw Error("slaif entry");
+      seen.add(row.submission_sha256);
+      const units = doc.unit_sets[row.units];
+      for (const [k, v] of Object.entries(row.metrics)) if (typeof v !== "number" || !Number.isFinite(v) || typeof units[k] !== "string") throw Error("slaif metric");
+      // AVAILABLE only if the model answered in that run; UNAVAILABLE only if it did not (fail-closed).
+      const answered = row.metrics.http200_steps;
+      if (!count(answered) || (row.availability === "AVAILABLE" && answered < 1) || (row.availability === "UNAVAILABLE" && answered !== 0)) throw Error("slaif availability");
+    });
+    return { counts: n, results: doc.results };
+  }
+  let slaifData = null, slaifError = false, slaifLang = "";
+  const num = (v, digits = 0) => {
+    const s = (Math.round(v * 10 ** digits) / 10 ** digits).toFixed(digits);
+    const [i, d] = s.split(".");
+    const sep = language() === "en" ? "," : " ";
+    const int = i.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+    return d ? `${int}${language() === "en" ? "." : ","}${d}` : int;
+  };
+  const signedPct = (v) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${num(Math.abs(v), Math.abs(v) >= 10 ? 1 : 3)} %`;
+  function dayRange(rows) {
+    const times = rows.map((r) => utcMs(r.observed_utc));
+    const first = new Date(Math.min(...times)), last = new Date(Math.max(...times));
+    const d = (x, year) => language() === "en" ? `${x.getUTCDate()} ${MONTHS[x.getUTCMonth()]}${year ? ` ${x.getUTCFullYear()}` : ""}` : `${x.getUTCDate()}. ${x.getUTCMonth() + 1}.${year ? ` ${x.getUTCFullYear()}` : ""}`;
+    return first.toISOString().slice(0, 10) === last.toISOString().slice(0, 10) ? d(last, true) : `${d(first, false)} – ${d(last, true)}`;
+  }
+  function statusCounts(rows) { const c = { PASS: 0, FAIL: 0, PARTIAL: 0 }; rows.forEach((r) => { c[r.status] += 1; }); return c; }
+  function statusStack(c, totalRuns, label) {
+    const bar = el("div", "stack");
+    bar.setAttribute("role", "img");
+    const parts = S_STATUS.filter(([k]) => c[k] > 0);
+    bar.setAttribute("aria-label", `${label}: ${parts.map(([k]) => `${k} ${c[k]}`).join(", ")}`);
+    parts.forEach(([k, cls]) => { const seg = el("span", `v-${cls}`); seg.style.width = `${c[k] * 100 / totalRuns}%`; bar.append(seg); });
+    return bar;
+  }
+  const statusText = (c) => S_STATUS.filter(([k]) => c[k] > 0).map(([k]) => `${k} ${c[k]}`).join(" · ");
+  const sumOf = (rows, key) => rows.reduce((a, r) => a + (typeof r.metrics[key] === "number" ? r.metrics[key] : 0), 0);
+  const hasKey = (rows, key) => rows.filter((r) => typeof r.metrics[key] === "number");
+  function kvList(pairs) {
+    const dl = el("dl", "kv");
+    pairs.forEach(([k, v]) => dl.append(el("dt", "", k), el("dd", "", v)));
+    return dl;
+  }
+  function renderSlaifPlus() {
+    if (!slaifBody || slaifLang === language() || (!slaifData && !slaifError)) return;
+    slaifLang = language();
+    slaifBody.classList.remove("loading");
+    if (slaifError) {
+      slaifBody.replaceChildren(el("p", "small", say("Oddani SLAIF teki niso prikazani, ker podatki niso dosegljivi ali niso prestali preverjanja. Zgodovinski povzetek zgoraj ostaja veljaven.",
+        "Submitted SLAIF runs are not shown because the data is unavailable or failed validation. The historical summary above remains valid.")));
+      return;
+    }
+    const { results, counts } = slaifData;
+    const out = [];
+    const head = el("p", "plus-asof");
+    head.append(el("strong", "", say("Oddani SLAIF teki: ", "Submitted SLAIF runs: ")), document.createTextNode(`${dayRange(results)} · ${say("zgodovinska opažanja, ne živ status", "historical observations, not live status")}`));
+    out.push(head);
+    const stats = el("div", "plus-stats");
+    const models = SLAIF_ORDER.filter((id) => results.some((r) => r.catalog_id === id));
+    const families = new Set(results.map((r) => r.family));
+    [[num(counts.accepted), say("sprejetih tekov (en tek = en model, ena naloga)", "accepted runs (one run = one model, one task)")],
+      [`${models.length}`, say("modeli SLAIF", "SLAIF models")],
+      [`${families.size}`, say("testnih sklopov", "test suites")],
+      [`${counts.rejected}`, say("zavrnjenih oddaj", "rejected submissions")],
+    ].forEach(([value, text]) => { const box = el("div"); box.append(el("strong", "", value), el("span", "", text)); stats.append(box); });
+    out.push(stats);
+    const legend = el("div", "vlegend");
+    S_STATUS.forEach(([, cls, sl, en]) => { const item = el("span"); item.append(el("i", `v-${cls}`), document.createTextNode(say(sl, en))); legend.append(item); });
+    out.push(legend);
+    const cards = el("div", "model-cards");
+    models.forEach((id) => {
+      const rows = results.filter((r) => r.catalog_id === id).sort((a, b) => utcMs(a.observed_utc) - utcMs(b.observed_utc));
+      const name = data.slaif.find((s) => s.id === id)?.name || id;
+      const card = el("article", "model-card");
+      card.append(el("h4", "", name));
+      const last = rows[rows.length - 1];
+      const lastAnswer = [...rows].reverse().find((r) => r.availability === "AVAILABLE");
+      const obs = el("p", "obs");
+      obs.append(el("strong", "", last.availability === "AVAILABLE" ? say("Zadnji tek: odgovoril", "Latest run: answered") :
+        last.availability === "UNAVAILABLE" ? say("Zadnji tek: brez odgovora", "Latest run: no answer") : say("Zadnji tek: dostopnost neznana", "Latest run: availability unknown")));
+      obs.append(document.createTextNode(` · ${when(last.observed_utc)} · ${last.status} · ${last.test_suite}`));
+      if (last.availability !== "AVAILABLE" && lastAnswer) obs.append(document.createTextNode(` · ${say("zadnji odgovor", "last answer")} ${when(lastAnswer.observed_utc)}`));
+      obs.append(document.createTextNode(` · ${say("velja za ta tek, ne trenutna dostopnost", "for that run only, not current availability")}`));
+      card.append(obs);
+      const c = statusCounts(rows);
+      const line = el("div", "mc-line");
+      line.append(el("div", "mc-head", `${rows.length} ${say(slForm(rows.length, "tek", "teka", "teki", "tekov"), rows.length === 1 ? "run" : "runs")} · ${dayRange(rows)}`));
+      line.append(statusStack(c, rows.length, name), el("div", "mc-text", statusText(c)));
+      card.append(line);
+      const strict = rows.filter((r) => !POLICY_FAMILIES.has(r.family) && !DESIGN_FAMILIES.has(r.family));
+      const design = rows.filter((r) => DESIGN_FAMILIES.has(r.family));
+      const policy = rows.filter((r) => POLICY_FAMILIES.has(r.family));
+      const fmt = hasKey(rows, "format_pass"), sch = hasKey(rows, "schema_pass");
+      const pairs = [];
+      if (strict.length) pairs.push([say("Strogi nizi: PASS po izvirnem evaluatorju", "Strict suites: PASS by the original evaluator"), `${statusCounts(strict).PASS}/${strict.length}`]);
+      if (fmt.length) pairs.push([say("Stroga oblika / shema (ocenjeni odgovori)", "Strict format / schema (scored answers)"), `${sumOf(fmt, "format_pass")}/${fmt.length} · ${sumOf(sch, "schema_pass")}/${sch.length}`]);
+      if (design.length) pairs.push([say(`Pisna TSP zasnova (${design.length}×, DESIGN_ONLY)`, `Written TSP design (${design.length}×, DESIGN_ONLY)`), `${say("točke", "points")} ${num(sumOf(design, "design_score"))}/${num(sumOf(design, "design_max"))}`]);
+      if (policy.length) pairs.push([say("Pilotne politike + reševalnik (brez stat. potrditve)", "Policy pilots + solver (not statistically confirmed)"), `${policy.length}× PARTIAL`]);
+      pairs.push([say("HTTP 200 / logični koraki (prenos, ni ocena)", "HTTP 200 / logical steps (transport, not quality)"), `${num(sumOf(rows, "http200_steps"))}/${num(sumOf(rows, "model_steps"))}`]);
+      pairs.push([say("Koraki brez HTTP 200 · nepopolni (length)", "Steps without HTTP 200 · incomplete (length)"), `${num(sumOf(rows, "technical_steps"))} · ${num(sumOf(rows, "incomplete_steps"))}`]);
+      pairs.push([say("Provider žetoni, znani subtotal", "Provider tokens, known subtotal"), num(sumOf(rows, "provider_tokens_known_selected"))]);
+      pairs.push([say("Čas do izbranih odzivov, znani subtotal (h:min:s)", "Time to selected responses, known subtotal (h:min:s)"), secs(sumOf(rows, "known_selected_latency_s"))]);
+      const unknownUsage = sumOf(rows, "usage_unknown_selected_steps"), unknownLatency = sumOf(rows, "latency_unknown_steps");
+      if (unknownUsage || unknownLatency) pairs.push([say("Koraki z neznano porabo · neznanim časom", "Steps with unknown usage · unknown time"), `${num(unknownUsage)} · ${num(unknownLatency)}`]);
+      card.append(kvList(pairs));
+      const fams = [...new Set(rows.map((r) => r.family))];
+      const box = el("details");
+      box.append(el("summary", "", say(`Zgodovina po sklopih (${fams.length})`, `History by suite (${fams.length})`)));
+      const list = el("div", "fam-list");
+      fams.forEach((family) => {
+        const fr = rows.filter((r) => r.family === family);
+        const fc = statusCounts(fr);
+        const label = FAMILY_TEXT[family] ? say(...FAMILY_TEXT[family]) : family;
+        const item = el("div", "fam-row");
+        item.append(el("div", "mc-head", label));
+        item.append(statusStack(fc, fr.length, `${name} · ${label}`));
+        const bits = [`${fr.length}×`, statusText(fc), dayRange(fr)];
+        if (DESIGN_FAMILIES.has(family)) bits.push(`${say("točke", "points")} ${num(sumOf(fr, "design_score"))}/${num(sumOf(fr, "design_max"))}`);
+        const gains = hasKey(fr, "descriptive_gain_percent_common_control").map((r) => r.metrics.descriptive_gain_percent_common_control);
+        if (gains.length) bits.push(`${say("opisno proti skupni kontroli", "descriptive vs common control")} ${gains.map(signedPct).join(", ")} (${say("plus je bolje", "plus is better")})`);
+        item.append(el("div", "mc-text", bits.join(" · ")));
+        list.append(item);
+      });
+      box.append(list);
+      card.append(box);
+      cards.append(card);
+    });
+    out.push(cards);
+    out.push(el("p", "small", say(
+      `Inbox SLAIF: prejetih ${counts.received}, sprejetih ${counts.accepted}, zavrnjenih ${counts.rejected}. Javni so samo preverjeni javni povzetki; dokazila ostanejo zasebna.`,
+      `SLAIF inbox: ${counts.received} received, ${counts.accepted} accepted, ${counts.rejected} rejected. Only validated public summaries are shown; evidence stays private.`)));
+    slaifBody.replaceChildren(...out);
+  }
+  function loadSlaif(catalog) {
+    if (!slaifBody) return;
+    getJson("../AI8/model-results-slaif.json")
+      .then((doc) => { slaifData = validateSlaif(doc, catalog); })
+      .catch(() => { slaifError = true; })
+      .finally(() => { slaifLang = ""; renderSlaifPlus(); });
+  }
+
+  document.addEventListener("ai8:display", () => { render(); renderPlus(); renderSlaifPlus(); });
   const getJson = (path) => fetch(path, { cache: "no-cache", credentials: "omit" })
     .then((response) => { if (!response.ok) throw Error(`HTTP ${response.status}`); return response.json(); });
   Promise.all([getJson("../AI8/ai8-model-catalog.json"), getJson("../AI8/model-results-evidence.json")])
-    .then(([catalog, evidence]) => { data = validate(catalog, evidence); baseData = [catalog, evidence]; render(); watchPlus(); })
+    .then(([catalog, evidence]) => { data = validate(catalog, evidence); baseData = [catalog, evidence]; render(); watchPlus(); loadSlaif(catalog); })
     .catch(() => {
       const message = say("Podrobni podatki trenutno niso dosegljivi; povzetek zgoraj ostaja zgodovinski.",
         "Detailed data is currently unavailable; the summary above remains historical.");
       [homeChart, slaifChart].forEach((node) => { clear(node); node.append(el("p", "small", message)); });
       plusFailed();
+      slaifError = true; slaifLang = ""; renderSlaifPlus();
     });
 })();

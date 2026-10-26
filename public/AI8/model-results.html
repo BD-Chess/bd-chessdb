@@ -10,9 +10,9 @@
   <title>AI8 · Preizkusi modelov</title>
   <script>try{const r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
   <link rel="stylesheet" href="../AI8/ai8-toolbar.css?v=20261026-r1">
-  <link rel="stylesheet" href="../AI8/model-results.css?v=20261026-r2">
+  <link rel="stylesheet" href="../AI8/model-results.css?v=20261026-r3">
   <script src="../AI8/ai8-toolbar.js?v=20261026-r1" defer></script>
-  <script src="../AI8/model-results.js?v=20261026-r2" defer></script>
+  <script src="../AI8/model-results.js?v=20261026-r3" defer></script>
 </head>
 <body>
   <a class="skip" href="#content"><span data-lang="sl">Na vsebino</span><span data-lang="en" hidden>Skip to content</span></a>
@@ -46,7 +46,7 @@
       <div class="summary" aria-label="Obseg dokazov" data-aria-sl="Obseg dokazov" data-aria-en="Evidence coverage">
         <div><strong>8</strong><span data-lang="sl">konfiguracij HOME z osnovnim in RHP nizom</span><span data-lang="en" hidden>HOME configurations in the basic and RHP series</span></div>
         <div><strong>10</strong><span data-lang="sl">oblačnih ponudnikov v registru MAL; enoten kakovostni tek še manjka</span><span data-lang="en" hidden>MAL cloud providers; a uniform quality run is still missing</span></div>
-        <div><strong>3</strong><span data-lang="sl">zgodovinske konfiguracije SLAIF z različnimi nalogami</span><span data-lang="en" hidden>historical SLAIF configurations with different tasks</span></div>
+        <div><strong>3</strong><span data-lang="sl">konfiguracije SLAIF; 162 oddanih zgodovinskih tekov (54 na model)</span><span data-lang="en" hidden>SLAIF configurations; 162 submitted historical runs (54 per model)</span></div>
       </div>
       <p class="scope-note" data-lang="sl"><strong>Kako brati:</strong> uspešen HTTP odgovor še ni kakovosten odgovor. Prekinitev zaradi virov ni vsebinski neuspeh. Rezultati treh okolij niso ena skupna lestvica; današnja dosegljivost modelov ni preverjena.</p>
       <p class="scope-note" data-lang="en" hidden><strong>How to read this:</strong> an HTTP success is not a quality pass. A resource interruption is not a content failure. These three environments do not form one leaderboard; current model availability has not been verified.</p>
@@ -93,6 +93,12 @@
       <p class="section-intro" data-lang="en" hidden>Three configurations, three different scopes. Bar lengths show success within each test, not a general ranking across models.</p>
       <div id="slaif-chart" role="group" aria-label="Zgodovinski rezultati SLAIF" data-aria-sl="Zgodovinski rezultati SLAIF" data-aria-en="SLAIF historical test results"><p class="small">Nalaganje rezultatov…</p></div>
       <div class="details-list" id="slaif-details"></div>
+      <div id="slaif-plus" class="home-plus" role="region" aria-labelledby="slaif-plus-title">
+        <h3 id="slaif-plus-title"><span data-lang="sl">Oddani SLAIF teki po modelih (21.–26. 10.)</span><span data-lang="en" hidden>Submitted SLAIF runs per model (21–26 Oct)</span></h3>
+        <p class="section-intro" data-lang="sl">Zgornji stolpci ostajajo starejši zgodovinski povzetek. Spodaj so preverjeni javni povzetki oddanih tekov: en tek je en model na eni nalogi. PASS določa izvirni zamrznjeni evaluator; PARTIAL zajema tehnične vrzeli, nepopolne odgovore, pisne zasnove (DESIGN_ONLY) in raziskovalne pilote politike z determinističnim reševalnikom. HTTP 200 je samo prenos. Dostopnost velja za posamezen datirani tek, ne za današnji dostop. Strogi nizi, ocene zasnov in piloti niso združeni v eno oceno; to ni lestvica modelov.</p>
+        <p class="section-intro" data-lang="en" hidden>The bars above remain the earlier historical summary. Below are validated public summaries of submitted runs: one run is one model on one task. PASS is set by the original frozen evaluator; PARTIAL covers technical gaps, incomplete answers, written designs (DESIGN_ONLY) and research policy pilots with a deterministic solver. HTTP 200 is transport only. Availability applies to each dated run, not to access today. Strict suites, design scores and pilots are not merged into one score; this is not a model ranking.</p>
+        <div id="slaif-plus-body" class="plus-body loading" aria-live="polite"><p class="small"><span data-lang="sl">Nalaganje oddanih tekov…</span><span data-lang="en" hidden>Loading submitted runs…</span></p></div>
+      </div>
     </section>
 
     <section id="method" aria-labelledby="method-title">
@@ -104,6 +110,7 @@
         <li><time datetime="2026-10-24">24. 10.</time><span data-lang="sl">SLAIF GaMS3: zamrznjeni T001–T010, 7/10 PASS brez ponavljanj; primerjava pokaže tudi Qwenovih 7/7 na T001–T007.</span><span data-lang="en" hidden>SLAIF GaMS3: frozen T001–T010, 7/10 PASS with no retries; the comparison also records Qwen 7/7 on T001–T007.</span></li>
         <li><time datetime="2026-10-25">25. 10.</time><span data-lang="sl">HOME primerjalni osnovni in RHP izidi; SLAIF Qwen raziskovalni piloti in ujemajoča primerjava Qwen/Gemma.</span><span data-lang="en" hidden>HOME basic and RHP readout; SLAIF Qwen research pilots and matched Qwen/Gemma comparison.</span></li>
         <li><time datetime="2026-10-26">26. 10.</time><span data-lang="sl">HOME dopolnilni sklopi (24.–26. 10.), posnetek 16:57 UTC: 309/321 zapisanih mest, 31 dejanskih novih zahtev, 25 HTTP 200, 1 PASS; nočni sklop je bil ob posnetku še v teku (25/37).</span><span data-lang="en" hidden>HOME supplementary campaigns (24–26 Oct), snapshot 16:57 UTC: 309/321 recorded slots, 31 actual new requests, 25 HTTP 200, 1 PASS; the night campaign was still running at snapshot time (25/37).</span></li>
+        <li><time datetime="2026-10-26">26. 10.</time><span data-lang="sl">SLAIF inbox: 162 sprejetih tekov (Qwen3.8, GaMS3, Gemma4; po 54, 21.–26. 10.) in šest dodatnih HOME Ministral3 poskusov po posnetku; zavrnjenih oddaj ni bilo.</span><span data-lang="en" hidden>SLAIF inbox: 162 accepted runs (Qwen3.8, GaMS3, Gemma4; 54 each, 21–26 Oct) plus six additional HOME Ministral3 attempts after the snapshot; no submissions were rejected.</span></li>
         <li><time datetime="2026-10-26">26. 10.</time><span data-lang="sl">AI8 dokazni katalog sestavi 21 konfiguracij. Stanje današnje dosegljivosti pri vseh ostaja neznano.</span><span data-lang="en" hidden>The AI8 evidence catalog records 21 configurations. Current availability remains unknown for all.</span></li>
       </ol>
       <details><summary><span data-lang="sl">Kaj pomeni PASS in kaj manjka?</span><span data-lang="en" hidden>What does PASS mean, and what is still missing?</span></summary><div class="detail-body"><p data-lang="sl">HOME kakovostni PASS zahteva pravilen format, shemo in vsebino. HTTP 200 pomeni samo uspešen prenos. Osnovni testi so tekli po protokolu cold_per_test; neprekinjena serija na naloženem modelu ni dokazana. Cloud MAL nima potrjenega enotnega T001–T010 teka. SLAIF izidi pokrivajo različne naloge in zgodovinski dostop.</p><p data-lang="en" hidden>HOME quality PASS requires valid format, schema and content. HTTP 200 only confirms transport. The basic tests used cold_per_test; a continuously loaded series is unproven. Cloud MAL has no verified uniform T001–T010 run. SLAIF outcomes cover different tasks and historical access.</p></div></details>
