@@ -192,6 +192,10 @@ export function createRetriever({ files, manifest, packSha256 },{documentReader=
       for (const row of [...(registry.process_modules || []), ...(registry.context_modules || [])]) {
         if (row.process_id === 'DOCUMENT_MANAGEMENT' && intent.mode !== 'work' && !/\bdokument[a-z]*\b/.test(question)) continue;
         if (row.process_id === 'V12_BUSINESS_REQUIREMENT' && !intent.jira) continue;
+        // A4 category navigation is not itself a PLM validation incident.
+        // Keep the complete diagnostic module/ledger for actual incident signals.
+        if (row.process_id === 'V12_PLM_DIAGNOSTICS' && categoryQuestion(question) &&
+            !/\b(?:kardinalnost|total_no_of_child_instances|closed fixed|napak[a-z]*|incident[a-z]*)\b/.test(question)) continue;
         if (!(row.triggers || [row.title]).some(trigger => matchesTrigger(question, trigger))) continue;
         add(row.entrypoint);
         for (const path of row.evidence_paths || []) add(path);
