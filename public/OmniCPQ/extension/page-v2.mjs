@@ -24,7 +24,7 @@ export async function cpqPageV2(command) {
   const isSecret = e => /^(?:password|hidden)$/i.test(e?.type||'') || /password|geslo|token|secret|otp|enkratn|credential|api.?key|access.?key/i.test(
     [e?.name,e?.id,e?.getAttribute?.('aria-label'),e?.getAttribute?.('autocomplete')].join(' '));
   const isDisabled = e => !!(e?.disabled || e?.matches?.(':disabled') || e?.closest?.('[inert],[aria-disabled="true"],fieldset:disabled'));
-  const clickable = e => e.closest('button,a[href],[role="button"],[role="menuitem"],[role="treeitem"],mat-card,[onclick],[data-action],.mat-mdc-card,.mat-card') || e;
+  const clickable = e => e.closest('button,a,[role="button"],[role="menuitem"],[role="treeitem"],mat-card,[onclick],[data-action],.mat-mdc-card,.mat-card') || e;
   const visible = e => {
     if (!e || !e.isConnected || e.closest('[hidden],[aria-hidden="true"],[inert]')) return false;
     const r = e.getBoundingClientRect(),s=view.getComputedStyle(e);
@@ -59,18 +59,18 @@ export async function cpqPageV2(command) {
     if(['checkbox','radio','switch','option','combobox','tab','menuitem','menuitemcheckbox','menuitemradio','treeitem','slider','spinbutton'].includes(role)) return role;
     if(['checkbox','radio'].includes(type))return type;
     if(tag==='select')return 'select';if(tag==='textarea' || tag==='input' || e.isContentEditable || role==='textbox')return 'field';
-    if(tag==='a')return 'link';if(tag==='button' || role==='button')return 'button';return 'control';
+    if(tag==='a')return e.hasAttribute('href')?'link':'button';if(tag==='button' || role==='button')return 'button';return 'control';
   };
   // Angular/Material overlays are outside the component DOM tree. Include all visible controls.
   const activeDialog=[...doc.querySelectorAll('dialog[open],[role="dialog"],[aria-modal="true"]')].filter(visible).at(-1);
   // Material menus/listboxes can be sibling overlays outside an active dialog.
   const roots=activeDialog?[activeDialog,...doc.querySelectorAll('.cdk-overlay-pane,[role="menu"],[role="listbox"]')].filter(visible):[doc];
-  const selector='button,a[href],input,textarea,select,[contenteditable="true"],[role="button"],[role="tab"],[role="combobox"],[role="option"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="checkbox"],[role="radio"],[role="switch"],[role="treeitem"],[role="textbox"],[role="spinbutton"],[role="slider"],[tabindex],mat-card,.mat-card,.mat-mdc-card,[onclick],[data-action],mat-tree-node,mat-nested-tree-node';
+  const selector='button,a,input,textarea,select,[contenteditable="true"],[role="button"],[role="tab"],[role="combobox"],[role="option"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="checkbox"],[role="radio"],[role="switch"],[role="treeitem"],[role="textbox"],[role="spinbutton"],[role="slider"],[tabindex],mat-card,.mat-card,.mat-mdc-card,[onclick],[data-action],mat-tree-node,mat-nested-tree-node';
   const all=[...new Set(roots.flatMap(r=>[...r.querySelectorAll(selector)]))];
   // Include semantic-looking div cards whose hit handler is registered by Angular.
   for(const e of doc.querySelectorAll('div,span'))if(visible(e)&&/pointer/.test(view.getComputedStyle(e).cursor)&&norm(e.textContent).length<220)all.push(clickable(e));
   let candidates=[...new Set(all)].filter(e=>visible(e)&&!isSecret(e)&&!e.matches('input[type=hidden]')&&!e.matches('option'));
-  candidates=candidates.filter(e=>!e.matches('[tabindex],mat-icon')||!e.closest('button,a[href],[role="button"],[role="combobox"]')||e.matches('button,a[href],[role]'));
+  candidates=candidates.filter(e=>!e.matches('[tabindex],mat-icon')||!e.closest('button,a,[role="button"],[role="combobox"]')||e.matches('button,a,[role]'));
   const eligible=e=>{
     if(kind(e)==='link'){try{const u=new URL(e.getAttribute('href'),location.href);return u.origin===location.origin&&(u.pathname.startsWith('/sl/'+scope)||u.pathname.startsWith('/sl/dashboard'));}catch{return false;}}
     return true;
@@ -83,7 +83,7 @@ export async function cpqPageV2(command) {
   let index=0;
   for(const e of candidates){
     // Ignore duplicate nested tab stops when parent is already the control.
-    if(e.matches('[tabindex]') && e.closest('button,a[href],[role="button"],[role="combobox"]') && !e.matches('button,a[href],[role]'))continue;
+    if(e.matches('[tabindex]') && e.closest('button,a,[role="button"],[role="combobox"]') && !e.matches('button,a,[role]'))continue;
     const k=kind(e),name=accessible(e);
     if(k==='link'){try{const u=new URL(e.getAttribute('href'),location.href);if(u.origin!==location.origin || !(u.pathname.startsWith('/sl/'+scope)||u.pathname.startsWith('/sl/dashboard')))continue;}catch{continue;}}
     if(index++<offset)continue;if(controls.length>=cap)break;
@@ -119,7 +119,7 @@ export async function cpqPageV2(command) {
     text,controls,viewport:{width:topView.innerWidth,height:topView.innerHeight,scrollX:scrollX,scrollY:scrollY},
     framePath,frames:[...doc.querySelectorAll('iframe,frame')].filter(visible).slice(0,50).map((f)=>{const index=[...doc.querySelectorAll('iframe,frame')].indexOf(f);let accessible=false;try{accessible=!!f.contentDocument&&(['about:blank','about:srcdoc'].includes(f.contentDocument.URL)||f.contentDocument.location.origin===command.origin);}catch{}return {path:framePath?framePath+'.'+index:String(index),title:norm(f.title||f.getAttribute('aria-label')).slice(0,160),accessible};}),
     parentContext:framePath?[...topDoc.querySelectorAll('h1,h2,[role=heading]')].map(e=>norm(e.textContent)).join(' ').slice(0,500):'',
-    runtime:{pageVersion:'1.2.0',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
+    runtime:{pageVersion:'1.2.1',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
     paging:{offset,limit:cap,totalFound:candidates.length,hasMore:offset+controls.length<candidates.length,query:norm(command.query).slice(0,160)}};
   const encode=new TextEncoder().encode(JSON.stringify({...current,stateStamp}));
   const digest=await crypto.subtle.digest('SHA-256',encode);
