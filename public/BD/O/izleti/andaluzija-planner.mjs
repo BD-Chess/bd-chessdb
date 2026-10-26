@@ -1,6 +1,7 @@
 import {cities,clone,initialState,ensureDay,dayKey,reconcileLines,mapsForStop,mapsForLeg,segments} from './andaluzija-poi.mjs';
 import {SharedTripStore} from './andaluzija-store.mjs';
 import {DayOptimizer} from './andaluzija-optimize.mjs';
+import {sanitizePrivateHTML} from './andaluzija-private-html.mjs';
 const root=document.getElementById('najini-ogledi'),$=id=>document.getElementById(id);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const canonical=['www.mdlxdcc.org','mdlxdcc.org','localhost','127.0.0.1'].includes(location.hostname);
@@ -112,15 +113,6 @@ root.addEventListener('click',async e=>{
   };host.append(select,accept);
  }catch(err){showError(err);}finally{if(b.isConnected)b.disabled=!unlocked;}
 });
-function sanitizePrivateHTML(value){
- const doc=new DOMParser().parseFromString(value,'text/html');
- doc.querySelectorAll('script,style,iframe,object,embed,base,meta,link,form,svg,math,template').forEach(x=>x.remove());
- for(const el of doc.querySelectorAll('*'))for(const attr of [...el.attributes]){
-  if(attr.name.startsWith('on')||['srcdoc','formaction','style'].includes(attr.name)){el.removeAttribute(attr.name);continue;}
-  if(['href','src'].includes(attr.name)){try{const u=new URL(attr.value,location.href);if(!['https:','http:'].includes(u.protocol)||u.protocol==='http:'&&!['localhost','127.0.0.1'].includes(u.hostname))el.removeAttribute(attr.name);}catch{el.removeAttribute(attr.name);}}
- }
- return doc.body.innerHTML;
-}
 async function openPrivate(password){
  const r=await fetch('./andaluzija-private.8zs.json',{cache:'no-store'});
  if(r.status===404){$('poi-private-status').textContent='Osebna vsebina še čaka na varno pripravo.';return;}

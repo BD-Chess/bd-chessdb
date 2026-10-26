@@ -9,7 +9,7 @@ if (demo) {
       const script = document.createElement('script'); script.src = new URL(path, import.meta.url); script.onload = resolve; script.onerror = reject; document.head.append(script);
     });
   }
-  await import('./andaluzija-planner.mjs?v=20261021-map1');
+  await import('./andaluzija-planner.mjs?v=20261026-mail1');
   await import('./andaluzija-ai.mjs?v=20261021-map1');
   await import('../../../shared/dualframe-album.mjs?v=20261021-fullscreen4');
 }
