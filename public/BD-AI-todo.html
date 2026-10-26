@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="sl" data-theme="dark" data-title-sl="BD × AI · TODO" data-title-en="BD × AI · TODO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#101a1c">
+<meta name="bd-ai-todo-release" content="20261026-v3">
+<title>BD × AI · TODO</title>
+<script>document.documentElement.classList.add('js');try{const r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),v=localStorage.getItem('mdlxdcc-font'),n=v===null||v.trim()===''?1:Number(v);r.dataset.theme=t==='light'?'light':'dark';const l=localStorage.getItem('mdlxdcc-lang');if(l==='en'||l==='sl')r.lang=l;r.style.setProperty('--scale',Number.isFinite(n)?Math.max(.8,Math.min(1.5,n)):1);}catch(_){document.documentElement.dataset.theme='dark';}</script>
+<link rel="stylesheet" href="/AI8/ai8-toolbar.css?v=20261026-r1">
+<script src="/AI8/ai8-toolbar.js?v=20261026-r1" defer></script>
+<style>
+:root{color-scheme:dark;--bg:#101a1c;--surface:#172527;--ink:#edf0e7;--muted:#a8b6b2;--line:#35484a;--accent:#b7d9bb;--accent2:#88cbc6;--wash:#162b2b;--warn:#e6c27a;--bad:#e59a8f;--ok:#9fd6a8;--scale:1;--max:1180px;font-family:'Avenir Next','Segoe UI',Arial,sans-serif}
+:root[data-theme=light]{color-scheme:light;--bg:#f6f3ec;--surface:#eeece3;--ink:#203c38;--muted:#5c7068;--line:#c7d0c5;--accent:#396846;--accent2:#206d69;--wash:#e7ede1;--warn:#8d6718;--bad:#a2412f;--ok:#2f6b3c}
+*{box-sizing:border-box}
+html{font-size:calc(100% * var(--scale));background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.5}
+a{color:var(--accent2)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.shell{max-width:var(--max);margin:0 auto;padding:0 16px 56px}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0}
+.topin{max-width:var(--max);margin:0 auto;padding:0 16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.mono{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--wash);font-weight:700}
+.brand b{color:var(--accent)}.brand small{display:block;color:var(--muted);font-size:.78rem}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:.86rem;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected=true]{background:var(--wash);border-color:var(--accent);font-weight:700}
+h1{font-size:clamp(1.5rem,4vw,2.2rem);line-height:1.15;margin:26px 0 6px}
+h2{font-size:1.2rem;margin:26px 0 8px}
+.lead,.hint{color:var(--muted);max-width:75ch}
+.stamp{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:.85rem;margin:0 0 16px}
+.stamp b{color:var(--ink)}
+.search{display:flex;gap:8px;margin:14px 0}
+.search input{flex:1;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit}
+.search button{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+ol.items,ul.items{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.item{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:start}
+.item .rk{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.85rem;min-width:2em}
+.item h3{margin:0;font-size:1rem}.item .id{color:var(--accent2);font-weight:600;margin-right:6px}
+.item p{margin:2px 0 0;color:var(--muted);font-size:.88rem}
+.item .meta{display:flex;flex-wrap:wrap;gap:4px 8px;grid-column:2/4;font-size:.78rem;color:var(--muted)}
+.pt{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent)}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;font-size:.74rem;color:var(--muted)}
+.tag.bd,.tag.sklep{border-color:var(--warn);color:var(--warn)}.tag.ok,.tag.dokaz{border-color:var(--ok);color:var(--ok)}.tag.bad,.tag.neznano{border-color:var(--bad);color:var(--bad)}
+.item.focus{border-color:var(--accent)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:8px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;min-width:120px}
+th{background:var(--wash);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td.id{min-width:70px;color:var(--accent2);font-weight:600;white-space:nowrap}
+.para{margin:6px 0;max-width:90ch}
+.family{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px}
+.card h3{margin:0 0 2px;font-size:1rem}.card .who{color:var(--muted);font-size:.78rem;margin-bottom:6px}
+.empty{color:var(--muted);font-style:italic;font-size:.88rem}
+.gate{max-width:640px;margin:12vh auto 0;padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--surface)}
+.gate h1{margin-top:0}
+.gate .err{color:var(--bad)}
+footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:.82rem;display:flex;flex-wrap:wrap;gap:6px 16px}
+.lock{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.row-hidden{display:none!important}
+@media (max-width:600px){.item{grid-template-columns:auto 1fr}.item .meta{grid-column:2/3}.item .pt{grid-column:2/3}}
+@media print{body>*{display:none!important}body:before{content:'Tiskanje zasebnega TODO je onemogočeno.';display:block;padding:30px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin">
+  <a class="brand" href="/start/" aria-label="BD Start" data-aria-sl="BD Start" data-aria-en="BD Start"><span class="mono" aria-hidden="true">BD</span><span><b>BD × AI</b> TODO<small><span data-lang="sl">zasebno · osvežitev vsak dan ob 04:44</span><span data-lang="en" hidden>private · refreshed daily at 04:44</span></small></span></a>
+  <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance"><button type="button" data-ai8-down aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button><button type="button" data-ai8-reset aria-label="Velikost besedila na 100 odstotkov" data-aria-sl="Velikost besedila na 100 odstotkov" data-aria-en="Reset text size to 100 percent">100%</button><button type="button" data-ai8-up aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button><span class="ai8-divider" aria-hidden="true"></span><button type="button" data-ai8-lang="en" aria-label="English" aria-pressed="false">EN</button><button type="button" data-ai8-lang="sl" aria-label="Slovenščina" aria-pressed="true">SL</button><span class="ai8-divider" aria-hidden="true"></span><button type="button" data-ai8-theme="dark" aria-pressed="true">Dark</button><button type="button" data-ai8-theme="light" aria-pressed="false">Light</button><span class="ai8-divider" aria-hidden="true"></span><button type="button" id="lockAll"><span data-lang="sl">Zakleni</span><span data-lang="en" hidden>Lock</span></button></div>
+</div></header>
+
+<div class="shell">
+<section id="gate" class="gate" aria-live="polite">
+  <h1 id="gateTitle"><span data-lang="sl">Odpiram TODO …</span><span data-lang="en" hidden>Opening TODO …</span></h1>
+  <p id="gateText" class="hint"><span data-lang="sl">Zaklenjeno. Vnesi geslo.</span><span data-lang="en" hidden>Locked. Enter the password.</span></p>
+  <form id="pw" hidden autocomplete="off"><label for="pwin"><span data-lang="sl">Geslo</span><span data-lang="en" hidden>Password</span></label><div class="search"><input id="pwin" type="password" autocomplete="current-password" required><button id="pwgo" type="submit" class="lock"><span data-lang="sl">Odkleni</span><span data-lang="en" hidden>Unlock</span></button></div></form>
+</section>
+<main id="app" hidden>
+  <div class="tabs" id="tabs" role="tablist" aria-label="Sekcije"></div>
+  <div class="search"><label class="hint" for="q" style="position:absolute;left:-9999px">Filter</label><input id="q" type="search" placeholder="Filtriraj to sekcijo (ID, besedilo) …" autocomplete="off"><button type="button" id="qc" aria-label="Počisti">×</button></div>
+  <p class="empty" id="count" role="status" aria-live="polite"></p>
+  <div id="view" tabindex="-1"></div>
+</main>
+<footer>
+  <span>BD × AI Lab</span>
+  <a href="/start/">BD Start ↗</a>
+  <a href="/ai8/live/">AI8 Live ↗</a>
+</footer>
+</div>
+
+<script>
+(async()=>{
+'use strict';
+const TE=new TextEncoder(),TD=new TextDecoder('utf-8',{fatal:true});
+const $=s=>document.querySelector(s);
+const VPATH=new URL('BD-AI-todo-data/',location.href).pathname,SKEY='bd-ai-todo-k-v1';let CFG=null;
+const from64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const sha256hex=async b=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',b))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined&&x!==null)e.textContent=x;return e;};
+const lang=()=>document.documentElement.lang==='en'?'en':'sl';
+const L=o=>o&&typeof o==='object'?(o[lang()]||o.sl||''):(o||'');
+function applyLang(){document.querySelectorAll('[data-lang]').forEach(i=>{i.hidden=i.dataset.lang!==lang();});}
+document.addEventListener('ai8:display',()=>{applyLang();if(DATA){renderTabs();renderView();}});
+$('#lockAll').onclick=()=>{try{sessionStorage.removeItem(SKEY);}catch(_){}location.reload();};
+let DATA=null,CUR=null;
+function fail(msg){$('#gateTitle').textContent='TODO se ni odprl';const p=$('#gateText');p.textContent=msg;p.className='err';}
+async function getJSON(p){const r=await fetch(p,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});if(!r.ok)throw new Error('Prenos ni uspel: '+p);return r.json();}
+async function decryptWith(cfg,keyBytes){
+  const key=await crypto.subtle.importKey('raw',keyBytes,'AES-GCM',false,['decrypt']);
+  const r=await fetch(VPATH+cfg.data.path,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});
+  if(!r.ok)throw new Error('Prenos TODO podatkov ni uspel.');
+  const enc=await r.text();
+  if(await sha256hex(TE.encode(enc))!==cfg.data.sha256)throw new Error('Preverjanje celovitosti TODO ni uspelo.');
+  let out;
+  try{out=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(cfg.cipher.iv),additionalData:TE.encode(cfg.cipher.aad)},key,from64(enc)));}
+  catch(_){throw new Error('Podatkov ni mogoče odpreti (spremenjeni podatki ali star ključ).');}
+  if(cfg.compression==='gzip')out=new Uint8Array(await new Response(new Blob([out]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+  if(await sha256hex(out)!==cfg.plaintext_sha256)throw new Error('Preverjanje celovitosti vsebine ni uspelo.');
+  const obj=JSON.parse(TD.decode(out));
+  if(obj.format!=='BD-AI-TODO-PAYLOAD-1'||!Array.isArray(obj.tabs))throw new Error('Neveljavna vsebina TODO.');
+  return obj;
+}
+async function unwrap(cfg,password){
+  const m=await crypto.subtle.importKey('raw',TE.encode(password.normalize('NFC')),'PBKDF2',false,['deriveKey']);
+  const kek=await crypto.subtle.deriveKey({name:'PBKDF2',hash:cfg.kdf.hash,salt:from64(cfg.kdf.salt),iterations:cfg.kdf.iterations},m,{name:'AES-GCM',length:256},false,['decrypt']);
+  try{return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(cfg.wrap.iv),additionalData:TE.encode('BD-AI-TODO:v1:wrap:'+cfg.vault)},kek,from64(cfg.wrap.cipher)));}
+  catch(_){throw new Error('Napačno geslo.');}
+}
+async function start(){
+  if(!window.isSecureContext||!crypto.subtle||!window.DecompressionStream)throw new Error('Odpri HTTPS naslov v posodobljenem brskalniku.');
+  CFG=await getJSON(VPATH+'todo-vault.json');
+  if(CFG.format!=='BD-AI-TODO-VAULT-1')throw new Error('Neveljavna TODO nastavitev.');
+  let s=null;try{s=JSON.parse(sessionStorage.getItem(SKEY)||'null');}catch(_){}
+  if(s&&s.vault===CFG.vault&&typeof s.key==='string'){try{return await decryptWith(CFG,from64(s.key));}catch(_){try{sessionStorage.removeItem(SKEY);}catch(__){}}}
+  return null;
+}
+function show(obj){DATA=obj;CUR=(location.hash||'').slice(1);if(!DATA.tabs.some(x=>x.id===CUR))CUR=DATA.tabs[0].id;$('#gate').hidden=true;$('#app').hidden=false;renderTabs();renderView();applyLang();}
+const ST={open:['odprto','tag'],partial:['delno','tag'],blocked:['blokirano','tag bad'],bd:['čaka BD','tag bd'],later:['pozneje','tag'],unknown:['neznano','tag bad'],done:['končano','tag ok']};
+function safeLink(u){return typeof u==='string'&&/^https:\/\//i.test(u);}
+function cellNode(c,isId){const td=el('td',isId?'id':'');if(c&&typeof c==='object'){td.append(document.createTextNode(c.x||''));(c.l||[]).forEach(([t,u])=>{td.append(document.createTextNode(' '));if(safeLink(u)){const a=el('a','',t);a.href=u;a.target='_blank';a.rel='noopener noreferrer';a.referrerPolicy='no-referrer';td.append(a);}else td.append(document.createTextNode(t));});}else td.textContent=c==null?'':String(c);return td;}
+function itemNode(it,i,focus){const li=el('li','item'+(focus?' focus':''));li.append(el('span','rk',i?String(i).padStart(2,'0'):''));const b=el('div');const h=el('h3');h.append(el('span','id',it.id||''),document.createTextNode(it.t||''));b.append(h);if(it.s)b.append(el('p','',it.s));li.append(b);li.append(el('span','pt',it.pt!=null?String(it.pt):''));const m=el('div','meta');if(it.st&&ST[it.st])m.append(el('span',ST[it.st][1],ST[it.st][0]));if(it.ev)m.append(el('span','tag '+it.ev,it.ev));if(it.g)m.append(el('span','tag',it.g));if(m.childNodes.length)li.append(m);li.dataset.s=((it.id||'')+' '+(it.t||'')+' '+(it.s||'')+' '+(it.g||'')).toLowerCase();return li;}
+function block(b){
+  const w=el('div');
+  if(b.cap){w.append(el('h2','',L(b.cap)));}
+  if(b.k==='cards'){const ol=el('ol','items');b.items.forEach((it,i)=>ol.append(itemNode(it,b.rank?i+1:0,!!b.focus)));w.append(ol);}
+  else if(b.k==='notes'){const ul=el('ul','items');b.items.forEach(it=>ul.append(itemNode(it,0,false)));w.append(ul);}
+  else if(b.k==='table'){const box=el('div','tbl');const t=el('table');const th=el('thead'),hr=el('tr');b.cols.forEach(c=>hr.append(el('th','',c)));th.append(hr);t.append(th);const tb=el('tbody');b.rows.forEach(r=>{const tr=el('tr');r.forEach((c,i)=>tr.append(cellNode(c,i===0&&b.idcol)));tr.dataset.s=r.map(c=>typeof c==='object'&&c?c.x:c).join(' ').toLowerCase();tb.append(tr);});t.append(tb);box.append(t);w.append(box);}
+  else if(b.k==='text'){b.paras.forEach(p=>{const d=el('p','para');if(p&&typeof p==='object'){d.append(document.createTextNode(p.x||''));(p.l||[]).forEach(([t,u])=>{d.append(document.createTextNode(' '));if(safeLink(u)){const a=el('a','',t);a.href=u;a.target='_blank';a.rel='noopener noreferrer';a.referrerPolicy='no-referrer';d.append(a);}});}else d.textContent=p;d.dataset.s=String(p&&p.x||p).toLowerCase();w.append(d);});}
+  else if(b.k==='family'){const g=el('div','family');b.items.forEach(f=>{const c=el('div','card');c.append(el('h3','',f.name),el('div','who',f.role),el('div','who','Vprašanje: '+(f.asked||'prvič 27. 10. 04:44')));if(f.items&&f.items.length){const u=el('ul');f.items.forEach(x=>u.append(el('li','',x)));c.append(u);}else c.append(el('p','empty','Še brez odgovora.'));g.append(c);});w.append(g);}
+  else if(b.k==='log'){const u=el('ul');b.items.forEach(x=>{const l=el('li','',x);l.dataset.s=x.toLowerCase();u.append(l);});w.append(u);}
+  else if(b.k==='stamp'){const p=el('p','stamp');b.items.forEach(([k,v])=>{const s=el('span');s.append(document.createTextNode(k+': '),el('b','',v));p.append(s);});w.append(p);}
+  return w;
+}
+function renderTabs(){const t=$('#tabs');t.replaceChildren();DATA.tabs.forEach(tab=>{const b=el('button','',L(tab.title));b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(tab.id===CUR));b.addEventListener('click',()=>{CUR=tab.id;history.replaceState(null,'','#'+tab.id);$('#q').value='';renderTabs();renderView();});t.append(b);});}
+function renderView(){const v=$('#view');v.replaceChildren();const tab=DATA.tabs.find(x=>x.id===CUR)||DATA.tabs[0];v.append(el('h1','',L(tab.title)));if(tab.lead)v.append(el('p','lead',L(tab.lead)));tab.blocks.forEach(b=>v.append(block(b)));filter();}
+function filter(){const q=$('#q').value.trim().toLowerCase().split(/\s+/).filter(Boolean);let n=0,t=0;document.querySelectorAll('#view [data-s]').forEach(e=>{t++;const ok=q.every(p=>e.dataset.s.includes(p));e.classList.toggle('row-hidden',!ok);if(ok)n++;});$('#count').textContent=t?(n+' / '+t):'';}
+$('#q').addEventListener('input',filter);$('#qc').addEventListener('click',()=>{$('#q').value='';filter();$('#q').focus();});
+$('#pw').addEventListener('submit',async ev=>{
+  ev.preventDefault();const inp=$('#pwin'),btn=$('#pwgo'),t=$('#gateText');btn.disabled=true;t.textContent='Preverjam geslo …';t.className='hint';
+  try{const raw=await unwrap(CFG,inp.value);inp.value='';const obj=await decryptWith(CFG,raw);try{sessionStorage.setItem(SKEY,JSON.stringify({vault:CFG.vault,key:btoa(String.fromCharCode(...raw))}));}catch(_){}raw.fill(0);show(obj);}
+  catch(err){t.textContent=err.message;t.className='err';inp.select();}
+  btn.disabled=false;
+});
+try{
+  const obj=await start();
+  if(obj)show(obj);else{$('#gateTitle').textContent='Zaklenjeno';$('#pw').hidden=false;$('#pwin').focus();}
+}catch(err){fail(err.message||'Napaka.');}
+})();
+</script>
+<noscript><p style="padding:16px">Za zasebni TODO omogoči JavaScript. / Enable JavaScript.</p></noscript>
+</body>
+</html>
