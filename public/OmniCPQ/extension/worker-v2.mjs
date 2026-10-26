@@ -33,7 +33,7 @@ export function validateAction(action) {
   return true;
 }
 const cap = Object.freeze({
-  schema:'omnicpq.gui.capabilities.v2',protocol:PROTOCOL,apiRevision:3,workerVersion:'1.2.0',observation:true,targetedRead:true,cancel:true,
+  schema:'omnicpq.gui.capabilities.v2',protocol:PROTOCOL,apiRevision:3,workerVersion:'1.2.1',observation:true,targetedRead:true,cancel:true,
   pointer:['click','doubleClick','hover','contextClick','scroll','drag','ensureVisible'],keyboard:['key','fill','focus'],
   forms:['fill','check','selectNative','upload'],execution:'CDP_WHEN_ALLOWED',
   frames:'VISIBLE_SAME_ORIGIN',trustedCDP:'probe_required',maxBatchActions:1,
@@ -222,7 +222,7 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
           status:result.method==='ALREADY_MATCHES'?'ALREADY_MATCHES':'DISPATCHED',method:result.method,
           target:{id:a.targetId,label:prepared.label,operation:a.operation},risk:prepared.risk,beforeRevision:a.revision,
           afterRevision:after.observation.revision,documentKey:after.observation.documentKey,
-          approvalSource:message.approvalSource==='EXPLICIT_USER_GOAL'&&message.humanApproved?'EXPLICIT_USER_GOAL':message.humanApproved?'EXPLICIT_ACTION':'USER_GOAL',workerVersion:'1.2.0',apiRevision:3,
+          approvalSource:message.approvalSource==='EXPLICIT_USER_GOAL'&&message.humanApproved?'EXPLICIT_USER_GOAL':message.humanApproved?'EXPLICIT_ACTION':'USER_GOAL',workerVersion:'1.2.1',apiRevision:3,
           outcome},observation:{...after.observation,capabilities:{...cap,cdpAvailable:current.cdpAvailable,allowWrites:current.allowWrites}}};
       }catch{return fail('CPQ_ACTION_OUTCOME_UNKNOWN');}
       finally{if(debuggerTarget)try{await api.debugger.detach(debuggerTarget);}catch{}}
