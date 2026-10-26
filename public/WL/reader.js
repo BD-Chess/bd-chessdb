@@ -2,7 +2,7 @@
 (() => { 'use strict';
 const $=id=>document.getElementById(id), te=new TextEncoder(), td=new TextDecoder('utf-8',{fatal:true});
 const ROOT=new URL('./',location.href).pathname, FEED='https://raw.githubusercontent.com/BD-Chess/bd-chessdb/main/public/WL/';
-const RULES_MANIFEST_SHA='b8c4c4e7144fd2264fbcaa40b759315ecc8e8d6532d434233b447dcba330c35c', RULES_DOC_SHA='a3e5709e5326b400b80d14e174e18ba09c4d44be216c9d7ed475e640ff8e7d32';
+const RULES_MANIFEST_SHA='3e5b58a14d8f179d5555f8da06b3a4410a8e730d029434be81a1c5f41dd1ea0e', RULES_DOC_SHA='a3e5709e5326b400b80d14e174e18ba09c4d44be216c9d7ed475e640ff8e7d32';
 const SESSION='wl-v2-session', FONT='wl-reader-percent-v2', THEME='wl-theme-v2';
 let vault, key, token='', state=null, rulesDoc=null, rulesRelease=null, events=[], unlocked=false, timer=null, busy=false, font=100, generation=0;
 function read(store,k){try{return store.getItem(k)}catch{return null}}

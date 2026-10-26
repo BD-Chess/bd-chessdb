@@ -87,11 +87,14 @@ export async function runtimeOperatorPolicies(env,{loadPg=loadDefaultPg,now=()=>
  operatorPolicy.configurationStatus=configurationStatus;
  return {enhancementPolicy,operatorPolicy,accountUsage:backend,configurationStatus};
 }
+const DF_OWNER_VERIFIER='pbkdf2-sha256:600000:HYuV2fa09pM23NsLEn9vbONJuHOtzqsU:M4J0zeO4UOvf7aDdr99q6oIOj8uU8UMGpgGCDD1qKrA';
 export async function runtimeService(){
  const store=configurationStore(),pack=await store.get(VAULT_KEY,{type:'json',consistency:'strong'});
  let values={};
  if(pack)values=decryptConfiguration(pack,Netlify.env.get('GEMINI_API_KEY'));
- const env=key=>Netlify.env.get(key)||values[key];
+ // SEC-R1 2026-10-26: owner password rotated. Same pbkdf2-sha256 verifier scheme, new salt; pinned in code so a stale
+ // DF_PASSWORD_VERIFIER environment/vault value cannot keep accepting the retired password.
+ const env=key=>key==='DF_PASSWORD_VERIFIER'?DF_OWNER_VERIFIER:(Netlify.env.get(key)||values[key]);
  const policies=await runtimeOperatorPolicies(env);
  const ownerPolicy=createPrivateOwnerPolicy({store,env});
  return createService({store,env,accountIdentity:await runtimeAccountIdentity(env),enhancementPolicy:routeOwnerPolicy(ownerPolicy,policies.enhancementPolicy),operatorPolicy:policies.operatorPolicy,accountUsage:policies.accountUsage});

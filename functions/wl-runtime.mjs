@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
-const EXPECTED='8baf53eb091d07fa106c506e5a4b6de02ffda109f284d13ccab87c12f2466a32';
+const EXPECTED='0a871cf6df3ad8334e9916d0a5a8d18b2ca783ddf3158b6fa8b06351c7001e78';
 const headers={'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store, no-cache, must-revalidate','Pragma':'no-cache','X-Robots-Tag':'noindex, nofollow, noarchive','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'};
 const answer=(x,status=200)=>new Response(JSON.stringify(x),{status,headers});
 function authorized(req){const v=req.headers.get('x-wl-control')||'';return v.length>=32&&v.length<=100&&timingSafeEqual(createHash('sha256').update(v).digest(),Buffer.from(EXPECTED,'hex'))}

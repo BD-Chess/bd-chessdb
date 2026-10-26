@@ -47,5 +47,5 @@ test('six hashed topics load progressively; city guides contain reasoning; prote
  for(const t of travelTopics)assert((await k.topic(t)).length>1700,t);
  for(const city of Object.keys(k.visits)){const r=await k.reference(city);assert(r.length>1800,city);assert(r.includes('Naš')||r.includes('naš'));}
  await assert.rejects(k.topic('../private'));
- assert.equal(createHash('sha256').update(await readFile('public/BD/O/izleti/andaluzija-private.8zs.json')).digest('hex'),'3d90570f96a6353d5767415157a6f9685f019a84d3fe9151f8499beaec2117ff');
+ assert.equal(createHash('sha256').update(await readFile('public/BD/O/izleti/andaluzija-private.8zs.json')).digest('hex'),'c824f091e19586b749eb9883a16764625edce0f67e5928ec704e87e12113c896');
 });
