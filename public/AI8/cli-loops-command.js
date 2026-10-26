@@ -32,7 +32,7 @@
     const ext=v.ext||"",mal=!!v.mal;
     if((ext||mal)&&!spec.features?.external)errors.push("MAL in ostali LLM-ji pridejo z 8zListener 0.6.0.");
     if(ext&&!["gemini","grok","deepseek","glm","all"].includes(ext))errors.push("Neveljaven zunanji model.");
-    if(ext&&host!=="HOME")errors.push("Ostali LLM-ji so zaenkrat samo na HOME.");
+    if(ext&&host!=="HOME")errors.push("Ostali oblačni LLM-ji so zaenkrat samo na HOME.");
     if(ext)parts.push("EXT="+ext);if(mal)parts.push("MAL");
     if(ext)parts.push("EXTUSD="+String(spec.ext_defaults?.usd||"2"),"EXTCALLS="+Number(spec.ext_defaults?.calls||8));
     if(!topic)errors.push("Dodaj temo in želeni rezultat.");
