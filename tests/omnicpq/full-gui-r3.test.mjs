@@ -81,6 +81,12 @@ test('same-document editor fill reaches input listeners, clears previous value, 
     o=await f.client.observe();assert.match(o.text,/Shranjeno/);
   }finally{f.dom.window.close();}
 });
+test('multiline textarea keeps exact whitespace for observation and verified fill receipt',async()=>{
+  const f=fixture('<label for="notes">Notes</label><textarea id="notes">old</textarea>');
+  try{let committed;f.d.querySelector('#notes').onchange=e=>{committed=e.target.value;};await f.pair();const o=await f.client.observe(),value='  first line\nsecond line  ';
+    const r=await f.client.execute(f.action(o,'Notes','fill',{value}),{guidedAuthorization:true});assert.equal(committed,value);assert.equal(r.observation.controls.find(c=>c.label==='Notes').value,value);assert.equal(r.receipt.outcome,'OBSERVED_UI_VALUE_MATCH');
+  }finally{f.dom.window.close();}
+});
 test('fresh revision detects a human field edit; coverage prevents a wrong click; lock protects departure',async()=>{
   const f=fixture();try{await f.pair();let o=await f.client.observe(),a=f.action(o,'CPU','fill',{value:'12'});
     f.d.querySelector('#ram').value='17';await assert.rejects(f.client.execute(a,{guidedAuthorization:true}),/CPQ_SCREEN_CHANGED/);assert.equal(f.d.querySelector('#cpu').value,'1');
@@ -170,7 +176,7 @@ test('visible same-origin frame observation binds frame geometry and retains the
     const top=(await f.page({type:'observe',origin,scope:'order'})).observation;assert.equal(top.frames[0].path,'0');assert(top.frames[0].accessible);
     const r=await f.page({type:'observe',origin,scope:'order',framePath:'0'});assert(r.ok);assert.equal(r.observation.framePath,'0');
     assert.equal(r.observation.controls.find(c=>c.label==='Embedded value').value,'kept');assert.equal(r.observation.documentKey,'SYNTHETIC');
-    assert.equal(r.observation.runtime.pageVersion,'1.2.1');assert.equal(f.d.querySelector('#cpu').value,'1');
+    assert.equal(r.observation.runtime.pageVersion,'1.2.2');assert.equal(f.d.querySelector('#cpu').value,'1');
     assert.equal((await f.page({type:'observe',origin,scope:'order',framePath:'99'})).error,'CPQ_FRAME_CHANGED');
   }finally{f.dom.window.close();}
 });
