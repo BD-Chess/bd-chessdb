@@ -60,6 +60,15 @@ test('real observer finds icon-only FAB, Angular div card and nested live overla
     await f.client.execute(f.action(o,'Synthetic category','click'));o=await f.client.observe();assert(o.controls.some(c=>c.label==='Synthetic product'));
   }finally{f.dom.window.close();}
 });
+test('Angular offering anchors without href remain individual hit-tested controls inside a Material card',async()=>{
+  const f=fixture('<mat-card><section><a class="trow clickable" style="cursor:pointer" id="other"><div><span>Other offering</span></div></a><a class="trow clickable" style="cursor:pointer" id="so"><div><span>TS Suvereni oblak (paket) (Ikt.SO.Pck)</span></div></a><a href="https://outside.invalid/sl/order/list">External offering</a></section></mat-card>');
+  try{let selected=null;f.d.querySelector('#other').onclick=()=>{selected='other';};f.d.querySelector('#so').onclick=()=>{selected='so';f.d.querySelector('#result').textContent='SO selected';};
+    await f.pair();let o=await f.client.observe(0,180,'TS Suvereni oblak');
+    const row=o.controls.find(c=>c.label==='TS Suvereni oblak (paket) (Ikt.SO.Pck)');assert(row,'offering row must be distinct from its Material container');assert.equal(row.kind,'button');assert.equal(row.href,undefined);
+    const r=await f.client.execute(f.action(o,row.label,'click'),{guidedAuthorization:true});assert.equal(selected,'so');assert.match(r.observation.text,/SO selected/);
+    o=await f.client.observe();assert(o.controls.some(c=>c.label==='Other offering'));assert(!o.controls.some(c=>c.label==='External offering'));
+  }finally{f.dom.window.close();}
+});
 test('same-document editor fill reaches input listeners, clears previous value, validates and saves actual values',async()=>{
   const f=fixture();try{await f.pair();let o=await f.client.observe();assert(o.navigationLocked);
     assert.deepEqual(JSON.parse(JSON.stringify(o.controls.find(c=>c.label==='CPU').constraints)),{min:'1',max:'24'});
@@ -161,7 +170,7 @@ test('visible same-origin frame observation binds frame geometry and retains the
     const top=(await f.page({type:'observe',origin,scope:'order'})).observation;assert.equal(top.frames[0].path,'0');assert(top.frames[0].accessible);
     const r=await f.page({type:'observe',origin,scope:'order',framePath:'0'});assert(r.ok);assert.equal(r.observation.framePath,'0');
     assert.equal(r.observation.controls.find(c=>c.label==='Embedded value').value,'kept');assert.equal(r.observation.documentKey,'SYNTHETIC');
-    assert.equal(r.observation.runtime.pageVersion,'1.2.0');assert.equal(f.d.querySelector('#cpu').value,'1');
+    assert.equal(r.observation.runtime.pageVersion,'1.2.1');assert.equal(f.d.querySelector('#cpu').value,'1');
     assert.equal((await f.page({type:'observe',origin,scope:'order',framePath:'99'})).error,'CPQ_FRAME_CHANGED');
   }finally{f.dom.window.close();}
 });
