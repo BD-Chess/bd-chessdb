@@ -1,6 +1,6 @@
 # Netlify prebuilt continuous deployment
 
-Version R1 — 2026-10-22. BD explicitly approved automatic publication of every tested main update, replacing the former weekly release window and build-minute hold. This governs MDLxDCC and ChessBest deployment; it does not authorize private-data disclosure, LAB promotion, paid services, or research actions.
+Version R1 â€” 2026-10-22. BD explicitly approved automatic publication of every tested main update, replacing the former weekly release window and build-minute hold. This governs MDLxDCC and ChessBest deployment; it does not authorize private-data disclosure, LAB promotion, paid services, or research actions.
 
 ## One publication path
 
@@ -31,8 +31,21 @@ The same workflow supports `workflow_dispatch`, site `all`, `mdlxdcc` or `bd-che
 
 The old weekly ChatGPT coordinator is retired after the verified cutover. Nara, image and editorial tasks retain their content schedules and scopes; their authorized main changes use this shared pipeline, without direct per-task Netlify dispatches. Retired one-off production jobs stay retired. Never reactivate an old release marker to publish again.
 
+## Sef browser verification order
+
+The Sef push check tests the prepared checkout with isolated synthetic browser
+sessions before publication. The same workflow runs again after a successful
+`Deploy to Netlify production` completion, checks out that exact release SHA,
+and verifies the live public bytes and synthetic session behavior. A manual
+dispatch also performs live checks. Live-byte comparisons cannot gate the
+publication which creates those bytes. The publisher's mandatory same-commit
+push checks and secret boundary remain unchanged; the post-release verifier is
+read-only and cannot publish. Both checks include the encrypted CLI Inbox
+sidecar, masked controls and exclusion of secret values from search.
+
 ## Cost boundary
 
 Keep the current Free Legacy plan. External preparation does not consume Netlify native build minutes; exhausted historical build minutes are not an artificial hold on this upload path. Actual provider restrictions, bandwidth/function limits, rate limits and GitHub storage limits still apply. No paid upgrade, top-up, paid runner or hidden paid retry is authorized. Standard GitHub-hosted runners for public repositories are free under current GitHub terms.
 
 Official references: https://docs.netlify.com/build/configure-builds/stop-or-activate-builds/ ; https://cli.netlify.com/commands/deploy/ ; https://docs.github.com/en/billing/concepts/product-billing/github-actions .
+

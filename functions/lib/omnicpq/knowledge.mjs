@@ -1,11 +1,12 @@
 import { validateLifecycleAnswer } from './lifecycle.mjs';
-import { catalogExtracts, resolveCatalogQuery } from './catalog.mjs';
+import { catalogExtracts, resolveCatalogQuery,categoryQuestion } from './catalog.mjs';
 import { resolve } from 'node:path';
 import { SKILL, error, hash } from './identity.mjs';
 import { SKILL_V15 } from './v15.mjs';
 import { openSealedKnowledge } from './sealed-knowledge.mjs';
 import { gunzipSync } from 'node:zlib';
 import { runtime } from './runtime.mjs';
+import {readPrivateDocument} from './private-documents.mjs';
 
 const env = key => globalThis.Netlify?.env?.get(key) ?? process.env[key];
 const norm = value => String(value).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
@@ -144,7 +145,7 @@ function matchesTrigger(text, trigger) {
   }));
 }
 
-export function createRetriever({ files, manifest, packSha256 }) {
+export function createRetriever({ files, manifest, packSha256 },{documentReader=readPrivateDocument}={}) {
   const registry = JSON.parse(files['references/SERVICE_REGISTRY.json']);
   const specs = new Map(manifest.payload_files.map(f => [f.path, f]));
   const lifecycleSchema = JSON.parse(files['references/LIFECYCLE_OUTPUT.schema.json']);
@@ -204,9 +205,10 @@ export function createRetriever({ files, manifest, packSha256 }) {
       if (request.promptId === 'CAPABILITIES' || /pokrit|podprt|podpir|kandidat|portfelj|katere storitve|kaj (?:se )?zmore|kaj (?:se )?manjka/.test(question)) add('references/SERVICE_COVERAGE.md');
       if (request.promptId === 'COVERAGE') add('references/SERVICE_COVERAGE.md');
       if (request.promptId === 'SOURCES' || /viri znanja|izvor.{0,20}znanj|od kod.{0,20}znan/.test(question)) add('references/KNOWLEDGE_ORIGINS.md');
-      const catalogRequested = request.promptId === 'PLM_CATALOG' || /\b(?:plm|cenik|sifr[a-z]*|katalog[a-z]*|kategorij[a-z]*|copa|co-pa)\b/.test(question);
-      const catalogQuestion = resolveCatalogQuery(files,request.message,{allowCarry:Boolean(carry && !current.row && !current.ambiguous && !selection.conflict && !unknownNewService && service?.service_id !== 'TS_SO'),context:contextFits ? request.context.text : '',previous:previous?.content || ''});
-      const extracts = catalogExtracts(files, catalogQuestion, { requested: catalogRequested && service?.service_id !== 'TS_SO' && request.promptId !== 'SO_RELATIONS' });
+      const hierarchyRequested=intent.mode==='work'&&categoryQuestion(question);
+      const catalogRequested = hierarchyRequested || request.promptId === 'PLM_CATALOG' || /\b(?:plm|cenik|sifr[a-z]*|katalog[a-z]*|kategorij[a-z]*|copa|co-pa)\b/.test(question);
+      const catalogQuestion = resolveCatalogQuery(files,request.message,{allowCarry:Boolean(carry && !current.row && !current.ambiguous && !selection.conflict && !unknownNewService && service?.service_id !== 'TS_SO'),context:contextFits ? request.context.text : '',previous:previous?.content || ''})+(hierarchyRequested&&service?'\nStoritev v trenutnem kontekstu: '+service.title:'');
+      const extracts = catalogExtracts(files, catalogQuestion, { requested: !(intent.jira&&!service) && catalogRequested && (service?.service_id !== 'TS_SO'||hierarchyRequested) && request.promptId !== 'SO_RELATIONS' });
       if (catalogRequested || extracts.length || service?.service_id === 'TS_SO' || request.promptId === 'SO_RELATIONS') add('references/PLM_EXPORTS_20261022.md');
       if (service?.service_id === 'TS_SO' || request.promptId === 'SO_RELATIONS' || /ikt\.so\./.test(question)) add('references/PLM_SO_20261022.json');
       if (/promo_type|mmer-5890|ecm-13407|standard request|sinhronizacij.{0,30}(?:plm|mcrm)|ikt oprem/.test(question)) add('references/PILOT_R2_DIAGNOSTICS_DELNI.md');
@@ -262,9 +264,24 @@ export function createRetriever({ files, manifest, packSha256 }) {
           kind: extract.kind, locator: extract.locator, sections: [{ heading: 'Izbrane celotne cenovne vrstice', startLine: 1, endLine: 1 }] });
         blocks.push(`<source id="${id}" path="${extract.path}" kind="${extract.kind}">\n${extract.text}\n</source>`);
       }
+      let documentationStatus='NOT_REQUESTED';
+      if(service?.service_id==='TS_SO'&&(hierarchyRequested||/\b(?:cpu|vcpu|ram|disk[a-z]*|konfigur[a-z]*)\b/.test(question))){
+        try{
+          const name='A4_SO_WORKED_EXAMPLE_R3.md',item=await documentReader(name),text=item.bytes.toString('utf8'),id=`S${sources.length+1}`;
+          sources.push({id,path:'playbooks/'+name,sha256:item.sha256,kind:'dated_ui_example_not_universal_product_rule',sections:[{heading:'SO/A4 dokazni primer R3',startLine:1,endLine:text.split('\n').length}]});
+          blocks.push(`<source id="${id}" path="playbooks/${name}" kind="dated_ui_example_not_universal_product_rule">\n${text}\n</source>`);
+        }catch{/* Private context is optional; original v16 and fresh UI remain usable. */}
+      }
+      if(request.promptId==='COVERAGE'){
+        try{
+          const name='B2B_pokritost_in_kandidati_OmniCPQ_v17.md',item=await documentReader(name),text=item.bytes.toString('utf8'),id=`S${sources.length+1}`;
+          sources.push({id,path:'documents/'+name,sha256:item.sha256,kind:'private_documentation_v17_not_new_product_rule',sections:[{heading:'Dokumentacija v17',startLine:1,endLine:text.split('\n').length}]});
+          blocks.push(`<source id="${id}" path="documents/${name}" kind="private_documentation_v17_not_new_product_rule">\n${text}\n</source>`);documentationStatus='V17_AVAILABLE';
+        }catch{documentationStatus='V17_PRIVATE_STORAGE_PENDING';}
+      }
       return { service: service ? { id: service.service_id, title: service.title, coverage: service.coverage } : null,
         serviceResolution: { ambiguous: !service && selection.ambiguous, conflict: Boolean(selection.conflict), unknownNewService, candidates: !service ? selection.candidates : [] },
-        intent, sources, text: blocks.join('\n\n'), skill: this.skill };
+        intent, documentationStatus,sources, text: blocks.join('\n\n'), skill: this.skill };
     },
   };
 }

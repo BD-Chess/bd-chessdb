@@ -1,3 +1,4 @@
+import * as appRuntime from './app-runtime-imports.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -117,10 +118,11 @@ test('complete synthetic PWA -> authenticated handler -> v2 action -> scoped bri
   const onMessage=async m=>{
     assert.equal(m.protocol,guiBridge.BRIDGE_PROTOCOL);
     if(m.type==='status')return {ok:true,protocol:guiBridge.BRIDGE_PROTOCOL,token:'synthetic-pair',scope:'order',
-      capabilities:{schema:'omnicpq.gui.capabilities.v2',cdpAvailable:true,allowWrites:true}};
+      capabilities:{schema:'omnicpq.gui.capabilities.v2',apiRevision:3,cdpAvailable:true,allowWrites:true}};
     if(m.token!=='synthetic-pair')return {ok:false,error:'BRIDGE_NOT_PAIRED'};
     if(m.type==='observe'){last=await toGui();return {ok:true,observation:last};}
     if(m.type==='disconnect')return {ok:true};
+    if(m.type==='suspend'||m.type==='resume')return {ok:true};
     const a=m.action;
     if(a.observationId!==last?.observationId||a.revision!==last?.revision)return {ok:false,error:'CPQ_SCREEN_CHANGED'};
     const target=last.controls.find(c=>c.id===a.targetId);if(!target)return {ok:false,error:'CPQ_TARGET_NOT_ALLOWED'};
@@ -153,7 +155,7 @@ test('complete synthetic PWA -> authenticated handler -> v2 action -> scoped bri
           '\n```':'Cilj je dosežen: odprta je postavka TS Suvereni oblak v naročilu OMNI-SYN.');
         return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
       }});
-    const w=dom.window;Object.assign(w,{...core,...prompts,...starters,...guiBridge,
+    const w=dom.window;Object.assign(w,{...appRuntime,...core,...prompts,...starters,...guiBridge,
       createBrowserBridge:()=>guiBridge.createBrowserBridge({runtime}),Response,Blob,AbortController,TextEncoder});
     Object.defineProperty(w,'crypto',{value:webcrypto});w.matchMedia=()=>({matches:false});
     w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
@@ -168,6 +170,7 @@ test('complete synthetic PWA -> authenticated handler -> v2 action -> scoped bri
     await w.bootHealth;assert.equal(w.appTest.state.ready,true);
     assert.equal(w.document.querySelectorAll('[data-prompt]').length,12);
     assert.deepEqual([...w.document.getElementById('mode-nav').children].map(b=>b.dataset.mode),['work','jira','plm']);
+    w.document.getElementById('experimental-gui').checked=true;w.document.getElementById('experimental-gui').onchange();
     await w.appTest.connectBrowser();assert.equal(w.appTest.state.browserConnected,true);assert.equal(modelCalls,0);
     w.document.getElementById('message').value='Pokaži Suvereni oblak v obstoječem naročilu prek Naročil.';
     w.document.getElementById('browser-auto').checked=true;

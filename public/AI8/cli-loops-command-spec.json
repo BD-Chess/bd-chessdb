@@ -1,0 +1,111 @@
+{
+  "schema": "8zlistener.command_spec.v1",
+  "version": "0.4.3",
+  "grammar": "LOOP [CLI] [HOME|WORK|VM] [N|Nh|Nm|Ns] [AUTO|MIN|XHIGH|MAX] [S] [B] [DEEP] [FullRHP] [PROJECT=key PACKAGE=name ACTIVATE] [CALLS=N TOKENS=N] [EXT=none|gemini|grok|deepseek|glm|all] [MAL] [EXTUSD=USD EXTCALLS=N]: topic",
+  "defaults": {
+    "transport": "CLI",
+    "host": "HOME",
+    "mode": "AUTO",
+    "max_turns": 100,
+    "max_active_seconds": 43200,
+    "skeptics": false,
+    "build_requested": false,
+    "deep": false,
+    "full_rhp": false,
+    "max_native_calls": 160,
+    "max_parallel_loops": 5
+  },
+  "arguments": [
+    {
+      "name": "HOME / WORK / VM",
+      "description": "Ciljni računalnik. Brez samodejnega preklopa na drug host."
+    },
+    {
+      "name": "N / Nh / Nm / Ns",
+      "description": "N posameznih vsebinskih odgovorov vseh sej ali meja aktivnega dela v urah, minutah, sekundah. Največ 100 / 12 h."
+    },
+    {
+      "name": "AUTO / MIN / XHIGH / MAX",
+      "description": "Profil modelov in reasoninga. AUTO začne HIGH; MIN, XHIGH in MAX so fiksni za ves tek. XHIGH = Claude opus/xhigh in GPT gpt-6.1-sol/xhigh, oba en agent brez delegacije (pošten primerjalni nivo, manj tokenov). MAX = Claude opus/max in GPT gpt-6.1-sol/ultra (ultra sme delegirati samo bralnim pomožnim agentom; RHP samodejno). MIN pri Codexu ne pomeni drugega modela."
+    },
+    {
+      "name": "S",
+      "description": "Dva avtorja in dva skeptika, skupaj štiri ločene seje."
+    },
+    {
+      "name": "FullRHP",
+      "description": "Šest sej, 3 Codex + 3 Code. Vključuje S. Avtorja uporabljata interni RHP-11 na začetku, ob sintezah in težjih korakih."
+    },
+    {
+      "name": "DEEP",
+      "description": "Podvprašanja, alternative, protiargumenti in sinteza pred zaključkom. Čas/poteze/STOP ostanejo omejitve."
+    },
+    {
+      "name": "B",
+      "description": "Gradnja in pregled izrecno izbranega lokalnega projekta/paketa. Cilj in aktivacija sta del potrjenega načrta."
+    },
+    {
+      "name": "PROJECT=key / PACKAGE=name / ACTIVATE",
+      "description": "Pri B izrecen ciljni projekt in ime paketa. ACTIVATE je dovoljen samo za preverjeni Listener adapter; drugi projekti dobijo pregledan paket."
+    },
+    {
+      "name": "CALLS=N / TOKENS=N",
+      "description": "Meja native klicev (privzeto 160, največ 400) in izmerjenih tokenov. Brez dodatnih klicev po doseženi meji; tekoči klic lahko porabo preseže."
+    },
+    {
+      "name": "CAPACITY [N]",
+      "description": "Upravljanje hosta: LOOP CAPACITY pokaže mejo; LOOP CAPACITY 5 nastavi do pet različnih debat hkrati. Poteze vsake debate ostanejo zaporedne."
+    },
+    {
+      "name": "--note <request_id> --text \"…\"",
+      "description": "BD_NOTE: avtenticirana dopolnitev naloge za tekoči LOOP; vstavi se v naslednji prompt vsakega sedeža (čas, hash) in v RESULT.md."
+    },
+    {
+      "name": "EXT=gemini|grok|deepseek|glm|all",
+      "description": "Ostali LLM-ji prek API kot svetovalni glasovi; ne glasujejo. Zaenkrat samo HOME. Na voljo z 8zListener 0.6.0."
+    },
+    {
+      "name": "MAL",
+      "description": "Mental Arena Lab način: slepi prvi krog, karta konfliktov in ena ciljna kritika. Brez EXT samo domača karta konfliktov."
+    },
+    {
+      "name": "EXTUSD=USD EXTCALLS=N",
+      "description": "Meja stroškov zunanjih klicev na tek; stran privzeto doda 2 USD in 8 klicev, ko izbereš EXT."
+    }
+  ],
+  "controls": [
+    "HELP",
+    "STATUS",
+    "PAUSE",
+    "RESUME",
+    "STOP",
+    "CAPACITY [N]"
+  ],
+  "other_transports": [
+    "EMAIL",
+    "DRIVE",
+    "BROWSER"
+  ],
+  "rhp11": [
+    "Crystallizer",
+    "Physicist",
+    "Naturalist",
+    "Engineer",
+    "Falsifier",
+    "Dreamer",
+    "Cartographer",
+    "Historian",
+    "Child",
+    "Claustrum/DCC",
+    "Empiricist"
+  ],
+  "confirmation": "Pred oddajo pokaži celoten načrt in vprašaj, ali želi BD kaj spremeniti. Ne = oddaj prikazane nastavitve. Sprememba zahteva nov pregled/hash. Citati in pomoč ne oddajo ničesar.",
+  "features": {
+    "external": true,
+    "local": false
+  },
+  "ext_defaults": {
+    "usd": "2",
+    "calls": 8
+  }
+}

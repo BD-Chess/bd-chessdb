@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { catalogExtracts, resolveCatalogQuery } from '../../functions/lib/omnicpq/catalog.mjs';
+import { catalogExtracts, resolveCatalogQuery,categoryQuestion } from '../../functions/lib/omnicpq/catalog.mjs';
 // Entirely synthetic public fixture. Real workbook assertions run privately.
 const shard='references/plm/B2B_01.json';
 const offers=[{code:'SYNTH.RACK',name:'Synthetic rack',shard},{code:'SYNTH.FREE',name:'Synthetic free capacity',shard}];
@@ -39,5 +39,14 @@ test('elliptical price followup carries one exact prior identifier; new, ambiguo
   for(const change of [{allowCarry:false},{context:'SYNTH.UNKNOWN'},{context:'SYNTH.RACK in SYNTH.FREE'},{previous:'SYNTH.RACK in SYNTH.FREE'}])
     assert.equal(resolveCatalogQuery(files,'Kaj pa cena?',{...options,...change}),'Kaj pa cena?');
   assert.equal(resolveCatalogQuery(files,'Kaj pa cena SYNTH.UNKNOWN?',options),'Kaj pa cena SYNTH.UNKNOWN?');
+});
+test('category lookup ranks A4 hierarchy without a code or PLM keyword and keeps identities separate',()=>{
+  const f=structuredClone(files),i=JSON.parse(f['references/PLM_B2B_INDEX.json']);i.offers[0].a4_path='Synthetic DC|Najem virtualnega strežnika|';i.offers[0].copa_path='Unrelated accounting category';
+  f['references/PLM_B2B_INDEX.json']=JSON.stringify(i);
+  for(const question of ['Najem virtualnega strežnika','Kje je virtualka v drevesu?']){
+    assert(categoryQuestion(question)||question.includes('virtualka'));
+    const results=catalogExtracts(f,question,{requested:true}),d=JSON.parse(results[0].text);assert.equal(d.offer.code,'SYNTH.RACK');assert(d.candidateOnly);assert.equal(d.offer.a4_path,'Synthetic DC|Najem virtualnega strežnika|');assert.equal(d.offer.copa_path,'Unrelated accounting category');
+  }
+  assert.equal(catalogExtracts(f,'Neobstoječa kategorija ZXUNIQUE',{requested:true})[0].kind,'catalog_lookup_no_match');
 });
 

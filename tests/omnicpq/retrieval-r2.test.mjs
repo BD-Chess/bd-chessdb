@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { loadKnowledge, selectService } from '../../functions/lib/omnicpq/knowledge.mjs';
+import { loadKnowledge, selectService,createRetriever,verifyPack } from '../../functions/lib/omnicpq/knowledge.mjs';
 import { instructions } from '../../functions/lib/omnicpq/instructions.mjs';
 
 // The same verified package supplies runtime and fixture content; no synthetic
@@ -14,6 +14,14 @@ const knowledge = await loadKnowledge({ reader: async () => packText });
 const input = (message, changes = {}) => ({ message, mode: 'work', context: { text: '' }, history: [], ...changes });
 const paths = result => result.sources.map(source => source.path);
 const user = content => ({ role: 'user', content });
+test('private behavior context is selectively retrieved and available v17 documentation is distinguished from its v16 base',async()=>{
+  const reads=[],documentReader=async name=>{reads.push(name);const bytes=Buffer.from('SYNTHETIC_PRIVATE_CONTEXT '+name);return {bytes,sha256:createHash('sha256').update(bytes).digest('hex')};};
+  const k=createRetriever(await verifyPack(packText),{documentReader});
+  let r=await k.retrieve(input('Kje je TS Suvereni oblak v A4?'));assert(r.sources.some(s=>s.path==='playbooks/A4_SO_WORKED_EXAMPLE_R3.md'));assert(r.text.includes('SYNTHETIC_PRIVATE_CONTEXT'));
+  reads.length=0;await k.retrieve(input('Kako deluje VPI?'));assert.equal(reads.length,0);
+  r=await k.retrieve(input('Pokaži pokritost',{promptId:'COVERAGE'}));assert.equal(r.documentationStatus,'V17_AVAILABLE');assert.equal(r.skill.release,'v16');
+  const absent=createRetriever(await verifyPack(packText),{documentReader:async()=>{throw Error('Missing');}});r=await absent.retrieve(input('Pokaži pokritost',{promptId:'COVERAGE'}));assert.equal(r.documentationStatus,'V17_PRIVATE_STORAGE_PENDING');
+});
 
 test('process/context fixtures retrieve their actual complete module and evidence, with unrelated modules absent', async () => {
   const fixtures = [

@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="sl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DGTE BD R2 — dve sprejeti različici · BD × AI Lab</title>
+<meta name="description" content="DGTE BD R2: dve sprejeti analitični različici MAX in XHIGH, celotna dokumenta, primerjava porabe in odprte meritve. Avtor koncepta Bojan Dobrečevič.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0c171a">
+
+<link rel="canonical" href="https://www.mdlxdcc.org/crp/dgte-bd-r2.html">
+<script>try{const t=localStorage.getItem('mdlxdcc-theme');document.documentElement.dataset.theme=t==='light'||t==='dark'?t:matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}catch(_){}</script>
+<style>
+:root{color-scheme:dark;--bg:#0c171a;--paper:#112025;--surface:#142428;--ink:#eaf0e8;--muted:#abbcb9;--line:#31484c;--accent:#c5d6a4;--teal:#7fc9bc;--hot:#efb184;font-family:'Avenir Next','Segoe UI',Arial,sans-serif}
+:root[data-theme=light]{color-scheme:light;--bg:#f6f3ec;--paper:#faf9f5;--surface:#eeece3;--ink:#203c38;--muted:#566e66;--line:#c7d0c5;--accent:#456c37;--teal:#216d64;--hot:#9e4e24}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--bg);color:var(--ink);line-height:1.75;-webkit-text-size-adjust:100%}a{color:var(--teal);text-underline-offset:4px}button{font:inherit;cursor:pointer}a:focus-visible,button:focus-visible,.table-scroll:focus-visible{outline:2px solid var(--teal);outline-offset:4px}.wrap{width:calc(100% - 80px);max-width:1100px;margin-inline:auto}.skip{position:absolute;left:20px;top:-100px;background:var(--paper);padding:12px;z-index:2}.skip:focus{top:12px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 0;border-bottom:1px solid var(--line)}.brand{font-size:1.1rem;letter-spacing:-.04em;text-decoration:none;color:var(--ink)}.brand em{font-style:normal;color:var(--accent)}.theme{min-width:44px;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--surface)}.breadcrumb{display:flex;flex-wrap:wrap;gap:12px 24px;font-size:.83rem;padding:20px 0}.hero{padding:40px 0 30px;max-width:930px}.eyebrow{font:500 .72rem/1.6 Consolas,monospace;letter-spacing:.12em;color:var(--accent);margin:0 0 20px}h1{font-size:clamp(2.1rem,5.4vw,4.25rem);line-height:1.12;font-weight:450;letter-spacing:-.045em;margin:0 0 28px}.authorship{color:var(--muted);max-width:72ch}.status{border-left:3px solid var(--hot);background:var(--surface);padding:18px 22px;border-radius:0 10px 10px 0}.status strong{color:var(--hot)}.status p{margin:5px 0}.edition{font-size:.84rem;color:var(--muted)}.section-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;padding:22px 0 28px;border-bottom:1px solid var(--line)}.section-nav a{font-size:.84rem;text-decoration:none;border-bottom:1px solid var(--line);padding:8px 0}.section-nav a:hover{color:var(--accent)}article{max-width:940px;margin:36px 0 70px;overflow-wrap:anywhere}article p{margin:16px 0}article h2{font-size:clamp(1.45rem,3vw,2rem);line-height:1.3;font-weight:500;letter-spacing:-.025em;margin:54px 0 24px;padding-top:24px;border-top:1px solid var(--line);color:var(--accent)}article li{margin:8px 0}article ul,article ol{padding-left:24px}article code{font:.88em/1.7 Consolas,monospace;color:var(--teal);overflow-wrap:anywhere}article strong{font-weight:650}.table-scroll{max-width:100%;overflow-x:auto;margin:26px 0;border:1px solid var(--line);border-radius:10px;overscroll-behavior-x:contain}table{width:100%;min-width:720px;border-collapse:collapse;font-size:.85rem;line-height:1.55}th,td{text-align:left;padding:13px 15px;vertical-align:top;border-bottom:1px solid var(--line)}th{background:var(--surface);font-weight:600}tbody tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:var(--paper)}footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:.82rem}footer p{margin:0}.source-hash{font:.72rem/1.6 Consolas,monospace;overflow-wrap:anywhere}
+@media(max-width:600px){.wrap{width:calc(100% - 36px)}.hero{padding-top:24px}.section-nav{grid-template-columns:1fr;gap:0}.status{padding:16px}.breadcrumb{gap:8px 18px}article{font-size:.95rem}article h2{margin-top:38px}th,td{padding:10px 12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{.theme,.skip,.section-nav{display:none}body{background:white;color:black}.wrap{width:100%}.table-scroll{overflow:visible}table{min-width:0;font-size:8pt}h2{break-after:avoid}tr{break-inside:avoid}a{color:inherit}}
+
+.section-nav{grid-template-columns:repeat(3,minmax(0,1fr))}.section-nav a{min-width:0}h3{font-weight:550;color:var(--teal);line-height:1.4;margin-top:32px}.variant-links{display:flex;flex-wrap:wrap;gap:12px}.variant-links a{display:block;padding:12px 18px;background:var(--surface);border:1px solid var(--line);border-radius:9px}.source-hash{display:block}.document-body{white-space:normal}.document-body p{white-space:pre-line}table{min-width:620px}summary{cursor:pointer;padding:16px;background:var(--surface)}summary:focus-visible{outline:2px solid var(--teal)}.comparison-note{font-size:.88rem;color:var(--muted)}
+@media(max-width:600px){.section-nav{grid-template-columns:1fr}.topbar{gap:10px}.brand{font-size:1rem}.theme{padding:8px 10px}.variant-links{display:grid}.source-hash{font-size:.7rem}}
+</style>
+</head>
+<body>
+<a class="skip" href="#document">Na vsebino</a>
+<div class="wrap">
+<header class="topbar"><a class="brand" href="./DGTE.html">BD × <em>AI Lab</em> / DGTE</a><button type="button" class="theme" id="theme" aria-label="Preklopi temo">Svetla / temna</button></header>
+<nav class="breadcrumb" aria-label="Povezane strani"><a href="./DGTE.html">← Izvirni DGTE</a><a href="./dgte-bd-r1.html">Krog 1 / R1</a><a href="./dgte-bd-r2.html">Krog 2 / R2</a><a href="./dgte-uporabe.html">Zemljevid uporab</a><a href="./dgte-prosto-raziskovanje.html">Prosto raziskovanje</a><a href="../AI8/cli-loops.html">LOOP CLI ↗</a></nav>
+<main id="document">
+<header class="hero"><p class="eyebrow">24. 10. 2026 · DGTE BD R2 · MAX S + XHIGH S</p>
+<h1>DGTE BD R2 — dve sprejeti različici</h1>
+<p class="authorship">Koncept: <strong>Bojan Dobrečevič (BD)</strong>. MAX razvije potisno vrv, XHIGH preverja linearni odjem. Oba dokumenta sta sprejeta 4/4; ključne konstrukcijske predpostavke še čakajo meritev.</p>
+<div class="status" role="note"><p><strong>Analitični predlog · ročni računi STATIC</strong></p><p>V nobenem od obeh tekov R2 ni bil izveden programski, EOS ali fizični test. Soglasje štirih sedežev pomeni sprejem dokumenta; delovanje naprave ostaja neizmerjeno.</p></div>
+</header>
+<nav class="section-nav" aria-label="Poglavja R2"><a href="#povzetek">Za BD · dve različici</a><a href="#skupno">Skupni sklep</a><a href="#izstopi">Izstopi in primerjava</a><a href="#nesoglasja">Ohranjena nesoglasja</a><a href="#meritve">Odločilne meritve</a><a href="#primerjava">MAX vs XHIGH · poraba</a><a href="#dokumenta">Celotna dokumenta</a></nav>
+<article><h2 id="povzetek">Za BD: dve sprejeti različici</h2>
+<p><strong>DGTE BD R2 sta dve ločeno sprejeti analitični različici.</strong> MAX S (Claude max + GPT ultra) je po 14 potezah zaključil s sprejemom 4/4. XHIGH S (Claude xhigh + GPT xhigh) je po 17 potezah zaključil s sprejemom 4/4. Oba teka imata štiri sedeže: Claude, GPT, SA (Claude) in SB (GPT). Koncept je delo <strong>Bojana Dobrečeviča (BD)</strong>.</p>
+<p>Za gradnjo še manjka meritev skupnih konstrukcijskih predpostavk. MAX daje prednost potisni vrvi; XHIGH obdrži linearni odjem in podrobneje izpostavi sklopljenost magneta, izolacije, toplotne mase in izgub. Različnih moči ni smiselno razlagati kot tekmovanje v natančnosti: uporabljeni sta različni izvedbi in različna pretoka.</p>
+<div aria-label="Tabela 1; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Različica</th>
+<th scope="col">Osnova in predpostavke</th>
+<th scope="col">Neto izhod v ročnem računu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MAX · potisna vrv</td>
+<td>C_cik 35 J/K, R-B ε_s=0,5, skupaj 4 mL olja/cikel; veriga η=0,70; razširjene postaje</td>
+<td>Cilj <strong>33–39 W</strong>, <strong>1,41–1,66 %</strong> pri 2.344 W toplote; sredina 17,8–23,8 W; neugodno −3,2…+2,8 W</td>
+</tr>
+<tr>
+<td>MAX · enak pretok kot R1</td>
+<td>ν=0,5/s, ciljni parametri R2</td>
+<td>15,2–21,2 W pri 1.434 W toplote</td>
+</tr>
+<tr>
+<td>XHIGH · linearni odjem</td>
+<td>C_cik 20 J/K, brez priznane regeneracije, skupaj 2 mL olja/cikel; ν=0,5/s</td>
+<td>Osnovno <strong>12 W / 0,87 %</strong> pri η_odjem=0,5 in 1.379 W toplote; konstrukcijski cilj <strong>17,1 W / 1,24 %</strong> pri η_odjem=0,65</td>
+</tr>
+<tr>
+<td>XHIGH · razširitev</td>
+<td>Zgolj toplotna meja pri 2,34 kW, ν≈0,889/s; več kapsul in postaj</td>
+<td>≈23 / 32 W pri η_odjem=0,5 / 0,65; osnovne postaje tega pretoka ne zagotavljajo</td>
+</tr>
+</tbody>
+</table></div>
+<p>To so scenariji pri zunanjem viru/ponoru 110/25 °C, večinoma za vgradnjo v obstoječo črpano oljno zanko. Samostojna enota potrebuje svojo celotno pomožno bilanco. Šestmetrske delovne točke se ne prenesejo neposredno na vir 60–90 °C.</p>
+<div class="variant-links"><a href="./dgte-bd-r2-max.html">Celoten dokument MAX →</a><a href="./dgte-bd-r2-xhigh.html">Celoten dokument XHIGH →</a></div>
+<h2 id="skupno">Kaj je obema skupno</h2>
+<p>Oba ohranita BD-jevo sled: zaprta fazna kapsula, dvojni gravitacijski hod, dve poti in DC. Toplota je vhod; gravitacija ni dodatno gorivo. Odločajo ciklirana konstrukcija, olje, časi postaj, lokalna začetna sila ter celotna mehanska in električna poraba.</p>
+<p>Primerjalni zapis povzema praktični »strop koncepta« z redom <strong>~1–2 %</strong>. To opisuje obravnavane kapsulne scenarije in cilje; <strong>ni dokazana splošna fizikalna zgornja meja</strong>. Nobena določena izvedba tu ne potrjuje BD-jevega izvirnega cilja 4–8 % neto. Tudi pariteta s konkretnim TEG ali ORC ostaja odprta.</p>
+<p>Izhod iz kapsulne arhitekture vodi v <strong>stacionarni fazni oziroma parni stroj</strong>: stalno topel uparjalnik in hladen kondenzator, membranski/batni/volumetrični ali hidravlični odvzem. Sled iz DGTE je ohranjena, opustitve arhitekture pa so izrecne. Dokazanega skupnega zmagovalca še ni.</p>
+<h2 id="izstopi">Izstopi in popravljena primerjava</h2>
+<p><strong>MAX X1 · parni dvig:</strong> mehurčki vodne pare poganjajo olje; para se loči in kondenzira. Pogojni cilj ≈51 W oziroma <strong>≈2,2 %</strong> pri 2.344 W zahteva ε_ref=0,40, hidravlično moč ≈102 W, η_stroj·η_gen≥0,60 in A≤10 W. Pri Δp_stroj=0,1–0,2 bar je potreben pretok približno 10,2–5,1 L/s. ε_ref ni isto kot ε_h (tu približno 0,44–0,51). To je zahtevana skupna delovna točka, ne napoved. X2 stacionarni fazni motor ostaja enakovreden kandidat za zaprtje cikla.</p>
+<p><strong>XHIGH E1a · stacionarni parni stroj:</strong> ročni pogojni proračun daje ≈50 W neto pri 2,34 kW toplote. Ventili, stene, mrtvi volumen, tesnjenje, pretok in pomožna poraba še niso preverjeni. Idealizirani TEG ZT=1 pri spojih 94/38 °C daje ≈65 W <strong>pred pomožno porabo</strong>; rezultat konkretnega modula in izmenjevalnika ni potrjen.</p>
+<p>XHIGH loči <strong>VP-TW</strong> (predlagane mirujoče fazne celice z R1233zd(E)) od javnega ravnotežnega modela <strong>VP</strong>, ki ne potrjuje hitrosti ali regeneracije naprave. <strong>VL2</strong> je organska para v vodnem nosilcu; to ni isti kandidat kot vodna para v olju MAX X1 / seme SA-X2.</p>
+<p>Popravljena tabela XHIGH za <strong>S90-F: 1 MW toplote, vir 90→70 °C, hladilni tok 25→30 °C, zunanja pomožna poraba 5 kW</strong>:</p>
+<div aria-label="Tabela 2; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Sistem / predpostavka</th>
+<th scope="col" style="text-align: right;">Neto kW</th>
+<th scope="col">Meja razlage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rankine</td>
+<td style="text-align: right;">43,706</td>
+<td>Ekspander 0,70; dovodna črpalka posebej</td>
+</tr>
+<tr>
+<td>VP · stena 0 kg/L</td>
+<td style="text-align: right;">33,672</td>
+<td>Pretvorba 0,75; ravnotežni model</td>
+</tr>
+<tr>
+<td>VP · stena 0,1 kg/L, ε=0 / 0,8</td>
+<td style="text-align: right;">24,794 / 31,497</td>
+<td>Hitrost, stena in regeneracija niso validirane</td>
+</tr>
+<tr>
+<td>VP · stena 1 kg/L, ε=0 / 0,8</td>
+<td style="text-align: right;">4,717 / 19,232</td>
+<td>Ni dovoljeno izbrati samo ugodnega dela razpona</td>
+</tr>
+<tr>
+<td>VL2 · nujno toplotno sito</td>
+<td style="text-align: right;">16,299–26,324</td>
+<td>R1233zd(E), 35–40 m; turbina 0,85, generator 0,93</td>
+</tr>
+<tr>
+<td>TEG ZT=1 · spoja 70/33 °C</td>
+<td style="text-align: right;">≤≈14,4</td>
+<td>≈19,4 kW bruto minus 5 kW; idealizirano</td>
+</tr>
+<tr>
+<td>R2, Stirling, termoakustika</td>
+<td style="text-align: right;">OPEN</td>
+<td>Ni sklenjenega primerljivega modela</td>
+</tr>
+</tbody>
+</table></div>
+<p>Razpon VP <strong>4,7–33,7 kW je približno 11–77 % izbranega Rankina</strong> in se prekriva z VL2. Prag ≥19,2 kW ne zagotavlja prednosti pred najboljšim VL2. Pet od dvanajstih izbranih točk VL2 prestane le nujno sito, ne celotne validacije. Različni pretvorbeni izkoristki in notranje temperature omejujejo primerljivost.</p>
+<p>Pri <strong>S60-F, 1 MW in viru 60→50 °C</strong> sta navedena Rankine 10,787 kW in VL2 4,795 kW (izbrane točke pri 10 m). VP brez regeneracije pri steni 0 / 0,1 / 1 kg/L daje približno 11,3 / 9,1 / 1,3 kW. Zato tudi trditev »vedno vodi Rankine« ni podprta. Teh številk ni dovoljeno neposredno preslikati na 2,34-kW kapsulno napravo.</p>
+<h2 id="nesoglasja">Ohranjena nesoglasja</h2>
+<div aria-label="Tabela 3; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Vprašanje</th>
+<th scope="col">MAX</th>
+<th scope="col">XHIGH / odprta odločitev</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Odjem dela</td>
+<td>Potisna vrv po ločenih nogah, zunanja magnetna sklopka in rotacijski generator</td>
+<td>Linearni odjem kot referenca; nosilec/vrv ostane alternativa</td>
+</tr>
+<tr>
+<td>Toplotna masa in magnet</td>
+<td>Celotni ciljni C_cik=35 J/K; 20 J/K samo seme druge vrečke</td>
+<td>C_cik=20 J/K cilj izolirane kartuše; SA dvomi o skupni dosegljivosti C, izgub in K_m, SB ne sprejme splošnega dokaza nemožnosti</td>
+</tr>
+<tr>
+<td>Rekuperacija / prehodi</td>
+<td>R-B in suhi vrh kot izbrana pot, R-A alternativa</td>
+<td>R-A/R-B/R-C odprti; zahteva je hidravlična izolacija, mokri V1 ostane možen</td>
+</tr>
+<tr>
+<td>Olje</td>
+<td>Ciljno 2–4 mL/cikel, tabela uporablja 4 mL</td>
+<td>Osnova cilja 2 mL; ocena 17–30 mL lahko izniči velik del prednosti</td>
+</tr>
+<tr>
+<td>Prvi izstop</td>
+<td>X1 parni dvig za poceni sito; X2 odprt</td>
+<td>E1a/E1b/VL2/SA-X2 brez potrjenega zmagovalca</td>
+</tr>
+<tr>
+<td>Primerjava s TEG/ORC</td>
+<td>Brez meritev pri skupni meji; pariteta OPEN</td>
+<td>Idealizirani TEG nad navedenimi DGTE vrsticami; dejanska naprava in sistemska razvrstitev OPEN</td>
+</tr>
+</tbody>
+</table></div>
+<p>R1 N-1…N-10 ostanejo; MAX ohrani N-11…N-15, XHIGH N-R2-1…N-R2-8. Celotni argumenti in semena so v obeh dokumentih.</p>
+<h2 id="meritve">Kaj bi odločilo: T0, C0a, C0b, C0x in olje</h2>
+<p>Vse spodaj je <strong>predlog prihodnjega dela; nič od tega ni izvedeno</strong>.</p>
+<div aria-label="Tabela 4; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Korak</th>
+<th scope="col">Najcenejši razlikovalni podatek</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T0 · XHIGH</td>
+<td>Prerez iste kartuše, kosovnica, Σm_i c_pi, nosilnost, izolacija, dejanska magnetna reža in K_m</td>
+</tr>
+<tr>
+<td>C0a / P1</td>
+<td>Ena kapsula: C_cik, V(T,p), histereza, lokalna začetna sila, stenj, čas vrenja/kondenzacije in kalorimetrija</td>
+</tr>
+<tr>
+<td>C0b-PTO / M-odjem</td>
+<td>Primerjava vrvi in linearnega odjema pri isti sili/hitrosti; DC, izgube, zatikanje in vključitev tudi pri ≈2,1 N</td>
+</tr>
+<tr>
+<td>M-olje · tehtanje</td>
+<td>Ločeno oba prenosa in njuna vsota na celoten cikel; čas odcejanja, delo ter obraba brisanja</td>
+</tr>
+<tr>
+<td>C0x-a → C0x-b</td>
+<td>Najprej zračni dvig z merjenimi tlaki, pretoki in hidravlično močjo; šele nato parni poskus z merjeno toploto, penjenjem in NCG</td>
+</tr>
+<tr>
+<td>Zaprtje cikla</td>
+<td>Dejanski p–T–V–z, UA, časi postaj, drsenje vira in vsi pomožni porabniki; zrak sam ne dokazuje parnega neto izkoristka</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="primerjava">MAX vs XHIGH: tokeni, čas in priporočilo</h2>
+<p>Primerjalni zapis CLI Code z dne 24. 10. 2026 obravnava en par tekov iste naloge. XHIGH je dobil še dodatno RHP seme; teka sta potekala vzporedno na istem računalniku. To je <strong>n=1</strong>, brez slepega ocenjevanja končnih izdelkov in brez dokaza splošne premoči modela ali nivoja.</p>
+<div aria-label="Tabela 5; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Kazalnik</th>
+<th scope="col" style="text-align: right;">MAX · 8b11c095</th>
+<th scope="col" style="text-align: right;">XHIGH · 08331d51</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zahtevani nivo</td>
+<td style="text-align: right;">Claude max · GPT ultra</td>
+<td style="text-align: right;">Claude xhigh · GPT xhigh</td>
+</tr>
+<tr>
+<td>Izid</td>
+<td style="text-align: right;">COMPLETE · 4/4 sprejem</td>
+<td style="text-align: right;">COMPLETE · 4/4 sprejem</td>
+</tr>
+<tr>
+<td>Poteze</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">17</td>
+</tr>
+<tr>
+<td>Krogi popravkov</td>
+<td style="text-align: right;">1 · GPT T008</td>
+<td style="text-align: right;">2 · GPT T008, Claude T011</td>
+</tr>
+<tr>
+<td>Ugovori · dogodki</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">11</td>
+</tr>
+<tr>
+<td>Aktivni čas · zaključni zapis</td>
+<td style="text-align: right;">143,9 min (8.634,50 s)</td>
+<td style="text-align: right;">118,1 min (7.087,55 s)</td>
+</tr>
+<tr>
+<td>Skupaj tokenov · USAGE</td>
+<td style="text-align: right;">6.543.068</td>
+<td style="text-align: right;">7.569.781</td>
+</tr>
+<tr>
+<td>Claude thinking · CLAUDE+SA, USAGE</td>
+<td style="text-align: right;">558.688</td>
+<td style="text-align: right;">343.373</td>
+</tr>
+<tr>
+<td>GPT reasoning · GPT+SB, USAGE</td>
+<td style="text-align: right;">84.939</td>
+<td style="text-align: right;">64.350</td>
+</tr>
+<tr>
+<td>GPT reasoning · ocena primerjalnega zapisa</td>
+<td style="text-align: right;">≈42 K</td>
+<td style="text-align: right;">≈33 K</td>
+</tr>
+<tr>
+<td>Claude · ocena USD v primerjalnem zapisu</td>
+<td style="text-align: right;">≈68</td>
+<td style="text-align: right;">≈89</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Opomba o porabi:</strong> štejejo vhodni in izhodni tokeni; cache je podmnožica vhoda, reasoning/thinking podmnožica izhoda in se ne prištevata znova. USAGE vključuje evidentirane poskuse in pri MAX tudi fazo delegacije. Oceni GPT reasoning ≈42 K / ≈33 K iz primerjalnega zapisa se ne ujemata z agregatom USAGE (84.939 / 64.350); objavljena sta oba obsega, razlika ostaja neusklajena. USD je ocena iz primerjalnega zapisa, ni račun naročnine; GPT cena ni ocenjena. Zahtevani effort ni neodvisna potrditev dejanskega strežniškega izvajanja.</p>
+<p>Tokeni po sedežih iz istega USAGE; vhod vključuje cache:</p>
+<div aria-label="Tabela 6; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Sedež</th>
+<th scope="col" style="text-align: right;">MAX vhod</th>
+<th scope="col" style="text-align: right;">MAX izhod</th>
+<th scope="col" style="text-align: right;">MAX skupaj</th>
+<th scope="col" style="text-align: right;">XHIGH vhod</th>
+<th scope="col" style="text-align: right;">XHIGH izhod</th>
+<th scope="col" style="text-align: right;">XHIGH skupaj</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLAUDE · avtor</td>
+<td style="text-align: right;">906.971</td>
+<td style="text-align: right;">351.602</td>
+<td style="text-align: right;">1.258.573</td>
+<td style="text-align: right;">2.153.652</td>
+<td style="text-align: right;">267.770</td>
+<td style="text-align: right;">2.421.422</td>
+</tr>
+<tr>
+<td>GPT · avtor</td>
+<td style="text-align: right;">2.705.470</td>
+<td style="text-align: right;">84.238</td>
+<td style="text-align: right;">2.789.708</td>
+<td style="text-align: right;">923.629</td>
+<td style="text-align: right;">73.742</td>
+<td style="text-align: right;">997.371</td>
+</tr>
+<tr>
+<td>SA · Claude skeptik</td>
+<td style="text-align: right;">1.281.485</td>
+<td style="text-align: right;">276.859</td>
+<td style="text-align: right;">1.558.344</td>
+<td style="text-align: right;">2.565.695</td>
+<td style="text-align: right;">197.725</td>
+<td style="text-align: right;">2.763.420</td>
+</tr>
+<tr>
+<td>SB · GPT skeptik</td>
+<td style="text-align: right;">887.029</td>
+<td style="text-align: right;">49.414</td>
+<td style="text-align: right;">936.443</td>
+<td style="text-align: right;">1.344.343</td>
+<td style="text-align: right;">43.225</td>
+<td style="text-align: right;">1.387.568</td>
+</tr>
+<tr>
+<td>Skupaj</td>
+<td style="text-align: right;">5.780.955</td>
+<td style="text-align: right;">762.113</td>
+<td style="text-align: right;">6.543.068</td>
+<td style="text-align: right;">6.987.319</td>
+<td style="text-align: right;">582.462</td>
+<td style="text-align: right;">7.569.781</td>
+</tr>
+</tbody>
+</table></div>
+<p>Slepa faza T001–T004, kot jo povzema primerjalni zapis (zaokrožene ocene razmišljanja in časa faze, ne trajanja zadnjega posameznega klica):</p>
+<div aria-label="Tabela 7; vodoravno pomikanje" class="table-scroll" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Sedež</th>
+<th scope="col">MAX razmišljanje / čas</th>
+<th scope="col">XHIGH razmišljanje / čas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude · T001</td>
+<td>225,6 K / 39,7 min</td>
+<td>145,7 K / 29,9 min</td>
+</tr>
+<tr>
+<td>GPT · T002</td>
+<td>1,6 K / 9,7 min</td>
+<td>10,7 K / 6,3 min</td>
+</tr>
+<tr>
+<td>Claude-S · T003</td>
+<td>195,9 K / 35,5 min</td>
+<td>95,6 K / 18,2 min</td>
+</tr>
+<tr>
+<td>GPT-S · T004</td>
+<td>0,7 K / 9,2 min</td>
+<td>0,3 K / 7,1 min</td>
+</tr>
+<tr>
+<td>Skupaj · približno</td>
+<td>424 K / 94 min</td>
+<td>252 K / 62 min</td>
+</tr>
+</tbody>
+</table></div>
+<p>V primerjalnem zapisu ima XHIGH v slepi fazi približno 40 % manj razmišljanja in 35 % manj časa. Celotni XHIGH pa porabi približno 16 % več tokenov, ker ima več potez in dodatni krog popravkov. To podpira pozornost na dolžino konteksta in število krogov; ne dokazuje vzročne povezave iz enega para tekov. Skeptiki v obeh tekih najdejo vsebinske napake; skupni zmagovalec kakovosti ni ugotovljen.</p>
+<p><strong>Priporočilo primerjalnega zapisa:</strong> privzeto <strong>XHIGH</strong> za računske debate in preglede; <strong>MAX za slepo fazo težkih novih problemov</strong>, kadar je cilj nova arhitektura in pričakujemo malo popravljanja. Največji predlagani prihranek je manj krogov: krajše specifikacije, en združen popravek ter manj ponovnih celotnih branj. MAX je v tem paru inventivnejši pri odjemu (potisna vrv), XHIGH konzervativnejši in bolj izrecen glede sklopljenosti.</p>
+<p><strong>Uredniška razlika med viroma:</strong> primerjalni zapis pri MAX omenja η_veriga=0,75; končni sprejeti dokument uporablja <strong>0,70</strong> za ciljno vrstico (50,4 J DC na cikel). Tukajšnji tehnični povzetek sledi končnemu dokumentu. Besedili sprejetih dokumentov ostajata ohranjeni.</p>
+<h2 id="dokumenta">Celotna dokumenta in sled objave</h2>
+<p>Vsaka različica ima svojo berljivo stran s kazalom, pomičnimi tabelami in svetlo/temno temo. Ohranjen je celoten končni tekst, tudi zgodovinski zapisi o še čakajočem pregledu. Poznejša zaključna zapisa tekov potrjujeta sprejem 4/4; sprejem ne pomeni meritev.</p>
+<ul>
+<li><a href="./dgte-bd-r2-max.html">MAX · popravljena analitična sinteza</a> · 14.263 B · SHA256 <code>ec60f4e32bd473a85057dad27143145921b7a15023e99bc7ba6ae6594f54c819</code>.</li>
+<li><a href="./dgte-bd-r2-xhigh.html">XHIGH · nadgradnja izvirnika</a> · 18.371 B · SHA256 <code>40919ac24229251f2c0fe26306aead0c5ee4a130e4a72980967c6c29ee81d198</code>.</li>
+<li><a href="../AI8/cli-loops.html?debate=8b11c095">LOOP CLI · MAX 8b11c095</a> in <a href="../AI8/cli-loops.html?debate=08331d51">XHIGH 08331d51</a>: javna povzetka in poraba po štirih sedežih.</li>
+<li><a href="./dgte-bd-r1.html">Krog 1 / R1</a> in <a href="./DGTE.html">izvirni DGTE ter prejšnje razvojne veje</a>.</li>
+</ul>
+<p><strong>LOCAL_ACCEPTANCE_PENDING:</strong> kosovnica in nosilnost, C_cik, sklopljeni magnetni/termični parametri, prenos olja, časi, regeneracija, prehodi in fizična neto bilanca. Nobena fizikalna zmogljivost ni potrjena s testi v teh dveh tekih.</p></article>
+</main>
+<footer><div><p>DGTE · avtor koncepta Bojan Dobrečevič · BD × AI Lab</p><p>Objava obeh različic R2 · 24. 10. 2026</p></div><a href="#document">Na vrh ↑</a></footer>
+</div>
+<script>
+document.getElementById('theme').addEventListener('click',()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark';document.querySelector('meta[name="theme-color"]').content=r.dataset.theme==='dark'?'#0c171a':'#f6f3ec';try{localStorage.setItem('mdlxdcc-theme',r.dataset.theme);}catch(_){}});
+</script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import * as appRuntime from './app-runtime-imports.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -12,7 +13,7 @@ async function harness(){
   const html=await readFile('public/OmniCPQ/index.html','utf8'),dom=new JSDOM(html,{url:'https://www.mdlxdcc.org/omnicpq/',runScripts:'outside-only'});
   const w=dom.window,$=id=>w.document.getElementById(id),requests=[];let disconnects=0,posts=0;
   const fakeBridge={disconnect:async()=>{disconnects++;},connect:async()=>{throw Error('BRIDGE_NOT_INSTALLED');}};
-  Object.assign(w,{...core,...prompts,...starters,...bridge,createBrowserBridge:()=>fakeBridge,Response,Blob,AbortController});
+  Object.assign(w,{...appRuntime,...core,...prompts,...starters,...bridge,createBrowserBridge:()=>fakeBridge,Response,Blob,AbortController});
   w.matchMedia=()=>({matches:false});w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{d.open=false;};d.showModal=()=>{d.open=true;};});
   w.fetch=async(path,options={})=>{
     requests.push({path,method:options.method||'GET'});if(options.method==='POST')posts++;

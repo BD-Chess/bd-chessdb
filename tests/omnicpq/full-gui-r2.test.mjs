@@ -92,7 +92,7 @@ test('denied debugger fails closed; does not claim full GUI despite pairing',asy
   const e=env({allowCdp:false}),token=await e.pair();
   assert.equal((await e.handler(e.request('status'),e.sender)).capabilities.cdpAvailable,false);
   const o=(await e.handler(e.request('observe',{token}),e.sender)).observation;
-  assert.equal((await e.handler(e.request('execute',{token,action:action(o,'c0','click')}),e.sender)).error,'CPQ_ACTION_OUTCOME_UNKNOWN');
+  assert.equal((await e.handler(e.request('execute',{token,action:action(o,'c0','click')}),e.sender)).error,'BRIDGE_DEBUGGER_UNAVAILABLE');
 });
 test('client transport requires the v2 handshake and preserves evidence boundary',async()=>{
   const e=env(),token=await e.pair();

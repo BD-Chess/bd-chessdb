@@ -70,7 +70,33 @@ def fixture():
                'plaintext_sha256': h(startme_plain),
                'cipher': {'iv': b64(startme_iv), 'aad': startme_aad},
                'data': {'path': 'fixture-startme.enc.txt', 'sha256': h(startme_part)}}
+    cli_iv = os.urandom(12)
+    cli_html = ('<section id="cli-inbox-secrets" data-sef-category="identity">'
+                '<h2>8zListener GitHub Inbox fixture</h2><table><tbody><tr>'
+                '<td>Synthetic Listener Inbox</td><td><code class="secret-value" '
+                'role="button" tabindex="0" aria-label="Skrita vrednost; klikni za prikaz">'
+                'NOT-REAL-CLI-SECRET</code></td></tr></tbody></table></section>')
+    cli_plain = compact({'format': 'BD-O-SEF-EXTRA-1', 'html': cli_html})
+    cli_aad = 'BD/O:sef:cli:synthetic:' + vault
+    cli_part = b64(AESGCM(key).encrypt(cli_iv, gzip.compress(cli_plain), cli_aad.encode())).encode()
+    cli = {'format': 'BD-O-SEF-EXTRA-CONFIG-1', 'vault': vault, 'compression': 'gzip',
+           'plaintext_sha256': h(cli_plain), 'cipher': {'iv': b64(cli_iv), 'aad': cli_aad},
+           'data': {'path': 'fixture-cli.enc.txt', 'sha256': h(cli_part)}}
+    api_iv = os.urandom(12)
+    api_html = ('<section id="api-keys-secrets" data-sef-category="other">'
+                '<h2>API keys fixture</h2><table><tbody><tr>'
+                '<td>Synthetic Gemini MAL CLI</td><td><code class="secret-value" '
+                'role="button" tabindex="0" aria-label="Skrita vrednost; klikni za prikaz">'
+                'NOT-REAL-GEMINI-SECRET</code></td></tr></tbody></table></section>')
+    api_plain = compact({'format': 'BD-O-SEF-EXTRA-1', 'html': api_html})
+    api_aad = 'BD/O:sef:api-keys:synthetic:' + vault
+    api_part = b64(AESGCM(key).encrypt(api_iv, gzip.compress(api_plain), api_aad.encode())).encode()
+    api_keys = {'format': 'BD-O-SEF-EXTRA-CONFIG-1', 'vault': vault, 'compression': 'gzip',
+                'plaintext_sha256': h(api_plain), 'cipher': {'iv': b64(api_iv), 'aad': api_aad},
+                'data': {'path': 'fixture-api-keys.enc.txt', 'sha256': h(api_part)}}
     return password, {'vault.json': compact(portal), 'sef-config.json': compact(sef),
+                      'sef-api-keys.json': compact(api_keys), 'fixture-api-keys.enc.txt': api_part,
+                      'sef-cli-inbox.json': compact(cli), 'fixture-cli.enc.txt': cli_part,
                       'sef-startme.json': compact(startme), 'fixture-startme.enc.txt': startme_part,
                       'fixture-portal.enc.txt': part, 'fixture-sef.enc.txt': sef_part}
 
@@ -104,19 +130,22 @@ def live_integrity():
         data, final, _ = get(path)
         assert h(data) == h(source), 'Sef alias returned different HTML'
         record('live_alias', path=path, final_url=final, passed=True)
-    for filename in ['sef.js', 'vault.js', 'vault.json', 'sef-config.json']:
+    for filename in ['sef.js', 'vault.js', 'vault.json', 'sef-config.json', 'sef-api-keys.json']:
         data, _, _ = get(ROOT + filename)
         expected = Path('public/BD/O', filename).read_bytes()
         assert h(data) == h(expected), filename + ' differs from checkout'
         record('live_asset_exact', file=filename, passed=True, sha256=h(data))
-    for filename in ['vault.json', 'sef-config.json']:
+    for filename in ['vault.json', 'sef-config.json', 'sef-api-keys.json']:
         cfg = json.loads(Path('public/BD/O', filename).read_bytes())
-        for part in cfg['data']['parts']:
+        parts = cfg['data'].get('parts') or [cfg['data']]
+        for part in parts:
             data, _, _ = get(ROOT + part['path'])
             assert h(data) == part['sha256'], 'Ciphertext part integrity failure'
-        record('live_ciphertext_integrity', config=filename, parts=len(cfg['data']['parts']), passed=True)
+        record('live_ciphertext_integrity', config=filename, parts=len(parts), passed=True)
 
-def live_browser(browser):
+def verify_browser(browser, live=False):
+    mode = 'live' if live else 'local'
+    source_root = Path('public/BD/O').resolve()
     for width, height in [(1440, 900), (390, 844)]:
         password, responses = fixture()
         context = browser.new_context(viewport={'width': width, 'height': height})
@@ -125,8 +154,23 @@ def live_browser(browser):
             name = u.path.rsplit('/', 1)[-1]
             if u.hostname == 'www.mdlxdcc.org' and u.path.lower().startswith('/bd/o/') and name in responses:
                 route.fulfill(status=200, content_type='application/json' if name.endswith('.json') else 'text/plain', body=responses[name])
+            elif u.hostname == 'www.mdlxdcc.org' and u.path.lower().startswith('/bd/o/') and name in ['sef-extra.json', 'sef-kindle.json']:
+                route.fulfill(status=404, body='Synthetic optional sidecar absent')
             elif route.request.method != 'GET':
                 route.abort()
+            elif not live:
+                # Real prepared HTML/JS, synthetic origin/session, no external requests.
+                relative = u.path[len('/bd/o/'):].strip('/') or 'index.html'
+                if '.' not in relative.rsplit('/', 1)[-1]:
+                    relative += '.html'
+                candidate = (source_root / relative).resolve()
+                if (u.hostname == 'www.mdlxdcc.org' and u.path.lower().startswith('/bd/o/')
+                        and candidate.is_relative_to(source_root) and candidate.is_file()
+                        and candidate.suffix in ['.html', '.js', '.css']):
+                    mime = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css'}[candidate.suffix]
+                    route.fulfill(status=200, content_type=mime, body=candidate.read_bytes())
+                else:
+                    route.fulfill(status=404, body='Synthetic local resource absent')
             else:
                 route.continue_()
         context.route('**/*', intercept)
@@ -139,14 +183,34 @@ def live_browser(browser):
         page.wait_for_selector('#fixtureSef', timeout=20000)
         assert page.locator('#fixtureStartme').count() == 1, 'Encrypted Start.me fixture was not rendered'
         assert page.locator('#startme-import tr').count() == 1
-        record('live_synthetic_startme_aes_gcm_import', viewport=[width, height], passed=True)
+        record(mode + '_synthetic_startme_aes_gcm_import', viewport=[width, height], passed=True)
+        cli = page.locator('#cli-inbox-secrets')
+        assert cli.count() == 1, 'Encrypted CLI Inbox fixture was not rendered'
+        assert cli.locator('.secret-value.revealed').count() == 0
+        assert cli.locator('.copy-secret').count() == 1
+        page.locator('#vaultSearch').fill('Listener Inbox')
+        assert cli.locator('tr.search-hidden').count() == 0
+        page.locator('#vaultSearch').fill('NOT-REAL-CLI-SECRET')
+        assert cli.locator('tr.search-hidden').count() == 1, 'Secret must stay outside the search index'
+        page.locator('#vaultSearch').fill('')
+        record(mode + '_synthetic_cli_inbox_encrypted_masked_search', viewport=[width, height], passed=True)
+        api_keys = page.locator('#api-keys-secrets')
+        assert api_keys.count() == 1, 'Encrypted API keys fixture was not rendered'
+        assert api_keys.locator('.secret-value.revealed').count() == 0
+        assert api_keys.locator('.copy-secret').count() == 1
+        page.locator('#vaultSearch').fill('Gemini MAL CLI')
+        assert api_keys.locator('tr.search-hidden').count() == 0
+        page.locator('#vaultSearch').fill('NOT-REAL-GEMINI-SECRET')
+        assert api_keys.locator('tr.search-hidden').count() == 1, 'API key must stay outside the search index'
+        page.locator('#vaultSearch').fill('')
+        record(mode + '_synthetic_api_keys_encrypted_masked_search', viewport=[width, height], passed=True)
         state = page.evaluate("()=>({display:getComputedStyle(document.getElementById('loading')).display,top:document.getElementById('content').getBoundingClientRect().top,sessionPresent:!!sessionStorage.getItem('bd-o-v2-session')})")
         assert state['display'] == 'none' and state['top'] < height and state['sessionPresent'], state
-        record('live_portal_to_sef_synthetic_session', viewport=[width, height], passed=True, **state)
+        record(mode + '_portal_to_sef_synthetic_session', viewport=[width, height], passed=True, **state)
         page.goto(SITE + '/bd/o/sef', wait_until='domcontentloaded')
         page.wait_for_selector('#fixtureSef', timeout=20000)
         assert not page.locator('#loading').is_visible()
-        record('live_clean_alias_session_reuse', passed=True, viewport=[width, height])
+        record(mode + '_clean_alias_session_reuse', passed=True, viewport=[width, height])
         page.locator('#fontPlus').click()
         assert page.locator('#fontReset').inner_text() == '110%'
         page.locator('#vaultSearch').fill('no-matching-row-xxxxx')
@@ -154,21 +218,25 @@ def live_browser(browser):
         page.locator('#lockAll').click()
         page.wait_for_selector('#pw', timeout=20000)
         assert not page.evaluate("!!sessionStorage.getItem('bd-o-v2-session')")
-        record('live_controls_and_lock', passed=True, viewport=[width, height])
+        record(mode + '_controls_and_lock', passed=True, viewport=[width, height])
         context.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--live', action='store_true')
+    parser.add_argument('--local-browser', action='store_true')
     args = parser.parse_args()
-    REPORT['commit'] = os.environ.get('GITHUB_SHA')
+    REPORT['commit'] = os.environ.get('VERIFIED_SOURCE_SHA') or os.environ.get('GITHUB_SHA')
+    REPORT['mode'] = 'live' if args.live else 'local-browser' if args.local_browser else 'local-dom'
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
             local_dom(browser)
+            if args.local_browser:
+                verify_browser(browser)
             if args.live:
                 live_integrity()
-                live_browser(browser)
+                verify_browser(browser, live=True)
             browser.close()
         REPORT['verdict'] = 'PASS'
     except Exception as exc:
@@ -179,3 +247,4 @@ if __name__ == '__main__':
         raise
     finally:
         OUT.write_text(json.dumps(REPORT, ensure_ascii=False, indent=2))
+

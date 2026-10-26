@@ -1,3 +1,4 @@
+import * as appRuntime from './app-runtime-imports.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -19,7 +20,7 @@ const deferred = () => { let resolve; const promise = new Promise(r => { resolve
 
 async function harness() {
   class Element {
-    constructor(tag = 'div') { this.tagName = tag; this.children = []; this.value = ''; this.hidden = false; this.disabled = false; this.checked = false; this.dataset = {}; this._text = ''; this.classList = { add() {}, remove() {}, toggle() {} }; }
+    constructor(tag = 'div') { this.tagName = tag; this.parentElement=this; this.children = []; this.value = ''; this.hidden = false; this.disabled = false; this.checked = false; this.dataset = {}; this._text = ''; this.classList = { add() {}, remove() {}, toggle() {} }; }
     set textContent(value) { this._text = String(value); this.children = []; }
     get textContent() { return this._text + this.children.map(c => typeof c === 'string' ? c : c.textContent).join(''); }
     append(...children) { this.children.push(...children); }
@@ -35,12 +36,12 @@ async function harness() {
     click() { downloads++; }
   }
   const nodes = new Map(), $ = id => { if (!nodes.has(id)) nodes.set(id, new Element()); return nodes.get(id); };
-  $('environment').value = 'UNKNOWN'; $('theme').value = 'dark'; $('comparison-mode').value = 'frozen';
+  $('agent-actions').value='80';$('agent-calls').value='100';$('agent-minutes').value='20';$('environment').value = 'UNKNOWN'; $('theme').value = 'dark'; $('comparison-mode').value = 'frozen';
   const stored = new Map([[PREFS, JSON.stringify({ persist: true })], [STORAGE, JSON.stringify({ schema: 'omnicpq.session.v1', accountId: 'owner', mode: 'work',
     messages: [{ role: 'user', content: marker }], comparisons: [], draft: 'UNSAVED_DRAFT', context: { text: 'PRIVATE_CONTEXT', manualUrl: 'https://example.test/private', environment: 'STAGE' } })]]);
   const events = new Map(), boot = deferred(), calls = [], clipboard = [];
   let fetcher = () => boot.promise, downloads = 0;
-  const context = vm.createContext({ ...core, ...prompts, ...starters, ...bridge,
+  const context = vm.createContext({...appRuntime, ...core, ...prompts, ...starters, ...bridge,
     document: { getElementById: $, createElement: tag => new Element(tag), createTextNode: text => ({ textContent: text }), querySelectorAll: () => [], addEventListener() {}, documentElement: { dataset: {} } },
     window: { isSecureContext: false, addEventListener: (name, fn) => events.set(name, fn) },
     navigator: { onLine: true, clipboard: { writeText: async text => clipboard.push(text) } },
@@ -49,8 +50,9 @@ async function harness() {
     Option: function(label, value) { return { textContent: label, value }; },
     fetch: (...args) => { calls.push(args); return fetcher(...args); },
     URL: { createObjectURL: () => 'blob:synthetic', revokeObjectURL() {} }, Blob, Response, AbortController, DOMException, performance,
-    setTimeout: () => 0, setInterval: () => 0, confirm: () => true,
+    setTimeout: () => 0, clearTimeout:()=>{},setInterval: () => 0, confirm: () => true,
   });
+  context.document.addEventListener=()=>{};context.window.setTimeout=()=>0;context.window.clearTimeout=()=>{};
   const executable = source.replace(/^import .*;\n/gm, '').replace('health(); installWorker();', 'globalThis.initialHealth = health(); installWorker();');
   vm.runInContext(executable + '\nglobalThis.app = { state, health, send, comparisonText, copy, download };', context);
   return { $, nodes, stored, events, calls, clipboard, context, app: context.app,

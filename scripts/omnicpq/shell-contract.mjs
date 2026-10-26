@@ -1,2 +1,2 @@
-export const SHELL_FILES = ['index.html','app.css','app.mjs','core.mjs','version.mjs','lifecycle-validation.mjs','prompts.mjs','starters.mjs','browser-bridge.mjs','browser-bridge-v2.mjs','browser-help.html','manifest.webmanifest',
+export const SHELL_FILES = ['index.html','app.css','app.mjs','core.mjs','version.mjs','lifecycle-validation.mjs','prompts.mjs','starters.mjs','browser-bridge.mjs','browser-bridge-v2.mjs','auto-connect.mjs','agent-session.mjs','browser-help.html','manifest.webmanifest',
   'icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','icons/original.png'];

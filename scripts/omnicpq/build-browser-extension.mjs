@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {STARTERS} from '../../public/OmniCPQ/starters.mjs';
 const root=new URL('../../public/OmniCPQ/',import.meta.url);
 const source=new URL('extension/',root);
-const names=['manifest.json','worker.mjs','page.mjs','worker-v2.mjs','page-v2.mjs','popup.html','popup.mjs','popup.css'];
+const names=['manifest.json','worker.mjs','page.mjs','worker-v2.mjs','page-v2.mjs','popup.html','popup.mjs','popup.css','pairing.mjs'];
 function crc32(bytes){let crc=0xffffffff;for(const b of bytes){crc^=b;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;}
 export function zipStore(entries){
   const locals=[],directory=[];let offset=0;

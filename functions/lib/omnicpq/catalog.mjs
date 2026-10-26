@@ -10,10 +10,13 @@ export function catalogExtracts(files, question, { requested = false } = {}) {
   // stops is punctuation only when it ends at a non-identifier boundary.
   const exact = index.offers.filter(o => o.code.length >= 3 && new RegExp(`(^|[^a-z0-9_.-])${escape(norm(o.code))}(?=$|[^a-z0-9_.-]|\\.+(?=$|[^a-z0-9_.-]))`).test(q));
   if (!requested && !exact.length) return [];
-  const terms = [...new Set(q.match(/[a-z0-9]+/g) || [])].filter(x => x.length > 2 && !stop.has(x));
+  const expanded=q.replace(/\bvirtualk[a-z]*\b|\bvm\b/g,'virtualni streznik');
+  const terms = [...new Set(expanded.match(/[a-z0-9]+/g) || [])].filter(x => x.length > 2 && !stop.has(x));
   const ranked = exact.length ? exact.map(offer => ({ offer, score: 1000 })) : index.offers.map(offer => {
-    const title = norm(offer.name); const titleWords = new Set(title.match(/[a-z0-9]+/g) || []);
-    const score = terms.reduce((s,t) => s + (titleWords.has(t) ? 3 : t.length >= 5 && title.includes(t) ? 1 : 0), 0);
+  const title = norm(offer.name); const titleWords = new Set(title.match(/[a-z0-9]+/g) || []);
+    const hierarchy=norm(offer.a4_path||''),hierarchyWords=new Set(hierarchy.match(/[a-z0-9]+/g)||[]);
+    const score = terms.reduce((s,t) => s + (titleWords.has(t) ? 3 : t.length >= 5 && title.includes(t) ? 1 : 0) +
+      (hierarchyWords.has(t)?4:t.length>=5&&[...hierarchyWords].some(w=>w.startsWith(t.slice(0,5)))?2:0), 0);
     return { offer, score };
   }).filter(x => x.score >= 3).sort((a,b) => b.score-a.score || a.offer.code.localeCompare(b.offer.code));
   const selected = ranked.slice(0, exact.length ? 8 : 5);
@@ -21,7 +24,7 @@ export function catalogExtracts(files, question, { requested = false } = {}) {
     const data = JSON.parse(files[offer.shard]);
     const rows = data.rows.filter(r => r.values[data.columns.indexOf('KODA_PONUDBE')] === offer.code);
     return { path: offer.shard, kind: 'dated_catalog_extract_not_live_price', locator: { file: data.source, sheet: data.sheet, code: offer.code, rows: rows.map(r=>r.row) },
-      text: JSON.stringify({ source: data.source, sheet: data.sheet, snapshot: data.snapshot, offer: { code: offer.code, name: offer.name }, columns: data.columns, rows,
+      text: JSON.stringify({ source: data.source, sheet: data.sheet, snapshot: data.snapshot, offer: { code: offer.code, name: offer.name,a4_path:offer.a4_path||null,copa_path:offer.copa_path||null }, columns: data.columns, rows,
         exactCodeMatch: exact.length > 0, candidateOnly: exact.length === 0, matchingOffers: ranked.length,
         notShownOffers: Math.max(0,ranked.length-selected.length),
         limits: ['All price rows for this code are retained; do not sum alternative price lists.', 'No B2B offering relationships supplied.', 'An export is not current CPQ availability or confirmed VAT treatment.'] }) };
@@ -30,6 +33,9 @@ export function catalogExtracts(files, question, { requested = false } = {}) {
     text: JSON.stringify({ snapshot:index.date, offers:index.offers_count, lookup:'NO_MATCH_OR_NO_IDENTIFIER',
       instruction:'Ask for the offer code or distinctive name; do not invent a code, price or relationship.' }) });
   return results;
+}
+export function categoryQuestion(question){
+  return /\b(?:a4|kategorij[a-z]*|drevo|dreves[a-z]*|hierarhij[a-z]*|virtualn[a-z]*\s+streznik[a-z]*|pisarna\s+po\s+meri|data\s+cent[ea]r)\b/.test(norm(question));
 }
 export function resolveCatalogQuery(files,question,{allowCarry=false,context='',previous=''}={}) {
   if(!allowCarry || !/^(?:kaj pa|in|pa)\s+(?:(?:njena?|njegova?)\s+)?(?:cen[aeo]|cenik|znesek|enot[ae]|veljavnost|ddv)\s*[?!.]*$/.test(norm(question).trim()))return question;

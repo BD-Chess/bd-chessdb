@@ -57,7 +57,7 @@ export function makeBridgeHandler(api,now=()=>Date.now()) {
     finally {busy.delete(pair.targetTabId);}
   };
 }
-if(typeof chrome!=='undefined' && chrome.runtime?.onMessageExternal) {
+if(typeof chrome!=='undefined' && chrome.runtime?.onMessageExternal && chrome.runtime.getManifest?.()?.background?.service_worker!=='worker-v2.mjs') {
   const handle=makeBridgeHandler(chrome);
   const listen=internal=>(message,sender,reply)=>{handle(message,sender,internal).then(reply,()=>reply(fail('BRIDGE_UNAVAILABLE')));return true;};
   chrome.runtime.onMessageExternal.addListener(listen(false));
