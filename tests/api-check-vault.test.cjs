@@ -27,9 +27,13 @@ test('unlock UI is explicit and includes no background API invocation',()=>{
   assert.match(js,/vaultPass\.value=''/);
   assert.match(unlock,/crypto\.subtle\.deriveBits/);
   assert.match(unlock,/AES-GCM/);
-  assert.doesNotMatch(unlock,/bdai4ever/i);
-  assert.doesNotMatch(html,/bdai4ever/i);
-  assert.doesNotMatch(js,/bdai4ever/i);
   execFileSync(process.execPath,['--check',path.join(__dirname,'../public/AI8/api-check-unlock.js')]);
   execFileSync(process.execPath,['--check',path.join(__dirname,'../public/AI8/api-check.js')]);
+});
+
+test('unlock sources do not embed the configured passphrase', {skip: !process.env.BD_API_VAULT_TEST_PASSPHRASE}, () => {
+  const passphrase=process.env.BD_API_VAULT_TEST_PASSPHRASE.toLowerCase();
+  for (const name of ['api-check-unlock.js','api-check.html','api-check.js']) {
+    assert.equal(get(name).toLowerCase().includes(passphrase),false,`${name} contains configured passphrase`);
+  }
 });
