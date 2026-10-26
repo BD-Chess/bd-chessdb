@@ -53,8 +53,10 @@ async function persistNotes(){
 }
 async function loadNotes(){
  const saved=nativeStore.getItem(NOTES);
- if(saved){const x=JSON.parse(saved);if(x.vault!==cfg.vault)throw new Error('Zapiski pripadajo drugi različici ključa. Ohranjeni so; potreben je prenos.');
-  storeData=JSON.parse(TD.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(x.iv),additionalData:aad('notes')},master,from64(x.cipher))));}
+ if(saved){const x=JSON.parse(saved);
+  // Notes of an earlier key generation stay preserved under their own key; unlock continues with fresh notes.
+  if(x.vault!==cfg.vault){try{nativeStore.setItem(NOTES+'-'+x.vault,saved);nativeStore.removeItem(NOTES);}catch(_){}}
+  else storeData=JSON.parse(TD.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(x.iv),additionalData:aad('notes')},master,from64(x.cipher))));}
  let migrate=false;
  for(const key of allowedNotes){const value=nativeStore.getItem(key);if(value!==null){if(!(key in storeData))storeData[key]=value;migrate=true;}}
  if(migrate){await persistNotes();for(const key of allowedNotes)nativeStore.removeItem(key);}
