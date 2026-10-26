@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="sl" data-theme="dark" data-title-sl="AI8 · Preizkusi modelov" data-title-en="AI8 · Model tests">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="AI8: dokumentirani preizkusi lokalnih HOME, oblačnih MAL in oddaljenih SLAIF modelov z ločenimi merili in viri.">
+  <link rel="canonical" href="https://www.mdlxdcc.org/ai8/model-results">
+  <title>AI8 · Preizkusi modelov</title>
+  <script>try{const r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
+  <link rel="stylesheet" href="../AI8/ai8-toolbar.css?v=20261026-r1">
+  <link rel="stylesheet" href="../AI8/model-results.css?v=20261026-r1">
+  <script src="../AI8/ai8-toolbar.js?v=20261026-r1" defer></script>
+  <script src="../AI8/model-results.js?v=20261026-r1" defer></script>
+</head>
+<body>
+  <a class="skip" href="#content"><span data-lang="sl">Na vsebino</span><span data-lang="en" hidden>Skip to content</span></a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="../AI8/">AI8 <span>·</span> <span data-lang="sl">Preizkusi modelov</span><span data-lang="en" hidden>Model tests</span></a>
+      <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
+        <a href="#home">HOME</a><a href="#cloud">Cloud</a><a href="#slaif">SLAIF</a><a href="#method"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></a>
+        <a href="../AI8/cli-loops.html">CLI Loops ↗</a><a href="../hmal/">HMAL ↗</a>
+      </nav>
+      <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance">
+        <button type="button" data-ai8-down aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button>
+        <button type="button" data-ai8-reset aria-label="Velikost besedila na 100 odstotkov" data-aria-sl="Velikost besedila na 100 odstotkov" data-aria-en="Reset text size to 100 percent">100%</button>
+        <button type="button" data-ai8-up aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-lang="en" aria-label="English" aria-pressed="false">EN</button>
+        <button type="button" data-ai8-lang="sl" aria-label="Slovenščina" aria-pressed="true">SL</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-ai8-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell" id="content">
+    <div class="intro">
+      <div class="eyebrow">AI8 · 26. 10. 2026</div>
+      <h1><span data-lang="sl">Kako so se izkazali naši LLM-ji?</span><span data-lang="en" hidden>How did our LLMs perform?</span></h1>
+      <p class="lead" data-lang="sl">Dokumentirani izidi za lokalne modele HOME, oblačne ponudnike MAL in zgodovinske oddaljene teste SLAIF. Vsak rezultat je prikazan skupaj s testom, ki ga je ustvaril.</p>
+      <p class="lead" data-lang="en" hidden>Documented results for local HOME models, MAL cloud providers and historical remote SLAIF tests. Every result stays attached to the test that produced it.</p>
+      <div class="summary" aria-label="Obseg dokazov" data-aria-sl="Obseg dokazov" data-aria-en="Evidence coverage">
+        <div><strong>8</strong><span data-lang="sl">konfiguracij HOME z osnovnim in RHP nizom</span><span data-lang="en" hidden>HOME configurations in the basic and RHP series</span></div>
+        <div><strong>10</strong><span data-lang="sl">oblačnih ponudnikov v registru MAL; enoten kakovostni tek še manjka</span><span data-lang="en" hidden>MAL cloud providers; a uniform quality run is still missing</span></div>
+        <div><strong>3</strong><span data-lang="sl">zgodovinske konfiguracije SLAIF z različnimi nalogami</span><span data-lang="en" hidden>historical SLAIF configurations with different tasks</span></div>
+      </div>
+      <p class="scope-note" data-lang="sl"><strong>Kako brati:</strong> uspešen HTTP odgovor še ni kakovosten odgovor. Prekinitev zaradi virov ni vsebinski neuspeh. Rezultati treh okolij niso ena skupna lestvica; današnja dosegljivost modelov ni preverjena.</p>
+      <p class="scope-note" data-lang="en" hidden><strong>How to read this:</strong> an HTTP success is not a quality pass. A resource interruption is not a content failure. These three environments do not form one leaderboard; current model availability has not been verified.</p>
+    </div>
+
+    <section id="home" aria-labelledby="home-title">
+      <div class="eyebrow">01 · HOME</div>
+      <h2 id="home-title"><span data-lang="sl">Lokalni modeli</span><span data-lang="en" hidden>Local models</span></h2>
+      <p class="section-intro" data-lang="sl">Osem konfiguracij, sedem osnovnih modelov. V vsakem nizu je po deset nalog na konfiguracijo. Stolpci kažejo vsebinske PASS, ne zgolj HTTP 200; časi so mediane odgovorov v obliki min:s.</p>
+      <p class="section-intro" data-lang="en" hidden>Eight configurations, seven base models. Each series has ten tasks per configuration. Bars show substantive PASS, not merely HTTP 200; response medians use min:s.</p>
+      <div class="legend"><span><i aria-hidden="true"></i><span data-lang="sl">Osnovni niz</span><span data-lang="en" hidden>Basic series</span></span><span><i class="rhp" aria-hidden="true"></i>RHP</span></div>
+      <div id="home-chart" class="metric-list" role="group" aria-label="Rezultati HOME modelov" data-aria-sl="Rezultati HOME modelov" data-aria-en="HOME model results"><p class="small">Nalaganje rezultatov…</p></div>
+      <div class="context-grid">
+        <article><h3><span data-lang="sl">Prenos in kakovost sta ločena</span><span data-lang="en" hidden>Transport and quality are separate</span></h3><p data-lang="sl">Osnovni niz: 32 PASS, 36 FAIL, 12 INCOMPLETE. RHP: 22 PASS, 20 FAIL, 15 INCOMPLETE, 13 prekinitev zaradi virov in 10 zadržanih nalog.</p><p data-lang="en" hidden>Basic: 32 PASS, 36 FAIL, 12 INCOMPLETE. RHP: 22 PASS, 20 FAIL, 15 INCOMPLETE, 13 resource interruptions and 10 held tasks.</p></article>
+        <article><h3><span data-lang="sl">Kratek zagon ≠ celoten test</span><span data-lang="en" hidden>A smoke check is not a full test</span></h3><p data-lang="sl">Osem začetnih smoke preverjanj je uspelo. V ločenem HMAL enournem nizu je uspelo 12/13 klicev; Ministral je porabil kontekst 4096 brez končnega odgovora.</p><p data-lang="en" hidden>Eight initial smoke checks passed. In a separate one-hour HMAL series, 12/13 calls passed; Ministral used the 4096-token context without a final answer.</p></article>
+      </div>
+      <div class="details-list" id="home-details"></div>
+    </section>
+
+    <section id="cloud" aria-labelledby="cloud-title">
+      <div class="eyebrow">02 · MAL</div>
+      <h2 id="cloud-title"><span data-lang="sl">Oblačni modeli</span><span data-lang="en" hidden>Cloud models</span></h2>
+      <p class="section-intro" data-lang="sl">MAL navaja deset ponudnikov s profilnimi modeli. Štirje svetovalni izhodi so dokumentirani; trije se po ID-ju ujemajo s trenutno navedenim profilom. To je dokaz izvedenega klica, ne primerljiv test kakovosti T001–T010.</p>
+      <p class="section-intro" data-lang="en" hidden>MAL lists ten providers with model profiles. Four advisory outputs are documented; three exactly match a currently listed profile ID. This proves an observed call, not a comparable T001–T010 quality result.</p>
+      <div class="cloud-strip" role="img" aria-label="Deset ponudnikov: trije ujemajoči izhodi, en neujemajoči in šest brez ustreznega izida v pregledanih virih" data-aria-sl="Deset ponudnikov: trije ujemajoči izhodi, en neujemajoči in šest brez ustreznega izida v pregledanih virih" data-aria-en="Ten providers: three exact observed matches, one unmatched observed output and six without a qualifying output in reviewed evidence"><span class="matched"></span><span class="unmatched"></span><span class="unobserved"></span></div>
+      <div class="cloud-groups">
+        <div><strong>3 · <span data-lang="sl">ujemanje ID-ja</span><span data-lang="en" hidden>exact ID match</span></strong><p>Grok, DeepSeek, GLM</p></div>
+        <div><strong>1 · <span data-lang="sl">drugi ID</span><span data-lang="en" hidden>different ID</span></strong><p>Gemini</p></div>
+        <div><strong>6 · <span data-lang="sl">brez ustreznega izida v pregledanih virih</span><span data-lang="en" hidden>no qualifying output in reviewed sources</span></strong><p>ChatGPT, Claude, Qwen, MiniMax, Mistral, Kimi</p></div>
+      </div>
+      <div class="details-list" id="cloud-details"></div>
+    </section>
+
+    <section id="slaif" aria-labelledby="slaif-title">
+      <div class="eyebrow">03 · SLAIF</div>
+      <h2 id="slaif-title"><span data-lang="sl">Zgodovinski oddaljeni testi</span><span data-lang="en" hidden>Historical remote tests</span></h2>
+      <p class="section-intro" data-lang="sl">Tri konfiguracije, trije različni obsegi. Dolžine spodnjih stolpcev so deleži znotraj posameznega testa; med seboj niso splošna lestvica modelov.</p>
+      <p class="section-intro" data-lang="en" hidden>Three configurations, three different scopes. Bar lengths show success within each test, not a general ranking across models.</p>
+      <div id="slaif-chart" role="group" aria-label="Zgodovinski rezultati SLAIF" data-aria-sl="Zgodovinski rezultati SLAIF" data-aria-en="SLAIF historical test results"><p class="small">Nalaganje rezultatov…</p></div>
+      <div class="details-list" id="slaif-details"></div>
+    </section>
+
+    <section id="method" aria-labelledby="method-title">
+      <div class="eyebrow">04 · <span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></div>
+      <h2 id="method-title"><span data-lang="sl">Od preizkusa do sklepa</span><span data-lang="en" hidden>From test to conclusion</span></h2>
+      <ol class="timeline">
+        <li><time datetime="2026-10-21">21. 10.</time><span data-lang="sl">SLAIF Gemma: konsolidiranih 27 API zahtev; uspeh prenosa, formata in vsebine je poročan ločeno.</span><span data-lang="en" hidden>SLAIF Gemma: 27 API requests consolidated; transport, format and content outcomes are separate.</span></li>
+        <li><time datetime="2026-10-22">22. 10.</time><span data-lang="sl">HOME: 8/8 smoke, ločeno HMAL 12/13 kratkih odgovorov. MAL: pripravljena kampanja za deset ponudnikov, brez potrjenega enotnega izida.</span><span data-lang="en" hidden>HOME: 8/8 smoke, plus a separate HMAL 12/13 short-answer series. MAL: ten-provider campaign prepared, without a verified uniform result.</span></li>
+        <li><time datetime="2026-10-24">24. 10.</time><span data-lang="sl">SLAIF GaMS3: zamrznjeni T001–T010, 7/10 PASS brez ponavljanj; primerjava pokaže tudi Qwenovih 7/7 na T001–T007.</span><span data-lang="en" hidden>SLAIF GaMS3: frozen T001–T010, 7/10 PASS with no retries; the comparison also records Qwen 7/7 on T001–T007.</span></li>
+        <li><time datetime="2026-10-25">25. 10.</time><span data-lang="sl">HOME primerjalni osnovni in RHP izidi; SLAIF Qwen raziskovalni piloti in ujemajoča primerjava Qwen/Gemma.</span><span data-lang="en" hidden>HOME basic and RHP readout; SLAIF Qwen research pilots and matched Qwen/Gemma comparison.</span></li>
+        <li><time datetime="2026-10-26">26. 10.</time><span data-lang="sl">AI8 dokazni katalog sestavi 21 konfiguracij. Stanje današnje dosegljivosti pri vseh ostaja neznano.</span><span data-lang="en" hidden>The AI8 evidence catalog records 21 configurations. Current availability remains unknown for all.</span></li>
+      </ol>
+      <details><summary><span data-lang="sl">Kaj pomeni PASS in kaj manjka?</span><span data-lang="en" hidden>What does PASS mean, and what is still missing?</span></summary><div class="detail-body"><p data-lang="sl">HOME kakovostni PASS zahteva pravilen format, shemo in vsebino. HTTP 200 pomeni samo uspešen prenos. Osnovni testi so tekli po protokolu cold_per_test; neprekinjena serija na naloženem modelu ni dokazana. Cloud MAL nima potrjenega enotnega T001–T010 teka. SLAIF izidi pokrivajo različne naloge in zgodovinski dostop.</p><p data-lang="en" hidden>HOME quality PASS requires valid format, schema and content. HTTP 200 only confirms transport. The basic tests used cold_per_test; a continuously loaded series is unproven. Cloud MAL has no verified uniform T001–T010 run. SLAIF outcomes cover different tasks and historical access.</p></div></details>
+      <details><summary><span data-lang="sl">Poročila in provenienca</span><span data-lang="en" hidden>Reports and provenance</span></summary><div class="detail-body"><p data-lang="sl">Spodnji naslovi določajo izvirna dokazila. Zasebni Drive ID-ji, končne točke in poverilnice niso vključeni v javno stran.</p><p data-lang="en" hidden>The titles below identify the source reports. Private Drive IDs, endpoints and credentials are not included in this public page.</p><ol class="source-list" id="source-list"></ol></div></details>
+    </section>
+  </main>
+  <footer><div class="shell">AI8 · <span data-lang="sl">Zgodovinski dokazni posnetek, ne živ status modelov.</span><span data-lang="en" hidden>Historical evidence snapshot, not live model status.</span> <a href="../AI8/cli-loops.html">CLI Loops</a> · <a href="../hmal/">HMAL</a></div></footer>
+  <noscript><p class="shell">Za podrobne grafe omogoči JavaScript; osnovni povzetek in metoda sta še vedno vidna. / Enable JavaScript for detailed charts; the summary and method remain visible.</p></noscript>
+</body>
+</html>

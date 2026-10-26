@@ -1,0 +1,166 @@
+{
+  "schema": "ai8.model-results-evidence.v1",
+  "as_of": "2026-10-26",
+  "catalog_schema": "ai8.model-catalog-public.v1",
+  "scope": "historical_test_evidence; no live routing or availability claim",
+  "home": {
+    "scores": [
+      {
+        "id": "home-qwen3.8-q6",
+        "basic_pass": 10,
+        "rhp_pass": 7,
+        "basic_median_seconds": 515,
+        "rhp_median_seconds": 406,
+        "rhp_note": "Three answers incomplete at output limit."
+      },
+      {
+        "id": "home-gpt-oss-mxfp4",
+        "basic_pass": 7,
+        "rhp_pass": 6,
+        "basic_median_seconds": 79,
+        "rhp_median_seconds": 80,
+        "rhp_note": null
+      },
+      {
+        "id": "home-mellum2.1-q8",
+        "basic_pass": 6,
+        "rhp_pass": 7,
+        "basic_median_seconds": 48,
+        "rhp_median_seconds": 55,
+        "rhp_note": null
+      },
+      {
+        "id": "home-magistral-q6",
+        "basic_pass": 4,
+        "rhp_pass": null,
+        "basic_median_seconds": 37,
+        "rhp_median_seconds": null,
+        "rhp_note": "RHP run affected by resource interruptions; no comparable score."
+      },
+      {
+        "id": "home-gemma4-q5",
+        "basic_pass": 2,
+        "rhp_pass": null,
+        "basic_median_seconds": 578,
+        "rhp_median_seconds": null,
+        "rhp_note": "RHP resource interruptions; not scored for content."
+      },
+      {
+        "id": "home-lfm2.5-q6",
+        "basic_pass": 2,
+        "rhp_pass": 2,
+        "basic_median_seconds": 80,
+        "rhp_median_seconds": 91,
+        "rhp_note": null
+      },
+      {
+        "id": "home-gemma4-q6",
+        "basic_pass": 1,
+        "rhp_pass": null,
+        "basic_median_seconds": 662,
+        "rhp_median_seconds": null,
+        "rhp_note": "RHP held before generation due to resources; not scored for content."
+      },
+      {
+        "id": "home-ministral3-q8",
+        "basic_pass": 0,
+        "rhp_pass": 0,
+        "basic_median_seconds": 22,
+        "rhp_median_seconds": 31,
+        "rhp_note": "HMAL separate long smoke exhausted 4096 context without final answer."
+      }
+    ],
+    "basic_totals": {
+      "pass": 32,
+      "fail": 36,
+      "incomplete": 12
+    },
+    "rhp_totals": {
+      "pass": 22,
+      "fail": 20,
+      "incomplete": 15,
+      "resource_interruption": 13,
+      "held_resource": 10
+    },
+    "smoke": {
+      "pass": 8,
+      "total": 8,
+      "date": "2026-10-22"
+    },
+    "hmal_one_hour": {
+      "pass": 12,
+      "total": 13,
+      "date": "2026-10-22",
+      "failure": "Ministral used the 4096-token context without a final answer"
+    },
+    "quality_date": "2026-10-25",
+    "protocol": "cold_per_test; ten tasks per configuration in basic and RHP series"
+  },
+  "cloud": {
+    "advisory_observations": [
+      {
+        "id": "mal-deepseek",
+        "exact_profile_match": true
+      },
+      {
+        "id": "mal-gemini",
+        "exact_profile_match": false
+      },
+      {
+        "id": "mal-glm",
+        "exact_profile_match": true
+      },
+      {
+        "id": "mal-grok",
+        "exact_profile_match": true
+      }
+    ],
+    "quality_campaign": "PREPARED_OFFLINE",
+    "quality_note": "No verified completed uniform ten-provider T001-T010 run in the reviewed evidence."
+  },
+  "slaif": [
+    {
+      "id": "slaif-qwen3.8-q8",
+      "campaign": "T001-T007",
+      "pass": 7,
+      "total": 7,
+      "research_calls": 18,
+      "research_http_ok": 18,
+      "research_note": "Stable benefit over strong conventional controls is unconfirmed."
+    },
+    {
+      "id": "slaif-gams3-12b-q8",
+      "campaign": "T001-T010",
+      "pass": 7,
+      "total": 10,
+      "attempts": 10,
+      "retries": 0
+    },
+    {
+      "id": "slaif-gemma4-26b-q8",
+      "campaign": "targeted strict/function test",
+      "pass": 2,
+      "total": 10,
+      "api_requests": 27,
+      "http_200": 26,
+      "matched_comparison": {
+        "r2_standalone_delta_pct": -1.602169,
+        "r2_final_delta_pct": -0.40405,
+        "r3_plan_code_delta_pct": -8.131858
+      },
+      "comparison_note": "Matched scheduling comparison with SLAIF Qwen; negative values favor Qwen. Small related test set."
+    }
+  ],
+  "source_reports": [
+    "AI8_HOME_LOCAL_LLM_LAUNCH_RUNBOOK_R1.md",
+    "RESULT_FROM_CLI_CODEX_20261022_AI8_EIGHT_LOCAL_LLM_SMOKE_R1.md",
+    "HOME_MODEL_RESULTS_READOUT_20261025_R1.md",
+    "RESULT_FROM_CLI_CODEX_20261022_HMAL_MEASURE_1H_R1.md",
+    "MAL_REPORT.md",
+    "NEXT_FOR_CLI_CODEX_20261022_MAL_TOP10_API_TESTS_R1.md",
+    "SLAIF_QWEN_USEFULNESS_SESSION_20261025_R1.md",
+    "RESULT_SLAIF_GAMS3_T001_T010_20261024_R1_FINAL.md",
+    "SLAIF_COMPLETE_SESSION_TEST_REPORT_20261021.md",
+    "SLAIF_GEMMA4_QWEN_MATCHED_COMPARISON_20261025_R1.md"
+  ]
+}

@@ -1,0 +1,10 @@
+.ai8-toolbar { --toolbar-line: var(--line, currentColor); --toolbar-surface: var(--surface, transparent); --toolbar-accent: var(--accent, var(--mint, currentColor)); display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .2rem; }
+.ai8-toolbar .ai8-divider { width: 1px; height: 1.6rem; background: var(--toolbar-line); margin: 0 .35rem; }
+.ai8-toolbar button { min-width: 44px; min-height: 44px; border: 1px solid transparent; border-radius: .5rem; padding: .3rem .5rem; background: transparent; color: inherit; font: inherit; font-size: .875rem; }
+.ai8-toolbar button:hover:not(:disabled) { background: var(--toolbar-surface); border-color: var(--toolbar-line); }
+.ai8-toolbar button[aria-pressed="true"] { background: var(--toolbar-surface); border-color: var(--toolbar-line); font-weight: 600; }
+.ai8-toolbar button:disabled { opacity: .45; }
+.ai8-toolbar button:focus-visible { outline: 3px solid var(--toolbar-accent); outline-offset: 2px; }
+.ai8-toolbar [data-ai8-reset] { min-width: 3.7rem; font-variant-numeric: tabular-nums; }
+[data-lang][hidden] { display: none !important; }
+@media (max-width: 600px) { .ai8-toolbar { justify-content: flex-start; } }
