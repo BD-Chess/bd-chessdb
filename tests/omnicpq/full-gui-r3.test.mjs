@@ -16,6 +16,7 @@ import * as starters from '../../public/OmniCPQ/starters.mjs';
 import {makeHandler} from '../../functions/omnicpq-assistant.mjs';
 import {SKILL} from '../../functions/lib/omnicpq/identity.mjs';
 import {cpqLocation} from '../../public/OmniCPQ/browser-bridge-v2.mjs';
+import {validateGuiBrowser,guiInstructions} from '../../functions/lib/omnicpq/browser-v2.mjs';
 const origin='https://cpq-stg.apps.test-ocp.ts.telekom.si',app='https://www.mdlxdcc.org/omnicpq/';
 function fixture(extra=''){
   const dom=new JSDOM(`<main><h1>Test configuration</h1><button id="add"><mat-icon>add</mat-icon></button><div id="card" style="cursor:pointer">Dodaj postavko</div><button id="menu"><mat-icon>more_vert</mat-icon></button><div role="group" aria-label="VM TEST"><label for="cpu">CPU</label><input id="cpu" type="number" min="1" max="24" value="1"><label for="ram">RAM</label><input id="ram" type="number" min="1" max="256" value="4"><button id="save">Shrani</button><p id="result"></p></div><a href="/sl/order/list">Naročila</a></main>${extra}`,{url:origin+'/sl/order/details/view/SYNTHETIC/configure',runScripts:'outside-only'});
@@ -69,6 +70,31 @@ test('Angular offering anchors without href remain individual hit-tested control
     o=await f.client.observe();assert(o.controls.some(c=>c.label==='Other offering'));assert(!o.controls.some(c=>c.label==='External offering'));
   }finally{f.dom.window.close();}
 });
+test('Material pseudo-checkbox selection survives actual worker and backend sanitization; selected row proceeds to confirm without toggling off',async()=>{
+  const f=fixture('<mat-card><a id="offering"><mat-pseudo-checkbox class="mat-pseudo-checkbox"></mat-pseudo-checkbox>Synthetic cloud package</a><a id="other-offering"><mat-pseudo-checkbox class="mat-pseudo-checkbox mat-pseudo-checkbox-indeterminate"></mat-pseudo-checkbox>Other package</a><button id="confirm-selection" disabled>Potrdi izbor</button><span class="mat-mdc-chip-selected" role="option">Eligible</span></mat-card>');
+  try{
+    let toggles=0,confirmed=false;const row=f.d.querySelector('#offering'),indicator=row.querySelector('mat-pseudo-checkbox'),confirm=f.d.querySelector('#confirm-selection');
+    row.onclick=()=>{toggles++;indicator.classList.toggle('mat-pseudo-checkbox-checked');confirm.disabled=!indicator.classList.contains('mat-pseudo-checkbox-checked');};
+    confirm.onclick=()=>{confirmed=true;f.d.querySelector('#result').textContent='Configuration opened';};
+    await f.pair();let o=await f.client.observe();
+    let sanitized=validateGuiBrowser(o),selected=sanitized.controls.find(c=>c.label==='Synthetic cloud package');
+    assert.equal(selected.selectionState,'unselected');assert.equal(selected.selectionSource,'material-pseudo-checkbox');
+    assert.equal(sanitized.controls.find(c=>c.label==='Other package').selectionState,'mixed');
+    assert.equal(sanitized.controls.find(c=>c.label==='Eligible').selectionState,undefined);
+    const aggregate=sanitized.controls.find(c=>c.kind==='control'&&c.label.includes('Synthetic cloud package'));if(aggregate)assert.equal(aggregate.selectionState,undefined);
+    const before=o.revision;await f.client.execute(f.action(o,selected.label,'click'),{guidedAuthorization:true});
+    o=await f.client.observe();sanitized=validateGuiBrowser(o);selected=sanitized.controls.find(c=>c.label===selected.label);
+    assert.equal(selected.selectionState,'selected');assert.notEqual(o.revision,before);
+    assert.match(guiInstructions(sanitized),/Ne klikni je znova/);
+    assert.throws(()=>validateGuiBrowser({...o,controls:o.controls.map(c=>c.label===selected.label?{...c,selectionState:'arbitrary'}:c)}),/INVALID_BROWSER_CONTEXT/);
+    // The next step consumes the sanitized state, not the count or a second row click.
+    const next=selected.selectionState==='selected'?'Potrdi izbor':selected.label;
+    await f.client.execute(f.action(o,next,'click'),{guidedAuthorization:true});
+    assert.equal(toggles,1);assert(confirmed);assert(indicator.classList.contains('mat-pseudo-checkbox-checked'));
+    assert.match((await f.client.observe()).text,/Configuration opened/);
+  }finally{f.dom.window.close();}
+});
+
 test('same-document editor fill reaches input listeners, clears previous value, validates and saves actual values',async()=>{
   const f=fixture();try{await f.pair();let o=await f.client.observe();assert(o.navigationLocked);
     assert.deepEqual(JSON.parse(JSON.stringify(o.controls.find(c=>c.label==='CPU').constraints)),{min:'1',max:'24'});
@@ -147,7 +173,7 @@ test('activeTab on CPQ does not require PWA URL visibility; fresh browser-verifi
   const f=fixture();try{
     const original=f.api.tabs.get;f.api.tabs.get=async id=>id===23?{id,incognito:false}:original(id);
     await f.pair();assert.equal(f.storage.guiPair.pairingVerification,'VERIFIED_EXTERNAL_SENDER_URL_METADATA_WITHHELD');
-    assert.equal((await f.client.connect()).capabilities.workerVersion,'1.2.3');
+    assert.equal((await f.client.connect()).capabilities.workerVersion,'1.2.4');
     assert((await f.client.observe()).controls.length>0);
     const token=f.storage.guiPair.token;
     for(const sender of [{url:'https://outside.invalid/',frameId:0,tab:{id:23}},
@@ -227,7 +253,7 @@ test('visible same-origin frame observation binds frame geometry and retains the
     const top=(await f.page({type:'observe',origin,scope:'order'})).observation;assert.equal(top.frames[0].path,'0');assert(top.frames[0].accessible);
     const r=await f.page({type:'observe',origin,scope:'order',framePath:'0'});assert(r.ok);assert.equal(r.observation.framePath,'0');
     assert.equal(r.observation.controls.find(c=>c.label==='Embedded value').value,'kept');assert.equal(r.observation.documentKey,'SYNTHETIC');
-    assert.equal(r.observation.runtime.pageVersion,'1.2.3');assert.equal(f.d.querySelector('#cpu').value,'1');
+    assert.equal(r.observation.runtime.pageVersion,'1.2.4');assert.equal(f.d.querySelector('#cpu').value,'1');
     assert.equal((await f.page({type:'observe',origin,scope:'order',framePath:'99'})).error,'CPQ_FRAME_CHANGED');
   }finally{f.dom.window.close();}
 });

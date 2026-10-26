@@ -24,6 +24,9 @@ export function validateGuiBrowser(raw,now=Date.now()){
     ids.add(c.id);boundedString(c.label,160);boundedString(c.inputType,32);
     if(c.value!==undefined)boundedString(c.value,320);
     if(c.checked!==undefined&&typeof c.checked!=='boolean')throw BAD();
+    if(c.selectionState!==undefined&&!['selected','unselected','mixed'].includes(c.selectionState))throw BAD();
+    if(c.selectionSource!==undefined&&!['aria-selected','material-pseudo-checkbox'].includes(c.selectionSource))throw BAD();
+    if((c.selectionState===undefined)!==(c.selectionSource===undefined))throw BAD();
     if(c.href!==undefined){boundedString(c.href,1200);if(!c.href.startsWith('/sl/')||c.href.startsWith('//'))throw BAD();}
     if(c.group!==undefined)boundedString(c.group,80);
     if(c.component!==undefined)boundedString(c.component,200);
@@ -33,6 +36,7 @@ export function validateGuiBrowser(raw,now=Date.now()){
       for(const o of c.options){boundedString(o.value,80);boundedString(o.label,80);}}
     return {id:c.id,kind:c.kind,label:c.label,enabled:c.enabled,inputType:c.inputType,rect:c.rect,visibleInViewport:c.visibleInViewport,
       ...(c.value!==undefined?{value:c.value}:{}),...(c.checked!==undefined?{checked:c.checked}:{}),
+      ...(c.selectionState!==undefined?{selectionState:c.selectionState,selectionSource:c.selectionSource}:{}),
       ...(c.required!==undefined?{required:!!c.required}:{}),...(c.invalid!==undefined?{invalid:!!c.invalid}:{}),
       ...(c.href!==undefined?{href:c.href}:{}),...(c.options!==undefined?{options:c.options}:{}),...(c.group!==undefined?{group:c.group}:{}),
       ...(c.constraints?{constraints:c.constraints}:{}),...(c.rangeText?{rangeText:c.rangeText}:{}),...(c.component?{component:c.component}:{})};
@@ -52,6 +56,7 @@ export function guiInstructions(browser){
   const actions=browser.capabilities?.cdpAvailable?'click, doubleClick, hover, contextClick, focus, scroll, drag, fill, key, check, selectNative, ensureVisible, read':'read, ensureVisible, selectNative (CDP miška/tipkovnica še ni dosegljiva)';
   return `${ACTION_PLAYBOOK}\n\nPovezan je NAMENSKI OmniCPQ GUI most v2. Dejansko opazovanje je uporabnikovo odjemalsko poročilo, ne strežniški dokaz. Obseg: ${browser.scope==='order'?'NAROČILA':'PONUDBE'}, okolje ${browser.environment}, dokument ${browser.documentKey??'še ni identificiran'}. Podprti tipi predlogov: ${actions}. Dovoljenje za urejanje iz parjenja: ${browser.capabilities?.allowWrites===true?'DA':'NE; ne predlagaj poslovnih sprememb'}. Prenos datoteke zahteva uporabniško izbrano datoteko in ločeno UI dejanje, nikoli podatkov iz modelovega odgovora.
 Izključno dejanski controls z ID cN so izvedljive tarče; tudi ikonski gumbi in +. Če manjkajo relevantne kontrole, predlagaj pomik ali naslednje opazovanje paging.offset; NIKOLI ne izmišljaj ID, CSS selectorja, URL poti, stranke, cen, količin ali vrednosti. Ne reci, da je nastavitev shranjena ali naročilo oddano, dokler sveže opazovanje in poslovno stanje tega ne potrdita.
+Izbor vrstice je preklop: selectionState selected pomeni, da je ta konkretna vrstica že izbrana. Ne klikni je znova, ker bi jo izključil. Če je prava vrstica selected in cilj dovoljuje potrditev izbire, nadaljuj na opaženi omogočeni Potrdi. unselected pomeni, da ni izbrana; mixed ni potrjen izbor. Uporabi selectionState iz svežega opazovanja skupaj z oznako vrstice; samo skupno število izbranih vrstic ne določa njihove identitete.
 Pri naročilu razlikuj Ponudbo za stranko od Naročila za realizacijo. Ne ustvari novega dokumenta, če uporabnik že ureja pravi dokument; ohrani documentKey. Ob odprtem dialogu obravnavaj ta dialog. Ob navigationLocked NE predlagaj odhoda, ki bi izgubil neshranjeno delo. Tipkanje/shranjevanje znotraj istega konfiguratorja je dovoljeno, če je v nalogu. Stop/Pause uporabnika ima prednost. Uporabnikova odobritev cilja pokriva običajne vmesne vnose v vodenem načinu; nepovratne/nenamerne izgube zahtevajo pregled in konkretno odobritev.
 Če je naslednji korak razviden in izvedljiv, dodaj na konec odgovora NATANKO EN modelni predlog v bloku:
 \`\`\`omnicpq_action

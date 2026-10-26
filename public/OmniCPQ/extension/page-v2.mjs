@@ -61,6 +61,17 @@ export async function cpqPageV2(command) {
     if(tag==='select')return 'select';if(tag==='textarea' || tag==='input' || e.isContentEditable || role==='textbox')return 'field';
     if(tag==='a')return e.hasAttribute('href')?'link':'button';if(tag==='button' || role==='button')return 'button';return 'control';
   };
+  const selection = e => {
+    const aria=e.getAttribute('aria-selected');
+    if(aria==='true'||aria==='false')return {selectionState:aria==='true'?'selected':'unselected',selectionSource:'aria-selected'};
+    // A Material table row can own a visual pseudo-checkbox with no ARIA role
+    // or native input. Bind only a single visible indicator to this control;
+    // a containing card/table with several row indicators is ambiguous.
+    const indicators=[...(e.matches('mat-pseudo-checkbox')?[e]:e.querySelectorAll('mat-pseudo-checkbox'))].filter(visible);
+    if(indicators.length!==1)return {};
+    const classes=indicators[0].classList;
+    return {selectionState:classes.contains('mat-pseudo-checkbox-indeterminate')?'mixed':classes.contains('mat-pseudo-checkbox-checked')?'selected':'unselected',selectionSource:'material-pseudo-checkbox'};
+  };
   // Angular/Material overlays are outside the component DOM tree. Include all visible controls.
   const activeDialog=[...doc.querySelectorAll('dialog[open],[role="dialog"],[aria-modal="true"]')].filter(visible).at(-1);
   // Material menus/listboxes can be sibling overlays outside an active dialog.
@@ -76,7 +87,7 @@ export async function cpqPageV2(command) {
     return true;
   };
   candidates=candidates.filter(eligible);
-  const stateStamp=candidates.map(e=>[accessible(e),e.value??e.getAttribute('aria-valuenow'),e.checked,e.getAttribute('aria-expanded'),e.getAttribute('aria-selected'),isDisabled(e)]);
+  const stateStamp=candidates.map(e=>[accessible(e),e.value??e.getAttribute('aria-valuenow'),e.checked,e.getAttribute('aria-expanded'),selection(e),isDisabled(e)]);
   if(command.query)candidates=candidates.filter(e=>norm(accessible(e)+' '+e.closest('[role="group"],mat-form-field')?.textContent).toLocaleLowerCase().includes(norm(command.query).toLocaleLowerCase()));
   const controls=[];const refs=[];const cap=Math.max(60,Math.min(350,Number(command.limit)||180));
   const offset=Math.max(0,Math.min(5000,Number(command.offset)||0));
@@ -89,7 +100,7 @@ export async function cpqPageV2(command) {
     if(index++<offset)continue;if(controls.length>=cap)break;
     const id='c'+(offset+controls.length),r=rect(e);
     const c={id,kind:k,label:name||('Neoznačen '+k+' #'+(offset+controls.length+1)),enabled:!isDisabled(e),
-      inputType:(e.getAttribute('type')||'').slice(0,32),rect:r,visibleInViewport:r.cx>=0&&r.cy>=0&&r.cx<topView.innerWidth&&r.cy<topView.innerHeight};
+      inputType:(e.getAttribute('type')||'').slice(0,32),rect:r,visibleInViewport:r.cx>=0&&r.cy>=0&&r.cx<topView.innerWidth&&r.cy<topView.innerHeight,...selection(e)};
     if(['field','combobox','select','checkbox','radio','switch','spinbutton','slider'].includes(k)) {
       if(k==='checkbox'||k==='radio'||k==='switch')c.checked=Boolean(e.checked ?? (e.getAttribute('aria-checked')==='true'));
       else {c.value=(e.type==='file'?'':String(e.isContentEditable?e.innerText:e.value??e.getAttribute('aria-valuenow')??'')).slice(0,320);
@@ -119,7 +130,7 @@ export async function cpqPageV2(command) {
     text,controls,viewport:{width:topView.innerWidth,height:topView.innerHeight,scrollX:scrollX,scrollY:scrollY},
     framePath,frames:[...doc.querySelectorAll('iframe,frame')].filter(visible).slice(0,50).map((f)=>{const index=[...doc.querySelectorAll('iframe,frame')].indexOf(f);let accessible=false;try{accessible=!!f.contentDocument&&(['about:blank','about:srcdoc'].includes(f.contentDocument.URL)||f.contentDocument.location.origin===command.origin);}catch{}return {path:framePath?framePath+'.'+index:String(index),title:norm(f.title||f.getAttribute('aria-label')).slice(0,160),accessible};}),
     parentContext:framePath?[...topDoc.querySelectorAll('h1,h2,[role=heading]')].map(e=>norm(e.textContent)).join(' ').slice(0,500):'',
-    runtime:{pageVersion:'1.2.3',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
+    runtime:{pageVersion:'1.2.4',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
     paging:{offset,limit:cap,totalFound:candidates.length,hasMore:offset+controls.length<candidates.length,query:norm(command.query).slice(0,160)}};
   const encode=new TextEncoder().encode(JSON.stringify({...current,stateStamp}));
   const digest=await crypto.subtle.digest('SHA-256',encode);
