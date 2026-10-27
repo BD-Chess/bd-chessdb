@@ -6,7 +6,7 @@ import { STARTERS, STARTER_VERSION, WORK_MODES, ADDITIONAL_STARTERS } from './st
 import { createBrowserBridge, navigationProposal as guiProposal, cpqLocation } from './browser-bridge-v2.mjs';
 import {createBrowserBridge as createLegacyBridge,navigationProposal as legacyProposal} from './browser-bridge.mjs';
 import {createAutoConnector} from './auto-connect.mjs';
-import {createAgentRun,runLimit,actionSignature,recoveryKind,explicitGoalGrant,goalGrantCovers} from './agent-session.mjs';
+import {createAgentRun,runLimit,actionSignature,recoveryKind,explicitGoalGrant,goalGrantCovers,configuredChoiceGuard,continuationMessage,conversationForModel} from './agent-session.mjs';
 
 const $ = id => document.getElementById(id);
 const API = '/.netlify/functions/omnicpq-assistant', AUTH = '/.netlify/functions/omnicpq-auth';
@@ -65,7 +65,7 @@ async function listDemos() {
 }
 function ownerAccess(verified) {
   state.ownerVerified = verified;
-  experience?.setAccess(verified);
+  experience?.setAccess(verified && state.role==='owner');
   $('workspace').hidden = !verified; $('composer').hidden = !verified; $('composer-shell').hidden = !verified; $('access-gate').hidden = verified;
   $('demo-owner').hidden = !verified || state.role !== 'owner';
   $('documents-owner').hidden = !verified || state.role !== 'owner';
@@ -101,7 +101,7 @@ function localWrite() {
   } catch { notice('Lokalno shranjevanje ni uspelo. Izvozi pomemben pogovor, preden zapreš stran.'); return false; }
 }
 function getContext() { return { text: $('context-text').value, manualUrl: $('manual-url').value, environment: $('environment').value, workspace:normalizeWorkspace(Object.fromEntries(Object.keys(CONTEXT_FIELDS).map(key=>[key,$('shared-'+key).value]))) }; }
-function conversationHistory() { return state.messages.filter(m => m.role === 'user' || (m.role === 'assistant' && m.status === 'complete')).slice(-16).map(({ role, content }) => ({ role, content })); }
+function conversationHistory() { return conversationForModel(state.messages); }
 function bodyForInput() { return { message: $('message').value.trim(), mode: state.mode, promptId: state.promptId, service: $('service').value || null,
   profile: state.profile, context: getContext(), snapshot: state.snapshot ? { ...state.snapshot } : null,
   browser: $('browser-include').checked ? state.browserObservation : null,
@@ -151,6 +151,7 @@ function startNewChat(keepContext=false) {
 function fitComposer() { $('message').rows = Math.min(5, Math.max(2, $('message').value.split('\n').length)); }
 function setBusy(value) {
   state.busy = value; $('send').disabled = value; $('cancel').hidden = !value; $('new-chat').disabled = value || !state.ownerVerified;
+  for(const id of ['tour-start','presentation-open'])$(id).disabled=value||!state.ownerVerified||state.role!=='owner';
   for (const b of document.querySelectorAll('#mode-nav button,#start-cards button,#quick-actions button,#freeze-input,#load-pilot')) b.disabled = value;
   $('message').setAttribute('aria-busy', String(value));
   for (const id of ['browser-connect','browser-read']) $(id).disabled = value || !state.ownerVerified || (id === 'browser-read' && !state.browserConnected);
@@ -199,6 +200,9 @@ function richText(node, text) {
 function stamp(ms) { return Number.isFinite(ms) ? (ms / 1000).toFixed(2) + ' s' : 'UNKNOWN'; }
 function visibleAnswer(text) { return String(text).replace(/```omnicpq_navigation[\s\S]*?(?:```|$)/g,'').replace(/```omnicpq_action[\s\S]*?(?:```|$)/g,'').trimEnd(); }
 function messageNode(message) {
+  if(message.role==='user'&&message.input?.automaticContinuation){
+    const details=element('details','internal-continuation');details.append(element('summary','','Notranje nadaljevanje · korak '+(message.input.agentStep??'?')),element('pre','',message.content));return details;
+  }
   const node = element('article', 'message ' + message.role), header = element('div', 'message-header');
   header.append(element('span', 'avatar', message.role === 'user' ? 'TI' : 'AI'), element('strong', '', message.role === 'user' ? 'Tvoje vprašanje' : 'OmniCPQ pomočnik'));
   const content = element('div', 'message-text', message.role === 'assistant' ? visibleAnswer(message.content) : message.content), status = element('div', 'message-status');
@@ -222,7 +226,7 @@ function finishMessage(message) {
   if (proposal) {
     const panel = element('div','browser-action');
     panel.append(element('p','',proposal.reason));
-    if (message.meta?.browserNavigation?.receipt) panel.append(element('p','',message.meta.browserNavigation.summary));
+    if (message.meta?.browserNavigation) panel.append(element('p','',message.meta.browserNavigation.summary));
     else {
       const go = element('button','','Izvedi v CPQ'); go.disabled = !state.browserConnected;
       go.onclick = async () => {
@@ -261,7 +265,22 @@ function finishMessage(message) {
   details.append(element('pre', '', JSON.stringify({ ...message.meta, sources: undefined, timing: { ttftMs: message.ttftMs, totalMs: message.totalMs } }, null, 2)));
   node.append(details);
 }
-function renderMessages() { $('messages').replaceChildren(...(state.ownerVerified ? state.messages.map(messageNode) : [])); $('welcome').hidden = state.messages.length > 0; }
+function renderMessages() {
+  const openGroups=new Set([...$('messages').querySelectorAll('details.agent-progress[open]')].map(n=>n.dataset.run));
+  const nodes=[],groups=new Map();let legacyRun=0;
+  for(const m of state.ownerVerified?state.messages:[]){
+    if(m.role==='user'&&!m.input?.automaticContinuation)legacyRun++;
+    const progress=m.input?.automaticContinuation||m.role==='assistant'&&m.meta?.browserNavigation;
+    const finalAnswer=m.role==='assistant'&&m.status!=='streaming'&&!m.meta?.browserNavigation;
+    if(progress&&!finalAnswer){
+      const key=m.input?.agentRunId||'legacy-'+legacyRun;let group=groups.get(key);
+      if(!group){const details=element('details','agent-progress');details.dataset.run=key;details.open=openGroups.has(key);const summary=element('summary','','Samodejno delo · podrobnosti');details.append(summary);group={details,summary,steps:0};groups.set(key,group);nodes.push(details);}
+      if(m.role==='assistant')group.steps++;group.summary.textContent=`Samodejno delo · ${group.steps} korakov · podrobnosti`;
+      group.details.append(messageNode(m));
+    }else nodes.push(messageNode(m));
+  }
+  $('messages').replaceChildren(...nodes);$('welcome').hidden=state.messages.length>0;
+}
 function saveSession(kind) {
   const data = exportSession(state);
   if (kind === 'md') download('OmniCPQ_pogovor.md', data.messages.map(m => `## ${m.role === 'user' ? 'Uporabnik' : 'Pomočnik'}\n\n${m.content}\n\n${m.status || ''}`).join('\n\n'), 'text/markdown');
@@ -426,6 +445,8 @@ function browserProblem(error) {
     CPQ_TARGET_NOT_ALLOWED:'Ta element ni dovoljena navigacija. Klika nismo izvedli.',
     CPQ_ACTION_OUTCOME_UNKNOWN:'Izida klika ni mogoče potrditi. Ne ponavljamo ga. Najprej preveri dejanski CPQ zaslon.',
     CPQ_ACTION_PAUSED:'Izvajanje je ustavljeno. Nadaljevanje se začne s svežim opazovanjem.',
+    CPQ_CONFIRMED_CHOICE_PROTECTED:'Model postavitve ali OS je že izbran. Ponovni poseg je preprečen; nadaljujem s preostalimi zahtevanimi polji.',
+    CPQ_DRIVER_STATE_UNKNOWN:'Izbire modela ali OS ni mogoče zanesljivo prebrati. Potrebna je razširitev Bridge 1.2.5; potrjenih izbir ne ponastavljam.',
     CPQ_TARGET_COVERED:'Tarčo prekriva drugo okno ali meni. Agent bo ponovno preveril zaslon.',
     UI_CONSTRAINT_CONFLICT:'Zahtevana vrednost presega opaženo mejo. Potrebna je poslovna odločitev; vrednosti ne zmanjšamo samodejno.',
     BRIDGE_TIMEOUT:'Brskalniška povezava se ni odzvala. Morebitnega klika ne ponavljamo; najprej preveri CPQ.',
@@ -495,6 +516,9 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
     const after=await readBrowserObservation({offset:proposal.offset??0,limit:proposal.limit??180,query:proposal.query??'',framePath:proposal.framePath??before.framePath??''});
     return {receipt:{status:'READ_ONLY',actionId:a.actionId},afterObservationId:after.id,afterRevision:after.revision,summary:'Prebrane so sveže kontrole: '+(after.paging.query||'stran '+after.paging.offset)};
   }
+  const choice=configuredChoiceGuard(state.agentRun?.goal||'',before,a,{guided});
+  if(choice?.error)throw Error(choice.error);
+  if(choice?.status==='ALREADY_MATCHES')return {receipt:{status:'ALREADY_MATCHES',actionId:a.actionId,target:{operation:a.operation,label:choice.label}},afterObservationId:before.id,afterRevision:before.revision,summary:`${choice.label}: zahtevana vrednost je že opažena. Ponovnega vnosa ni bilo; to ni dokaz shranitve.`};
   const prepared=await browserBridge.preview(a);
   if (!prepared || prepared.revision !== before.revision || prepared.documentKey !== before.documentKey) throw Error('CPQ_SCREEN_CHANGED');
   const isMaterial=['business_write','irreversible','lose_unsaved'].includes(prepared.risk) || ['fill','check','selectNative','upload','drag','key'].includes(a.operation);
@@ -525,11 +549,12 @@ async function send(event, browserRun = null) {
   if (!browserRun && experience?.handleCommand($('message').value)) return;
   if (!navigator.onLine) { notice('Brez povezave. Vprašanje ostane osnutek; pozneje ga pošlji sam.'); return; }
   if (!state.ready) { notice('Pomočnik še ni dosegljiv. Preveri dostop v nastavitvah.'); return; }
-  if (!$('message').value.trim()) { $('message').focus(); return; }
+  if (!browserRun&&!$('message').value.trim()) { $('message').focus(); return; }
   setBusy(true); notice(''); const controller = new AbortController(); state.controller = controller;
   if (!browserRun) {state.browserStop = false;state.browserPaused=false;try{await browserBridge.resume?.();}catch{}}
   let run;try{run = browserRun || createAgentRun($('message').value.trim(),{accountId:state.accountId,epoch:accessEpoch,budget:{actions:Number($('agent-actions').value),modelCalls:Number($('agent-calls').value),durationMs:Number($('agent-minutes').value)*60000}});}catch(e){setBusy(false);notice('Preveri omejitve naloge.');return;}
   state.agentRun=run;
+  run.id ||=uuid();
   if(!browserRun)run.userStatements=[...state.messages.filter(m=>m.role==='user'&&!m.input?.automaticContinuation).slice(-4).map(m=>m.content.slice(0,1600)),$('message').value.trim()];
   if(runLimit(run)){setBusy(false);notice('Dosežena omejitev naloge: '+runLimit(run));return;}
   if (!browserRun) state.guiCheckpoint={goal:run.goal,step:0,at:new Date().toISOString(),status:'GOAL_ACCEPTED'};
@@ -544,17 +569,17 @@ async function send(event, browserRun = null) {
       if (state.frozen) throw Error('Pri zamrznjenem vhodu svež zajem ni dovoljen. Odstrani zamrznitev.');
       await captureFrame();
     }
-    const request = bodyForInput();
+    const request = bodyForInput();if(browserRun)request.message=continuationMessage(run,run.lastSummary);
     if (state.frozen && await digest(canonicalInput(request)) !== state.frozen.hash) throw Error('Vhod se je spremenil. Zamrzni ga ponovno.');
     const canonical = canonicalInput(request), promptHash = await digest(request.message), inputHash = await digest(canonical);
     if (controller.signal.aborted) throw new DOMException('Cancelled', 'AbortError');
     const history = request.history;
     const inputRecord = { prompt: request.message, promptId: state.promptId, promptHash, inputHash, canonical: JSON.parse(canonical), taskId: $('pilot-task').value,
-      comparisonMode: $('comparison-mode').value, promptVersion: STARTER_VERSION, automaticContinuation: Boolean(browserRun), historyHash: await digest(JSON.stringify(history)), historyCount: history.length };
+      comparisonMode: $('comparison-mode').value, promptVersion: STARTER_VERSION, automaticContinuation: Boolean(browserRun), agentRunId:run.id, agentStep:run.step, historyHash: await digest(JSON.stringify(history)), historyCount: history.length };
     request.history = history; request.clientRequestId = uuid();
     state.messages.push({ role: 'user', content: request.message, input: inputRecord });
     answer = { role: 'assistant', content: '', status: 'streaming', input: inputRecord, browserObservation:request.browser, meta: {}, startedAt: new Date().toISOString(), ttftMs: null, totalMs: null };
-    state.messages.push(answer); renderMessages(); $('message').value = ''; state.promptId = null; fitComposer();
+    state.messages.push(answer); renderMessages(); if(!browserRun)$('message').value = ''; state.promptId = null; fitComposer();
     start = performance.now();
     const response = await fetch(API, { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request), signal: controller.signal });
     run.modelCalls++;
@@ -603,14 +628,14 @@ async function send(event, browserRun = null) {
     notice(controller.signal.aborted ? 'Odgovor ustavljen. Prejeti del ostane v pogovoru.' : /^(BRIDGE_|CPQ_)/.test(e.message) ? browserProblem(e) : e.message);
   } finally {
     try {
-      if (answer) { answer.totalMs = performance.now() - start; if (answer.status === 'streaming') answer.status = 'partial'; finishMessage(answer); }
+      if (answer) { answer.totalMs = performance.now() - start; if (answer.status === 'streaming') answer.status = 'partial'; renderMessages(); }
     } catch {
       if (answer?.contentNode) answer.contentNode.textContent = answer.content;
       notice('Prikaz izhoda ni bil dokončan. Izvirno besedilo ostane v pogovoru in izvozu.');
     } finally { state.controller = null; setBusy(false); localWrite(); }
   }
   if (continueNavigation && !state.browserStop && !controller.signal.aborted && state.browserConnected && $('browser-auto').checked && state.accountId === run.accountId && run.epoch === accessEpoch) {
-    $('message').value = `Samodejno nadaljevanje iste uporabnikove naloge po preverjenem koraku ${run.step}. Prvotna zahteva: ${run.goal}\nUporabnikove izjave za razumevanje cilja (novejša odločitev ima prednost): ${JSON.stringify(run.userStatements||[])}\nZadnji rezultat: ${answer.meta.browserNavigation.summary}\nUporabi priloženo novo opazovanje. Če je cilj dosežen, to povej brez novega klika. Ohrani isti dokument in izbrani zavihek.`;
+    run.lastSummary=answer.meta.browserNavigation.summary;
     state.promptId = null; await send(null,run);
   }
 }
@@ -735,7 +760,7 @@ async function installWorker() {
   } catch { $('install-status').textContent += ' Service worker v tem okolju ni bil potrjen.'; }
 }
 
-experience=createExperience({document,window,authorized:()=>state.ownerVerified&&state.role==='owner',setMode:mode=>{setMode(mode);localWrite();},setDraft:text=>setDraft(text,state.mode),notice});
+experience=createExperience({document,window,authorized:()=>state.ownerVerified&&state.role==='owner'&&!state.busy,setMode:mode=>{setMode(mode);localWrite();},setDraft:text=>setDraft(text,state.mode),notice});
 initCards(); ownerAccess(false);
 try {
   const prefs = JSON.parse(localStorage.getItem(PREFS) || '{}');

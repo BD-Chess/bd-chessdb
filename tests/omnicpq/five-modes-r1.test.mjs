@@ -95,3 +95,12 @@ test('private learning seed is pinned, immutable, read back and protected from a
   const item={bytes:Buffer.from('<html><title>old</title><main><details id="vpi"><summary>VPI</summary><p>KEEP_ORIGINAL</p></details></main></html>')};
   const enriched=enrichGuide(item,verifyLearning(learning,learningExpected));assert.match(enriched.bytes.toString(),/KEEP_ORIGINAL/);assert.match(enriched.bytes.toString(),/SYNTHETIC_LIFECYCLE/);assert.equal(enriched.sha256,hash(enriched.bytes));
 });
+test('pause cancels a pending presentation render as well as its narration, preserving its current place',async()=>{
+  const h=await appHarness();try{
+    let showMessage,frames=[];
+    const popup={closed:false,focus(){},postMessage(message){frames.push(message);if(message.type==='ts-b2b:ping')queueMicrotask(()=>h.w.dispatchEvent(new h.w.MessageEvent('message',{origin:'https://www.mdlxdcc.org',source:popup,data:{type:'ts-b2b:ready',requestId:message.requestId}})));if(message.type==='ts-b2b:scene')showMessage=message;}};
+    h.w.open=()=>popup;const pending=h.app.experience.start();await new Promise(resolve=>setTimeout(resolve,0));assert(showMessage);h.app.experience.pause();await pending;
+    assert(frames.some(m=>m.type==='ts-b2b:pause'));assert.equal(h.app.experience.tour.state.status,'paused');assert.equal(h.app.experience.tour.state.index,0);
+    h.w.dispatchEvent(new h.w.MessageEvent('message',{origin:'https://www.mdlxdcc.org',source:popup,data:{type:'ts-b2b:visible',requestId:showMessage.requestId,scene:'intro',visible:true}}));assert.equal(h.$('tour-caption').textContent,'');assert.equal(h.posts(),0);
+  }finally{h.dom.window.close();}
+});

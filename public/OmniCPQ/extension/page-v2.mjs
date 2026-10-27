@@ -61,6 +61,33 @@ export async function cpqPageV2(command) {
     if(tag==='select')return 'select';if(tag==='textarea' || tag==='input' || e.isContentEditable || role==='textbox')return 'field';
     if(tag==='a')return e.hasAttribute('href')?'link':'button';if(tag==='button' || role==='button')return 'button';return 'control';
   };
+  // A Material select has no native .value. Read only its selected display,
+  // never the surrounding field label, placeholder or inherited child hint.
+  const fieldValue = e => {
+    if(e.type==='file')return {value:'',valueSource:'empty'};
+    if(e.isContentEditable)return {value:String(e.innerText||'').slice(0,320),valueSource:'contenteditable'};
+    if(typeof e.value==='string'&&e.value!=='')return {value:e.value.slice(0,320),valueSource:'native'};
+    if(kind(e)==='combobox'){
+      const aria=e.getAttribute('aria-valuetext');if(aria)return {value:norm(aria).slice(0,320),valueSource:'aria-valuetext'};
+      const selected=[...e.querySelectorAll('.mat-select-value-text,.mat-mdc-select-value-text,.mat-select-min-line,[role="option"][aria-selected="true"]')]
+        .find(n=>visible(n)&&!n.closest('.mat-select-placeholder,.mat-mdc-select-placeholder'));
+      if(selected&&norm(selected.textContent))return {value:norm(selected.textContent).slice(0,320),valueSource:'material-selected-text'};
+      if([...e.querySelectorAll('.mat-select-placeholder,.mat-mdc-select-placeholder')].some(visible))return {value:'',valueSource:'placeholder'};
+    }
+    if(typeof e.value==='string')return {value:e.value.slice(0,320),valueSource:'native'};
+    if(e.hasAttribute('aria-valuenow'))return {value:String(e.getAttribute('aria-valuenow')).slice(0,320),valueSource:'aria-valuenow'};
+    return {value:'',valueSource:'unknown'};
+  };
+  const fieldContext = e => {
+    const panel=e.closest('mat-expansion-panel'),component=norm(panel?.querySelector('mat-panel-title')?.textContent);
+    return {fieldScope:panel?'component':'form',...(component?{component:component.slice(0,200)}:{})};
+  };
+  const choiceOwner = e => {
+    const box=e.closest('[role="listbox"]');if(!box?.id)return null;
+    const owners=[...doc.querySelectorAll('[role="combobox"][aria-controls],[role="combobox"][aria-owns]')]
+      .filter(n=>visible(n)&&!isSecret(n)&&(n.getAttribute('aria-controls')+' '+n.getAttribute('aria-owns')).split(/\s+/).includes(box.id));
+    if(owners.length!==1)return null;const owner=owners[0];return {label:accessible(owner),...fieldValue(owner),...fieldContext(owner)};
+  };
   const selection = e => {
     const aria=e.getAttribute('aria-selected');
     if(aria==='true'||aria==='false')return {selectionState:aria==='true'?'selected':'unselected',selectionSource:'aria-selected'};
@@ -87,7 +114,7 @@ export async function cpqPageV2(command) {
     return true;
   };
   candidates=candidates.filter(eligible);
-  const stateStamp=candidates.map(e=>[accessible(e),e.value??e.getAttribute('aria-valuenow'),e.checked,e.getAttribute('aria-expanded'),selection(e),isDisabled(e)]);
+  const stateStamp=candidates.map(e=>[accessible(e),fieldValue(e),e.checked,e.getAttribute('aria-expanded'),selection(e),isDisabled(e)]);
   if(command.query)candidates=candidates.filter(e=>norm(accessible(e)+' '+e.closest('[role="group"],mat-form-field')?.textContent).toLocaleLowerCase().includes(norm(command.query).toLocaleLowerCase()));
   const controls=[];const refs=[];const cap=Math.max(60,Math.min(350,Number(command.limit)||180));
   const offset=Math.max(0,Math.min(5000,Number(command.offset)||0));
@@ -103,7 +130,7 @@ export async function cpqPageV2(command) {
       inputType:(e.getAttribute('type')||'').slice(0,32),rect:r,visibleInViewport:r.cx>=0&&r.cy>=0&&r.cx<topView.innerWidth&&r.cy<topView.innerHeight,...selection(e)};
     if(['field','combobox','select','checkbox','radio','switch','spinbutton','slider'].includes(k)) {
       if(k==='checkbox'||k==='radio'||k==='switch')c.checked=Boolean(e.checked ?? (e.getAttribute('aria-checked')==='true'));
-      else {c.value=(e.type==='file'?'':String(e.isContentEditable?e.innerText:e.value??e.getAttribute('aria-valuenow')??'')).slice(0,320);
+      else {Object.assign(c,fieldValue(e),fieldContext(e));
         if(k==='select')c.options=[...e.options].slice(0,80).map(o=>({value:String(o.value).slice(0,80),label:norm(o.label).slice(0,80)}));}
       c.required=!!(e.required || e.getAttribute('aria-required')==='true');c.invalid=!!(e.matches(':invalid')||e.getAttribute('aria-invalid')==='true');
       c.constraints=Object.fromEntries(['min','max','step','minlength','maxlength','pattern'].filter(n=>e.hasAttribute(n)).map(n=>[n,e.getAttribute(n).slice(0,100)]));
@@ -115,6 +142,7 @@ export async function cpqPageV2(command) {
     if(tagLabel)c.group=tagLabel.slice(0,80);
     const component=norm(e.closest('[role="listbox"],mat-expansion-panel')?.querySelector('[role="option"][aria-selected="true"],mat-panel-title')?.textContent);
     if(component)c.component=component.slice(0,200);
+    if(k==='option'){const owner=choiceOwner(e);if(owner)c.choiceOwner=owner;}
     controls.push(c);refs.push(e);
   }
   // Route and enabled save/confirm are conservative signals for leaving an editor.
@@ -130,7 +158,7 @@ export async function cpqPageV2(command) {
     text,controls,viewport:{width:topView.innerWidth,height:topView.innerHeight,scrollX:scrollX,scrollY:scrollY},
     framePath,frames:[...doc.querySelectorAll('iframe,frame')].filter(visible).slice(0,50).map((f)=>{const index=[...doc.querySelectorAll('iframe,frame')].indexOf(f);let accessible=false;try{accessible=!!f.contentDocument&&(['about:blank','about:srcdoc'].includes(f.contentDocument.URL)||f.contentDocument.location.origin===command.origin);}catch{}return {path:framePath?framePath+'.'+index:String(index),title:norm(f.title||f.getAttribute('aria-label')).slice(0,160),accessible};}),
     parentContext:framePath?[...topDoc.querySelectorAll('h1,h2,[role=heading]')].map(e=>norm(e.textContent)).join(' ').slice(0,500):'',
-    runtime:{pageVersion:'1.2.4',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
+    runtime:{pageVersion:'1.2.5',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
     paging:{offset,limit:cap,totalFound:candidates.length,hasMore:offset+controls.length<candidates.length,query:norm(command.query).slice(0,160)}};
   const encode=new TextEncoder().encode(JSON.stringify({...current,stateStamp}));
   const digest=await crypto.subtle.digest('SHA-256',encode);
@@ -195,7 +223,7 @@ export async function cpqPageV2(command) {
     e.files=dt.files;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));
     return {ok:true,method:'USER_SELECTED_FILE',filename:e.files[0]?.name};
   }
-  const value=e.isContentEditable?String(e.innerText):e.value??null;
+  const value=fieldValue(e).value;
   return {ok:true,verified:{value,checked:e.checked??(e.getAttribute('aria-checked')==='true'),
     documentKey,revision,label,visible:visible(e),enabled:!isDisabled(e),invalid:!!(e.matches(':invalid')||e.getAttribute('aria-invalid')==='true')}};
 }

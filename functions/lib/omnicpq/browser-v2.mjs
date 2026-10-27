@@ -3,6 +3,12 @@ import {ACTION_PLAYBOOK} from './action-playbook.mjs';
 const BAD=()=>Object.assign(Error('INVALID_BROWSER_CONTEXT'),{code:'INVALID_BROWSER_CONTEXT',status:400});
 const kinds=new Set(['checkbox','radio','switch','option','combobox','tab','menuitem','menuitemcheckbox','menuitemradio','treeitem','slider','spinbutton','select','field','link','button','control']);
 function boundedString(value,max){if(typeof value!=='string'||value.length>max)throw BAD();return value;}
+const valueSources=new Set(['native','contenteditable','aria-valuetext','material-selected-text','placeholder','aria-valuenow','empty','unknown']);
+function selectedField(c){
+  if(c.valueSource!==undefined&&!valueSources.has(c.valueSource))throw BAD();
+  if(c.fieldScope!==undefined&&!['form','component'].includes(c.fieldScope))throw BAD();
+  return {...(c.valueSource!==undefined?{valueSource:c.valueSource}:{}),...(c.fieldScope!==undefined?{fieldScope:c.fieldScope}:{})};
+}
 export function validateGuiBrowser(raw,now=Date.now()){
   if(!raw||raw.schema!=='omnicpq.gui.observation.v2')throw BAD();
   const loc=cpqLocation(raw.url),at=Date.parse(raw.capturedAt);
@@ -23,6 +29,8 @@ export function validateGuiBrowser(raw,now=Date.now()){
       Math.max(...Object.values(c.rect).map(Number).filter(Number.isFinite).map(Math.abs))>1000000)throw BAD();
     ids.add(c.id);boundedString(c.label,160);boundedString(c.inputType,32);
     if(c.value!==undefined)boundedString(c.value,320);
+    const field=selectedField(c);let owner;
+    if(c.choiceOwner!==undefined){const o=c.choiceOwner;if(!o||c.kind!=='option')throw BAD();boundedString(o.label,160);boundedString(o.value,320);if(o.component!==undefined)boundedString(o.component,200);owner={label:o.label,value:o.value,...selectedField(o),...(o.component?{component:o.component}:{})};}
     if(c.checked!==undefined&&typeof c.checked!=='boolean')throw BAD();
     if(c.selectionState!==undefined&&!['selected','unselected','mixed'].includes(c.selectionState))throw BAD();
     if(c.selectionSource!==undefined&&!['aria-selected','material-pseudo-checkbox'].includes(c.selectionSource))throw BAD();
@@ -35,7 +43,7 @@ export function validateGuiBrowser(raw,now=Date.now()){
     if(c.options!==undefined){if(!Array.isArray(c.options)||c.options.length>80)throw BAD();
       for(const o of c.options){boundedString(o.value,80);boundedString(o.label,80);}}
     return {id:c.id,kind:c.kind,label:c.label,enabled:c.enabled,inputType:c.inputType,rect:c.rect,visibleInViewport:c.visibleInViewport,
-      ...(c.value!==undefined?{value:c.value}:{}),...(c.checked!==undefined?{checked:c.checked}:{}),
+      ...(c.value!==undefined?{value:c.value}:{}),...field,...(owner?{choiceOwner:owner}:{}),...(c.checked!==undefined?{checked:c.checked}:{}),
       ...(c.selectionState!==undefined?{selectionState:c.selectionState,selectionSource:c.selectionSource}:{}),
       ...(c.required!==undefined?{required:!!c.required}:{}),...(c.invalid!==undefined?{invalid:!!c.invalid}:{}),
       ...(c.href!==undefined?{href:c.href}:{}),...(c.options!==undefined?{options:c.options}:{}),...(c.group!==undefined?{group:c.group}:{}),
@@ -57,6 +65,7 @@ export function guiInstructions(browser){
   return `${ACTION_PLAYBOOK}\n\nPovezan je NAMENSKI OmniCPQ GUI most v2. Dejansko opazovanje je uporabnikovo odjemalsko poročilo, ne strežniški dokaz. Obseg: ${browser.scope==='order'?'NAROČILA':'PONUDBE'}, okolje ${browser.environment}, dokument ${browser.documentKey??'še ni identificiran'}. Podprti tipi predlogov: ${actions}. Dovoljenje za urejanje iz parjenja: ${browser.capabilities?.allowWrites===true?'DA':'NE; ne predlagaj poslovnih sprememb'}. Prenos datoteke zahteva uporabniško izbrano datoteko in ločeno UI dejanje, nikoli podatkov iz modelovega odgovora.
 Izključno dejanski controls z ID cN so izvedljive tarče; tudi ikonski gumbi in +. Če manjkajo relevantne kontrole, predlagaj pomik ali naslednje opazovanje paging.offset; NIKOLI ne izmišljaj ID, CSS selectorja, URL poti, stranke, cen, količin ali vrednosti. Ne reci, da je nastavitev shranjena ali naročilo oddano, dokler sveže opazovanje in poslovno stanje tega ne potrdita.
 Izbor vrstice je preklop: selectionState selected pomeni, da je ta konkretna vrstica že izbrana. Ne klikni je znova, ker bi jo izključil. Če je prava vrstica selected in cilj dovoljuje potrditev izbire, nadaljuj na opaženi omogočeni Potrdi. unselected pomeni, da ni izbrana; mixed ni potrjen izbor. Uporabi selectionState iz svežega opazovanja skupaj z oznako vrstice; samo skupno število izbranih vrstic ne določa njihove identitete.
+Izbrani model postavitve in operacijski sistem ohrani. valueSource material-selected-text/aria-valuetext pomeni dejansko vidno izbrano vrednost tudi brez native .value. fieldScope form in component ter component/choiceOwner ločujejo glavni izbor od podedovane ali cenovne karakteristike komponente. Prazna komponentna vrstica NI dokaz, da je glavni izbor prazen. Pri nadaljevanju samo CPU/RAM/diska ne odpiraj in ne nastavljaj že izbranega modela ali OS. Spremeni ju le ob neposredni novi uporabnikovi zahtevi. Po CPQ_CONFIRMED_CHOICE_PROTECTED ohrani izbor in načrtuj potreben preostali korak; ne ponavljaj blokiranega klika. Pri CPQ_DRIVER_STATE_UNKNOWN potrebuješ preverjeno novejše branje Bridge, ne ugibanja. Nobena od teh vrednosti sama ne potrjuje shranitve.
 Pri naročilu razlikuj Ponudbo za stranko od Naročila za realizacijo. Ne ustvari novega dokumenta, če uporabnik že ureja pravi dokument; ohrani documentKey. Ob odprtem dialogu obravnavaj ta dialog. Ob navigationLocked NE predlagaj odhoda, ki bi izgubil neshranjeno delo. Tipkanje/shranjevanje znotraj istega konfiguratorja je dovoljeno, če je v nalogu. Stop/Pause uporabnika ima prednost. Uporabnikova odobritev cilja pokriva običajne vmesne vnose v vodenem načinu; nepovratne/nenamerne izgube zahtevajo pregled in konkretno odobritev.
 Če je naslednji korak razviden in izvedljiv, dodaj na konec odgovora NATANKO EN modelni predlog v bloku:
 \`\`\`omnicpq_action

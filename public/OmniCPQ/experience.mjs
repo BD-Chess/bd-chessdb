@@ -26,6 +26,7 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
     silence:cancelSpeech,caption:scene=>{$('tour-caption').textContent=scene.text;say(scene.text);},
     changed:s=>{$('tour-status').textContent=`${s.index+1}/${s.total} · ${s.status==='playing'?'Prizor je viden':s.status==='opening'?'Odpiram in preverjam prizor':s.status==='stopped'?'Ustavljeno':s.status==='idle'?'Pripravljeno':'Pavza · za nadaljevanje preveri okno'}`;
       $('tour-controls').hidden=s.status==='idle';}});
+  function pausePresentation(){settle(null);tour.pause();popup?.postMessage({type:'ts-b2b:pause'},origin);}
   function openWindow(){
     if(!authorized()){notice('Najprej se prijavi v pomočnika.');return false;}
     if(popup&&!popup.closed){popup.focus();return true;}
@@ -53,7 +54,7 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
     const ack=await deliver({id:'service',title:'Vodič za B2B storitve v TS',service,kind:'POSNETEK',text:'Preverjena dokumentacija in ilustracija; datum vira ni potrditev današnjega kataloga.'});
     if(!ack?.visible)notice('Kartica storitve ni potrjeno vidna. Preveri dostop do zasebne dokumentacije v oknu.');
   }
-  const actions={next:()=>tour.next(),back:()=>tour.back(),pause:()=>tour.pause(),resume:()=>tour.resume(),repeat:()=>tour.repeat(),stop:()=>{settle(null);tour.stop();popup?.postMessage({type:'ts-b2b:pause'},origin);}};
+  const actions={next:()=>tour.next(),back:()=>tour.back(),pause:pausePresentation,resume:()=>tour.resume(),repeat:()=>tour.repeat(),stop:()=>{settle(null);tour.stop();popup?.postMessage({type:'ts-b2b:pause'},origin);}};
   function incoming(e){
     if(e.origin!==origin||e.source!==popup||!e.data||typeof e.data!=='object')return;
     const m=e.data;
@@ -61,14 +62,14 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
     if(m.type==='ts-b2b:visible'&&pending&&m.requestId===pending.requestId&&m.scene===pending.scene)settle({scene:m.scene,visible:m.visible===true});
     if(m.type==='ts-b2b:control'&&Object.hasOwn(actions,m.action))actions[m.action]();
     if(m.type==='ts-b2b:question'&&typeof m.text==='string'&&m.text.trim()&&m.text.length<=2000){
-      tour.question();
+      pausePresentation();
       if(/(?:nima|brez|ni)\s+optik/i.test(m.text))deliver({id:'service',service:'fwa',kind:'POSNETEK',title:'Poslovalnica brez optike · preveri možnosti',text:'VPI preko mobilnega dostopa je tema za preverbo razpoložljivosti. Kartica in vir ne potrjujeta pokritosti konkretne lokacije ali samodejne zamenjave storitve.'});
       win.focus();setDraft(m.text.trim());notice('Predstavitev je na pavzi. Vprašanje ostane v istem pogovoru; po odgovoru izberi Nadaljuj.');
     }
-    if(m.type==='ts-b2b:hidden'){settle(null);tour.pause();}
+    if(m.type==='ts-b2b:hidden')pausePresentation();
   }
   win.addEventListener('message',incoming);
-  doc.addEventListener('visibilitychange',()=>{if(doc.visibilityState==='hidden')tour.pause();});
+  doc.addEventListener('visibilitychange',()=>{if(doc.visibilityState==='hidden')pausePresentation();});
   win.addEventListener('pagehide',()=>{settle(null);tour.stop();popup?.postMessage({type:'ts-b2b:clear'},origin);});
   doc.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='n'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName)&&['playing','paused'].includes(tour.state.status)&&!doc.querySelector('dialog[open]')){e.preventDefault();tour.next();}});
   $('about-open').onclick=()=>{previousFocus=doc.activeElement;$('about-dialog').showModal();};
@@ -79,10 +80,10 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
   for(const [key,action] of Object.entries(actions))$('tour-'+key).onclick=action;
   $('tour-sound').onclick=()=>{voiceStatus();sound=!sound&&Boolean(localVoice);$('tour-sound').setAttribute('aria-pressed',String(sound));$('tour-sound').textContent=sound?'Zvok vklopljen':'Zvok izklopljen';if(sound&&tour.state.status==='playing')say($('tour-caption').textContent);else cancelSpeech();};
   win.speechSynthesis?.addEventListener?.('voiceschanged',voiceStatus);voiceStatus();
-  return {tour,start,openService,pause:()=>tour.question(),
+  return {tour,start,openService,pause:pausePresentation,
     setAccess(ok){$('tour-start').disabled=!ok;$('presentation-open').disabled=!ok;if(!ok){settle(null);tour.stop();popup?.postMessage({type:'ts-b2b:clear'},origin);}},
     clear(){tour.stop();for(const key of Object.keys(CONTEXT_FIELDS))$('shared-'+key).value='';},
     handleCommand(text){const value=text.trim().toLocaleLowerCase('sl');if(/^(predstavi se|predstavitev pomočnika)$/.test(value)){start();return true;}if(tour.state.status==='idle'||tour.state.status==='stopped')return false;
-      const key=({naprej:'next',n:'next',nazaj:'back',pavza:'pause',nadaljuj:'resume',ponovi:'repeat',ustavi:'stop',stop:'stop'})[value];if(key){actions[key]();return true;}tour.question();return false;}
+      const key=({naprej:'next',n:'next',nazaj:'back',pavza:'pause',nadaljuj:'resume',ponovi:'repeat',ustavi:'stop',stop:'stop'})[value];if(key){actions[key]();return true;}pausePresentation();return false;}
   };
 }
