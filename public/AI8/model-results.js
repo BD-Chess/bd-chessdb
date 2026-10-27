@@ -489,6 +489,28 @@
     TSP_CREATIVITY: ["TSP ustvarjalnost, slepa ocena zasnove", "TSP creativity, blind design review"],
   };
   const S_STATUS = [["PASS", "pass", "PASS", "PASS"], ["FAIL", "fail", "FAIL", "FAIL"], ["PARTIAL", "inc", "PARTIAL (tehnična vrzel, nepopolno, zasnova ali pilot)", "PARTIAL (technical gap, incomplete, design or pilot)"]];
+  /* Metric alias map (display-time only; the JSON keeps each run's original key names and units).
+     Newer SLAIF runs (unit_sets with length_steps / all_* keys, e.g. SLAIF_TECH_RETRY_SINGLE_SYSTEM_20261026_R1)
+     report the same quantities as the card rows under different names:
+       incomplete_steps               <- length_steps                         (steps with finish_reason length)
+       technical_steps                <- technical_selected_steps             (selected steps without HTTP 200)
+       provider_tokens_known_selected <- all_provider_tokens_known_subtotal   (known provider-token subtotal; covers all attempts)
+       known_selected_latency_s       <- all_POST_seconds                     (sum of seconds to full response; covers all attempts)
+       usage_unknown_selected_steps   <- usage_UNKNOWN_attempts               (attempts with unknown usage; never counted as zero)
+     Fail-closed: a run may carry at most one key per canonical metric (canonical OR one alias) and every summed
+     value must be a finite number >= 0; otherwise validateSlaif rejects the whole SLAIF file. */
+  const METRIC_ALIASES = Object.freeze({
+    incomplete_steps: ["length_steps"],
+    technical_steps: ["technical_selected_steps"],
+    provider_tokens_known_selected: ["all_provider_tokens_known_subtotal"],
+    known_selected_latency_s: ["all_POST_seconds"],
+    usage_unknown_selected_steps: ["usage_UNKNOWN_attempts"],
+  });
+  const metricKeys = (canonical) => [canonical, ...(METRIC_ALIASES[canonical] || [])];
+  // Resolved key actually present in a run for a canonical metric, or undefined.
+  const metricKey = (metrics, canonical) => metricKeys(canonical).find((k) => typeof metrics[k] === "number");
+  const metricOf = (row, canonical) => { const k = metricKey(row.metrics, canonical); return k === undefined ? undefined : row.metrics[k]; };
+  const usesAlias = (row) => Object.keys(METRIC_ALIASES).some((c) => { const k = metricKey(row.metrics, c); return k !== undefined && k !== c; });
   function validateSlaif(doc, catalog) {
     if (doc?.schema !== "ai8.model-results-slaif-public.v1" || doc.source_schema !== "ai8.model_result.v1") throw Error("slaif schema");
     safeStrings(doc);
@@ -507,6 +529,11 @@
       seen.add(row.submission_sha256);
       const units = doc.unit_sets[row.units];
       for (const [k, v] of Object.entries(row.metrics)) if (typeof v !== "number" || !Number.isFinite(v) || typeof units[k] !== "string") throw Error("slaif metric");
+      for (const canonical of Object.keys(METRIC_ALIASES)) {
+        const present = metricKeys(canonical).filter((k) => Object.prototype.hasOwnProperty.call(row.metrics, k));
+        if (present.length > 1) throw Error("slaif metric alias conflict");
+        if (present.length === 1 && !(row.metrics[present[0]] >= 0)) throw Error("slaif metric negative");
+      }
       // AVAILABLE only if the model answered in that run; UNAVAILABLE only if it did not (fail-closed).
       const answered = row.metrics.http200_steps;
       if (!count(answered) || (row.availability === "AVAILABLE" && answered < 1) || (row.availability === "UNAVAILABLE" && answered !== 0)) throw Error("slaif availability");
@@ -538,8 +565,9 @@
     return bar;
   }
   const statusText = (c) => S_STATUS.filter(([k]) => c[k] > 0).map(([k]) => `${k} ${c[k]}`).join(" · ");
-  const sumOf = (rows, key) => rows.reduce((a, r) => a + (typeof r.metrics[key] === "number" ? r.metrics[key] : 0), 0);
-  const hasKey = (rows, key) => rows.filter((r) => typeof r.metrics[key] === "number");
+  // Sums and filters resolve METRIC_ALIASES, so renamed keys land in the same row.
+  const sumOf = (rows, key) => rows.reduce((a, r) => { const v = metricOf(r, key); return a + (typeof v === "number" ? v : 0); }, 0);
+  const hasKey = (rows, key) => rows.filter((r) => typeof metricOf(r, key) === "number");
   function kvList(pairs) {
     const dl = el("dl", "kv");
     pairs.forEach(([k, v]) => dl.append(el("dt", "", k), el("dd", "", v)));
@@ -606,6 +634,8 @@
       pairs.push([say("Čas do izbranih odzivov, znani subtotal (h:min:s)", "Time to selected responses, known subtotal (h:min:s)"), secs(sumOf(rows, "known_selected_latency_s"))]);
       const unknownUsage = sumOf(rows, "usage_unknown_selected_steps"), unknownLatency = sumOf(rows, "latency_unknown_steps");
       if (unknownUsage || unknownLatency) pairs.push([say("Koraki z neznano porabo · neznanim časom", "Steps with unknown usage · unknown time"), `${num(unknownUsage)} · ${num(unknownLatency)}`]);
+      const aliased = rows.filter(usesAlias).length;
+      if (aliased) pairs.push([say("Od tega teki z novimi imeni metrik (length_steps, all_*; žetoni in čas zajemajo vse poskuse)", "Of which runs with renamed metrics (length_steps, all_*; tokens and time cover all attempts)"), num(aliased)]);
       card.append(kvList(pairs));
       const fams = [...new Set(rows.map((r) => r.family))];
       const box = el("details");
