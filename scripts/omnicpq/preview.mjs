@@ -1,4 +1,5 @@
 import {makeDocumentHandler} from '../../functions/omnicpq-documents.mjs';
+import {RELEASE_DOCUMENT_MANIFEST} from '../../functions/lib/omnicpq/private-release.mjs';
 import {readLearning} from '../../functions/lib/omnicpq/learning.mjs';
 import {SHELL_FILES} from './shell-contract.mjs';
 // Local-only preview. --demo injects a clearly labelled deterministic transport.
@@ -25,7 +26,7 @@ const localReader = async () => readFile(process.env.OMNICPQ_KNOWLEDGE_FILE, 'ut
 const demoPack = demo ? await verifyPack(await localReader()) : null;
 const learningReader=process.env.OMNICPQ_PREVIEW_LEARNING?async()=>readLearning({reader:()=>readFile(process.env.OMNICPQ_PREVIEW_LEARNING,'utf8')}):undefined;
 const documentReader=process.env.OMNICPQ_PREVIEW_DOCUMENTS?()=>readFile(process.env.OMNICPQ_PREVIEW_DOCUMENTS,'utf8'):undefined;
-const documentHandler=demo&&documentReader?makeDocumentHandler({auth:async()=>({id:'local-preview-owner',role:'owner'}),reader:documentReader,learningReader:process.env.OMNICPQ_PREVIEW_LEARNING?()=>readFile(process.env.OMNICPQ_PREVIEW_LEARNING,'utf8'):undefined,enrich:true}):null;
+const documentHandler=demo&&documentReader?makeDocumentHandler({auth:async()=>({id:'local-preview-owner',role:'owner'}),reader:documentReader,...(process.env.OMNICPQ_PREVIEW_RELEASE_DOCUMENTS?{currentRelease:RELEASE_DOCUMENT_MANIFEST,currentReader:()=>readFile(process.env.OMNICPQ_PREVIEW_RELEASE_DOCUMENTS,'utf8')}:{}),learningReader:process.env.OMNICPQ_PREVIEW_LEARNING?()=>readFile(process.env.OMNICPQ_PREVIEW_LEARNING,'utf8'):undefined,enrich:true}):null;
 const transport = async ({ payload, signal, onText, onIdentity }) => {
   const all = JSON.stringify(payload.input), mode = payload.instructions.includes('Izbrana začetna naloga je GUIDE') ? 'guide' : payload.instructions.includes('Izbrana začetna naloga je PLM_MODELING') ? 'model' : payload.instructions.includes('Izbrana začetna naloga je PLM_TESTS') ? 'plm' : payload.instructions.includes('Izbrana začetna naloga je JIRA_REQUIREMENT') ? 'jira' : 'work';
   const requirementSource = payload.instructions.match(/<source id="(S\d+)" path="references\/POSLOVNA_ZAHTEVA_IT_PLM\.md"/)?.[1];

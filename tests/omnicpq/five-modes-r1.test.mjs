@@ -76,7 +76,7 @@ test('popup blocker preserves the workspace and exposes a named-window fallback;
 test('one presentation window is reused and only the matching source/origin acknowledgement unlocks narration',async()=>{
   const h=await appHarness();try{
     let opens=0,frames=[];
-    const popup={closed:false,focus(){},postMessage(message){frames.push(message);queueMicrotask(()=>h.w.dispatchEvent(new h.w.MessageEvent('message',{origin:'https://www.mdlxdcc.org',source:popup,data:message.type==='ts-b2b:ping'?{type:'ts-b2b:ready',requestId:message.requestId}:{type:'ts-b2b:visible',requestId:message.requestId,scene:message.scene?.id,visible:true}})));}};
+    const popup={closed:false,focus(){},postMessage(message){frames.push(message);queueMicrotask(()=>h.w.dispatchEvent(new h.w.MessageEvent('message',{origin:'https://www.mdlxdcc.org',source:popup,data:message.type==='ts-b2b:ping'?{type:'ts-b2b:ready',session:message.session,requestId:message.requestId}:{type:'ts-b2b:visible',session:message.session,requestId:message.requestId,scene:message.scene?.id,visible:true}})));}};
     h.w.open=()=>{opens++;return popup;};assert.equal(await h.app.experience.start(),true);assert.match(h.$('tour-status').textContent,/Prizor je viden/);await h.app.experience.tour.next();assert.equal(h.app.experience.tour.state.lastVisible,'guide');
     h.w.dispatchEvent(new h.w.MessageEvent('message',{origin:'https://evil.test',source:popup,data:{type:'ts-b2b:question',text:'FOREIGN'}}));assert.notEqual(h.$('message').value,'FOREIGN');
     await h.app.experience.start();assert.equal(opens,1);assert(frames.some(m=>m.scene?.service==='vpi'));assert.equal(h.posts(),0);
@@ -98,7 +98,7 @@ test('private learning seed is pinned, immutable, read back and protected from a
 test('pause cancels a pending presentation render as well as its narration, preserving its current place',async()=>{
   const h=await appHarness();try{
     let showMessage,frames=[];
-    const popup={closed:false,focus(){},postMessage(message){frames.push(message);if(message.type==='ts-b2b:ping')queueMicrotask(()=>h.w.dispatchEvent(new h.w.MessageEvent('message',{origin:'https://www.mdlxdcc.org',source:popup,data:{type:'ts-b2b:ready',requestId:message.requestId}})));if(message.type==='ts-b2b:scene')showMessage=message;}};
+    const popup={closed:false,focus(){},postMessage(message){frames.push(message);if(message.type==='ts-b2b:ping')queueMicrotask(()=>h.w.dispatchEvent(new h.w.MessageEvent('message',{origin:'https://www.mdlxdcc.org',source:popup,data:{type:'ts-b2b:ready',session:message.session,requestId:message.requestId}})));if(message.type==='ts-b2b:scene')showMessage=message;}};
     h.w.open=()=>popup;const pending=h.app.experience.start();await new Promise(resolve=>setTimeout(resolve,0));assert(showMessage);h.app.experience.pause();await pending;
     assert(frames.some(m=>m.type==='ts-b2b:pause'));assert.equal(h.app.experience.tour.state.status,'paused');assert.equal(h.app.experience.tour.state.index,0);
     h.w.dispatchEvent(new h.w.MessageEvent('message',{origin:'https://www.mdlxdcc.org',source:popup,data:{type:'ts-b2b:visible',requestId:showMessage.requestId,scene:'intro',visible:true}}));assert.equal(h.$('tour-caption').textContent,'');assert.equal(h.posts(),0);

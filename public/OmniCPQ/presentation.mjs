@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id),origin=location.origin,parent=window.opener;
 const services=new Set(['so','vpi','sdwan-lite','vpn-l3','vpn-vpls','dwdm','optika','fwa']);
-let generation=0,guide=null;
-const reply=data=>parent?.postMessage(data,origin);
+let generation=0,guide=null,session=null;
+const reply=data=>parent?.postMessage({...data,session},origin);
 const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
 function safeCopy(source){
   if(source.nodeType===3)return document.createTextNode(source.textContent);
@@ -67,7 +67,8 @@ async function show(message){
 }
 window.addEventListener('message',e=>{
   if(e.origin!==origin||e.source!==parent||!parent||!e.data)return;
-  if(e.data.type==='ts-b2b:ping')reply({type:'ts-b2b:ready',requestId:e.data.requestId});
+  if(e.data.type==='ts-b2b:ping'&&typeof e.data.session==='string'&&/^[a-f0-9-]{36}$/i.test(e.data.session)&&Number.isSafeInteger(e.data.requestId)){if(session!==e.data.session)++generation;session=e.data.session;reply({type:'ts-b2b:ready',requestId:e.data.requestId});return;}
+  if(!session||e.data.session!==session)return;
   if(e.data.type==='ts-b2b:scene')show(e.data);
   if(e.data.type==='ts-b2b:clear'){++generation;guide=null;$('scene-content').replaceChildren();$('scene-caption').textContent='';$('presentation-status').textContent='Za nadaljevanje se prijavi v pomočniku.';}
   if(e.data.type==='ts-b2b:pause'){++generation;$('presentation-status').textContent='Predstavitev je ustavljena; poslovna dejanja niso bila izvedena.';}
@@ -78,4 +79,4 @@ $('presentation-image-close').onclick=()=>$('presentation-image').close();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')reply({type:'ts-b2b:hidden'});});
 window.addEventListener('pagehide',()=>reply({type:'ts-b2b:hidden'}));
 document.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='n'&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)&&!document.querySelector('dialog[open]'))reply({type:'ts-b2b:control',action:'next'});});
-reply({type:'ts-b2b:ready',requestId:null});
+reply({type:'ts-b2b:loaded'});

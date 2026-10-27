@@ -6,7 +6,7 @@ import { SKILL_V15 } from './v15.mjs';
 import { openSealedKnowledge } from './sealed-knowledge.mjs';
 import { gunzipSync } from 'node:zlib';
 import { runtime } from './runtime.mjs';
-import {readPrivateDocument} from './private-documents.mjs';
+import {readCurrentPrivateDocument as readPrivateDocument} from './private-release.mjs';
 import {readLearning} from './learning.mjs';
 
 const env = key => globalThis.Netlify?.env?.get(key) ?? process.env[key];
@@ -282,10 +282,10 @@ export function createRetriever({ files, manifest, packSha256 },{documentReader=
       }
       if(request.promptId==='COVERAGE'){
         try{
-          const name='B2B_pokritost_in_kandidati_OmniCPQ_v17.md',item=await documentReader(name),text=item.bytes.toString('utf8'),id=`S${sources.length+1}`;
-          sources.push({id,path:'documents/'+name,sha256:item.sha256,kind:'private_documentation_v17_not_new_product_rule',sections:[{heading:'Dokumentacija v17',startLine:1,endLine:text.split('\n').length}]});
-          blocks.push(`<source id="${id}" path="documents/${name}" kind="private_documentation_v17_not_new_product_rule">\n${text}\n</source>`);documentationStatus='V17_AVAILABLE';
-        }catch{documentationStatus='V17_PRIVATE_STORAGE_PENDING';}
+          const name='B2B_pokritost_in_kandidati_OmniCPQ_v18.md',item=await documentReader(name),text=item.bytes.toString('utf8'),id=`S${sources.length+1}`;
+          sources.push({id,path:'documents/'+name,sha256:item.sha256,kind:'private_documentation_v18_not_new_product_rule',sections:[{heading:'Dokumentacija v18',startLine:1,endLine:text.split('\n').length}]});
+          blocks.push(`<source id="${id}" path="documents/${name}" kind="private_documentation_v18_not_new_product_rule">\n${text}\n</source>`);documentationStatus='V18_AVAILABLE';
+        }catch{documentationStatus='V18_PRIVATE_STORAGE_PENDING';}
       }
       let learningStatus='NOT_REQUESTED';
       if(service){
@@ -294,8 +294,8 @@ export function createRetriever({ files, manifest, packSha256 },{documentReader=
           if(record){
             const selected={...record,sources:record.sources.map(({text,...source})=>source)},text=JSON.stringify(selected),id=`S${sources.length+1}`;
             if(size+text.length>190_000)throw error('RETRIEVAL_LIMIT',422);
-            sources.push({id,path:'documents/ts-b2b-learning-r1.json#'+record.id,sha256:learning.sha256,kind:'dated_learning_layer_not_live_catalog',locator:'https://www.mdlxdcc.org/.netlify/functions/omnicpq-documents?file=ts-b2b-learning-r1.json#'+record.id,sections:[{heading:'Pilotna učna plast · '+record.title,startLine:1,endLine:1}]});
-            blocks.push(`<source id="${id}" path="documents/ts-b2b-learning-r1.json#${record.id}" kind="dated_learning_layer_not_live_catalog">\n${text}\n</source>`);learningStatus=learning.version;
+            sources.push({id,path:'documents/ts-b2b-learning-r2.json#'+record.id,sha256:learning.sha256,kind:'dated_learning_layer_not_live_catalog',locator:'https://www.mdlxdcc.org/.netlify/functions/omnicpq-documents?file=ts-b2b-learning-r2.json#'+record.id,sections:[{heading:'Pilotna učna plast · '+record.title,startLine:1,endLine:1}]});
+            blocks.push(`<source id="${id}" path="documents/ts-b2b-learning-r2.json#${record.id}" kind="dated_learning_layer_not_live_catalog">\n${text}\n</source>`);learningStatus=learning.version;
           }else learningStatus='NO_PILOT_FOR_SERVICE';
         }catch{learningStatus='PRIVATE_LEARNING_PENDING';}
       }

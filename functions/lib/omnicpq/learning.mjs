@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-import manifest from './learning-manifest-r1.json' with {type:'json'};
+import manifest from './learning-manifest-r2.json' with {type:'json'};
 import {documentStore} from './private-documents.mjs';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 export const LEARNING_NAME=manifest.name;
@@ -23,9 +23,11 @@ const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 function recordHTML(record){
   const layers=[['Poslovni namen in primer',record.purpose],['Tehnično delovanje',record.operation],['TS posebnosti in omejitve',record.ts],['Življenjski cikel',record.lifecycle],['PLM, OmniCPQ in nadaljnji sistemi',record.systems]];
   return `<section id="learn-${escape(record.id)}" class="learning-layer"><h3>Poglobljeno za IT analitika</h3><p>${escape(record.coverage)}</p>`+
-    layers.map(([title,layer])=>`<h4>${escape(title)} · ${escape(layer.status)}</h4><p>${escape(layer.text)}</p>${layer.example?`<p>Primer: ${escape(layer.example)}</p>`:''}${layer.limits?`<p>Meje: ${escape(layer.limits)}</p>`:''}`).join('')+
+    layers.map(([title,layer])=>`<h4>${escape(title)} · ${escape(layer.status)}</h4><p>${escape(layer.text)}</p>${layer.illustration?`<p>Kako beremo sliko: ${escape(layer.illustration)}</p>`:''}${layer.example?`<p>Primer: ${escape(layer.example)}</p>`:''}${layer.differences?`<p>Ključne razlike: ${escape(layer.differences)}</p>`:''}${layer.limits?`<p>Meje: ${escape(layer.limits)}</p>`:''}`).join('')+
     '<h4>Vprašanja za poslovni pogovor · PREDLOG</h4><ul>'+record.questions.map(q=>`<li>${escape(q)}</li>`).join('')+'</ul><h4>Viri in odločilni odseki</h4>'+
+    (record.sourceSections||[]).map(s=>`<p>Odločilni odsek: ${escape(record.sources[s.sourceIndex]?.path)} · ${escape(s.section)}</p>`).join('')+
     record.sources.map(s=>`<details><summary>${escape(s.path)} · ${escape(s.status)}</summary><p>${escape(s.locator)}<br>SHA-256: ${escape(s.sha256)}</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${escape(s.text)}</pre></details>`).join('')+
+    (record.generalSources||[]).map(s=>`<p>Splošna razlaga: ${escape(s.url)} · ${escape(s.section)} · ${escape(s.status)}</p>`).join('')+
     '<h4>Odprto</h4><ul>'+record.gaps.map(q=>`<li>${escape(q)}</li>`).join('')+`</ul><p>${escape(record.provenance.originalArchiveAccess)}</p></section>`;
 }
 export function enrichGuide(item,learning=null){
@@ -42,5 +44,5 @@ export function enrichGuide(item,learning=null){
   }
   const coverage=learning?'<p>Učna plast: pet pilotnih skupin, sedem kartic; drugje ostaja opisna/delna pokritost. 59 kandidatnih dopolnitev ni integriranih.</p>':'<p>Poglobljena učna plast še ni potrjeno dosegljiva. Osnovni v18 opisi in slike ostanejo; aktualne TS vrzeli se ne dopolnijo z ugibanjem.</p>';
   html=html.replace('</main>',coverage+'</main>');
-  const bytes=Buffer.from(html);return {...item,bytes,size:bytes.length,sha256:sha(bytes),version:learning?'v18+ts-pilot-r1':'v18+five-modes-r1'};
+  const bytes=Buffer.from(html);return {...item,bytes,size:bytes.length,sha256:sha(bytes),version:learning?'v18+'+learning.version:'v18+five-modes-r1'};
 }
