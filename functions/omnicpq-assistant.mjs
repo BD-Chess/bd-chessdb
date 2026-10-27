@@ -5,6 +5,7 @@ import { loadKnowledge } from './lib/omnicpq/knowledge.mjs';
 import { instructions } from './lib/omnicpq/instructions.mjs';
 import { callOpenAI } from './lib/omnicpq/provider.mjs';
 import { validateBrowser, starterMetadata, allowedStarter } from './lib/omnicpq/browser.mjs';
+import {normalizeMode,normalizeWorkspace,CONTEXT_FIELDS} from '../public/OmniCPQ/work-modes.mjs';
 
 const env = key => globalThis.Netlify?.env?.get(key) ?? process.env[key];
 const headers = { 'Cache-Control': 'no-store, private', 'X-Content-Type-Options': 'nosniff', 'Vary': 'Cookie, Origin' };
@@ -27,8 +28,8 @@ async function boundedJSON(req) {
 export function validateBody(body) {
   if (!body || typeof body.message !== 'string' || !body.message.trim() || body.message.length > 16000) throw error('INVALID_MESSAGE', 400);
   if (['model', 'provider', 'reasoning', 'role', 'apiKey', 'knowledgeUrl', 'knowledgePath'].some(k => k in body)) throw error('SERVER_CONFIGURATION_ONLY', 400);
-  const mode = body.mode || 'work', profile = body.profile || 'fast';
-  if (!['work', 'plm', 'jira'].includes(mode) || !Object.hasOwn(profiles, profile)) throw error('INVALID_MODE', 400);
+  const mode = normalizeMode(body.mode || 'work',null), profile = body.profile || 'fast';
+  if (!mode || !Object.hasOwn(profiles, profile)) throw error('INVALID_MODE', 400);
   if (!/^[a-f0-9-]{36}$/i.test(body.clientRequestId || '')) throw error('INVALID_REQUEST_ID', 400);
   const history = (Array.isArray(body.history) ? body.history : []).slice(-16).map(m => {
     if (!['user', 'assistant'].includes(m?.role) || typeof m.content !== 'string' || m.content.length > 16000) throw error('INVALID_HISTORY', 400);
@@ -38,6 +39,10 @@ export function validateBody(body) {
   if (typeof text !== 'string' || text.length > 16000 || typeof manualUrl !== 'string' || manualUrl.length > 1200) throw error('INVALID_CONTEXT', 400);
   if (manualUrl) { try { if (!['http:', 'https:'].includes(new URL(manualUrl).protocol)) throw Error(); } catch { throw error('INVALID_CONTEXT', 400); } }
   const context = { text, manualUrl, environment: ['STAGE', 'PROD'].includes(raw.environment) ? raw.environment : 'UNKNOWN', origin: 'user_supplied_not_DOM_verified' };
+  if(raw.workspace!==undefined){
+    if(!raw.workspace||typeof raw.workspace!=='object'||Array.isArray(raw.workspace)||Object.entries(raw.workspace).some(([k,v])=>!Object.hasOwn(CONTEXT_FIELDS,k)||typeof v!=='string'||v.length>CONTEXT_FIELDS[k]))throw error('INVALID_CONTEXT',400);
+    context.workspace=normalizeWorkspace(raw.workspace);
+  }
   let snapshot = null;
   if (body.snapshot) {
     const s = body.snapshot;

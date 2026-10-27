@@ -2,8 +2,8 @@
 <html lang="sl" data-theme="dark">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>AI pomočnik za OmniCPQ</title>
-  <meta name="description" content="Zasebni delovni pomočnik za OmniCPQ, testiranje PLM in pripravo poslovnih zahtev.">
+  <title>AI pomočnik za B2B storitve in IT sisteme v TS</title>
+  <meta name="description" content="Vodič, zahteve, modeliranje, OmniCPQ in E2E testiranje v enem pogovoru.">
   <meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0c1923">
   <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="OmniCPQ AI">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'">
@@ -13,16 +13,17 @@
 <body>
   <a href="#message" class="skip">Preskoči na vprašanje</a>
   <header class="topbar">
-    <a class="brand" href="./" aria-label="AI pomočnik za OmniCPQ, začetek"><img src="./icons/icon-192.png" width="44" height="44" alt=""><span><small>AI pomočnik za</small><strong>Omni<span>CPQ</span></strong></span></a>
+    <a class="brand" href="./" aria-label="AI pomočnik za B2B storitve in IT sisteme v TS, začetek"><img src="./icons/icon-192.png" width="44" height="44" alt=""><span><small>AI pomočnik za B2B storitve</small><strong>in IT sisteme <span>v TS</span></strong></span></a>
     <div class="top-actions"><span class="connection" id="connection"><i></i><span>Preverjam povezavo</span></span><button id="new-chat" class="icon-button" title="Nov pogovor" aria-label="Nov pogovor">＋</button><button id="settings-open" class="icon-button" title="Nastavitve" aria-label="Odpri nastavitve">☷</button></div>
   </header>
+  <div class="author-line">Avtor: Bojan Dobrečevič · <button type="button" id="about-open">Kako deluje in varuje podatke</button></div>
   <div id="demo-usage" class="notice demo-usage" role="status" hidden></div>
   <div id="notice" class="notice" role="status" hidden></div>
   <div id="simulation" class="simulation" hidden><strong>Predogled · simuliran transport</strong><span>Odzivi in časi so testni; brez klicev AI.</span></div>
   <div id="update-bar" class="update-bar" hidden><span>Nova izdaja je pripravljena.</span><button id="apply-update">Varno posodobi</button></div>
   <section id="access-gate" class="access-gate" aria-labelledby="access-title">
     <div class="access-card"><div class="eyebrow">ZASEBNI DELOVNI PROSTOR</div>
-      <h1 id="access-title">AI pomočnik za OmniCPQ</h1><p>Delo v CPQ · testiranje PLM · poslovne zahteve za IT</p>
+      <h1 id="access-title">AI pomočnik za B2B storitve in IT sisteme v TS</h1><p>Vodič · Zahteve · Modeliranje · OmniCPQ · Testiranje E2E</p>
       <p id="auth-status" class="hint" role="status">Prijavi se z obstoječim dostopom. Za demo uporabi prejeto povabilo in demo geslo.</p>
       <form id="login-form"><label for="login-email">E-pošta</label><input id="login-email" type="email" autocomplete="username" required>
         <label for="login-password">Geslo</label><input id="login-password" type="password" autocomplete="current-password" required>
@@ -34,6 +35,12 @@
   <main id="workspace" hidden>
     <aside class="split-help" aria-label="Postavitev v Edge"><strong>Edge &middot; pomo&#269;nik ob CPQ</strong><ul><li>Odpri pomo&#269;nika in STAGE CPQ v istem oknu Edge.</li><li>V meniju zavihka izberi &raquo;Razdeljeni zaslon / Split screen&laquo; in drugi zavihek.</li><li>Pomo&#269;nika postavi levo in lo&#269;nico povleci v levo, da ostane o&#382;ji pas.</li></ul></aside>
     <nav id="mode-nav" class="mode-nav" aria-label="Vrsta naloge"></nav>
+    <section id="experience-root" class="experience-bar" aria-label="Vodič in predstavitev">
+      <div class="button-row"><button id="tour-start" disabled>Predstavi se</button><select id="presentation-service" aria-label="Storitev za predstavitev"><option value="vpi">VPI</option><option value="so">TS Suvereni oblak</option><option value="sdwan-lite">SD-WAN Lite</option><option value="vpn-l3">VPN L3</option><option value="vpn-vpls">VPN VPLS</option><option value="dwdm">DWDM</option><option value="optika">Najem optike</option><option value="fwa">5G FWA</option></select><button id="presentation-open" disabled>Odpri predstavitev</button></div>
+      <a id="presentation-fallback" href="./presentation.html" target="TS_B2B_PRESENTATION" hidden>Odpri predstavitev v ločenem zavihku ↗</a>
+      <div id="tour-controls" hidden><p id="tour-status" role="status">Pripravljeno</p><p id="tour-caption" aria-live="polite"></p><div class="button-row"><button id="tour-back">Nazaj</button><button id="tour-next">Naprej / n</button><button id="tour-pause">Pavza</button><button id="tour-resume">Nadaljuj</button><button id="tour-repeat">Ponovi</button><button id="tour-stop">Ustavi</button><button id="tour-sound" aria-pressed="false" disabled>Zvok izklopljen</button></div><p id="tour-voice-status" class="hint">Besedilna predstavitev · brez samodejnega napredovanja.</p></div>
+    </section>
+    <details class="panel" id="shared-context"><summary>Skupni kontekst · ohrani se pri vseh petih načinih</summary><div class="panel-body"><p class="hint">Storitev in okolje ostaneta v nastavitvah oziroma CPQ kontekstu. Spodaj dopolni samo manjkajoče podatke; menjava načina ničesar ne pošlje.</p><label for="shared-requirement">Zahteva / poslovni cilj</label><textarea id="shared-requirement" maxlength="4000" rows="2"></textarea><label for="shared-model">Model in različica</label><input id="shared-model" maxlength="2000"><label for="shared-documentItem">Dokument / postavka</label><input id="shared-documentItem" maxlength="1200"><label for="shared-decisions">Že razrešene odločitve</label><textarea id="shared-decisions" maxlength="4000" rows="2"></textarea><label for="shared-openQuestions">Odprta vprašanja</label><textarea id="shared-openQuestions" maxlength="4000" rows="2"></textarea></div></details>
     <div class="workspace-status"><span id="workspace-status">Prijava, znanje in API še niso preverjeni.</span><button id="refresh-status">Osveži stanje</button></div>
     <section class="browser-panel" aria-label="CPQ upravljanje">
       <div class="browser-heading"><div><strong>CPQ upravljanje</strong><p id="browser-status" role="status">Ni povezano · priklopi izbrani CPQ zavihek za branje in klikanje.</p></div><button id="browser-connect">Preveri povezavo s CPQ</button></div>
@@ -53,7 +60,7 @@
     <section id="welcome" class="welcome" aria-labelledby="welcome-heading">
       <div class="eyebrow"><span class="tiny-square"></span> TVOJ DELOVNI PROSTOR</div>
       <h1 id="welcome-heading">Kaj želiš urediti?</h1>
-      <p class="intro">Ponudbe, naročila in konfiguracija B2B storitev.<br class="desktop-br"> Izberi enega od 12 pozivov ali napiši vprašanje.</p>
+      <p class="intro">Od razumevanja storitve do preverjenega poslovnega izida.<br class="desktop-br"> Ohranjenih je 12 začetnih pozivov, dodana sta Vodič in Modeliranje.</p>
       <div class="cards" id="start-cards"></div>
       <div class="quick-label">LAHKO ZAČNEŠ TUDI TAKO</div><div class="quick-actions" id="quick-actions"></div>
       <p class="hint"><a href="/.netlify/functions/omnicpq-documents?file=b2b-pokritost-v17.html" target="_blank" rel="noopener noreferrer">Podprte B2B storitve · dokumentacija v17 ↗</a> · <a href="/.netlify/functions/omnicpq-documents?file=b2b-vodic-v17.html" target="_blank" rel="noopener noreferrer">Vodič po storitvah ↗</a></p>
@@ -102,6 +109,14 @@
     </form>
     <p class="privacy-line" id="privacy-line">Vprašanje in izbrano sliko ob pošiljanju obdeluje <strong>OpenAI</strong>. Zgodovina se privzeto ne shranjuje.</p>
   </footer>
+  <dialog id="about-dialog" aria-labelledby="about-title"><div class="dialog-heading"><h2 id="about-title">Kako deluje in varuje podatke</h2><button id="about-close" class="icon-button" aria-label="Zapri pojasnilo">×</button></div>
+    <p><strong>Pomočnik je zaklenjen.</strong> Njegove zaščitene AI funkcije omogoči šele uspešna prijava z dovoljenim e-poštnim naslovom in pravilnim geslom. Za delo v CPQ je potrebna še dovoljena Bridge povezava in uporabnikov običajni dostop do CPQ.</p>
+    <p>Avtor in pobudnik: <strong>Bojan Dobrečevič</strong>. Pomočnik pomaga pri razumevanju B2B storitev in delu z IT sistemi v TS.</p>
+    <p>Programsko ogrodje in naše splošne ilustracije so lahko javni. Interna gradiva se hranijo ločeno; strežnik jih dostavi glede na dovoljenja. Javna koda sama po sebi ne pomeni javne objave internega znanja.</p>
+    <p>V Edge je pomočnik levo, OmniCPQ desno v intranetu TS z uporabnikovo običajno prijavo in pravicami. Lokalna razširitev Bridge poveže izbrana zavihka po dovoljenju. Razdeljeni pogled ne spremeni CPQ v javno spletno aplikacijo.</p>
+    <p><strong>Po uspešni prijavi</strong> AI obdelava vključuje poslano vprašanje, izbrane reference ter kontekst ali sliko, ki ju uporabnik vključi. V samostojni različici jih obdeluje model OpenAI prek strežnika pomočnika. To je obdelava za odgovor, ne javna objava. Urejanje CPQ dodatno zahteva dovoljen Bridge in uporabnikov nalog.</p>
+    <p>Gre za pojasnilo zasnove in zaščit. To ni uradno varnostno potrdilo TS ali zagotovilo ničelnega tveganja. Lokalno shranjevanje pogovora je izbirno.</p>
+  </dialog>
   <dialog id="draft-dialog" aria-labelledby="draft-title"><div class="dialog-heading"><h2 id="draft-title">Osnutek že vsebuje besedilo</h2><button id="draft-cancel" class="icon-button" aria-label="Ohrani osnutek">×</button></div><p>Izbrani poziv lahko dodaš obstoječemu osnutku ali ga izrecno zamenjaš.</p><div class="button-row"><button id="draft-add">Dodaj k osnutku</button><button id="draft-replace">Zamenjaj osnutek</button><button id="draft-keep">Ohrani osnutek</button></div></dialog>
   <dialog id="new-chat-dialog" aria-labelledby="new-chat-title"><div class="dialog-heading"><h2 id="new-chat-title">Nov pogovor</h2><button id="new-chat-cancel" class="icon-button" aria-label="Ohrani pogovor">×</button></div><p>Pred začetkom izvozi pogovor in primerjave, ki jih želiš ohraniti. Privzeti nov pogovor počisti tudi storitev, okolje, povezave, izsek, sliko in oba načina zajema CPQ.</p><div class="button-row"><button id="new-chat-reset" class="primary">Nov pogovor brez konteksta</button><button id="new-chat-keep">Nov pogovor z istim kontekstom</button><button id="new-chat-stay">Ohrani pogovor</button></div></dialog>
   <dialog id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-heading"><h2 id="settings-title">Nastavitve</h2><button id="settings-close" class="icon-button" aria-label="Zapri nastavitve">×</button></div>

@@ -36,7 +36,7 @@ export async function digest(value) {
 export function canonicalInput({ message, mode, service, context, snapshot, browser = null, history = [] }) {
   return JSON.stringify({ message: message.trim(), mode, service: service || null,
     history: history.map(({ role, content }) => ({ role, content })),
-    context: { text: context.text || '', manualUrl: context.manualUrl || '', environment: context.environment || 'UNKNOWN' },
+    context: { text: context.text || '', manualUrl: context.manualUrl || '', environment: context.environment || 'UNKNOWN',...(context.workspace?{workspace:context.workspace}:{}) },
     snapshot: snapshot ? { id: snapshot.id, sha256: snapshot.sha256, capturedAt: snapshot.capturedAt, method: snapshot.method } : null,
     ...(browser ? {browser} : {}) });
 }

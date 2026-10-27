@@ -14,8 +14,8 @@ export const STARTERS = [
   {id:'JIRA_REQUIREMENT',title:'Pripravi ECM Jiro',mode:'jira',message:'Iz moje poslovne potrebe pripravi osnutek ECM Jire za novo ali spremenjeno B2B storitev. Uporabi dejansko dostopno predlogo in preverjene produktne oziroma PLM vire. Vključi naslov, cilj, trenutno in želeno stanje, obseg spremembe, poslovna ter konfiguracijska pravila, odvisnosti, vpliv na ponudbe in naročila, merila sprejema ter odprta vprašanja. Loči potrjena pravila, predloge in manjkajoče odločitve. Upoštevaj že podane podatke in vprašaj samo za naslednji ključni manjkajoči podatek. Jire ne oddajaj.'},
   {id:'PLM_TESTS',title:'Pripravi testne scenarije',mode:'plm',message:'Iz izbrane storitve, PLM modela ali ECM Jire pripravi sledljive testne scenarije za OmniCPQ. Vključi predpogoje, vhodne podatke, korake, pričakovani rezultat in vir pravila. Pokrij osnovni potek, mejne vrednosti, neveljavne kombinacije, odvisnosti ter ponudbo in naročilo, kjer je relevantno. Nepotrjena pričakovanja označi; rezultatov ne izmišljaj. Scenarije označi kot neizvedene, dokler za izvedbo ni konkretnega dokaza.'}
 ];
-export const WORK_MODES = [
-  {mode:'work',short:'Delo v OmniCPQ',symbol:'01'},
-  {mode:'jira',short:'ECM Jira',symbol:'02'},
-  {mode:'plm',short:'Testni scenariji',symbol:'03'}
+export {WORK_MODES} from './work-modes.mjs';
+export const ADDITIONAL_STARTERS = [
+  {id:'GUIDE_TS',title:'Razloži storitev in TS posebnosti',mode:'guide',message:'Razloži izbrano B2B storitev za novo IT analitičarko v TS: poslovni namen, tehnično delovanje, TS variante in omejitve, lifecycle, povezava s PLM in OmniCPQ ter vprašanja za poslovne uporabnike. Loči splošno razlago, potrjeno TS pravilo, datirani podatek, predlog in neznanko. Za odločilne trditve navedi celotno vidno pot ali URL in odsek vira.'},
+  {id:'MODEL_TS',title:'Zasnuj sledljiv PLM model',mode:'model',message:'Iz iste poslovne zahteve pripravi predlog PLM modela: hierarhija ponudb in komponent, karakteristike, števnosti, relacije, odvisnosti, izključitve, cenovni pogoji in sled do zahteve. Potrjena pravila loči od predlogov ter neznank. Ohraniva storitev, že sprejete odločitve in verzijo modela; brez dejanskega PLM adapterja ne trdi, da si kaj shranil.'}
 ];

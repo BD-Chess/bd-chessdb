@@ -36,11 +36,14 @@ jobs:
           node --check public/OmniCPQ/extension/worker-v2.mjs
           node --check public/OmniCPQ/browser-bridge-v2.mjs
           node --check public/OmniCPQ/app.mjs
+          node --check public/OmniCPQ/experience.mjs
+          node --check public/OmniCPQ/presentation.mjs
+          node --check public/OmniCPQ/tour.mjs
           node --check functions/lib/omnicpq/browser-v2.mjs
           node --check functions/lib/omnicpq/browser.mjs
           node --check functions/lib/omnicpq/instructions.mjs
       - name: Synthetic GUI and legacy navigation regression
         run: |
-          node --test tests/omnicpq/full-gui-r2.test.mjs tests/omnicpq/full-gui-r3.test.mjs tests/omnicpq/documents-r3.test.mjs tests/omnicpq/browser-r6.test.mjs tests/omnicpq/pwa-r6.test.mjs
+          node --test tests/omnicpq/full-gui-r2.test.mjs tests/omnicpq/full-gui-r3.test.mjs tests/omnicpq/documents-r3.test.mjs tests/omnicpq/browser-r6.test.mjs tests/omnicpq/pwa-r6.test.mjs tests/omnicpq/five-modes-r1.test.mjs
       - name: Secret boundary (no real CPQ or paid model calls)
         run: python3 scripts/check_secret_boundary.py

@@ -1,6 +1,8 @@
+import {createExperience} from './experience.mjs';
+import {normalizeMode,normalizeWorkspace,CONTEXT_FIELDS} from './work-modes.mjs';
 import { PROMPTS, SECONDARY, PILOT, PROMPT_VERSION, PROMPTS_SHA256 } from './prompts.mjs';
 import { APP_VERSION, uuid, digest, canonicalInput, sseEvents, structured, lifecycleIssues, canExportTests, hasValidLifecycle, csv, exportSession } from './core.mjs';
-import { STARTERS, STARTER_VERSION, WORK_MODES } from './starters.mjs';
+import { STARTERS, STARTER_VERSION, WORK_MODES, ADDITIONAL_STARTERS } from './starters.mjs';
 import { createBrowserBridge, navigationProposal as guiProposal, cpqLocation } from './browser-bridge-v2.mjs';
 import {createBrowserBridge as createLegacyBridge,navigationProposal as legacyProposal} from './browser-bridge.mjs';
 import {createAutoConnector} from './auto-connect.mjs';
@@ -15,7 +17,7 @@ const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready:
   capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
   browserConnected: false, browserObservation: null, browserStop: false, browserPaused: false, guiCheckpoint: null, agentRun:null, pendingDraft: null, release: null,
   comparisonPartner: 'copilot', partnerInputs: {} };
-let installEvent, registration, accessEpoch = 0;
+let installEvent, registration, accessEpoch = 0, experience;
 const autoConnector=createAutoConnector({eligible:()=>state.ownerVerified&&state.role==='owner'&&!state.busy,
   visible:()=>document.visibilityState!=='hidden',online:()=>navigator.onLine,
   schedule:(fn,ms)=>window.setTimeout(fn,ms),unschedule:id=>window.clearTimeout(id),
@@ -63,6 +65,7 @@ async function listDemos() {
 }
 function ownerAccess(verified) {
   state.ownerVerified = verified;
+  experience?.setAccess(verified);
   $('workspace').hidden = !verified; $('composer').hidden = !verified; $('composer-shell').hidden = !verified; $('access-gate').hidden = verified;
   $('demo-owner').hidden = !verified || state.role !== 'owner';
   $('documents-owner').hidden = !verified || state.role !== 'owner';
@@ -97,14 +100,14 @@ function localWrite() {
     return true;
   } catch { notice('Lokalno shranjevanje ni uspelo. Izvozi pomemben pogovor, preden zapreš stran.'); return false; }
 }
-function getContext() { return { text: $('context-text').value, manualUrl: $('manual-url').value, environment: $('environment').value }; }
+function getContext() { return { text: $('context-text').value, manualUrl: $('manual-url').value, environment: $('environment').value, workspace:normalizeWorkspace(Object.fromEntries(Object.keys(CONTEXT_FIELDS).map(key=>[key,$('shared-'+key).value]))) }; }
 function conversationHistory() { return state.messages.filter(m => m.role === 'user' || (m.role === 'assistant' && m.status === 'complete')).slice(-16).map(({ role, content }) => ({ role, content })); }
 function bodyForInput() { return { message: $('message').value.trim(), mode: state.mode, promptId: state.promptId, service: $('service').value || null,
   profile: state.profile, context: getContext(), snapshot: state.snapshot ? { ...state.snapshot } : null,
   browser: $('browser-include').checked ? state.browserObservation : null,
   history: state.frozen?.body.history || conversationHistory() }; }
 function setMode(mode) {
-  state.mode = mode; $('mode-badge').textContent = WORK_MODES.find(p => p.mode === mode).short;
+  mode=normalizeMode(mode);state.mode = mode; $('mode-badge').textContent = WORK_MODES.find(p => p.mode === mode).short;
   if (mode !== 'work') $('browser-auto').checked = false;
   for (const button of $('mode-nav').children) { button.classList.toggle('active', button.dataset.mode === mode); button.setAttribute('aria-pressed', String(button.dataset.mode === mode)); }
   showWorkspaceStatus();
@@ -124,7 +127,7 @@ function applyDraft(message,mode,promptId) {
   clearFrozen(); state.promptId = promptId; setMode(mode || 'work'); $('message').value = message; fitComposer(); localWrite(); $('message').focus();
 }
 function hasBusinessContext() {
-  return Boolean(state.messages.length || state.comparisons.length || $('message').value.trim() || $('context-text').value.trim() || $('manual-url').value.trim() ||
+  return Boolean(Object.values(getContext().workspace).some(Boolean) || state.messages.length || state.comparisons.length || $('message').value.trim() || $('context-text').value.trim() || $('manual-url').value.trim() ||
     $('service').value || $('environment').value !== 'UNKNOWN' || state.snapshot || state.capture || state.browserConnected || hasComparisonDraft());
 }
 function hasComparisonDraft() {
@@ -136,6 +139,7 @@ function startNewChat(keepContext=false) {
   state.messages = []; state.comparisons = []; state.promptId = null; state.pendingDraft = null; clearFrozen(); $('message').value = '';
   state.browserStop = true; state.guiCheckpoint = null; $('browser-auto').checked = false;
   if (!keepContext) {
+    experience?.clear();
     disconnect(); disconnectBrowser(); setSnapshot(null); $('context-text').value = ''; $('manual-url').value = '';
     $('service').value = ''; $('environment').value = 'UNKNOWN'; setMode('work');
   }
@@ -518,6 +522,7 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
 
 async function send(event, browserRun = null) {
   event?.preventDefault(); if (state.busy) return;
+  if (!browserRun && experience?.handleCommand($('message').value)) return;
   if (!navigator.onLine) { notice('Brez povezave. Vprašanje ostane osnutek; pozneje ga pošlji sam.'); return; }
   if (!state.ready) { notice('Pomočnik še ni dosegljiv. Preveri dostop v nastavitvah.'); return; }
   if (!$('message').value.trim()) { $('message').focus(); return; }
@@ -677,7 +682,7 @@ function initCards() {
     button.append(element('span', 'number', String(index+1).padStart(2,'0')), element('strong', '', prompt.title), element('p', '', ['Pomoč pri delu v CPQ in z B2B storitvami.','Pokritost, omejitve in preverjeni viri znanja.','Preverjeni povezavi v STAGE in PRODUKCIJO.'][index]), element('span', 'arrow', '↗'));
     button.onclick = () => setDraft(prompt.message, prompt.mode, prompt.id); $('start-cards').append(button);
   }
-  for (const prompt of STARTERS.slice(3)) { const b = element('button', '', prompt.title); b.dataset.prompt = prompt.id; b.onclick = () => { setDraft(prompt.message, prompt.mode, prompt.id); if (prompt.id === 'SCREEN_CONTEXT') $('browser-setup').open = !state.browserConnected; }; $('quick-actions').append(b); }
+  for (const prompt of [...STARTERS.slice(3),...ADDITIONAL_STARTERS]) { const b = element('button', '', prompt.title); b.dataset.prompt = prompt.id; b.onclick = () => { setDraft(prompt.message, prompt.mode, prompt.id); if (prompt.id === 'SCREEN_CONTEXT') $('browser-setup').open = !state.browserConnected; }; $('quick-actions').append(b); }
   for (const p of PILOT) $('pilot-task').add(new Option(`${p.id} · ${p.title}`, p.id));
 }
 
@@ -722,7 +727,7 @@ async function installWorker() {
       if (state.busy || state.snapshot) { notice('Posodobitev počaka: najprej dokončaj odgovor in uporabi ali odstrani priloženo sliko.'); return; }
       if (state.capture || state.browserConnected) { notice('Pred posodobitvijo prekini deljenje zaslona in CPQ povezavo. Pogovor lahko ohraniš z lokalnim shranjevanjem ali izvozom.'); return; }
       if (hasComparisonDraft() || state.pendingDraft) { notice('Pred posodobitvijo shrani in izvozi razdelano primerjavo ter dokončaj izbiro osnutka.'); return; }
-      if (!state.persist && (state.messages.length || state.comparisons.length || $('message').value.trim() || $('context-text').value.trim() || $('manual-url').value.trim())) { notice('Za ohranitev pogovora med posodobitvijo vklopi lokalno shranjevanje v nastavitvah ali najprej izvozi in odpri nov pogovor.'); return; }
+      if (!state.persist && hasBusinessContext()) { notice('Za ohranitev pogovora med posodobitvijo vklopi lokalno shranjevanje v nastavitvah ali najprej izvozi in odpri nov pogovor.'); return; }
       if (!localWrite()) return;
       if (registration.waiting) { registration.waiting.postMessage({ type: 'APPLY_UPDATE' });
         navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true }); }
@@ -730,6 +735,7 @@ async function installWorker() {
   } catch { $('install-status').textContent += ' Service worker v tem okolju ni bil potrjen.'; }
 }
 
+experience=createExperience({document,window,authorized:()=>state.ownerVerified&&state.role==='owner',setMode:mode=>{setMode(mode);localWrite();},setDraft:text=>setDraft(text,state.mode),notice});
 initCards(); ownerAccess(false);
 try {
   const prefs = JSON.parse(localStorage.getItem(PREFS) || '{}');
@@ -743,7 +749,8 @@ try {
       if(data.checkpoint&&typeof data.checkpoint.goal==='string')state.guiCheckpoint={...data.checkpoint,status:'RESTORED_OBSERVE_REQUIRED'};
       state.messages = data.messages.filter(m => ['user', 'assistant'].includes(m.role) && typeof m.content === 'string').slice(-100).map(m => ({ ...m, status: m.status === 'streaming' ? 'partial' : m.status }));
       state.comparisons = Array.isArray(data.comparisons) ? data.comparisons : [];
-      state.mode = ['work', 'plm', 'jira'].includes(data.mode) ? data.mode : 'work'; $('message').value = String(data.draft || '').slice(0, 16000);
+      state.mode = normalizeMode(data.mode); $('message').value = String(data.draft || '').slice(0, 16000);
+      for(const [key,value] of Object.entries(normalizeWorkspace(data.context?.workspace)))$('shared-'+key).value=value;
       $('context-text').value = String(data.context?.text || '').slice(0, 16000); $('manual-url').value = String(data.context?.manualUrl || '').slice(0, 1200);
       $('environment').value = ['STAGE', 'PROD'].includes(data.context?.environment) ? data.context.environment : 'UNKNOWN';
     }
@@ -752,7 +759,7 @@ try {
 setMode(state.mode); renderMessages(); fitComposer();
 $('composer').addEventListener('submit', send);
 $('message').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
-for (const id of ['message', 'context-text', 'manual-url', 'environment', 'service']) $(id).addEventListener('input', () => { if (id === 'message') state.promptId = null; clearFrozen(); fitComposer(); localWrite(); });
+for (const id of ['message', 'context-text', 'manual-url', 'environment', 'service',...Object.keys(CONTEXT_FIELDS).map(k=>'shared-'+k)]) $(id).addEventListener('input', () => { if (id === 'message') state.promptId = null; clearFrozen(); fitComposer(); localWrite(); });
 document.addEventListener('visibilitychange',()=>autoConnector.wake());
 window.addEventListener('online',()=>autoConnector.wake());
 function stopAgent(status){state.browserStop=true;state.browserPaused=true;state.controller?.abort();

@@ -42,3 +42,74 @@ test('protected links preserve workspace; document bundle is not imported by a p
   const shell=JSON.parse(await readFile('public/OmniCPQ/shell-integrity.json'));assert(!Object.keys(shell.files).some(k=>/b2b-|documents/.test(k)));
   for(const file of await readdir('public/OmniCPQ'))assert(!/documents-v17\.json|B2B_.*\.(?:docx|md)/.test(file));
 });
+
+// The visual release carries layout and artwork, while legacy prose stays private.
+import visualRelease from '../../functions/lib/omnicpq/documents/visual-release-v18.json' with {type:'json'};
+import visualAssets from '../../functions/lib/omnicpq/documents/visual-assets-v18.json' with {type:'json'};
+import {renderVisualGuide,readVisualAsset} from '../../functions/lib/omnicpq/visual-documents.mjs';
+
+function syntheticVisual(){
+  const base=Buffer.from('PREFIX:<p>SYNTHETIC PRIVATE DESCRIPTION</p>:SUFFIX');
+  const fragment=Buffer.from('<p>SYNTHETIC PRIVATE DESCRIPTION</p>');
+  const template='<html><body><!--OMNICPQ-LEGACY:service--><script>document.title="VISUAL SYNTHETIC";</script></body></html>';
+  const rendered=template.replace('<!--OMNICPQ-LEGACY:service-->',fragment.toString());
+  return {base,rendered,release:{version:'v18',baseSize:base.length,baseSha256:hash(base),template,templateSha256:hash(template),fragments:{service:{offset:7,size:fragment.length,sha256:hash(fragment)}},renderedSha256:hash(rendered)}};
+}
+
+test('visual template reconstructs only pinned private fragments and fails closed on corruption',()=>{
+  const fixture=syntheticVisual();
+  const item=renderVisualGuide({bytes:fixture.base},fixture.release);
+  assert.equal(item.bytes.toString(),fixture.rendered);assert.equal(item.version,'v18');assert.equal(item.sha256,hash(item.bytes));
+  for(const release of [
+    {...fixture.release,baseSha256:'0'.repeat(64)},
+    {...fixture.release,template:fixture.release.template+' '},
+    {...fixture.release,fragments:{service:{...fixture.release.fragments.service,offset:8}}},
+    {...fixture.release,renderedSha256:'0'.repeat(64)},
+  ])assert.throws(()=>renderVisualGuide({bytes:fixture.base},release),/INTEGRITY/);
+});
+
+test('v17 guide URL and v18 alias return the same visual release with fresh CSP and byte hash',async()=>{
+  const fixture=syntheticVisual(),guide='b2b-vodic-v17.html';
+  const spec={mime:'text/html; charset=utf-8',size:fixture.base.length,sha256:hash(fixture.base)};
+  const privateText=JSON.stringify({schema:'omnicpq.private_documents.v1',documentVersion:'v17',files:{[guide]:{...spec,base64:fixture.base.toString('base64')}}});
+  const expected={bundleSha256:hash(privateText),files:{[guide]:spec}};
+  const handler=makeDocumentHandler({auth:owner,reader:async()=>privateText,expected,visualRenderer:item=>renderVisualGuide(item,fixture.release)});
+  for(const name of [guide,'b2b-vodic-v18.html']){
+    const r=await handler(request('GET',{},name));assert.equal(r.status,200);assert.equal(await r.text(),fixture.rendered);
+    assert.equal(r.headers.get('x-document-version'),'v18');assert.equal(r.headers.get('x-document-sha256'),hash(fixture.rendered));
+    assert.ok(r.headers.get('content-security-policy').includes(createHash('sha256').update('document.title="VISUAL SYNTHETIC";').digest('base64')));
+  }
+  const head=await handler(request('HEAD',{},guide));assert.equal(head.status,200);assert.equal(await head.text(),'');assert.equal(head.headers.get('content-length'),String(Buffer.byteLength(fixture.rendered)));
+  const closed=makeDocumentHandler({auth:owner,reader:async()=>privateText,expected,visualRenderer:()=>{throw Error('VISUAL_DOCUMENT_INTEGRITY')}});
+  const r=await closed(request('GET',{},guide));assert.equal(r.status,503);assert.ok(!(await r.text()).includes('SYNTHETIC PRIVATE DESCRIPTION'));
+});
+
+test('WebP pictures use the same owner gate, exact bytes and MIME, without private-store reads',async()=>{
+  let reads=0;const imageName='slike-v18/webp/so.webp';
+  const deps={reader:async()=>{reads++;throw Error('NOT_EXPECTED')}};
+  const handler=makeDocumentHandler({auth:owner,...deps});
+  let r=await handler(request('GET',{},imageName));assert.equal(r.status,200);assert.equal(r.headers.get('content-type'),'image/webp');assert.match(r.headers.get('content-disposition'),/^inline; filename="so.webp"/);
+  const bytes=Buffer.from(await r.arrayBuffer());assert.deepEqual(bytes,readVisualAsset(imageName).bytes);assert.equal(r.headers.get('x-document-sha256'),hash(bytes));assert.match(r.headers.get('cache-control'),/no-store/);assert.equal(reads,0);
+  r=await handler(request('HEAD',{},imageName));assert.equal(r.status,200);assert.equal(await r.text(),'');assert.equal(r.headers.get('content-length'),String(bytes.length));
+  for(const name of [imageName,'b2b-vodic-v17.html']){
+    assert.equal((await makeDocumentHandler({auth:async()=>{throw {code:'AUTH_REQUIRED'}},...deps})(request('GET',{},name))).status,401);
+    assert.equal((await makeDocumentHandler({auth:async()=>({role:'demo'}),...deps})(request('GET',{},name))).status,403);
+    assert.equal((await handler(request('GET',{'sec-fetch-site':'cross-site'},name))).status,403);
+  }
+  for(const name of ['slike-v18/webp/../visual-release-v18.json','slike-v18/png/so.png','visual-assets-v18.json'])assert.equal((await handler(request('GET',{},name))).status,404);
+  assert.equal(reads,0);
+});
+
+test('all 64 bundled WebP originals match the runtime data and every picture URL is allowlisted',async()=>{
+  assert.equal(Object.keys(visualAssets).length,64);
+  for(const [name,item] of Object.entries(visualAssets)){
+    const bytes=await readFile(new URL('../../functions/lib/omnicpq/documents/'+name,import.meta.url));
+    assert.equal(bytes.length,item.size);assert.equal(hash(bytes),item.sha256);assert.deepEqual(readVisualAsset(name).bytes,bytes);
+  }
+  const template=await readFile(new URL('../../functions/lib/omnicpq/documents/b2b-vodic-v17.html',import.meta.url),'utf8');
+  assert.equal(template,visualRelease.template);assert.equal(hash(template),visualRelease.templateSha256);
+  for(const match of template.matchAll(/(?:src|data-normal|data-failed)="(\/\.netlify\/functions\/omnicpq-documents\?file=([^"]+))"/g))assert.ok(Object.hasOwn(visualAssets,decodeURIComponent(match[2])));
+  assert.equal((template.match(/data-service=""/g)||[]).length,58);
+  assert.equal(Object.keys(visualRelease.fragments).filter(k=>k.startsWith('service-')).length,58);
+  assert.ok(!template.includes('drive.google.com'));assert.ok(!template.includes('docs.google.com'));assert.ok(!template.includes('references/services/'));
+});
