@@ -154,7 +154,7 @@
       slaifChart.append(wrapper);
     });
     slaifDetails.append(detail("Qwen3.8 27B Q8", [
-      say("Zgodovinski zamrznjeni T001–T007: 7/7 PASS; T008–T010 niso bili izvedeni za ta rezultat.", "Historical frozen T001–T007: 7/7 PASS; T008–T010 were not run for this result."),
+      say("Zgodovinski zamrznjeni T001–T007: 7/7 PASS. T008–T010 so bili izvedeni pozneje (23. 10.) in so med oddanimi SLAIF teki spodaj: lahki niz brez RHP 10/10 PASS in s polnim RHP 10/10 PASS.", "Historical frozen T001–T007: 7/7 PASS. T008–T010 were run later (23 Oct) and appear among the submitted SLAIF runs below: easy suite without RHP 10/10 PASS and with full RHP 10/10 PASS."),
       say("V ločenih raziskovalnih pilotih je bilo 18/18 tehnično uspešnih API klicev. Stabilna korist proti močnim običajnim kontrolam ni potrjena.", "Separate research pilots had 18/18 technically successful API calls. Stable benefit over strong conventional controls is unconfirmed."),
     ]));
     slaifDetails.append(detail("GaMS3 12B Instruct Q8", [
