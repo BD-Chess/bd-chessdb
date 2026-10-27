@@ -2,7 +2,12 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');
 const data=JSON.parse(fs.readFileSync(path.join(root,'public/site-search-index.json'),'utf8'));
-assert.match(html,/<a class="brand-home" href="\.\/Start\/index\.html"/);
+// Since ee527fd8 the MDL×DCC brand toggles the Guide and the BD link opens Start.
+assert.match(html,/<button class="brand-home" id="guide-brand-toggle"/);
+assert.match(html,/<nav class="brand-sub"[^>]*><a href="\.\/Start\/index\.html">BD<\/a>/);
+// The book link closes the brand block (right of BD × AI LAB) and is not a toolbar utility.
+assert.match(html,/<\/nav><a class="brand-book" id="book-link" href="\.\/knjiga\/" aria-label="[^"]+"/);
+assert.ok(fs.existsSync(path.join(root,'public/knjiga/index.html')),'Book page exists');
 assert.match(html,/id="landing-compact-header"/);
 for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
  if(!/application\/ld\+json|\bsrc=/.test(m[1]))new vm.Script(m[2]);
