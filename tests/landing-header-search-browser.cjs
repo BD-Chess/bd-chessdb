@@ -21,11 +21,12 @@ async function localServer(){
 async function row(page,width){
  const boxes=await page.evaluate(()=>{
   const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,cy:r.y+r.height/2};};
-  return {brand:box('.topbar .brand'),tools:box('.topbar .utilities'),header:box('.topbar'),controls:[...document.querySelectorAll('.topbar .utility')].map(el=>{const r=el.getBoundingClientRect();return {id:el.id||el.dataset.lang,x:r.x,y:r.y,w:r.width,h:r.height,right:r.right};})};
+  return {brand:box('.topbar .brand'),book:box('#book-link'),tools:box('.topbar .utilities'),header:box('.topbar'),controls:[...document.querySelectorAll('.topbar .utility')].map(el=>{const r=el.getBoundingClientRect();return {id:el.id||el.dataset.lang,x:r.x,y:r.y,w:r.width,h:r.height,right:r.right};})};
  });
  assert.ok(Math.abs(boxes.brand.cy-boxes.tools.cy)<2,'One header row at '+width);
  assert.ok(boxes.brand.right<=boxes.tools.x+1,'Brand/toolbar do not overlap at '+width);
- assert.equal(boxes.controls.length,7);
+ assert.ok(boxes.book.x>=boxes.tools.x-1&&boxes.book.right<=boxes.tools.right+1,'Book icon sits in the top-right toolbar at '+width);
+  assert.equal(boxes.controls.length,8,'Seven toolbar controls plus the book icon');
  for(const c of boxes.controls){
   assert.ok(c.w>=24&&c.h>=40,'Usable hit area '+c.id+' at '+width);
   assert.ok(c.x>=0&&c.right<=width+1,'No clipped control '+c.id+' at '+width);
@@ -81,7 +82,7 @@ async function run(name,engine,url){
   await Promise.all([page.waitForURL(url=>url.pathname.toLowerCase().includes('/chess-lab/')),page.locator('#search-input').press('Enter')]);
   assert.ok(await page.locator('body').innerText());
   await page.goto(url,{waitUntil:'domcontentloaded'});
-  await Promise.all([page.waitForURL(url=>/\/start\/(?:index\.html)?$/i.test(url.pathname)),page.locator('.topbar .brand-home').click()]);
+  await Promise.all([page.waitForURL(url=>/\/start\/(?:index\.html)?$/i.test(url.pathname)),page.locator('.topbar .brand-sub a[href="./Start/index.html"]').click()]);
   assert.match(await page.title(),/Start/i);
   await page.goto(url,{waitUntil:'domcontentloaded'});
   // Keep working if the global index is unavailable. Test in a fresh context.

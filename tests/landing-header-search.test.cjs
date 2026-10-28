@@ -2,7 +2,12 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');
 const data=JSON.parse(fs.readFileSync(path.join(root,'public/site-search-index.json'),'utf8'));
-assert.match(html,/<a class="brand-home" href="\.\/Start\/index\.html"/);
+// Since ee527fd8 the MDL×DCC brand toggles the Guide and the BD link opens Start.
+assert.match(html,/<button class="brand-home" id="guide-brand-toggle"/);
+assert.match(html,/<nav class="brand-sub"[^>]*><a href="\.\/Start\/index\.html">BD<\/a>/);
+// Icon-only book link is the first top-right toolbar control and opens /knjiga/.
+assert.match(html,/<div class="utilities"><a class="utility book-utility" id="book-link" href="\.\/knjiga\/" aria-label="[^"]+" title="[^"]+"><svg/);
+assert.ok(fs.existsSync(path.join(root,'public/knjiga/index.html')),'Book page exists');
 assert.match(html,/id="landing-compact-header"/);
 for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
  if(!/application\/ld\+json|\bsrc=/.test(m[1]))new vm.Script(m[2]);
@@ -42,12 +47,18 @@ async function check(base,offline){
    const target=home.includes(q)?'https://193.77.159.220/':new URL('Start/index.html',base).href;
    const matches=context.qa.shortlist(q);
    assert.equal(matches[0]?.url,target,'First result '+phase+': '+q);
-   // Exercise the real submit handler, including a deliberately different active result.
-   context.input.value=q;context.results=matches;context.active=matches.length>1?1:-1;navigated=null;
+   // Exercise the real submit handler. Plain Enter takes the direct route; since 485068cd an
+   // arrow-selected (active) result deliberately wins over the direct route.
+   context.input.value=q;context.results=matches;context.active=-1;navigated=null;
    let prevented=false;
    submitHandler({preventDefault(){prevented=true;}});
    assert.equal(prevented,true);
    assert.equal(navigated,target,'Enter '+phase+': '+q);
+   if(matches.length>1){
+    context.active=1;navigated=null;
+    submitHandler({preventDefault(){}});
+    assert.equal(navigated,matches[1].url,'Arrow-selected result wins '+phase+': '+q);
+   }
   }
  }
  checkDirectRoutes('before index');
