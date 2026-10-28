@@ -21,13 +21,12 @@ async function localServer(){
 async function row(page,width){
  const boxes=await page.evaluate(()=>{
   const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,cy:r.y+r.height/2};};
-  return {brand:box('.topbar .brand'),book:box('.topbar .brand-book'),tools:box('.topbar .utilities'),header:box('.topbar'),controls:[...document.querySelectorAll('.topbar .utility')].map(el=>{const r=el.getBoundingClientRect();return {id:el.id||el.dataset.lang,x:r.x,y:r.y,w:r.width,h:r.height,right:r.right};})};
+  return {brand:box('.topbar .brand'),book:box('#book-link'),tools:box('.topbar .utilities'),header:box('.topbar'),controls:[...document.querySelectorAll('.topbar .utility')].map(el=>{const r=el.getBoundingClientRect();return {id:el.id||el.dataset.lang,x:r.x,y:r.y,w:r.width,h:r.height,right:r.right};})};
  });
  assert.ok(Math.abs(boxes.brand.cy-boxes.tools.cy)<2,'One header row at '+width);
  assert.ok(boxes.brand.right<=boxes.tools.x+1,'Brand/toolbar do not overlap at '+width);
- assert.ok(boxes.book.x>=boxes.brand.x-1&&boxes.book.right<=boxes.brand.right+1&&boxes.book.right<=boxes.tools.x+1,'Book link stays inside the brand block at '+width);
- assert.ok(boxes.book.w>=24&&boxes.book.h>=(width>700?40:29),'Usable book link hit area at '+width);
- assert.equal(boxes.controls.length,7);
+ assert.ok(boxes.book.x>=boxes.tools.x-1&&boxes.book.right<=boxes.tools.right+1,'Book icon sits in the top-right toolbar at '+width);
+  assert.equal(boxes.controls.length,8,'Seven toolbar controls plus the book icon');
  for(const c of boxes.controls){
   assert.ok(c.w>=24&&c.h>=40,'Usable hit area '+c.id+' at '+width);
   assert.ok(c.x>=0&&c.right<=width+1,'No clipped control '+c.id+' at '+width);
