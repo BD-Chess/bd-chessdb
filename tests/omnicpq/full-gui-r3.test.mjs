@@ -7,7 +7,7 @@ import {makeGuiBridgeHandler} from '../../public/OmniCPQ/extension/worker-v2.mjs
 import {createBrowserBridge,BRIDGE_EXTENSION_ID,BRIDGE_PROTOCOL,navigationProposal} from '../../public/OmniCPQ/browser-bridge-v2.mjs';
 import {pendingRequests} from '../../public/OmniCPQ/extension/pairing.mjs';
 import {createAutoConnector} from '../../public/OmniCPQ/auto-connect.mjs';
-import {createAgentRun,runLimit,actionSignature,explicitGoalGrant,goalGrantCovers} from '../../public/OmniCPQ/agent-session.mjs';
+import {createAgentRun,runLimit,actionSignature,explicitGoalGrant,goalGrantCovers,configuredChoiceGuard,conversationForModel} from '../../public/OmniCPQ/agent-session.mjs';
 import {readFile} from 'node:fs/promises';
 import * as appRuntime from './app-runtime-imports.mjs';
 import * as core from '../../public/OmniCPQ/core.mjs';
@@ -107,6 +107,19 @@ test('same-document editor fill reaches input listeners, clears previous value, 
     o=await f.client.observe();assert.match(o.text,/Shranjeno/);
   }finally{f.dom.window.close();}
 });
+test('Material main choices are observed from selected display text, distinguished from empty component fields and revision checked',async()=>{
+  const f=fixture('<fieldset><legend>Karakteristike</legend><mat-select role="combobox" aria-label="Model postavitve"><span class="mat-select-value-text">Enojna postavitev</span></mat-select><mat-select id="os-choice" role="combobox" aria-label="Operacijski sistem" aria-controls="os-options"><span class="mat-mdc-select-value-text">Ubuntu</span></mat-select></fieldset><mat-expansion-panel><mat-panel-title>Število procesorjev (vCPU)</mat-panel-title><mat-select role="combobox" aria-label="Model postavitve (€)"><span class="mat-select-placeholder">Izberi vrednost</span></mat-select></mat-expansion-panel><div role="listbox" id="os-options"><div role="option">Windows</div></div>');
+  try{await f.pair();const o=await f.client.observe(),controls=validateGuiBrowser(o).controls;
+    const main=controls.find(c=>c.label==='Model postavitve'),os=controls.find(c=>c.label==='Operacijski sistem'),child=controls.find(c=>c.label==='Model postavitve (€)');
+    assert.equal(main.value,'Enojna postavitev');assert.equal(main.valueSource,'material-selected-text');assert.equal(main.fieldScope,'form');
+    assert.equal(os.value,'Ubuntu');assert.equal(child.value,'');assert.equal(child.valueSource,'placeholder');assert.equal(child.fieldScope,'component');assert.equal(child.component,'Število procesorjev (vCPU)');
+    assert.deepEqual(controls.find(c=>c.label==='Windows').choiceOwner,{label:'Operacijski sistem',value:'Ubuntu',valueSource:'material-selected-text',fieldScope:'form'});
+    // Even a filtered read must detect a human changing a selected custom value.
+    const a=f.action(o,'CPU','fill',{value:'12'});f.d.querySelector('#os-choice span').textContent='Debian';
+    await assert.rejects(f.client.execute(a,{guidedAuthorization:true}),/CPQ_SCREEN_CHANGED/);assert.equal(f.d.querySelector('#cpu').value,'1');
+    assert.equal(validateGuiBrowser(await f.client.observe()).controls.find(c=>c.label==='Operacijski sistem').value,'Debian');
+  }finally{f.dom.window.close();}
+});
 test('multiline textarea keeps exact whitespace for observation and verified fill receipt',async()=>{
   const f=fixture('<label for="notes">Notes</label><textarea id="notes">old</textarea>');
   try{let committed;f.d.querySelector('#notes').onchange=e=>{committed=e.target.value;};await f.pair();const o=await f.client.observe(),value='  first line\nsecond line  ';
@@ -156,6 +169,25 @@ test('budgets and no-progress signatures distinguish differing intended field va
   assert.equal(runLimit(run,1001),null);assert.notEqual(actionSignature({revision:'r',targetId:'c0',operation:'fill',value:'1'}),actionSignature({revision:'r',targetId:'c0',operation:'fill',value:'2'}));
   run.step=2;assert.equal(runLimit(run,1001),'ACTION_BUDGET');run.step=0;run.modelCalls=3;assert.equal(runLimit(run,1001),'MODEL_BUDGET');assert.equal(runLimit(run,1100),'TIME_BUDGET');
 });
+test('choice guard preserves observed drivers, permits an explicit change or new empty item, and never carries a stale lock',()=>{
+  const control={id:'c0',kind:'combobox',label:'Operacijski sistem',value:'Ubuntu',valueSource:'material-selected-text',fieldScope:'form'};
+  const o={documentKey:'A',controls:[control]},click={targetId:'c0',operation:'click'};
+  assert.equal(configuredChoiceGuard('Uredi RAM in disk',o,click).error,'CPQ_CONFIRMED_CHOICE_PROTECTED');
+  assert.equal(configuredChoiceGuard('OS Ubuntu, CPU 12',o,click).error,'CPQ_CONFIRMED_CHOICE_PROTECTED');
+  assert.equal(configuredChoiceGuard('Spremeni operacijski sistem v Windows',o,click),null);
+  assert.equal(configuredChoiceGuard('Ne spreminjaj OS, uredi RAM',o,click).error,'CPQ_CONFIRMED_CHOICE_PROTECTED');
+  assert.equal(configuredChoiceGuard('Uredi RAM',o,click,{guided:false}),null);
+  const empty={...control,value:'',valueSource:'placeholder'};
+  assert.equal(configuredChoiceGuard('Nastavi OS Ubuntu',{documentKey:'B',controls:[empty]},click),null);
+  assert.equal(configuredChoiceGuard('Nastavi OS Ubuntu',{controls:[{...empty,valueSource:undefined}]},click).error,'CPQ_DRIVER_STATE_UNKNOWN');
+  assert.equal(configuredChoiceGuard('Uredi RAM',{controls:[{id:'c1',kind:'field',label:'RAM',value:'128'}]},{targetId:'c1',operation:'fill',value:'128'}).status,'ALREADY_MATCHES');
+  assert.equal(configuredChoiceGuard('Dopiši RAM',{controls:[{id:'c1',kind:'field',label:'RAM',value:'128'}]},{targetId:'c1',operation:'fill',value:'128',inputMode:'append'}),null);
+});
+test('model history drops internal continuation prompts and keeps human corrections across a long automatic run',()=>{
+  const messages=[{role:'user',content:'Najprej 64 GB RAM.'},{role:'assistant',status:'complete',content:'Zabeleženo.'},{role:'user',content:'Popravek: RAM 128 GB, model in OS ohrani.'}];
+  for(let i=0;i<80;i++)messages.push({role:'user',content:'INTERNAL repeated goal '+i,input:{automaticContinuation:true}},{role:'assistant',status:'complete',content:'Napredek '+i,input:{automaticContinuation:true},meta:{browserNavigation:{summary:'Opažen korak '+i}}});
+  const history=conversationForModel(messages);assert.equal(history.length,4);assert.equal(history[2].content,'Popravek: RAM 128 GB, model in OS ohrani.');assert.match(history.at(-1).content,/Napredek 79/);assert(!JSON.stringify(history).includes('INTERNAL'));assert(JSON.stringify(history).length<500);
+});
 test('actual popup consumes worker registration in split-screen and pairs once without a second PWA click',async()=>{
   const f=fixture(),dom=new JSDOM(await readFile('public/OmniCPQ/extension/popup.html','utf8'),{url:'https://extension.synthetic/',runScripts:'outside-only'});
   try{
@@ -173,7 +205,7 @@ test('activeTab on CPQ does not require PWA URL visibility; fresh browser-verifi
   const f=fixture();try{
     const original=f.api.tabs.get;f.api.tabs.get=async id=>id===23?{id,incognito:false}:original(id);
     await f.pair();assert.equal(f.storage.guiPair.pairingVerification,'VERIFIED_EXTERNAL_SENDER_URL_METADATA_WITHHELD');
-    assert.equal((await f.client.connect()).capabilities.workerVersion,'1.2.4');
+    assert.equal((await f.client.connect()).capabilities.workerVersion,'1.2.5');
     assert((await f.client.observe()).controls.length>0);
     const token=f.storage.guiPair.token;
     for(const sender of [{url:'https://outside.invalid/',frameId:0,tab:{id:23}},
@@ -244,6 +276,34 @@ test('integrated PWA -> synthetic model handler -> actual worker -> DOM inputs/v
     assert.equal(w.testApp.state.agentRun.step,3);assert.equal(w.testApp.state.agentRun.modelCalls,4);assert.equal(w.testApp.state.busy,false);
   }finally{dom.window.close();f.dom.window.close();}
 });
+test('PWA rejects a synthetic model reopening selected OS, completes remaining RAM/disk, and collapses automatic history into one group',async()=>{
+  const f=fixture('<fieldset><legend>Karakteristike</legend><mat-select id="model-main" role="combobox" aria-label="Model postavitve"><span class="mat-select-value-text">Enojna postavitev</span></mat-select><mat-select id="os-main" role="combobox" aria-label="Operacijski sistem"><span class="mat-select-value-text">Ubuntu</span></mat-select><label for="disk">Disk GB</label><input id="disk" type="number" value="60"></fieldset><mat-expansion-panel><mat-panel-title>CPU</mat-panel-title><mat-select role="combobox" aria-label="Model postavitve (€)"><span class="mat-select-placeholder">Izberi</span></mat-select></mat-expansion-panel>');
+  const dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'});let calls=0,driverClicks=0;const requests=[];
+  try{
+    f.d.querySelectorAll('#model-main,#os-main').forEach(e=>e.onclick=()=>driverClicks++);
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+      calls++;const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+      let a;if(calls===1)a={targetId:o.controls.find(c=>c.label==='Operacijski sistem').id,operation:'click'};
+      else if(o.controls.find(c=>c.label==='RAM').value!=='128')a={targetId:o.controls.find(c=>c.label==='RAM').id,operation:'fill',value:'128'};
+      else if(o.controls.find(c=>c.label==='Disk GB').value!=='2000')a={targetId:o.controls.find(c=>c.label==='Disk GB').id,operation:'fill',value:'2000'};
+      onText(a?'Napredek.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Opaženo: RAM 128 GB in disk 2000 GB. Model in OS sta ohranjena; konfiguracija še ni shranjena.');
+      return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+    }});
+    const w=dom.window;Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});Object.defineProperty(w,'crypto',{value:webcrypto});w.matchMedia=()=>({matches:false});w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>{if(options.body)requests.push(JSON.parse(options.body));return handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));};
+    w.eval((await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,'').replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser,renderMessages};');await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true;w.document.querySelector('#experimental-gui').onchange();await f.pair();await w.testApp.connectBrowser();w.document.querySelector('#browser-auto').checked=true;
+    const goal='Uredi RAM 128 GB in disk 2000 GB. Modela in OS ne spreminjaj.';w.document.querySelector('#message').value=goal;await w.testApp.send();
+    assert.equal(calls,4);assert.equal(driverClicks,0);assert.equal(f.d.querySelector('#ram').value,'128');assert.equal(f.d.querySelector('#disk').value,'2000');assert.equal(f.persisted(),null);
+    assert.equal(w.testApp.state.messages[1].meta.browserNavigation.error,'CPQ_CONFIRMED_CHOICE_PROTECTED');
+    const root=w.document.querySelector('#messages'),groups=root.querySelectorAll(':scope > details.agent-progress');assert.equal(groups.length,1);assert.equal(groups[0].open,false);assert.equal(root.querySelectorAll(':scope > .message.user').length,1);assert.equal(root.querySelectorAll(':scope > .message.assistant').length,1);assert.match(root.lastElementChild.textContent,/še ni shranjena/);
+    assert.equal(root.querySelectorAll('details.internal-continuation').length,3);groups[0].open=true;w.testApp.renderMessages();assert(root.querySelector('details.agent-progress').open);
+    for(const r of requests.slice(1)){assert(!r.message.includes('Uporabnikove izjave'));assert.equal(r.history.filter(m=>m.role==='user').length,1);assert.equal(r.history.find(m=>m.role==='user').content,goal);}
+    // Existing saved automatic turns receive the same collapsed presentation.
+    for(const m of w.testApp.state.messages)delete m.input.agentRunId;w.testApp.renderMessages();assert.equal(root.querySelectorAll(':scope > details.agent-progress').length,1);
+  }finally{dom.window.close();f.dom.window.close();}
+});
 test('visible same-origin frame observation binds frame geometry and retains the same top document without reload',async()=>{
   const f=fixture('<iframe title="Synthetic embedded editor"></iframe>');try{
     const frame=f.d.querySelector('iframe'),fw=frame.contentWindow,fd=frame.contentDocument;
@@ -253,7 +313,7 @@ test('visible same-origin frame observation binds frame geometry and retains the
     const top=(await f.page({type:'observe',origin,scope:'order'})).observation;assert.equal(top.frames[0].path,'0');assert(top.frames[0].accessible);
     const r=await f.page({type:'observe',origin,scope:'order',framePath:'0'});assert(r.ok);assert.equal(r.observation.framePath,'0');
     assert.equal(r.observation.controls.find(c=>c.label==='Embedded value').value,'kept');assert.equal(r.observation.documentKey,'SYNTHETIC');
-    assert.equal(r.observation.runtime.pageVersion,'1.2.4');assert.equal(f.d.querySelector('#cpu').value,'1');
+    assert.equal(r.observation.runtime.pageVersion,'1.2.5');assert.equal(f.d.querySelector('#cpu').value,'1');
     assert.equal((await f.page({type:'observe',origin,scope:'order',framePath:'99'})).error,'CPQ_FRAME_CHANGED');
   }finally{f.dom.window.close();}
 });

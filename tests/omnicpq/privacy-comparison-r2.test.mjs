@@ -30,6 +30,7 @@ async function harness() {
     removeAttribute() {}
     addEventListener() {}
     querySelector() { return this.label ||= new Element('span'); }
+    querySelectorAll() { return []; }
     focus() {}
     scrollIntoView() {}
     close() { this.open = false; }

@@ -1,11 +1,11 @@
 import {createHash} from 'node:crypto';
 import {cpqLocation} from '../../../public/OmniCPQ/browser-bridge.mjs';
 import {validateGuiBrowser,guiInstructions} from './browser-v2.mjs';
-import {STARTERS,STARTER_VERSION} from '../../../public/OmniCPQ/starters.mjs';
+import {STARTERS,STARTER_VERSION,ADDITIONAL_STARTERS} from '../../../public/OmniCPQ/starters.mjs';
 import {error} from './identity.mjs';
 export const starterMetadata=Object.freeze({version:STARTER_VERSION,count:STARTERS.length,
   sha256:createHash('sha256').update(JSON.stringify(STARTERS)).digest('hex')});
-export const allowedStarter=(id,message,canonical)=>STARTERS.some(p=>p.id===id&&p.message===message)||canonical.some(p=>p.id===id&&p.message===message);
+export const allowedStarter=(id,message,canonical)=>[...STARTERS,...ADDITIONAL_STARTERS].some(p=>p.id===id&&p.message===message)||canonical.some(p=>p.id===id&&p.message===message);
 export function validateBrowser(raw,now=Date.now()) {
   if(raw==null)return null;
   if(raw.schema==='omnicpq.gui.observation.v2')return validateGuiBrowser(raw,now);

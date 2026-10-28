@@ -6,7 +6,8 @@ import { SKILL_V15 } from './v15.mjs';
 import { openSealedKnowledge } from './sealed-knowledge.mjs';
 import { gunzipSync } from 'node:zlib';
 import { runtime } from './runtime.mjs';
-import {readPrivateDocument} from './private-documents.mjs';
+import {readCurrentPrivateDocument as readPrivateDocument} from './private-release.mjs';
+import {readLearning} from './learning.mjs';
 
 const env = key => globalThis.Netlify?.env?.get(key) ?? process.env[key];
 const norm = value => String(value).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
@@ -112,12 +113,14 @@ function statedIntent(text) {
     /\b(?:negativn[a-z]*|mejn[a-z]*)\b.{0,40}\b(?:primer[a-z]*|test[a-z]*|scenarij[a-z]*)\b/.test(value);
   const jira = /\bposlovn[a-z]*\s+zahtev[a-z]*\b|\b(?:zahtev[a-z]*|specifikacij[a-z]*)\b.{0,40}\b(?:it|plm|jir[a-z]*)\b|\b(?:osnutek|pripravi|naredi|izdelaj)\b.{0,30}\bspecifikacij[a-z]*\b/.test(value);
   if (plm || jira) return { mode: jira ? 'jira' : 'plm', plm, jira };
+  if (/\b(?:zasnuj|modeliranje|predlog modela|hierarhij[a-z]* modela)\b/.test(value)) return {mode:'model',plm:false,jira:false};
+  if (/\b(?:razlozi storitev|vodic|poslovni namen|kako deluje storitev)\b/.test(value)) return {mode:'guide',plm:false,jira:false};
   if (/\b(?:kako|kje)\b.{0,80}\b(?:dodam|dodati|spremenim|izklopim|odstranim|kopiram|izberem|kliknem|nadaljujem)\b|\b(?:klikni|kliknem|modal|zaslon|ne deluje|napaka)\b/.test(value)) return { mode: 'work', plm: false, jira: false };
   return null;
 }
 
 export function resolveIntent(request, registry) {
-  const primary = { CPQ_HELP: 'work', PLM_TESTS: 'plm', JIRA_REQUIREMENT: 'jira' }[request.promptId];
+  const primary = { GUIDE_TS:'guide',MODEL_TS:'model',CPQ_HELP: 'work', PLM_TESTS: 'plm', JIRA_REQUIREMENT: 'jira' }[request.promptId];
   if (primary) return { mode: primary, plm: primary === 'plm', jira: primary === 'jira', basis: 'canonical_prompt' };
   const current = statedIntent(request.message);
   if (current) return { ...current, basis: 'message' };
@@ -145,7 +148,7 @@ function matchesTrigger(text, trigger) {
   }));
 }
 
-export function createRetriever({ files, manifest, packSha256 },{documentReader=readPrivateDocument}={}) {
+export function createRetriever({ files, manifest, packSha256 },{documentReader=readPrivateDocument,learningReader=readLearning}={}) {
   const registry = JSON.parse(files['references/SERVICE_REGISTRY.json']);
   const specs = new Map(manifest.payload_files.map(f => [f.path, f]));
   const lifecycleSchema = JSON.parse(files['references/LIFECYCLE_OUTPUT.schema.json']);
@@ -189,6 +192,7 @@ export function createRetriever({ files, manifest, packSha256 },{documentReader=
         add('references/PLM_TESTING.md'); add('references/LIFECYCLE_VALIDATION.md'); add('references/LIFECYCLE_OUTPUT.schema.json'); add('references/PLM_TEST_EXAMPLE.json');
       }
       if (intent.jira) { add('references/JIRA_REQUIREMENTS.md'); add('references/POSLOVNA_ZAHTEVA_IT_PLM.md'); add('references/LIFECYCLE_OUTPUT.schema.json'); }
+      if(intent.mode==='model'){add('references/PLM_OWNERSHIP.md');add('references/POSLOVNA_ZAHTEVA_IT_PLM.md');add('references/PLM_EXPORTS_20261022.md');}
       for (const row of [...(registry.process_modules || []), ...(registry.context_modules || [])]) {
         if (row.process_id === 'DOCUMENT_MANAGEMENT' && intent.mode !== 'work' && !/\bdokument[a-z]*\b/.test(question)) continue;
         if (row.process_id === 'V12_BUSINESS_REQUIREMENT' && !intent.jira) continue;
@@ -278,14 +282,26 @@ export function createRetriever({ files, manifest, packSha256 },{documentReader=
       }
       if(request.promptId==='COVERAGE'){
         try{
-          const name='B2B_pokritost_in_kandidati_OmniCPQ_v17.md',item=await documentReader(name),text=item.bytes.toString('utf8'),id=`S${sources.length+1}`;
-          sources.push({id,path:'documents/'+name,sha256:item.sha256,kind:'private_documentation_v17_not_new_product_rule',sections:[{heading:'Dokumentacija v17',startLine:1,endLine:text.split('\n').length}]});
-          blocks.push(`<source id="${id}" path="documents/${name}" kind="private_documentation_v17_not_new_product_rule">\n${text}\n</source>`);documentationStatus='V17_AVAILABLE';
-        }catch{documentationStatus='V17_PRIVATE_STORAGE_PENDING';}
+          const name='B2B_pokritost_in_kandidati_OmniCPQ_v18.md',item=await documentReader(name),text=item.bytes.toString('utf8'),id=`S${sources.length+1}`;
+          sources.push({id,path:'documents/'+name,sha256:item.sha256,kind:'private_documentation_v18_not_new_product_rule',sections:[{heading:'Dokumentacija v18',startLine:1,endLine:text.split('\n').length}]});
+          blocks.push(`<source id="${id}" path="documents/${name}" kind="private_documentation_v18_not_new_product_rule">\n${text}\n</source>`);documentationStatus='V18_AVAILABLE';
+        }catch{documentationStatus='V18_PRIVATE_STORAGE_PENDING';}
+      }
+      let learningStatus='NOT_REQUESTED';
+      if(service){
+        try{
+          const learning=await learningReader(),record=learning.data.records.find(r=>r.serviceId===service.service_id);
+          if(record){
+            const selected={...record,sources:record.sources.map(({text,...source})=>source)},text=JSON.stringify(selected),id=`S${sources.length+1}`;
+            if(size+text.length>190_000)throw error('RETRIEVAL_LIMIT',422);
+            sources.push({id,path:'documents/ts-b2b-learning-r2.json#'+record.id,sha256:learning.sha256,kind:'dated_learning_layer_not_live_catalog',locator:'https://www.mdlxdcc.org/.netlify/functions/omnicpq-documents?file=ts-b2b-learning-r2.json#'+record.id,sections:[{heading:'Pilotna učna plast · '+record.title,startLine:1,endLine:1}]});
+            blocks.push(`<source id="${id}" path="documents/ts-b2b-learning-r2.json#${record.id}" kind="dated_learning_layer_not_live_catalog">\n${text}\n</source>`);learningStatus=learning.version;
+          }else learningStatus='NO_PILOT_FOR_SERVICE';
+        }catch{learningStatus='PRIVATE_LEARNING_PENDING';}
       }
       return { service: service ? { id: service.service_id, title: service.title, coverage: service.coverage } : null,
         serviceResolution: { ambiguous: !service && selection.ambiguous, conflict: Boolean(selection.conflict), unknownNewService, candidates: !service ? selection.candidates : [] },
-        intent, documentationStatus,sources, text: blocks.join('\n\n'), skill: this.skill };
+        intent, documentationStatus,learningStatus,sources, text: blocks.join('\n\n'), skill: this.skill };
     },
   };
 }
