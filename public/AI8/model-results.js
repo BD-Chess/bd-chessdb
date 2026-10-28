@@ -60,7 +60,8 @@
     item.append(body);
     return item;
   }
-  function validate(catalog, evidence) {
+  function validate(catalog, evidence, sections) {
+    if (sections !== undefined) globalThis.AI8ModelResultsSections.validate(sections);
     if (catalog?.schema !== "ai8.model-catalog-public.v1" || evidence?.schema !== "ai8.model-results-evidence.v1" ||
         evidence.catalog_schema !== catalog.schema) throw Error("schema");
     if (evidence.home?.scores?.length !== 8 || evidence.cloud?.advisory_observations?.length !== 4 ||
@@ -676,13 +677,83 @@
   document.addEventListener("ai8:display", () => { render(); renderPlus(); renderSlaifPlus(); });
   const getJson = (path) => fetch(path, { cache: "no-cache", credentials: "omit" })
     .then((response) => { if (!response.ok) throw Error(`HTTP ${response.status}`); return response.json(); });
-  Promise.all([getJson("../AI8/ai8-model-catalog.json"), getJson("../AI8/model-results-evidence.json")])
-    .then(([catalog, evidence]) => { data = validate(catalog, evidence); baseData = [catalog, evidence]; render(); watchPlus(); loadSlaif(catalog); })
+  globalThis.AI8ModelResults = {validate, validateHome, validateInbox, validateSlaif};
+  Promise.all([getJson("../AI8/ai8-model-catalog.json"), getJson("../AI8/model-results-evidence.json"), getJson("../AI8/model-results-sections.json")])
+    .then(([catalog, evidence, sections]) => { data = validate(catalog, evidence, sections); globalThis.AI8ModelResultsSections.mount(sections); baseData = [catalog, evidence]; render(); watchPlus(); loadSlaif(catalog); })
     .catch(() => {
       const message = say("Podrobni podatki trenutno niso dosegljivi; povzetek zgoraj ostaja zgodovinski.",
         "Detailed data is currently unavailable; the summary above remains historical.");
       [homeChart, slaifChart].forEach((node) => { clear(node); node.append(el("p", "small", message)); });
+      document.documentElement.dataset.modelResultsSections = "error";
+      const sectionsError = document.getElementById("sections-error"); if (sectionsError) { sectionsError.hidden = false; sectionsError.textContent = message; }
       plusFailed();
       slaifError = true; slaifLang = ""; renderSlaifPlus();
     });
 })();
+
+/* Sections extend the existing page and its validator; all rendering uses textContent. */
+"use strict";
+((global) => {
+  const statuses = ['PASS','FAIL','PARTIAL','TIMEOUT','INCOMPLETE','HELD','UNSCORED','NO_DATA','NOT_TESTED'];
+  const channels = ['local','subscription','api'];
+  const fields = ['id','model','campaign','test','status','seconds','tok_s','context','channel','date','source'].sort().join(',');
+  const privatePattern = /[a-z]:[\\/]|\\\\|(?:\d{1,3}\.){3}\d{1,3}|drive\.google|docs\.google|api[_-]?key|bearer\s|sk-[a-z0-9]{12}/i;
+  const text = x => typeof x === 'string' && x.length > 0 && x.length <= 800;
+  const localized = x => x && text(x.sl) && text(x.en);
+  function validate(data) {
+    if(data?.schema !== 'ai8.model-results-sections.v1' || !/^\d{4}-\d{2}-\d{2}$/.test(data.as_of) || !Array.isArray(data.models) || !Array.isArray(data.campaigns) || !Array.isArray(data.results) || !Array.isArray(data.sources)) throw Error('sections schema');
+    const ids = new Set(data.models.map(m=>m.id)), camps = new Set(data.campaigns.map(c=>c.id)), seen = new Set();
+    if(ids.size !== data.models.length || camps.size !== data.campaigns.length || !ids.size || !camps.size) throw Error('sections catalog');
+    if(data.models.some(m=>!text(m.id)||!text(m.name)) || data.campaigns.some(c=>!text(c.id)||!localized(c.title)||!localized(c.description)||!text(c.dates))) throw Error('sections labels');
+    for(const entry of [...data.campaigns,...data.sources]) if(entry.href !== null && !/^\/(?:AI8|ai8)\/[a-zA-Z0-9._/#-]+$/.test(entry.href)) throw Error('sections link');
+    for(const r of data.results){
+      if(Object.keys(r).sort().join(',')!==fields || seen.has(r.id) || !ids.has(r.model) || !camps.has(r.campaign)) throw Error('sections identity');
+      seen.add(r.id);
+      if(!statuses.includes(r.status) || !channels.includes(r.channel) || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) throw Error('sections values');
+      for(const k of ['seconds','tok_s','context']) if(r[k]!==null && (typeof r[k]!=='number' || !Number.isFinite(r[k]) || r[k]<0)) throw Error('sections metric');
+      for(const k of ['id','model','test','source']) if(!text(r[k])) throw Error('sections text');
+    }
+    if(privatePattern.test(JSON.stringify(data))) throw Error('sections private material');
+    return data;
+  }
+  const api = global.AI8ModelResultsSections = {validate};
+  if(typeof module!=='undefined') module.exports = api;
+  if(typeof document==='undefined') return;
+  const $=id=>document.getElementById('sections-'+id), el=(tag,value,cls)=>{const n=document.createElement(tag);if(value!==undefined)n.textContent=String(value);if(cls)n.className=cls;return n;};
+  let data, page=0; const size=24;
+  const en=()=>document.documentElement.lang==='en', say=(sl,eng)=>en()?eng:sl, local=x=>x[en()?'en':'sl'];
+  const executed = r=>!['NO_DATA','NOT_TESTED'].includes(r.status);
+  const stateName=s=>({UNSCORED:say('DOKONČANO · BREZ OCENE','COMPLETE · UNSCORED'),NO_DATA:say('NI PODATKA','NO DATA'),NOT_TESTED:say('NI IZVEDENO','NOT RUN'),INCOMPLETE:say('NEPOPOLNO','INCOMPLETE'),HELD:say('ZADRŽANO','HELD'),PARTIAL:say('DELNO','PARTIAL')})[s]||s;
+  const channelName=c=>({local:say('Lokalno','Local'),subscription:say('Naročnina','Subscription'),api:'API'})[c];
+  function options(){for(const [id,entries] of [['campaign',data.campaigns.map(c=>[c.id,local(c.title)])],['channel',channels.map(c=>[c,channelName(c)])]]){const old=$(id).value;$(id).replaceChildren();for(const [value,label] of [['',say('Vse','All')],...entries]){const o=el('option',label);o.value=value;$(id).append(o);}$(id).value=old;}}
+  function counts(rows){return statuses.filter(s=>rows.some(r=>r.status===s)).map(s=>`${rows.filter(r=>r.status===s).length} ${stateName(s)}`).join(' · ');}
+  function focusCampaign(id){$('campaign').value=id;page=0;render();document.getElementById('comparison').scrollIntoView();}
+  function renderMatrix(rows){
+    const table=el('table'),head=el('thead'),tr=el('tr');tr.append(el('th',say('Model / kampanja','Model / campaign')));
+    const camps=data.campaigns.filter(c=>!$('campaign').value||c.id===$('campaign').value);
+    for(const c of camps){const th=el('th',local(c.title));th.scope='col';tr.append(th);}head.append(tr);table.append(head);
+    const body=el('tbody');for(const m of data.models){const mr=rows.filter(r=>r.model===m.id);if(!mr.length)continue;const line=el('tr'),th=el('th',m.name);th.scope='row';line.append(th);
+      for(const c of camps){const cr=mr.filter(r=>r.campaign===c.id),td=el('td',cr.length?counts(cr):'—');line.append(td);}body.append(line);}
+    table.append(body);$('matrix').replaceChildren(table);
+  }
+  function render(){if(!data)return;options();
+    const names=new Map(data.models.map(m=>[m.id,m.name])), camps=new Map(data.campaigns.map(c=>[c.id,c]));
+    const query=$('search').value.toLowerCase();
+    const rows=data.results.filter(r=>(!$('campaign').value||r.campaign===$('campaign').value)&&(!$('channel').value||r.channel===$('channel').value)&&(!query||`${names.get(r.model)} ${r.test} ${r.source}`.toLowerCase().includes(query)));
+    const pages=Math.max(1,Math.ceil(rows.length/size));page=Math.min(page,pages-1);
+    $('stats').replaceChildren();for(const [n,label] of [[data.models.length,say('modelov v primerjavi','models compared')],[data.campaigns.length,say('kampanj','campaigns')],[data.results.filter(executed).length,say('zapisov izidov','outcome records')]]){const box=el('div');box.append(el('strong',n),el('span',label));$('stats').append(box);}
+    renderMatrix(rows);$('count').textContent=say(`${rows.length} zapisov · prikaz ${rows.length?page*size+1:0}–${Math.min(rows.length,(page+1)*size)}`,`${rows.length} records · showing ${rows.length?page*size+1:0}–${Math.min(rows.length,(page+1)*size)}`);
+    const table=el('table'),head=el('thead'),hr=el('tr');const labels=[say('Model','Model'),say('Test / datum','Test / date'),say('Izid','Outcome'),say('Čas (s)','Time (s)'),'Gen tok/s',say('Kontekst','Context'),say('Kanal','Channel')];
+    for(const label of labels){const th=el('th',label);th.scope='col';hr.append(th);}head.append(hr);table.append(head);const body=el('tbody');
+    for(const r of rows.slice(page*size,(page+1)*size)){const tr=el('tr'),test=el('span',r.test);test.append(el('small',`${local(camps.get(r.campaign).title)} · ${r.date}`));test.title=r.source;
+      const values=[el('strong',names.get(r.model)),test,el('span',stateName(r.status),'sections-status sections-'+r.status),r.seconds===null?'—':r.seconds.toLocaleString(en()?'en-GB':'sl-SI',{maximumFractionDigits:2}),r.tok_s===null?'—':r.tok_s.toFixed(2),r.context===null?'—':String(r.context),channelName(r.channel)];
+      values.forEach((v,i)=>{const td=el('td');td.dataset.label=labels[i];td.append(typeof v==='string'?document.createTextNode(v):v);tr.append(td);});body.append(tr);}
+    table.append(body);$('table').replaceChildren(table);if(!rows.length)$('table').append(el('p',say('Ni zadetkov za izbrane filtre.','No results for these filters.')));
+    $('page').textContent=`${page+1} / ${pages}`;$('prev').disabled=page===0;$('next').disabled=page===pages-1;
+    for(const c of data.campaigns){if(['home','slaif'].includes(c.id))continue;const target=$(c.id),rows=data.results.filter(r=>r.campaign===c.id&&executed(r));
+      const description=el('p',counts(rows),'small'),button=el('button',say('Pokaži rezultate','Show results'),'sections-button');button.addEventListener('click',()=>focusCampaign(c.id));target.replaceChildren(description,button);}
+  }
+  for(const id of ['campaign','channel','search'])$(id).addEventListener(id==='search'?'input':'change',()=>{page=0;render();});
+  $('prev').addEventListener('click',()=>{page--;render();});$('next').addEventListener('click',()=>{page++;render();});document.addEventListener('ai8:display',render);
+  api.mount=d=>{data=validate(d);render();document.documentElement.dataset.modelResultsSections='ready';};
+})(typeof globalThis==='undefined'?window:globalThis);

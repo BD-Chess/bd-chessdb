@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html data-lang="en" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LIFT-BELT — Quiet Linear Propulsor</title>
+<meta name="description" content="Bilingual (EN/SL) concept page for LIFT-BELT, a quiet linear propulsor: a caterpillar belt of lift blades for water, air and ground, with honest first-order numbers, a ranked family, prior art and three cheap bench tests.">
+<link rel="canonical" href="https://www.mdlxdcc.org/crp/Lift_Belt_Propulsor.html">
+<meta property="og:title" content="LIFT-BELT — Quiet Linear Propulsor">
+<meta property="og:description" content="Bilingual (EN/SL) concept page for LIFT-BELT, a quiet linear propulsor: a caterpillar belt of lift blades for water, air and ground, with honest first-order numbers, a ranked family, prior art and three cheap bench tests.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.mdlxdcc.org/crp/Lift_Belt_Propulsor.html">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{
+  --bg:#05070d; --bg2:#08101b; --panel:rgba(15,23,41,.86); --panel2:rgba(19,31,52,.92);
+  --line:rgba(103,232,249,.16); --line2:rgba(245,158,11,.26); --text:#e7edf8; --muted:#9fb0c8; --dim:#657593;
+  --cyan:#67e8f9; --blue:#58a6ff; --gold:#f5c451; --green:#34d399; --rose:#ff6b8a; --violet:#a78bfa; --orange:#fb923c;
+  --shadow:0 22px 70px rgba(0,0,0,.34); --radius:18px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;color:var(--text);font-family:var(--sans);font-size:17px;line-height:1.68;background:radial-gradient(circle at 12% 8%,rgba(88,166,255,.18),transparent 32%),radial-gradient(circle at 84% 20%,rgba(245,196,81,.12),transparent 30%),radial-gradient(circle at 50% 100%,rgba(52,211,153,.10),transparent 38%),linear-gradient(180deg,#03050b 0%,#06101a 52%,#05070d 100%);overflow-x:hidden}body:before,body:after{content:"";position:fixed;border-radius:50%;filter:blur(105px);opacity:.25;pointer-events:none;z-index:-1}body:before{width:48vw;height:48vw;left:-15vw;top:-14vh;background:radial-gradient(circle,rgba(103,232,249,.34),transparent 68%);animation:floatA 24s ease-in-out infinite}body:after{width:42vw;height:42vw;right:-16vw;bottom:-18vh;background:radial-gradient(circle,rgba(245,158,11,.22),transparent 70%);animation:floatB 31s ease-in-out infinite}@keyframes floatA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(6vw,5vh,0)}}@keyframes floatB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-5vw,-7vh,0)}}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.progress{position:fixed;left:0;top:0;height:2px;width:0;background:linear-gradient(90deg,var(--cyan),var(--gold));z-index:1000}.topbar{position:sticky;top:0;z-index:50;background:rgba(4,7,13,.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(103,232,249,.12)}.topbar-inner{max-width:1220px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.brand{font-family:var(--mono);letter-spacing:.22em;text-transform:uppercase;font-size:.74rem;color:var(--cyan);font-weight:800}.nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.nav a,.langbtn,.smallbtn{font-family:var(--mono);font-size:.72rem;border:1px solid rgba(103,232,249,.18);border-radius:999px;padding:7px 10px;color:#c7d7ee;background:rgba(255,255,255,.025);cursor:pointer}.langbtn.active,.smallbtn:hover,.nav a:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(103,232,249,.08);text-decoration:none}.wrap{max-width:1220px;margin:0 auto;padding:0 22px 90px}.hero{padding:72px 0 32px;text-align:center}.eyebrow{font-family:var(--mono);font-size:.78rem;color:var(--gold);letter-spacing:.24em;text-transform:uppercase;margin-bottom:14px}.hero h1{font-size:clamp(42px,7vw,84px);line-height:1.02;letter-spacing:-.06em;margin:0 0 16px}.hero h1 em{font-style:normal;color:var(--cyan)}.subtitle{font-size:clamp(18px,2.2vw,24px);max-width:920px;margin:0 auto;color:#c2d0e6}.meta{margin-top:18px;color:var(--dim);font-family:var(--mono);font-size:.78rem}.pillrow{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:24px auto 0}.pill{font-family:var(--mono);font-size:.72rem;border:1px solid rgba(103,232,249,.18);border-radius:999px;padding:7px 11px;color:#c7d7ee;background:rgba(255,255,255,.025)}.pill.green{color:var(--green);border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.08)}.pill.gold{color:var(--gold);border-color:rgba(245,196,81,.38);background:rgba(245,196,81,.08)}.pill.rose{color:var(--rose);border-color:rgba(255,107,138,.32);background:rgba(255,107,138,.07)}.pill.violet{color:var(--violet);border-color:rgba(167,139,250,.32);background:rgba(167,139,250,.07)}.layout{display:grid;grid-template-columns:minmax(0,255px) minmax(0,1fr);gap:26px;align-items:start}.sidebar{position:sticky;top:76px}.toc,.card,.callout,.table-card,.diagram,.footerbox{background:linear-gradient(180deg,rgba(15,23,41,.92),rgba(8,15,28,.88));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.toc{padding:18px}.toc h3,.mini-title{font-family:var(--mono);font-size:.75rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin:0 0 10px}.toc a{display:block;color:var(--muted);font-size:.94rem;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.045)}.toc a:hover{color:var(--cyan)}.sidebar-note{margin-top:14px;padding:14px;border:1px dashed rgba(245,196,81,.24);border-radius:14px;color:var(--muted);font-size:.9rem}.main{min-width:0}.section{margin:0 0 52px;scroll-margin-top:84px}.section h2{font-size:clamp(30px,4vw,48px);line-height:1.12;margin:0 0 16px;letter-spacing:-.035em}.section h3{font-size:1.45rem;color:var(--gold);margin:24px 0 10px}.lead{font-size:1.18rem;color:#dfe8f6}.grid{display:grid;gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.card{padding:18px}.card h3{margin:0 0 8px;font-size:1.08rem}.card p,.card li{color:var(--muted)}.card ul,.clean{margin:10px 0 0 20px;padding:0}.clean li{margin:7px 0;color:var(--muted)}.callout{padding:20px 22px;margin:18px 0}.callout.good{border-color:rgba(52,211,153,.30);background:linear-gradient(180deg,rgba(9,30,24,.86),rgba(10,20,30,.85))}.callout.warn{border-color:rgba(255,107,138,.28);background:linear-gradient(180deg,rgba(34,15,20,.86),rgba(10,20,30,.85))}.callout.bridge{border-color:rgba(88,166,255,.28);background:linear-gradient(180deg,rgba(12,24,45,.88),rgba(8,16,30,.88))}.callout strong{color:var(--gold)}.status-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:24px 0 8px}.status-item{padding:12px 13px;background:rgba(255,255,255,.035);border:1px solid rgba(103,232,249,.14);border-radius:14px}.status-item b{display:block;font-family:var(--mono);font-size:.66rem;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}.status-item span{color:#d8e4f4;font-size:.93rem}.whybox{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.whybox .card{border-color:rgba(245,196,81,.22)}.whybox h3{color:var(--gold)}.table-wrap{overflow-x:auto;border:1px solid rgba(103,232,249,.14);border-radius:16px;background:rgba(6,13,25,.72);margin:16px 0}.table-wrap table{border-collapse:collapse;width:100%;min-width:720px}.table-wrap th,.table-wrap td{padding:13px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}.table-wrap th{font-family:var(--mono);font-size:.72rem;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;background:rgba(245,196,81,.055)}.table-wrap tr:last-child td{border-bottom:none}.formula{font-family:var(--mono);padding:14px 16px;border-radius:14px;background:#07101f;border:1px solid rgba(103,232,249,.18);color:#dffbff;overflow:auto;margin:13px 0}.diagram{padding:20px;margin:20px 0}.diagram-title{font-family:var(--mono);color:var(--gold);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}.code{font-family:var(--mono);font-size:.92em;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:2px 6px;color:#e8faff}.footerbox{padding:20px;color:var(--muted);margin-top:34px}.footer-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.footer-links a{font-family:var(--mono);font-size:.76rem;border:1px solid rgba(103,232,249,.16);border-radius:999px;padding:7px 10px;color:#c7d7ee}.sl{display:none}html[data-lang="sl"] .en{display:none}html[data-lang="sl"] .sl{display:revert}html[data-lang="sl"] tr.sl{display:table-row}html[data-lang="sl"] .grid.sl{display:grid}html[data-lang="en"] .en{display:revert}html[data-lang="en"] .grid.en{display:grid}html[data-lang="en"] tr.en{display:table-row}
+html[data-lang="en"] .whybox.en,html[data-lang="sl"] .whybox.sl,html[data-lang="en"] .status-strip.en,html[data-lang="sl"] .status-strip.sl,html[data-lang="en"] .legend.en,html[data-lang="sl"] .legend.sl{display:grid}html[data-lang="en"] .pillrow.en,html[data-lang="sl"] .pillrow.sl{display:flex}
+.main{overflow-wrap:break-word}.legend{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:16px 0}.rk{font-family:var(--mono);font-size:.68rem;color:var(--green);border:1px solid rgba(52,211,153,.35);border-radius:999px;padding:2px 8px;margin-left:6px;white-space:nowrap;vertical-align:middle;letter-spacing:.04em}.kv{margin:10px 0 0}.kv b{display:block;font-family:var(--mono);font-size:.66rem;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px}.stack>.card+.card{margin-top:14px}.num{font-family:var(--mono);white-space:nowrap}.table-wrap tr.hl td{background:rgba(245,196,81,.05)}
+.diagram svg{display:block;width:100%;height:auto}.diagram svg.wide{max-width:600px;margin:0 auto}.sv-belt{fill:none;stroke:var(--cyan);stroke-width:3}.sv-blade{stroke:var(--gold);stroke-width:3;stroke-linecap:round}.sv-faint{stroke:var(--gold);stroke-width:2;stroke-linecap:round;opacity:.42}.sv-stall{stroke:var(--rose);stroke-width:3;stroke-linecap:round}.sv-water{fill:rgba(88,166,255,.13)}.sv-wl{stroke:var(--blue);stroke-width:1.5;stroke-dasharray:6 4}.sv-dim{stroke:var(--dim);stroke-width:1;fill:none}.sv-arrow{stroke:var(--green);stroke-width:2;fill:none}.sv-head{fill:var(--green)}.sv-dot{fill:var(--text)}.sv-ring{fill:none;stroke:var(--text);stroke-width:1.5}.sv-txt{fill:var(--muted);font-family:var(--mono);font-size:12px}.sv-hi{fill:var(--text)}.sv-gold{fill:var(--gold)}.sv-rose{fill:var(--rose)}.sv-small{font-size:11px}
+.origin-card{border:1px solid rgba(245,158,11,.2);border-radius:24px;background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(15,23,41,.75));padding:22px 24px;box-shadow:var(--shadow)}.origin-meta{font-family:var(--mono);font-size:.74rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}.origin-card h3{color:var(--gold);font-size:1.3rem;margin:22px 0 8px}.origin-card p,.origin-card li{color:rgba(231,237,248,.84)}.origin-note{border:1px solid rgba(103,232,249,.16);background:rgba(103,232,249,.06);border-radius:16px;padding:14px 16px;color:rgba(231,237,248,.86);margin:16px 0}details.origin-details{margin-top:16px}.origin-details summary{cursor:pointer;display:inline-flex;border:1px solid rgba(245,158,11,.35);border-radius:999px;padding:9px 14px;font-family:var(--mono);color:var(--gold);font-size:.78rem}.origin-full{margin-top:16px;border-top:1px solid rgba(245,158,11,.18);padding-top:16px}.quote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--gold);color:#dfe8f6;background:rgba(245,196,81,.05);border-radius:0 12px 12px 0}.credit .card h3{color:var(--cyan)}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:auto}.status-strip,.whybox,.grid.two,.grid.three{grid-template-columns:1fr}.hero{text-align:left}.pillrow{justify-content:flex-start}.toc{display:none}.status-strip{margin-top:18px}.legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){body{font-size:16px}.wrap{padding:0 16px 70px}.topbar-inner{padding:10px 14px}.nav a{display:none}.hero{padding-top:44px}.hero h1{font-size:42px}.status-item span{font-size:.88rem}.legend{grid-template-columns:1fr}.origin-card{padding:16px}.card{padding:16px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "LIFT-BELT — Quiet Linear Propulsor", "alternativeHeadline": "LIFT-BELT — tihi linearni pogon", "description": "A dark bilingual concept page for LIFT-BELT, a quiet linear propulsor: a caterpillar belt of lift blades for water, air and ground, with honest first-order numbers, a ranked family, prior art and three cheap bench tests.", "author": {"@type": "Person", "name": "Bojan Dobrečevič"}, "publisher": {"@type": "Organization", "name": "BD × AI Lab"}, "inLanguage": ["en", "sl"], "url": "https://www.mdlxdcc.org/crp/Lift_Belt_Propulsor.html", "datePublished": "2026-10-27", "dateModified": "2026-10-27"}</script>
+</head>
+<body>
+<div class="progress" aria-hidden="true"></div>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">MDL×DCC</a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="../BD/index.html">BD</a>
+      <a href="./index.html">CRP</a>
+      <a href="./SORA.html">SORA</a>
+      <button class="langbtn active" data-set-lang="en" type="button">EN</button>
+      <button class="langbtn" data-set-lang="sl" type="button">SL</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow en">Physical Engineering Concept · Propulsion for water, air and ground</div>
+    <div class="eyebrow sl">Fizični inženirski koncept · Pogon za vodo, zrak in tla</div>
+    <h1 class="en">LIFT-BELT — <em>Quiet</em> Linear Propulsor</h1>
+    <h1 class="sl">LIFT-BELT — <em>tihi</em> linearni pogon</h1>
+    <p class="subtitle en">A caterpillar belt of lift blades that moves a large area of water or air slowly, instead of spinning a small propeller fast. Honest first-order numbers, a ranked family of variants, and three cheap bench tests that could prove it wrong.</p>
+    <p class="subtitle sl">Gosenični trak z vzgonskimi lopaticami, ki počasi premika veliko površino vode ali zraka, namesto da bi hitro vrtel majhen propeler. Iskrene številke prvega reda, rangirana družina različic in trije poceni klopni preizkusi, ki ga lahko ovržejo.</p>
+    <div class="meta en">BD × AI Lab · BD with Claude, plus a multi-LLM review loop · 26–27 Oct 2026</div>
+    <div class="meta sl">BD × AI Lab · BD s Claudom ter večmodelna LLM preverjalna zanka · 26.–27. 10. 2026</div>
+    <div class="pillrow en"><span class="pill gold">Bench Plan</span><span class="pill green">Water first</span><span class="pill violet">Open publication</span><span class="pill rose">No measurements yet</span></div>
+    <div class="pillrow sl"><span class="pill gold">Načrt za klopni preizkus</span><span class="pill green">Najprej voda</span><span class="pill violet">Odprta objava</span><span class="pill rose">Še brez meritev</span></div>
+  </section>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="toc">
+        <h3 class="en">Contents</h3><h3 class="sl">Vsebina</h3>
+        <a href="#summary"><span class="en">Short version</span><span class="sl">Kratek povzetek</span></a>
+        <a href="#not-claiming"><span class="en">Not claiming</span><span class="sl">Česa ne trdi</span></a>
+        <a href="#concept"><span class="en">The idea in pictures</span><span class="sl">Zamisel v slikah</span></a>
+        <a href="#family"><span class="en">The family</span><span class="sl">Družina</span></a>
+        <a href="#numbers"><span class="en">Honest numbers</span><span class="sl">Poštene številke</span></a>
+        <a href="#ranking"><span class="en">Ranking</span><span class="sl">Rangiranje</span></a>
+        <a href="#prior-art"><span class="en">Prior art</span><span class="sl">Predhodniki</span></a>
+        <a href="#tests"><span class="en">Bench tests T1–T3</span><span class="sl">Klopni preizkusi T1–T3</span></a>
+        <a href="#falsify"><span class="en">What would falsify it</span><span class="sl">Kaj bi ga ovrglo</span></a>
+        <a href="#questions"><span class="en">Open questions</span><span class="sl">Odprta vprašanja</span></a>
+        <a href="#origin"><span class="en">How it was born</span><span class="sl">Kako je nastal</span></a>
+        <a href="#sources"><span class="en">Source trail</span><span class="sl">Sled virov</span></a>
+      </div>
+      <div class="sidebar-note en">This is a physical concept page. Every number carries its assumption and an evidence label. Read it as a bench plan, not as a claim that the belt beats a propeller.</div>
+      <div class="sidebar-note sl">To je stran fizičnega koncepta. Vsaka številka ima svojo predpostavko in oznako dokaza. Beri jo kot načrt za klopne preizkuse, ne kot trditev, da trak premaga propeler.</div>
+    </aside>
+
+    <article class="main">
+
+      <!-- 1 · SHORT VERSION -->
+      <section id="summary" class="section">
+        <h2 class="en">Short version</h2><h2 class="sl">Kratek povzetek</h2>
+        <p class="lead en">LIFT-BELT is BD's caterpillar idea taken seriously: a loop of lift blades that pushes a wide, slow stream instead of a narrow, fast one — the law of <em>minimal Δp on maximal area</em>. A multi-model AI review loop checked it hard. This is what survived.</p>
+        <p class="lead sl">LIFT-BELT je BD-jeva zamisel o gosenici, vzeta resno: zanka vzgonskih lopatic, ki potiska širok in počasen tok namesto ozkega in hitrega — zakon <em>najmanjšega podtlaka na največji površini</em>. Večmodelna AI preverjalna zanka jo je ostro preizkusila. To je ostalo.</p>
+        <ul class="clean en">
+          <li><strong>Water is the strongest first domain.</strong> A transverse water belt (V1) is one slow, safe drive for shallow water. Its computed ideal edge is only ~2 % over a row of small propellers in the same draft envelope and 9–20 % over a tunnel propeller (I-hand), so its value is simplicity, shallow draft and safety, not efficiency.</li>
+          <li><strong>In air the belt does not beat a good slow propeller.</strong> Within the Wright Flyer envelope it reaches 0.52–0.61 against 0.65 for the Wright propellers in the same model (I-run); with a modern profile ~0.70 against 0.74. Its possible value is quiet operation — and that still has to be measured.</li>
+          <li><strong>The ground/water cushion has the most solid physics, but it is not new.</strong> Cushion + tracks (K2) lifts 600 kg for 0.3–5 kW against ~45–50 kW for free hover (I-hand). On hard ground a wheel is still better.</li>
+          <li><strong>What may be new</strong> (unknown until a prior-art search): passive magnet blades, each carried by two linear-motor movers for programmable pitch; and a transverse water belt with lift blades and its return run in air.</li>
+          <li><strong>No efficiency win is claimed anywhere.</strong> The ranking keeps every variant (“rank, don't eliminate”) and orders them by what is worth testing first.</li>
+          <li><strong>The next step is a bench, not a claim:</strong> water A/B bench T1 first (estimate 166–319 € without swing arm and power supply, ~100 € with existing parts; H), then a tabletop air belt for noise (T2), then a coil module (T3).</li>
+        </ul>
+        <ul class="clean sl">
+          <li><strong>Najmočnejše prvo področje je voda.</strong> Prečni vodni trak (V1) je en sam počasen in varen pogon za plitvo vodo. Izračunani idealni rob je le ~2 % proti vrsti majhnih propelerjev iste ugrezne ovojnice in 9–20 % proti tunelskemu propelerju (I-ročno), zato je njegova vrednost preprostost, plitev ugrez in varnost, ne izkoristek.</li>
+          <li><strong>V zraku trak dobrega počasnega propelerja ne prehiti.</strong> V ovojnici Wrightovega Flyerja doseže 0,52–0,61 proti 0,65 za Wrightova propelerja v istem modelu (I-zagon); s sodobnim profilom ~0,70 proti 0,74. Njegova možna vrednost je tiho delovanje — to pa je treba še izmeriti.</li>
+          <li><strong>Najtrdnejšo fiziko ima blazina ob tleh ali vodi, vendar ni nova.</strong> Blazina + gosenice (K2) dvigne 600 kg z 0,3–5 kW, prosto lebdenje pa potrebuje ~45–50 kW (I-ročno). Na trdih tleh je kolo še vedno boljše.</li>
+          <li><strong>Morda novo</strong> (neznano do iskanja predhodnikov): pasivne magnetne lopatice, ki jih nosita po dva nosilca linearnega motorja za programski naklon; in prečni vodni trak z vzgonskimi lopaticami in povratnim tekom v zraku.</li>
+          <li><strong>Prednosti v izkoristku ne trdimo nikjer.</strong> Rangiranje ohrani vse različice (»rangiraj, ne izloči«) in jih razvrsti po tem, kaj je vredno preizkusiti najprej.</li>
+          <li><strong>Naslednji korak je klop, ne trditev:</strong> najprej vodna A/B klop T1 (ocena 166–319 € brez vrtljive roke in napajalnika, ~100 € z obstoječimi deli; H), nato mizni zračni trak za hrup (T2), nato tuljavni modul (T3).</li>
+        </ul>
+        <div class="status-strip en">
+          <div class="status-item"><b>Status</b><span>Bench plan</span></div>
+          <div class="status-item"><b>Maturity</b><span>Concept family · first-order models</span></div>
+          <div class="status-item"><b>Next gate</b><span>Water A/B bench T1</span></div>
+          <div class="status-item"><b>Failure mode</b><span>Mechanical losses eat the small ideal edge; no quiet win in air</span></div>
+        </div>
+        <div class="status-strip sl">
+          <div class="status-item"><b>Status</b><span>Načrt za klopni preizkus</span></div>
+          <div class="status-item"><b>Zrelost</b><span>Družina konceptov · modeli prvega reda</span></div>
+          <div class="status-item"><b>Naslednja vrata</b><span>Vodna A/B klop T1</span></div>
+          <div class="status-item"><b>Način padca</b><span>Mehanske izgube pojedo majhen idealni rob; v zraku ni tihe prednosti</span></div>
+        </div>
+        <div class="whybox en">
+          <div class="card"><h3>Original move</h3><p>Move a large area slowly: a belt of lift blades instead of a small, fast disc — one drive idea for water, air and ground.</p></div>
+          <div class="card"><h3>First test</h3><p>A water A/B bench: belt vs one propeller vs a row of propellers, same motor, same power supply, equal measured thrust.</p></div>
+          <div class="card"><h3>Failure mode</h3><p>If the belt needs ≥ 1.25× the power of a propeller row at equal thrust (lower 95 % bound), the water niche is gone.</p></div>
+        </div>
+        <div class="whybox sl">
+          <div class="card"><h3>Izvirni premik</h3><p>Počasi premikati veliko površino: trak vzgonskih lopatic namesto majhnega hitrega diska — ena zamisel pogona za vodo, zrak in tla.</p></div>
+          <div class="card"><h3>Prvi preizkus</h3><p>Vodna A/B klop: trak proti enemu propelerju in proti vrsti propelerjev, isti motor, isto napajanje, enak izmerjen potisk.</p></div>
+          <div class="card"><h3>Način padca</h3><p>Če trak pri enakem potisku potrebuje ≥ 1,25× moči vrste propelerjev (spodnja 95 % meja), vodne niše ni več.</p></div>
+        </div>
+      </section>
+
+      <!-- 2 · NOT CLAIMING -->
+      <section id="not-claiming" class="section">
+        <h2 class="en">What LIFT-BELT is not claiming</h2><h2 class="sl">Česa LIFT-BELT ne trdi</h2>
+        <p class="en">LIFT-BELT does <strong>not</strong> claim:</p>
+        <p class="sl">LIFT-BELT <strong>ne</strong> trdi:</p>
+        <ul class="clean en">
+          <li><strong>free energy</strong> — “the vacuum ahead sucks you forward” is not a free force: only the momentum balance counts, and resonance returns only reactive energy; the work T·V done on the fluid always remains;</li>
+          <li><strong>reactionless thrust</strong> — every newton of thrust comes from pushing air or water backwards;</li>
+          <li><strong>an efficiency win</strong> — in no computed case does the air belt beat a propeller of the same envelope, and no variant has a proven efficiency advantage over its strongest conventional comparator;</li>
+          <li><strong>feasibility without bench tests</strong> — nothing has been measured yet; all numbers are first-order models or hand calculations;</li>
+          <li><strong>a noise advantage</strong> — all dB figures are hypotheses (H); even the sign of the dB(A) difference is unknown (U);</li>
+          <li><strong>new physics</strong> — the actuator disc, the cushion, ground effect (PAR), boundary-layer ingestion (BLI), suction propulsion (Gemmell 2015) and multiphase travelling fields are all known.</li>
+        </ul>
+        <ul class="clean sl">
+          <li><strong>zastonj energije</strong> — »podtlak pred tabo te posesa naprej« ni zastonj sila: velja samo bilanca gibalne količine, resonanca pa vrača le reaktivno energijo; delo T·V na fluidu vedno ostane;</li>
+          <li><strong>potiska brez reakcije</strong> — vsak newton potiska izvira iz potiskanja zraka ali vode nazaj;</li>
+          <li><strong>prednosti v izkoristku</strong> — v nobenem izračunanem primeru zračni trak ne preseže propelerja iste ovojnice in nobena različica nima dokazane prednosti v izkoristku pred najmočnejšim običajnim primerjalnikom;</li>
+          <li><strong>izvedljivosti brez klopnih preizkusov</strong> — izmerjeno ni še nič; vse številke so modeli prvega reda ali ročni računi;</li>
+          <li><strong>prednosti v hrupu</strong> — vse vrednosti v dB so hipoteze (H); celo predznak razlike v dB(A) je neznan (U);</li>
+          <li><strong>nove fizike</strong> — aktuatorski disk, blazina, vzgon ob tleh (PAR), vsrkavanje mejne plasti (BLI), sesalni pogon (Gemmell 2015) in večfazna potujoča polja so znani.</li>
+        </ul>
+        <p class="en">LIFT-BELT <strong>does</strong> claim:</p>
+        <p class="sl">LIFT-BELT <strong>trdi</strong>:</p>
+        <ul class="clean en">
+          <li>the family is concrete enough to model and to falsify on a bench;</li>
+          <li>water is the domain where a slow, wide drive plausibly has a niche (shallow draft, low blade speed, safety);</li>
+          <li>the cushion physics (K2) is solid;</li>
+          <li>three cheap tests (T1–T3) can decide the main open questions.</li>
+        </ul>
+        <ul class="clean sl">
+          <li>družina je dovolj konkretna, da jo lahko modeliramo in na klopi ovržemo;</li>
+          <li>voda je področje, kjer ima počasen in širok pogon verjetno nišo (plitev ugrez, nizka hitrost lopatic, varnost);</li>
+          <li>fizika blazine (K2) je trdna;</li>
+          <li>trije poceni preizkusi (T1–T3) lahko odločijo glavna odprta vprašanja.</li>
+        </ul>
+        <div class="callout warn en"><strong>Evidence boundary:</strong> hand calculations (I-hand) were made by the review loop's seats and are not independently confirmed. Separate AI contexts are not independent evidence, and external AI advice is data, not a vote.</div>
+        <div class="callout warn sl"><strong>Meja dokazov:</strong> ročne račune (I-ročno) so naredili sedeži preverjalne zanke in neodvisno niso potrjeni. Ločeni AI konteksti niso neodvisen dokaz, zunanji AI nasveti pa so podatek, ne glas.</div>
+      </section>
+
+      <!-- 3 · CONCEPT -->
+      <section id="concept" class="section">
+        <h2 class="en">The idea in pictures</h2><h2 class="sl">Zamisel v slikah</h2>
+        <p class="en">BD's starting point was a caterpillar belt with flaps that stand up on the working run and fold on the return run. Claude rotated it by 90°: the belt now runs spanwise (across the direction of travel) and carries angled lift blades, so both runs push. That leaves two ways to lay out the loop.</p>
+        <p class="sl">BD-jevo izhodišče je bila gosenica z loputkami, ki na delovnem teku stojijo pokonci, na povratnem pa se zložijo. Claude jo je zasukal za 90°: trak zdaj teče prečno (po razponu, pravokotno na smer gibanja) in nosi nagnjene vzgonske lopatice, tako da potiskata oba teka. Za postavitev zanke ostaneta dve možnosti.</p>
+        <div class="grid two">
+          <div class="diagram">
+            <div class="diagram-title en">A · runs stacked — view along the flight direction</div>
+            <div class="diagram-title sl">A · teka drug nad drugim — pogled v smeri leta</div>
+            <svg viewBox="0 0 320 230" role="img" aria-label="Geometry A: two belt runs stacked one above the other, blades sticking outward, turnaround blades marked as stall zone">
+              <path class="sv-belt" d="M80 90 H240 A28 28 0 0 1 240 146 H80 A28 28 0 0 1 80 90 Z"/>
+              <g class="sv-blade">
+                <line x1="95" y1="90" x2="95" y2="58"/><line x1="120" y1="90" x2="120" y2="58"/><line x1="145" y1="90" x2="145" y2="58"/><line x1="170" y1="90" x2="170" y2="58"/><line x1="195" y1="90" x2="195" y2="58"/><line x1="220" y1="90" x2="220" y2="58"/>
+                <line x1="95" y1="146" x2="95" y2="178"/><line x1="120" y1="146" x2="120" y2="178"/><line x1="145" y1="146" x2="145" y2="178"/><line x1="170" y1="146" x2="170" y2="178"/><line x1="195" y1="146" x2="195" y2="178"/><line x1="220" y1="146" x2="220" y2="178"/>
+              </g>
+              <g class="sv-stall">
+                <line x1="259.8" y1="98.2" x2="282.4" y2="75.6"/><line x1="268" y1="118" x2="300" y2="118"/><line x1="259.8" y1="137.8" x2="282.4" y2="160.4"/>
+                <line x1="60.2" y1="98.2" x2="37.6" y2="75.6"/><line x1="52" y1="118" x2="20" y2="118"/><line x1="60.2" y1="137.8" x2="37.6" y2="160.4"/>
+              </g>
+              <line class="sv-dim" x1="240" y1="118" x2="266" y2="118" stroke-dasharray="3 3"/>
+              <text class="sv-txt sv-small" x="246" y="112">R</text>
+              <text class="sv-txt sv-small" x="85" y="76" text-anchor="end">h</text>
+              <circle class="sv-ring" cx="110" cy="118" r="7"/><circle class="sv-dot" cx="110" cy="118" r="2"/>
+              <text class="sv-txt sv-hi sv-small en" x="123" y="122">flight: toward you</text>
+              <text class="sv-txt sv-hi sv-small sl" x="123" y="122">let: proti tebi</text>
+              <text class="sv-txt en" x="160" y="44" text-anchor="middle">upper run →</text>
+              <text class="sv-txt sl" x="160" y="44" text-anchor="middle">zgornji tek →</text>
+              <text class="sv-txt en" x="130" y="200" text-anchor="middle">← lower run</text>
+              <text class="sv-txt sl" x="130" y="200" text-anchor="middle">← spodnji tek</text>
+              <text class="sv-txt sv-rose sv-small en" x="312" y="220" text-anchor="end">turnaround: stall risk</text>
+              <text class="sv-txt sv-rose sv-small sl" x="312" y="220" text-anchor="end">obrat: zlom vzgona</text>
+            </svg>
+            <ul class="clean en">
+              <li>Cantilever blades, constant pitch on the straight runs.</li>
+              <li>Swept area A = 4·L·h for the two-loop original (each run sweeps its own L·h).</li>
+              <li>The turnaround acts like half a propeller disc: blade speed rises to u·(R+h)/R, so the blade stalls — feathering or folding is needed (or R ≳ h).</li>
+              <li>Height needed: 2h + 2R.</li>
+            </ul>
+            <ul class="clean sl">
+              <li>Konzolne lopatice, stalen naklon na ravnih tekih.</li>
+              <li>Pometena površina A = 4·L·h pri izvirniku z dvema zankama (vsak tek pomete svoj L·h).</li>
+              <li>Obrat deluje kot pol propelerskega diska: hitrost lopatice naraste na u·(R+h)/R, zato pride do zloma vzgona — potrebno je peresenje ali zlaganje (ali R ≳ h).</li>
+              <li>Potrebna višina: 2h + 2R.</li>
+            </ul>
+          </div>
+          <div class="diagram">
+            <div class="diagram-title en">B · tandem — view from above</div>
+            <div class="diagram-title sl">B · tandem — pogled od zgoraj</div>
+            <svg viewBox="0 0 320 230" role="img" aria-label="Geometry B: two belt runs one behind the other, seen from above; blade pitch flips between the front and rear run">
+              <defs><marker id="mkB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="sv-head" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+              <path class="sv-belt" d="M80 92 H250 A28 28 0 0 1 250 148 H80 A28 28 0 0 1 80 92 Z"/>
+              <g class="sv-blade">
+                <line x1="93" y1="84" x2="107" y2="100"/><line x1="118" y1="84" x2="132" y2="100"/><line x1="143" y1="84" x2="157" y2="100"/><line x1="168" y1="84" x2="182" y2="100"/><line x1="193" y1="84" x2="207" y2="100"/><line x1="218" y1="84" x2="232" y2="100"/>
+                <line x1="93" y1="156" x2="107" y2="140"/><line x1="118" y1="156" x2="132" y2="140"/><line x1="143" y1="156" x2="157" y2="140"/><line x1="168" y1="156" x2="182" y2="140"/><line x1="193" y1="156" x2="207" y2="140"/><line x1="218" y1="156" x2="232" y2="140"/>
+              </g>
+              <line class="sv-arrow" x1="26" y1="178" x2="26" y2="62" marker-end="url(#mkB)"/>
+              <text class="sv-txt sv-hi sv-small en" x="26" y="198" text-anchor="middle">flight</text>
+              <text class="sv-txt sv-hi sv-small sl" x="26" y="198" text-anchor="middle">let</text>
+              <text class="sv-txt en" x="165" y="70" text-anchor="middle">front run →</text>
+              <text class="sv-txt sl" x="165" y="70" text-anchor="middle">sprednji tek →</text>
+              <text class="sv-txt en" x="165" y="180" text-anchor="middle">← rear run</text>
+              <text class="sv-txt sl" x="165" y="180" text-anchor="middle">← zadnji tek</text>
+              <text class="sv-txt sv-small en" x="165" y="123" text-anchor="middle">one shared streamtube</text>
+              <text class="sv-txt sv-small sl" x="165" y="123" text-anchor="middle">ena skupna tokovna cev</text>
+              <text class="sv-txt sv-gold sv-small en" x="312" y="220" text-anchor="end">pitch flips between runs</text>
+              <text class="sv-txt sv-gold sv-small sl" x="312" y="220" text-anchor="end">naklon se med tekoma preklopi</text>
+            </svg>
+            <ul class="clean en">
+              <li>Each blade is held between two chains; its pitch must switch between the runs.</li>
+              <li>Both runs work in the same streamtube: A_eff = 2·L·h for the two-loop original, half of A.</li>
+              <li>Like a stretched Voith-Schneider propeller. Turnaround tip speed = belt speed u ≈ 27.6 m/s (I-run) — v2's only quiet candidate (H).</li>
+            </ul>
+            <ul class="clean sl">
+              <li>Vsaka lopatica je vpeta med dve verigi; njen naklon se mora med tekoma preklopiti.</li>
+              <li>Oba teka delata v isti tokovni cevi: A_eff = 2·L·h pri izvirniku z dvema zankama, polovica A.</li>
+              <li>Kot raztegnjen Voith-Schneiderjev propeler. Hitrost konice v obratu = hitrost traku u ≈ 27,6 m/s (I-zagon) — edini kandidat za tišino v v2 (H).</li>
+            </ul>
+          </div>
+        </div>
+        <div class="diagram">
+          <div class="diagram-title en">V1 · transverse water belt — view from behind the boat</div>
+          <div class="diagram-title sl">V1 · prečni vodni trak — pogled na čoln od zadaj</div>
+          <svg class="wide" viewBox="0 0 360 210" role="img" aria-label="V1: a belt spanning the boat's width; lower run with lift blades in the water, return run in the air">
+            <rect class="sv-water" x="0" y="112" width="360" height="98"/>
+            <line class="sv-wl" x1="0" y1="112" x2="360" y2="112"/>
+            <path class="sv-dim" d="M46 40 H314 M46 34 V46 M314 34 V46"/>
+            <text class="sv-txt sv-small en" x="180" y="30" text-anchor="middle">span b ≈ 2 m</text>
+            <text class="sv-txt sv-small sl" x="180" y="30" text-anchor="middle">razpon b ≈ 2 m</text>
+            <path class="sv-belt" d="M70 92 H290 A24 24 0 0 1 290 140 H70 A24 24 0 0 1 70 92 Z"/>
+            <g class="sv-faint">
+              <line x1="85" y1="92" x2="85" y2="76"/><line x1="112" y1="92" x2="112" y2="76"/><line x1="139" y1="92" x2="139" y2="76"/><line x1="166" y1="92" x2="166" y2="76"/><line x1="193" y1="92" x2="193" y2="76"/><line x1="220" y1="92" x2="220" y2="76"/><line x1="247" y1="92" x2="247" y2="76"/><line x1="274" y1="92" x2="274" y2="76"/>
+            </g>
+            <g class="sv-blade">
+              <line x1="85" y1="140" x2="85" y2="172"/><line x1="112" y1="140" x2="112" y2="172"/><line x1="139" y1="140" x2="139" y2="172"/><line x1="166" y1="140" x2="166" y2="172"/><line x1="193" y1="140" x2="193" y2="172"/><line x1="220" y1="140" x2="220" y2="172"/><line x1="247" y1="140" x2="247" y2="172"/><line x1="274" y1="140" x2="274" y2="172"/>
+            </g>
+            <text class="sv-txt sv-small" x="77" y="162" text-anchor="end">h</text>
+            <text class="sv-txt sv-small en" x="6" y="104">air</text>
+            <text class="sv-txt sv-small sl" x="6" y="104">zrak</text>
+            <text class="sv-txt sv-small en" x="6" y="128">water</text>
+            <text class="sv-txt sv-small sl" x="6" y="128">voda</text>
+            <text class="sv-txt en" x="180" y="64" text-anchor="middle">return run in air →</text>
+            <text class="sv-txt sl" x="180" y="64" text-anchor="middle">povratni tek v zraku →</text>
+            <text class="sv-txt sv-hi en" x="180" y="194" text-anchor="middle">← working run in water</text>
+            <text class="sv-txt sv-hi sl" x="180" y="194" text-anchor="middle">← delovni tek v vodi</text>
+          </svg>
+          <p class="en">Example case (I-hand): thrust 1 kN at 4 m/s; span b 2 m × blade height h 0.2 m = A 0.4 m²; ideal efficiency η_i 0.932, ideal power 4.29 kW. Lower run in water, return run in air (on a foil-strut boat the whole belt can run submerged). Blade speed ~6–7 m/s (H, safety); cavitation number σ ≈ 3.7, so no cavitation (I). The turnaround in water is not computed (U).</p>
+          <p class="sl">Primer (I-ročno): potisk 1 kN pri 4 m/s; razpon b 2 m × višina lopatice h 0,2 m = A 0,4 m²; idealni izkoristek η_i 0,932, idealna moč 4,29 kW. Spodnji tek v vodi, povratni v zraku (na čolnu s podpornicami je lahko potopljen cel trak). Hitrost lopatic ~6–7 m/s (H, varnost); kavitacijsko število σ ≈ 3,7, zato kavitacije ni (I). Obrat v vodi ni izračunan (U).</p>
+        </div>
+      </section>
+
+      <!-- 4 · FAMILY -->
+      <section id="family" class="section">
+        <h2 class="en">The family</h2><h2 class="sl">Družina</h2>
+        <p class="en">Seven main variants and six briefer ones. For each: the key number with its assumption, the strongest conventional comparator, and the first likely way to fail. The green tag is the test-priority place in column (a) of the ranking.</p>
+        <p class="sl">Sedem glavnih različic in šest krajših. Za vsako: ključna številka s predpostavko, najmočnejši običajni primerjalnik in prvi verjetni način odpovedi. Zelena oznaka je mesto po prednosti preizkusa v stolpcu (a) rangiranja.</p>
+        <div class="grid two en">
+          <div class="card"><h3>V1 · Transverse water belt <span class="rk">(a) #1</span></h3>
+            <p class="kv"><b>Key number</b>1 kN at 4 m/s from A 0.4 m² (b 2 m × h 0.2 m); ideal power 4.29 kW (I-hand). At rest and equal power: 2.33× the thrust of one Ø0.2 m propeller. At 4 m/s and equal ideal power: 1.38× the thrust of one Ø0.2 m propeller, 1.20× a Ø0.3 m tunnel propeller, 1.09× two tunnel propellers; against a row of 10 × Ø0.2 m (0.31 m²) only ~2 % less power (I-hand).</p>
+            <p class="kv"><b>Comparator</b>A row of small propellers/thrusters in the same draft envelope (ideal edge only ~2 %); tunnel propeller (9–20 %). Not computed: feathering stern paddle wheel, surface drive, water jet, airboat, Voith-Schneider (H).</p>
+            <p class="kv"><b>First failure</b>Mechanical losses (chain, turnaround, edges, ventilation, splashing) will probably eat the small ideal edge (H); ventilation and splashing at entry, algae, wear.</p></div>
+          <div class="card"><h3>K2 · Cushion + tracks (amphibian) <span class="rk">(a) #2</span></h3>
+            <p class="kv"><b>Key number</b>600 kg on 33–42 m² → Δp ≈ 140–180 Pa; leak speed ~15–17 m/s over a ~26 m perimeter; 4 mm gap → ~0.3 kW, 5 cm gap → ~4–5 kW (C_d ~0.6, fan η ~0.5), against ~45–50 kW ideal (≈47.6 kW) for free hover of the same body (I-hand). Forward-drive power not included.</p>
+            <p class="kv"><b>Comparator</b>On hard ground the wheel (rolling coefficient 0.02 → 118 N, ~0.6 kW at 5 m/s) — it wins there; for the same lift, a hovercraft (H). The cushion wins on soft ground, water, ice and transitions (S).</p>
+            <p class="kv"><b>First failure</b>Once the cushion unloads the ground, the tracks lose grip — the load split is a design choice; skirt drag, hump on water, spray. Novelty is low (Cockerell, LVT, P-791).</p></div>
+          <div class="card"><h3>Z6-W · Quadrature fin (water) <span class="rk">(a) #3</span></h3>
+            <p class="kv"><b>Key number</b>Fin 1.5 × 0.2 m = 0.3 m², C_T 0.4 at 4 m/s → 960 N, ≥ 3.84 kW useful power; added mass ≈ 47 kg, E_kin ≈ 334 J; reactive power ~8.4 kVA (≈ 2.2× the useful power); spring loss ωE/Q = 8.4 kW/Q → ~11 % at Q 20, 2.2 % at Q 100 (I-hand, inputs H).</p>
+            <p class="kv"><b>Comparator</b>A propeller of the same envelope (η ~0.6–0.7, H). Flapping propulsors reach 0.6–0.75 (H), in the lab up to ~0.87 (Anderson 1998, D). No advantage proven.</p>
+            <p class="kv"><b>First failure</b>Drifting off resonance (at a constant Strouhal number f ∝ V, so tunable stiffness or amplitude control is needed), fatigue, sealing.</p></div>
+          <div class="card"><h3>Z6 · Quadrature trailing edge (air) <span class="rk">(a) #4</span></h3>
+            <p class="kv"><b>Key number</b>Realistic 30–90 N (C_T 0.1–0.3; S/H); 150 N on 3 m² is the upper value (C_T 0.5, St 0.3, ~20 Hz; D). Power ≥ T·V (≥ 1.95 kW useful at 150 N; I). Flap acceleration ~1600 m/s², so resonance is mandatory. Two groups in quadrature (90°) give a smooth travelling wave; odd/even at 180° gives a standing wave.</p>
+            <p class="kv"><b>Comparator</b>Its roles — roll without ailerons, gust damping, auxiliary thrust — are compared with ordinary control surfaces and the main propeller (S).</p>
+            <p class="kv"><b>First failure</b>Fatigue at the high flap acceleration and drifting off resonance (S).</p></div>
+          <div class="card"><h3>Z1 · Air belt, mechanical <span class="rk">(a) #5</span></h3>
+            <p class="kv"><b>Key number</b>Flyer case, 400 N at 13 m/s: η 0.52–0.61, P_el 8.5–9.9 kW within the envelope (height ≤ ~1.8 m, H) against 0.650 / 8.00 kW for the Wright propellers in the same model (I-run/I-hand) — the belt needs +6–24 % power. With a modern profile: B ≈ 0.70 against 0.740.</p>
+            <p class="kv"><b>Comparator</b>Wright propellers 2 × Ø2.6 m at 350 rpm (model 0.650); a modern slow propeller (0.740).</p>
+            <p class="kv"><b>First failure</b>Turnaround stall in A (α 18–28° against ~9.7° at CL_max), turnaround tip 50–83 m/s; rollers at ~24,000 rpm, belt flutter, fatigue at the turnaround. Niche: quiet slow aircraft, STOL, airships (H).</p></div>
+          <div class="card"><h3>Z5m · Mechanical belt + magnetic pitch stations <span class="rk">(a) #6</span></h3>
+            <p class="kv"><b>Key number</b>Proposed by GPT. A belt or chain carries the motion and turnaround loads; short stationary electromagnetic stations flip each blade's pitch via a magnetic tab, and a detent holds it between stations. Mass saving vs a full linear motor: H.</p>
+            <p class="kv"><b>Comparator</b>A moving cam track (Voith-Schneider pitch control). Stations win only if per-blade pitch is really needed (test T4).</p>
+            <p class="kv"><b>First failure</b>Unreliable switching, impact loads on the detent, extra friction.</p></div>
+          <div class="card"><h3>Z5 · Full linear-motor belt (LSM) <span class="rk">(a) #8</span></h3>
+            <p class="kv"><b>Key number</b>Passive permanent-magnet blades, two movers per blade for programmable pitch. Drive force 304–429 N from step 0; copper 0.42–0.59 kg/m at 0.5 T and 2.6–3.7 kg/m at 0.2 T → 8–73 kg of copper alone (I-hand; inputs H: copper loss 4 % of shaft power, k_a 0.5, f_act 0.1, 19.8 m track). Mounts, potting, cooling and electronics: U.</p>
+            <p class="kv"><b>Comparator</b>The mechanical belt (Z1/Z5m). Industrial linear-mover tracks (XTS, iTRAK, MagneMotion) run at only “a few m/s” (D).</p>
+            <p class="kv"><b>First failure</b>Mass. A rigid blade on two movers has a fixed pin distance, so programmable pitch needs a sliding joint or an extra degree of freedom; turnaround radial force ≈ 150 N per 50 g at 30 m/s, r 0.3 m; electrical frequency 0.45–1.4 kHz (tones). A full LSM in air does not close unless T3 shows ≳ 0.4–0.5 T in the gap at low mass (S); in water it makes more sense.</p></div>
+        </div>
+        <div class="grid two sl">
+          <div class="card"><h3>V1 · Prečni vodni trak <span class="rk">(a) #1</span></h3>
+            <p class="kv"><b>Ključna številka</b>1 kN pri 4 m/s s površine A 0,4 m² (b 2 m × h 0,2 m); idealna moč 4,29 kW (I-ročno). Pri mirovanju in enaki moči: 2,33× potiska enega propelerja Ø0,2 m. Pri 4 m/s in enaki idealni moči: 1,38× potiska enega propelerja Ø0,2 m, 1,20× tunelskega Ø0,3 m, 1,09× dveh tunelskih; proti vrsti 10 × Ø0,2 m (0,31 m²) le ~2 % manj moči (I-ročno).</p>
+            <p class="kv"><b>Primerjalnik</b>Vrsta majhnih propelerjev ali potisnikov iste ugrezne ovojnice (idealni rob le ~2 %); tunelski propeler (9–20 %). Neizračunano: krmno lopatasto kolo s peresenjem, površinski pogon, vodni curek, zračni čoln, Voith-Schneider (H).</p>
+            <p class="kv"><b>Prva odpoved</b>Mehanske izgube (veriga, obrat, robovi, ventilacija, pljuskanje) bodo majhen idealni rob verjetno porabile (H); ventilacija in pljuskanje ob vstopu, alge, obraba.</p></div>
+          <div class="card"><h3>K2 · Blazina + gosenice (amfibija) <span class="rk">(a) #2</span></h3>
+            <p class="kv"><b>Ključna številka</b>600 kg na 33–42 m² → Δp ≈ 140–180 Pa; hitrost puščanja ~15–17 m/s po obsegu ~26 m; reža 4 mm → ~0,3 kW, reža 5 cm → ~4–5 kW (C_d ~0,6, η ventilatorja ~0,5), prosto lebdenje istega telesa pa idealno ~45–50 kW (≈ 47,6 kW) (I-ročno). Moč za vožnjo naprej ni vključena.</p>
+            <p class="kv"><b>Primerjalnik</b>Na trdih tleh kolo (koeficient kotaljenja 0,02 → 118 N, ~0,6 kW pri 5 m/s) — tam zmaga; za isti vzgon hovercraft (H). Blazina zmaga na mehkih tleh, vodi, ledu in pri prehodih (S).</p>
+            <p class="kv"><b>Prva odpoved</b>Ko blazina razbremeni tla, gosenice izgubijo oprijem — delitev bremena je projektna izbira; upor obrobe (krila), grba na vodi, pršenje. Novost je nizka (Cockerell, LVT, P-791).</p></div>
+          <div class="card"><h3>Z6-W · Kvadraturna plavut (voda) <span class="rk">(a) #3</span></h3>
+            <p class="kv"><b>Ključna številka</b>Plavut 1,5 × 0,2 m = 0,3 m², C_T 0,4 pri 4 m/s → 960 N, ≥ 3,84 kW koristne moči; pridružena masa ≈ 47 kg, E_kin ≈ 334 J; jalova moč ~8,4 kVA (≈ 2,2× koristne); izgube vzmeti ωE/Q = 8,4 kW/Q → ~11 % pri Q 20, 2,2 % pri Q 100 (I-ročno, vhodi H).</p>
+            <p class="kv"><b>Primerjalnik</b>Propeler iste ovojnice (η ~0,6–0,7, H). Plavutni pogoni dosežejo 0,6–0,75 (H), laboratorijsko do ~0,87 (Anderson 1998, D). Prednost ni dokazana.</p>
+            <p class="kv"><b>Prva odpoved</b>Odmik od resonance (pri stalnem Strouhalovem številu je f ∝ V, zato je potrebna nastavljiva togost ali krmiljenje amplitude), utrujanje, tesnjenje.</p></div>
+          <div class="card"><h3>Z6 · Kvadraturni zadnji rob (zrak) <span class="rk">(a) #4</span></h3>
+            <p class="kv"><b>Ključna številka</b>Realno 30–90 N (C_T 0,1–0,3; S/H); 150 N na 3 m² je zgornja vrednost (C_T 0,5, St 0,3, ~20 Hz; D). Moč ≥ T·V (≥ 1,95 kW koristne pri 150 N; I). Pospešek loputk ~1600 m/s², zato je resonanca nujna. Dve skupini v kvadraturi (90°) data gladek potujoči val; parne/neparne pri 180° dajo stoječi val.</p>
+            <p class="kv"><b>Primerjalnik</b>Njegove vloge — nagib brez krilc, blaženje sunkov, pomožni potisk — primerjamo z običajnimi krmilnimi površinami in glavnim propelerjem (S).</p>
+            <p class="kv"><b>Prva odpoved</b>Utrujanje pri velikem pospešku loputk in odmik od resonance (S).</p></div>
+          <div class="card"><h3>Z1 · Zračni trak, mehanski <span class="rk">(a) #5</span></h3>
+            <p class="kv"><b>Ključna številka</b>Primer Flyer, 400 N pri 13 m/s: η 0,52–0,61, P_el 8,5–9,9 kW v ovojnici (višina ≤ ~1,8 m, H) proti 0,650 / 8,00 kW za Wrightova propelerja v istem modelu (I-zagon/I-ročno) — trak potrebuje +6–24 % moči. S sodobnim profilom: B ≈ 0,70 proti 0,740.</p>
+            <p class="kv"><b>Primerjalnik</b>Wrightova propelerja 2 × Ø2,6 m pri 350 obr/min (model 0,650); sodoben počasen propeler (0,740).</p>
+            <p class="kv"><b>Prva odpoved</b>Zlom vzgona v obratu A (α 18–28° proti ~9,7° pri CL_max), konica v obratu 50–83 m/s; valjčki pri ~24.000 obr/min, plapolanje traku, utrujanje na obratu. Niša: tiha počasna letala, STOL, zračne ladje (H).</p></div>
+          <div class="card"><h3>Z5m · Mehanski trak + magnetne postaje za naklon <span class="rk">(a) #6</span></h3>
+            <p class="kv"><b>Ključna številka</b>Predlog GPT. Jermen ali veriga prevzame gibanje in sile obrata; kratke stacionarne elektromagnetne postaje prek magnetnega nastavka preklopijo naklon posamezne lopatice, zadrževalnik ga drži med postajami. Prihranek mase proti polnemu linearnemu motorju: H.</p>
+            <p class="kv"><b>Primerjalnik</b>Premična odmikalna tirnica (krmiljenje naklona Voith-Schneider). Postaje zmagajo le, če je res potreben naklon vsake lopatice posebej (preizkus T4).</p>
+            <p class="kv"><b>Prva odpoved</b>Nezanesljiv preklop, udarne obremenitve zadrževalnika, dodatno trenje.</p></div>
+          <div class="card"><h3>Z5 · Polni trak z linearnim motorjem (LSM) <span class="rk">(a) #8</span></h3>
+            <p class="kv"><b>Ključna številka</b>Pasivne lopatice s trajnimi magneti, po dva nosilca na lopatico za programski naklon. Pogonska sila 304–429 N iz Koraka 0; baker 0,42–0,59 kg/m pri 0,5 T in 2,6–3,7 kg/m pri 0,2 T → 8–73 kg samega bakra (I-ročno; vhodi H: izgube v bakru 4 % moči gredi, k_a 0,5, f_akt 0,1, proga 19,8 m). Nosilci, zalivanje, hlajenje in elektronika: U.</p>
+            <p class="kv"><b>Primerjalnik</b>Mehanski trak (Z1/Z5m). Industrijske proge z linearnimi nosilci (XTS, iTRAK, MagneMotion) zmorejo le »nekaj m/s« (D).</p>
+            <p class="kv"><b>Prva odpoved</b>Masa. Toga lopatica na dveh nosilcih ima stalno razdaljo med prijemaloma, zato programski naklon zahteva drsno vez ali dodatno prostostno stopnjo; radialna sila v obratu ≈ 150 N na 50 g pri 30 m/s in r 0,3 m; električna frekvenca 0,45–1,4 kHz (toni). Polni LSM v zraku se ne izide, razen če T3 pokaže ≳ 0,4–0,5 T v reži pri majhni masi (S); v vodi je smiselnejši.</p></div>
+        </div>
+        <h3 class="en">Briefer members</h3><h3 class="sl">Krajši člani</h3>
+        <div class="grid three en">
+          <div class="card"><h3>Z2 · Hybrid airship + belt <span class="rk">#9</span></h3><p>A 12 × 3.5 m ellipsoid holds 77 m³ → ~80 kg of buoyancy, ~13 % of the weight (I); 30 × 8 m ≈ 1000 m³ ≈ 1 t (D); drag at 15 m/s ~280–420 N, ~4–6 kW (I/H). Comparator: a conventional propeller airship (H). Weak point: small size gives little buoyancy, and there is no cheap test.</p></div>
+          <div class="card"><h3>Z3 · Ground-effect craft (PAR) + belt <span class="rk">#10</span></h3><p>PAR is literally “closed near the ground”. Comparator: a propeller-driven PAR craft or ekranoplan (H). First failure: waves.</p></div>
+          <div class="card"><h3>K1 · Body-fan with porous suction skin <span class="rk">#11</span></h3><p>The porous skin adds +25–70 % power (I); cross-flow fan figure of merit 0.4–0.6 (H). Near the ground it turns into K2. Comparator: a plain fan or propeller (S). First failure: the power penalty.</p></div>
+          <div class="card"><h3>10 · Elongated wingless body <span class="rk">#13</span></h3><p>The hover jet “7.6 m/s” is the induced velocity at A = 42 m² (I); disc loading 140 Pa ≈ an R22 helicopter (~130 Pa, H); 50 kW ideal at 33 m², ~70–170 kW real (FM 0.3–0.7), against ~27 kW for a Ø12 m rotor (I). Value: low-noise VTOL for short hops or near the ground (K2). First failure: hover power.</p></div>
+          <div class="card"><h3>07 · Longitudinal flaps in air <span class="rk">#14</span></h3><p>η = V/U_p, realistically 25–35 % (D) → 15–21 kW for 400 N at 13 m/s (I), against ~8 kW for the Wright propellers. In water and on the road the predecessor is the LVT amphibious tracked vehicle (D). First failure: efficiency in air.</p></div>
+          <div class="card"><h3>Magnus · rotating body <span class="rk">#17</span></h3><p>Predecessors: Flettner rotors and the Plymouth A-A-2004 (D). Lowest test priority.</p></div>
+        </div>
+        <div class="grid three sl">
+          <div class="card"><h3>Z2 · Hibridna zračna ladja + trak <span class="rk">#9</span></h3><p>Elipsoid 12 × 3,5 m ima 77 m³ → ~80 kg vzgona, ~13 % teže (I); 30 × 8 m ≈ 1000 m³ ≈ 1 t (D); upor pri 15 m/s ~280–420 N, ~4–6 kW (I/H). Primerjalnik: običajna zračna ladja s propelerji (H). Šibka točka: majhna velikost da malo vzgona, poceni preizkusa pa ni.</p></div>
+          <div class="card"><h3>Z3 · Ekranoplan (PAR) + trak <span class="rk">#10</span></h3><p>PAR je dobesedno »zaprto ob tleh«. Primerjalnik: PAR ali ekranoplan s propelerji (H). Prva odpoved: valovi.</p></div>
+          <div class="card"><h3>K1 · Telo-ventilator s porozno sesalno kožo <span class="rk">#11</span></h3><p>Porozna koža doda +25–70 % moči (I); prečni ventilator ima FM 0,4–0,6 (H). Ob tleh se spremeni v K2. Primerjalnik: navaden ventilator ali propeler (S). Prva odpoved: kazen v moči.</p></div>
+          <div class="card"><h3>10 · Podolgovat trup brez kril <span class="rk">#13</span></h3><p>Curek lebdenja »7,6 m/s« je inducirana hitrost pri A = 42 m² (I); obremenitev diska 140 Pa ≈ helikopter R22 (~130 Pa, H); 50 kW idealno pri 33 m², realno ~70–170 kW (FM 0,3–0,7), rotor Ø12 m pa ~27 kW (I). Vrednost: nizkohrupni VTOL za kratke skoke ali ob tleh (K2). Prva odpoved: moč lebdenja.</p></div>
+          <div class="card"><h3>07 · Vzdolžne loputke v zraku <span class="rk">#14</span></h3><p>η = V/U_p, realno 25–35 % (D) → 15–21 kW za 400 N pri 13 m/s (I), Wrightova propelerja pa ~8 kW. V vodi in na cesti je predhodnik amfibijsko gosenično vozilo LVT (D). Prva odpoved: izkoristek v zraku.</p></div>
+          <div class="card"><h3>Magnus · vrteče se telo <span class="rk">#17</span></h3><p>Predhodnika: Flettnerjev rotor in Plymouth A-A-2004 (D). Najnižja prednost preizkusa.</p></div>
+        </div>
+        <p class="en">Also kept in the ranking: Z4 belt on the wing trailing edge (BLI, STOL), K3′/K3 suction tail / nose, a drone with belts, and a literal electromagnetic skin.</p>
+        <p class="sl">V rangiranju ostanejo tudi: Z4 trak na zadnjem robu krila (BLI, STOL), K3′/K3 sesalni rep / nos, dron s trakovi in dobesedna elektromagnetna koža.</p>
+      </section>
+
+      <!-- 5 · HONEST NUMBERS -->
+      <section id="numbers" class="section">
+        <h2 class="en">Honest numbers</h2><h2 class="sl">Poštene številke</h2>
+        <div class="legend en">
+          <div class="status-item"><b>D</b><span>Stated in a source (not necessarily a measurement)</span></div>
+          <div class="status-item"><b>I</b><span>Computed: I-run = the executed step-0 program; I-hand = hand calculation by the review seats, no code run</span></div>
+          <div class="status-item"><b>S</b><span>Inference</span></div>
+          <div class="status-item"><b>H</b><span>Assumption, general knowledge or estimate without a source</span></div>
+          <div class="status-item"><b>U</b><span>Unknown</span></div>
+        </div>
+        <div class="legend sl">
+          <div class="status-item"><b>D</b><span>Navedba v viru (ni nujno meritev)</span></div>
+          <div class="status-item"><b>I</b><span>Izračun: I-zagon = izvedeni program Koraka 0; I-ročno = ročni račun sedežev zanke, brez zagona kode</span></div>
+          <div class="status-item"><b>S</b><span>Sklep</span></div>
+          <div class="status-item"><b>H</b><span>Predpostavka, splošno znanje ali ocena brez vira</span></div>
+          <div class="status-item"><b>U</b><span>Neznano</span></div>
+        </div>
+        <h3 class="en">Step 0 — air belt vs a fair propeller (computed)</h3><h3 class="sl">Korak 0 — zračni trak proti poštenemu primerjalniku (izračunano)</h3>
+        <p class="en">First-order model, run twice with byte-identical output (<span class="code">korak0_belt.py</span>). Case: Wright Flyer, T = 400 N, V = 13 m/s, ρ = 1.225 kg/m³, 1903 polar L/D 12 unless noted (H). Same loss chain for belt and propeller: drive 0.90 (H); belt turnaround and structure 0.95 (H), propeller 1.00 (H). No tip or end losses, mass, run interaction or unsteadiness. All values I (I-run).</p>
+        <p class="sl">Model prvega reda, zagnan dvakrat z bajtno enakim izpisom (<span class="code">korak0_belt.py</span>). Primer: Wrightov Flyer, T = 400 N, V = 13 m/s, ρ = 1,225 kg/m³, polara 1903 z L/D 12, če ni navedeno drugače (H). Ista veriga izgub za trak in propeler: pogon 0,90 (H); obrat in konstrukcija traku 0,95 (H), propeler 1,00 (H). Brez izgub konic in koncev, mase, interakcije tekov in nestacionarnosti. Vse vrednosti so I (I-zagon); decimalna pika kot v izpisu programa.</p>
+        <div class="table-wrap"><table>
+          <tr><th><span class="en">Case</span><span class="sl">Primer</span></th><th>A [m²]</th><th>η_ideal</th><th>η_BEM</th><th>η_total</th><th>P_el [kW]</th><th><span class="en">Speed [m/s]</span><span class="sl">Hitrost [m/s]</span></th></tr>
+          <tr class="hl"><td><span class="en">Belt A h=0.8 (original, 2 loops)</span><span class="sl">Trak A h=0.8 (izvirnik, 2 zanki)</span></td><td class="num">12.80</td><td class="num">0.934</td><td class="num">0.758</td><td class="num"><strong>0.648</strong></td><td class="num">8.02</td><td class="num">u 22.57</td></tr>
+          <tr><td><span class="en">Belt A h=0.6</span><span class="sl">Trak A h=0.6</span></td><td class="num">9.60</td><td class="num">0.916</td><td class="num">0.737</td><td class="num">0.630</td><td class="num">8.25</td><td class="num">u 24.41</td></tr>
+          <tr><td><span class="en">Belt A h=0.4</span><span class="sl">Trak A h=0.4</span></td><td class="num">6.40</td><td class="num">0.882</td><td class="num">0.701</td><td class="num">0.599</td><td class="num">8.67</td><td class="num">u 27.56</td></tr>
+          <tr class="hl"><td><span class="en">Belt B h=0.8 (A_eff = 2Lh)</span><span class="sl">Trak B h=0.8 (A_eff = 2Lh)</span></td><td class="num">6.40</td><td class="num">0.882</td><td class="num">0.701</td><td class="num"><strong>0.599</strong></td><td class="num">8.67</td><td class="num">u 27.56</td></tr>
+          <tr><td><span class="en">Belt B h=0.6</span><span class="sl">Trak B h=0.6</span></td><td class="num">4.80</td><td class="num">0.853</td><td class="num">0.671</td><td class="num">0.574</td><td class="num">9.06</td><td class="num">u 30.26</td></tr>
+          <tr><td><span class="en">Belt B h=0.4</span><span class="sl">Trak B h=0.4</span></td><td class="num">3.20</td><td class="num">0.805</td><td class="num">0.624</td><td class="num">0.533</td><td class="num">9.75</td><td class="num">u 34.86</td></tr>
+          <tr class="hl"><td><span class="en">Belt A, 4 loops (h=0.8)</span><span class="sl">Trak A, 4 zanke (h=0.8)</span></td><td class="num">25.60</td><td class="num">0.965</td><td class="num">0.796</td><td class="num"><strong>0.680</strong></td><td class="num">7.64</td><td class="num">u 19.24</td></tr>
+          <tr class="hl"><td><span class="en">Wright 1903, 2×Ø2.6 m, 350 rpm</span><span class="sl">Wright 1903, 2×Ø2.6 m, 350 obr/min</span></td><td class="num">10.62</td><td class="num">0.923</td><td class="num">0.722</td><td class="num"><strong>0.650</strong></td><td class="num">8.00</td><td class="num"><span class="en">tip</span><span class="sl">konica</span> 47.6</td></tr>
+          <tr><td><span class="en">1903 propeller, same Ø, optimal 260 rpm</span><span class="sl">Propeler 1903, isti Ø, optimalno 260 obr/min</span></td><td class="num">10.62</td><td class="num">0.923</td><td class="num">0.730</td><td class="num">0.657</td><td class="num">7.91</td><td class="num"><span class="en">tip</span><span class="sl">konica</span> 35.4</td></tr>
+          <tr class="hl"><td><span class="en">Belt A h=0.8, modern polar L/D 30 (H)</span><span class="sl">Trak A h=0.8, sodobna polara L/D 30 (H)</span></td><td class="num">12.80</td><td class="num">0.934</td><td class="num">0.846</td><td class="num"><strong>0.724</strong></td><td class="num">7.19</td><td class="num">u 26.32</td></tr>
+          <tr><td><span class="en">Belt B h=0.8, modern polar (H)</span><span class="sl">Trak B h=0.8, sodobna polara (H)</span></td><td class="num">6.40</td><td class="num">0.882</td><td class="num">0.789</td><td class="num">0.674</td><td class="num">7.71</td><td class="num">u 32.79</td></tr>
+          <tr class="hl"><td><span class="en">Modern slow propeller, optimal 310 rpm</span><span class="sl">Sodoben počasen propeler, optimalno 310 obr/min</span></td><td class="num">10.62</td><td class="num">0.923</td><td class="num">0.823</td><td class="num"><strong>0.740</strong></td><td class="num">7.02</td><td class="num"><span class="en">tip</span><span class="sl">konica</span> 42.2</td></tr>
+        </table></div>
+        <ul class="clean en">
+          <li>Headline comparisons: belt A 0.648 vs Wright 0.650; belt B 0.599; four loops 0.680; with a modern profile, belt 0.724 vs modern slow propeller 0.740 (I-run).</li>
+          <li>In this model η depends only on the loading T/A, so A h=0.4 = B h=0.8 = A with one loop (6.4 m²) (I).</li>
+          <li>The original A h=0.8 row lies outside the Flyer envelope: it needs 2h + 2R = 2.2 m of height vs ~1.8 m between the wings (H).</li>
+          <li>Upper bound for B with full recovery of transverse flow (η_lat = 1, H): 0.631 / 0.609 / 0.571 for h = 0.8 / 0.6 / 0.4 (I).</li>
+          <li>The often-quoted “Wright ~0.75 measured” has no measurement source here (H); the model value 0.650 is the like-for-like comparator.</li>
+        </ul>
+        <ul class="clean sl">
+          <li>Glavne primerjave: trak A 0,648 proti Wrightu 0,650; trak B 0,599; štiri zanke 0,680; s sodobnim profilom trak 0,724 proti sodobnemu počasnemu propelerju 0,740 (I-zagon).</li>
+          <li>V tem modelu je η odvisen samo od obremenitve T/A, zato velja A h=0,4 = B h=0,8 = A z eno zanko (6,4 m²) (I).</li>
+          <li>Izvirna vrstica A h=0,8 je zunaj ovojnice Flyerja: potrebuje 2h + 2R = 2,2 m višine, med kriloma pa je ~1,8 m (H).</li>
+          <li>Zgornja meja za B s popolnim povratom prečnega toka (η_lat = 1, H): 0,631 / 0,609 / 0,571 pri h = 0,8 / 0,6 / 0,4 (I).</li>
+          <li>Pogosto navajani »izmerjeni Wright ~0,75« tu nima vira meritve (H); primerjalnik enakega z enakim je modelna vrednost 0,650.</li>
+        </ul>
+        <div class="formula">η_BEM ≤ η_ideal · (1 − sin γ) / (1 + sin γ),  γ = atan(1 / (L/D))<br>L/D 12 → 0.8466 · η_ideal   ·   L/D 30 → 0.9355 · η_ideal</div>
+        <p class="en">This analytical element bound (I) is why the first draft's range 0.66–0.77 does not hold; the original script's filter also carried a +3.9 % bias.</p>
+        <p class="sl">Zaradi te analitične meje elementa (I) razpon prvega osnutka 0,66–0,77 ne velja; filter izvirne skripte je imel poleg tega pristranskost +3,9 %.</p>
+
+        <h3 class="en">The turnaround, counted honestly</h3><h3 class="sl">Obrat, pošteno upoštevan</h3>
+        <p class="en">Profile drag of the blades in the turnaround instead of a flat 0.95 (I from formula, inputs H; no stall and no turnaround thrust). These are optimistic points, not bounds.</p>
+        <p class="sl">Profilni upor lopatic v obratu namesto pavšalnih 0,95 (I iz formule, vhodi H; brez zloma vzgona in brez potiska v obratu). To so optimistične točke, ne meje.</p>
+        <div class="table-wrap"><table>
+          <tr><th><span class="en">Case</span><span class="sl">Primer</span></th><th>R [m]</th><th><span class="en">Tip [m/s]</span><span class="sl">Konica [m/s]</span></th><th>η_turn</th><th>η_total</th></tr>
+          <tr><td><span class="en">A h=0.8 (original)</span><span class="sl">A h=0.8 (izvirnik)</span></td><td class="num">0.30</td><td class="num">82.8</td><td class="num">0.708</td><td class="num">0.483</td></tr>
+          <tr><td>A h=0.8</td><td class="num">0.95</td><td class="num">41.5</td><td class="num">0.805</td><td class="num">0.549</td></tr>
+          <tr><td>A h=0.6 / 0.4</td><td class="num">0.30</td><td class="num">73.2 / 64.3</td><td class="num">0.792 / 0.865</td><td class="num">0.525 / 0.546</td></tr>
+          <tr><td>B h=0.8</td><td class="num">0.30</td><td class="num">27.6</td><td class="num">0.972</td><td class="num">0.613</td></tr>
+        </table></div>
+        <p class="en"><strong>Feasible Flyer envelope:</strong> η 0.52–0.61, P_el 8.5–9.9 kW, i.e. +6–24 % power vs the Wright model (8.00 kW). These are geometry-adjusted model points that still omit the real turnaround. With a modern profile the in-envelope value is B ≈ 0.70 (upper bound ~0.72) vs 0.740 (I-hand); the A rows near 0.68–0.72 need ~3.5 m of height or 25.6 m² and fall outside the envelope. In no computed case does the belt beat the propeller of the same envelope: it trails by 2–22 points.</p>
+        <p class="sl"><strong>Izvedljiva ovojnica Flyerja:</strong> η 0,52–0,61, P_el 8,5–9,9 kW, torej +6–24 % moči proti Wrightovemu modelu (8,00 kW). To so geometrijsko prilagojene modelne točke, ki še izpuščajo dejanski obrat. S sodobnim profilom je vrednost v ovojnici B ≈ 0,70 (zgornja meja ~0,72) proti 0,740 (I-ročno); vrstici A pri 0,68–0,72 potrebujeta ~3,5 m višine oziroma 25,6 m² in sta zunaj ovojnice. V nobenem izračunanem primeru trak ne preseže propelerja iste ovojnice: zaostaja za 2–22 točk.</p>
+
+        <h3 class="en">Corrections from the review loop</h3><h3 class="sl">Popravki preverjalne zanke</h3>
+        <div class="grid two en">
+          <div class="card"><h3>Turnaround stall in A → feathering</h3><p>In the A turnaround a blade moves like an untwisted propeller blade at u·r/R. At R 0.3 m: tip 82.8 m/s, α ≈ 28° vs α(CL_max 0.9) ≈ 9.7°, so the blade stalls from r ≈ 0.35 m outward; at R 0.95 m the tip α is still ≈ 19° (I-hand). A with constant pitch in the Flyer envelope therefore needs feathering or folding blades, R ≳ h (more height) or geometry B. Real turnaround behaviour: U. Two reviewers note that feathering is not proven necessary for every layout — only for A with constant pitch.</p></div>
+          <div class="card"><h3>Blade height h: no general optimum</h3><p>An earlier draft's “optimum h ≈ 0.6 m” is not supported. At R 0.3 m the best is h 0.4 (0.546 &gt; 0.525 &gt; 0.483); at the best R, η is almost independent of h (0.549 / 0.555 / 0.552) (I-run).</p></div>
+          <div class="card"><h3>Linear-motor copper</h3><p>An earlier draft gave 0.22–1.4 kg/m at 226 N — too little force for step 0. With 304–429 N: 0.42–0.59 kg/m at 0.5 T and 2.6–3.7 kg/m at 0.2 T → 8–73 kg of copper depending on the field (I-hand; inputs H). At 8 % allowed copper loss, half the copper. Mounts, cooling, electronics: U.</p></div>
+          <div class="card"><h3>K2 lift power</h3><p>0.3–5 kW (gap 4 mm to 5 cm) vs ~45–50 kW ideal for free hover (I-hand). On hard ground a wheel needs ~0.6 kW at 5 m/s. The full case needs a total power balance — lift plus drive at the same speed, load and load split — which is not done yet.</p></div>
+          <div class="card"><h3>Z6-W reactive power and spring loss</h3><p>960 N at 4 m/s; E_kin ≈ 334 J, ω ≈ 25.1 s⁻¹ → reactive power ~8.4 kVA (≈ 2.2× the 3.84 kW useful power), so a resonant spring is mandatory. Spring loss ωE/Q ≈ 11 % at Q 20, 2.2 % at Q 100. An earlier 44 % came from mixing per-fin mass with per-section thrust and was rejected (I-hand).</p></div>
+          <div class="card"><h3>Two phases are enough</h3><p>Two phases in quadrature (90°) already give a smooth travelling wave with constant power; three or more phases are not required. Odd/even groups at 180° give a standing wave whose thrust pulses at 2f (I).</p><div class="formula">cos ωt·cos θ + sin ωt·sin θ = cos(θ − ωt)<br>cos² + sin² = 1</div></div>
+          <div class="card"><h3>Noise: all hypotheses</h3><p>All dB values are H; the sign of the dB(A) difference is U. Speed alone suggests −4…−15 dB depending on the exponent (U³…U⁶) — too wide to decide anything. A in the envelope: turnaround tip 50.7–73.2 m/s vs Wright 47.6 m/s, no speed advantage. B: tip = u ≈ 27.6 m/s → −3…−6 dB vs Wright (H). With A-weighting the low blade-passing tones (Wright 11.7 Hz, belt ~20–60 Hz) are strongly attenuated; mechanical tones in 0.4–2 kHz decide: chain teeth (12.7 mm pitch at 22.6 m/s ≈ 1.8 kHz), linear-motor electrical frequency 0.45–1.4 kHz, rollers.</p></div>
+          <div class="card"><h3>Smaller fixes</h3><p>Air-belt range 0.66–0.77 → 0.52–0.61 in the envelope. “Wright ~0.75” is H. A source's 0.78–0.81 / 0.90 was rejected by the element bound and the +3.9 % filter bias. V1's edge, earlier written as 2–20 %, is ~2 % vs a propeller row and 9–20 % vs tunnel propellers.</p></div>
+        </div>
+        <div class="grid two sl">
+          <div class="card"><h3>Zlom vzgona v obratu A → peresenje</h3><p>V obratu A se lopatica giblje kot nezvit propelerski krak s hitrostjo u·r/R. Pri R 0,3 m: konica 82,8 m/s, α ≈ 28° proti α(CL_max 0,9) ≈ 9,7°, zato pride do zloma vzgona od r ≈ 0,35 m navzven; pri R 0,95 m je α na konici še vedno ≈ 19° (I-ročno). A s stalnim naklonom v ovojnici Flyerja zato potrebuje peresenje ali zlaganje lopatic, R ≳ h (več višine) ali geometrijo B. Dejanski obrat: U. Dva pregledovalca opozarjata, da nujnost peresenja ni dokazana za vse izvedbe — le za A s stalnim naklonom.</p></div>
+          <div class="card"><h3>Višina lopatice h: splošnega optimuma ni</h3><p>Trditev prejšnjega osnutka »optimum h ≈ 0,6 m« ni podprta. Pri R 0,3 m je najboljši h 0,4 (0,546 &gt; 0,525 &gt; 0,483); pri najboljšem R je η skoraj neodvisen od h (0,549 / 0,555 / 0,552) (I-zagon).</p></div>
+          <div class="card"><h3>Baker linearnega motorja</h3><p>Prejšnji osnutek je navajal 0,22–1,4 kg/m pri 226 N — sila je za Korak 0 prenizka. Pri 304–429 N: 0,42–0,59 kg/m pri 0,5 T in 2,6–3,7 kg/m pri 0,2 T → 8–73 kg bakra glede na polje (I-ročno; vhodi H). Pri 8 % dovoljenih izgub v bakru je bakra pol manj. Nosilci, hlajenje, elektronika: U.</p></div>
+          <div class="card"><h3>Moč vzgona K2</h3><p>0,3–5 kW (reža 4 mm do 5 cm) proti idealnim ~45–50 kW za prosto lebdenje (I-ročno). Na trdih tleh kolo potrebuje ~0,6 kW pri 5 m/s. Celoten primer potrebuje skupno bilanco moči — vzgon in vožnja pri isti hitrosti, nosilnosti in delitvi bremena — ki še ni narejena.</p></div>
+          <div class="card"><h3>Jalova moč in izgube vzmeti Z6-W</h3><p>960 N pri 4 m/s; E_kin ≈ 334 J, ω ≈ 25,1 s⁻¹ → jalova moč ~8,4 kVA (≈ 2,2× koristnih 3,84 kW), zato je resonančna vzmet obvezna. Izgube vzmeti ωE/Q ≈ 11 % pri Q 20, 2,2 % pri Q 100. Prejšnjih 44 % je izhajalo iz mešanja mase na plavut s potiskom na odsek in je zavrnjenih (I-ročno).</p></div>
+          <div class="card"><h3>Dve fazi zadoščata</h3><p>Dve fazi v kvadraturi (90°) že dasta gladek potujoči val s stalno močjo; tri ali več faz ni potrebnih. Parne/neparne skupine pri 180° dajo stoječi val, katerega potisk utripa pri 2f (I).</p><div class="formula">cos ωt·cos θ + sin ωt·sin θ = cos(θ − ωt)<br>cos² + sin² = 1</div></div>
+          <div class="card"><h3>Hrup: vse so hipoteze</h3><p>Vse vrednosti v dB so H; predznak razlike v dB(A) je U. Sama hitrost nakazuje −4…−15 dB, odvisno od eksponenta (U³…U⁶) — preširoko za kakršnokoli odločitev. A v ovojnici: konica v obratu 50,7–73,2 m/s proti Wrightovim 47,6 m/s, prednosti v hitrosti ni. B: konica = u ≈ 27,6 m/s → −3…−6 dB proti Wrightu (H). Z A-utežjo so nizki toni prehoda lopatic (Wright 11,7 Hz, trak ~20–60 Hz) močno dušeni; odločajo mehanski toni v pasu 0,4–2 kHz: zobje verige (korak 12,7 mm pri 22,6 m/s ≈ 1,8 kHz), električna frekvenca linearnega motorja 0,45–1,4 kHz, valjčki.</p></div>
+          <div class="card"><h3>Manjši popravki</h3><p>Razpon zračnega traku 0,66–0,77 → 0,52–0,61 v ovojnici. »Wright ~0,75« je H. Vrednosti vira 0,78–0,81 / 0,90 sta zavrnjeni zaradi meje elementa in pristranskosti filtra +3,9 %. Rob V1, prej zapisan kot 2–20 %, je ~2 % proti vrsti propelerjev in 9–20 % proti tunelskim propelerjem.</p></div>
+        </div>
+      </section>
+
+      <!-- 6 · RANKING -->
+      <section id="ranking" class="section">
+        <h2 class="en">Ranking — three columns, nothing eliminated</h2><h2 class="sl">Rangiranje — trije stolpci, nič izločeno</h2>
+        <p class="en">Rank, don't eliminate: every variant stays on the list, and a low place means “test later”, not “dead”. Three different questions give three different orders.</p>
+        <p class="sl">Rangiraj, ne izloči: vsaka različica ostane na seznamu, nizko mesto pa pomeni »preizkusi pozneje«, ne »mrtvo«. Tri različna vprašanja dajo tri različne vrstne rede.</p>
+        <div class="grid three en">
+          <div class="card"><h3>(a) Test priority</h3><p>V1 → K2 → Z6-W → Z6 → Z1 → Z5m → … (full table below). Sensitive: if V1's reserve R is scored 0 instead of 1, K2 takes #1 and V1 #2.</p></div>
+          <div class="card"><h3>(b) Physical certainty</h3><p>K2 → V1 → Z2 → Z6-W → Z1 (S). Certainty of the mechanism, not advantage of the build. All three external advisors that answered (Gemini, Grok, GLM) put K2 first here.</p></div>
+          <div class="card"><h3>(c) Efficiency advantage</h3><p>None. No variant beats its strongest conventional comparator; only niches remain — shallow draft, low blade speed, possible quietness, multi-medium use.</p></div>
+        </div>
+        <div class="grid three sl">
+          <div class="card"><h3>(a) Prednost preizkusa</h3><p>V1 → K2 → Z6-W → Z6 → Z1 → Z5m → … (celotna tabela spodaj). Občutljivo: če rezervo R pri V1 ocenimo z 0 namesto z 1, je K2 #1, V1 pa #2.</p></div>
+          <div class="card"><h3>(b) Fizikalna gotovost</h3><p>K2 → V1 → Z2 → Z6-W → Z1 (S). Gotovost mehanizma, ne prednost izvedbe. Vsi trije zunanji svetovalci, ki so odgovorili (Gemini, Grok, GLM), tu postavljajo K2 na prvo mesto.</p></div>
+          <div class="card"><h3>(c) Prednost v izkoristku</h3><p>Nobene. Nobena različica ne premaga najmočnejšega običajnega primerjalnika; ostanejo le niše — plitev ugrez, nizka hitrost lopatic, morebitna tišina, delovanje v več medijih.</p></div>
+        </div>
+        <div class="callout bridge en"><strong>V1 or K2 first?</strong> The two are close and the order is sensitive, so both are shown. V1 leads column (a) with Σ 18 vs 16 only because its reserve R is scored 1. One reviewer argued that R = 0 is more consistent, since the ideal edge over a propeller row is only ~2 % and mechanical losses will probably eat it; then both score 16 and the tie-break by R puts K2 #1 and V1 #2. V1 stays first for testing because T1 is cheap and decisive.</div>
+        <div class="callout bridge sl"><strong>Najprej V1 ali K2?</strong> Kandidata sta blizu in vrstni red je občutljiv, zato prikazujemo oba. V1 vodi v stolpcu (a) s Σ 18 proti 16 le zato, ker ima rezervo R ocenjeno z 1. En pregledovalec je trdil, da je R = 0 doslednejši, ker je idealni rob proti vrsti propelerjev le ~2 % in ga bodo mehanske izgube verjetno porabile; tedaj imata oba 16, izenačenje po R pa postavi K2 na #1 in V1 na #2. V1 ostane prvi za preizkus, ker je T1 poceni in odločilen.</div>
+        <p class="en"><strong>Score:</strong> Σ = 2R + B + P + N + C + F, each 0–4. R = reserve against the strongest conventional alternative of the same role and envelope; B = BD's system goals (quiet, safe, multi-medium, modular); P = probability that the concept meets its purpose; N = novelty (H/U until a prior-art search); C = test cost (4 = cheapest); F = fidelity to BD's family. Ties: R, then C, then P. The weights are an author's choice (GPT).</p>
+        <p class="sl"><strong>Ocena:</strong> Σ = 2R + B + P + N + C + F, vsaka 0–4. R = rezerva proti najmočnejši običajni alternativi iste vloge in ovojnice; B = BD-jevi sistemski cilji (tiho, varno, več medijev, modularno); P = verjetnost, da koncept izpolni namen; N = novost (H/U do iskanja predhodnikov); C = cena preizkusa (4 = najcenejši); F = zvestoba BD-jevi družini. Izenačenja: R, nato C, nato P. Uteži so avtorska izbira (GPT).</p>
+        <div class="table-wrap"><table>
+          <tr><th>#</th><th><span class="en">Concept</span><span class="sl">Koncept</span></th><th><span class="en">Key numbers and assumptions</span><span class="sl">Ključne številke in predpostavke</span></th><th>R B P N C F</th><th>Σ</th></tr>
+          <tr class="en"><td>1</td><td><strong>V1</strong> transverse water belt, mechanical, shallow draft</td><td>1 kN at 4 m/s, A 0.4 m²; ideal edge ~2 % vs a propeller row, 9–20 % vs tunnel propellers (I)</td><td class="num">1 3 3 2 4 4</td><td class="num">18</td></tr>
+          <tr class="en"><td>2</td><td><strong>K2</strong> cushion + tracks (amphibian)</td><td>0.3–5 kW for 600 kg; ≥ 10× cheaper than hover; wheel better on hard ground (I/S)</td><td class="num">1 4 3 1 3 3</td><td class="num">16</td></tr>
+          <tr class="en"><td>3</td><td><strong>Z6-W</strong> quadrature / multiphase fin</td><td>960 N on 0.3 m² at 4 m/s; spring loss 11 % at Q 20 (I/H)</td><td class="num">1 3 2 1 3 4</td><td class="num">15</td></tr>
+          <tr class="en"><td>4</td><td><strong>Z6</strong> quadrature trailing edge in air</td><td>30–90 N realistic, 150 N upper value (D); power ≥ T·V</td><td class="num">1 2 2 1 3 4</td><td class="num">14</td></tr>
+          <tr class="en"><td>5</td><td><strong>Z1</strong> air belt, mechanical</td><td>0.52–0.61 in the envelope vs 0.650; modern ≤ ~0.72 vs 0.740 (I)</td><td class="num">0 3 1 2 4 4</td><td class="num">14</td></tr>
+          <tr class="en"><td>6</td><td><strong>Z5m</strong> mechanical belt + magnetic stations (GPT)</td><td>mass saving H; test T4</td><td class="num">0 3 1 3 3 4</td><td class="num">14</td></tr>
+          <tr class="en"><td>7</td><td><strong>Z4</strong> belt on the trailing edge (BLI, STOL)</td><td>BLI 5–15 % (H)</td><td class="num">1 2 2 2 2 3</td><td class="num">13</td></tr>
+          <tr class="en"><td>8</td><td><strong>Z5</strong> full linear-motor belt</td><td>8–73 kg of copper + electronics (I/U)</td><td class="num">0 3 1 3 2 4</td><td class="num">13</td></tr>
+          <tr class="en"><td>9</td><td><strong>Z2</strong> hybrid airship + belt</td><td>77 m³ → ~80 kg of buoyancy (I)</td><td class="num">1 3 2 1 1 3</td><td class="num">12</td></tr>
+          <tr class="en"><td>10</td><td><strong>Z3</strong> PAR / ground-effect craft + belt</td><td>first failure: waves</td><td class="num">1 2 2 1 2 2</td><td class="num">11</td></tr>
+          <tr class="en"><td>11</td><td><strong>K1</strong> body-fan with porous skin</td><td>+25–70 % power (I)</td><td class="num">0 2 1 1 3 4</td><td class="num">11</td></tr>
+          <tr class="en"><td>12</td><td><strong>K3′/K3</strong> suction tail / nose</td><td>tail BLI 5–15 % (H); nose has no net benefit</td><td class="num">1 1 3 0 3 1</td><td class="num">10</td></tr>
+          <tr class="en"><td>13</td><td><strong>10</strong> wingless body</td><td>70–170 kW (≈ R22 disc loading)</td><td class="num">0 2 1 1 2 4</td><td class="num">10</td></tr>
+          <tr class="en"><td>14</td><td><strong>07</strong> longitudinal flaps in air</td><td>15–21 kW for 400 N</td><td class="num">0 1 0 0 4 4</td><td class="num">9</td></tr>
+          <tr class="en"><td>15</td><td>drone with belts</td><td>fixed guide mass</td><td class="num">0 2 1 1 3 2</td><td class="num">9</td></tr>
+          <tr class="en"><td>16</td><td>literal EM skin</td><td>Δp ≪ 140 Pa; assist only</td><td class="num">0 1 0 1 2 3</td><td class="num">7</td></tr>
+          <tr class="en"><td>17</td><td>Magnus</td><td>Flettner, Plymouth A-A-2004</td><td class="num">0 0 1 0 3 2</td><td class="num">6</td></tr>
+          <tr class="sl"><td>1</td><td><strong>V1</strong> prečni vodni trak, mehanski, plitev ugrez</td><td>1 kN pri 4 m/s, A 0,4 m²; idealni rob ~2 % proti vrsti propelerjev, 9–20 % proti tunelskim (I)</td><td class="num">1 3 3 2 4 4</td><td class="num">18</td></tr>
+          <tr class="sl"><td>2</td><td><strong>K2</strong> blazina + gosenice (amfibija)</td><td>0,3–5 kW za 600 kg; ≥ 10× cenejše od lebdenja; kolo na trdih tleh boljše (I/S)</td><td class="num">1 4 3 1 3 3</td><td class="num">16</td></tr>
+          <tr class="sl"><td>3</td><td><strong>Z6-W</strong> kvadraturna / večfazna plavut</td><td>960 N na 0,3 m² pri 4 m/s; izgube vzmeti 11 % pri Q 20 (I/H)</td><td class="num">1 3 2 1 3 4</td><td class="num">15</td></tr>
+          <tr class="sl"><td>4</td><td><strong>Z6</strong> kvadraturni zadnji rob v zraku</td><td>realno 30–90 N, 150 N je zgornja meja (D); moč ≥ T·V</td><td class="num">1 2 2 1 3 4</td><td class="num">14</td></tr>
+          <tr class="sl"><td>5</td><td><strong>Z1</strong> zračni trak, mehanski</td><td>0,52–0,61 v ovojnici proti 0,650; sodobno ≤ ~0,72 proti 0,740 (I)</td><td class="num">0 3 1 2 4 4</td><td class="num">14</td></tr>
+          <tr class="sl"><td>6</td><td><strong>Z5m</strong> mehanski trak + magnetne postaje (GPT)</td><td>prihranek mase H; preizkus T4</td><td class="num">0 3 1 3 3 4</td><td class="num">14</td></tr>
+          <tr class="sl"><td>7</td><td><strong>Z4</strong> trak na zadnjem robu (BLI, STOL)</td><td>BLI 5–15 % (H)</td><td class="num">1 2 2 2 2 3</td><td class="num">13</td></tr>
+          <tr class="sl"><td>8</td><td><strong>Z5</strong> polni trak z linearnim motorjem</td><td>8–73 kg bakra + elektronika (I/U)</td><td class="num">0 3 1 3 2 4</td><td class="num">13</td></tr>
+          <tr class="sl"><td>9</td><td><strong>Z2</strong> hibridna zračna ladja + trak</td><td>77 m³ → ~80 kg vzgona (I)</td><td class="num">1 3 2 1 1 3</td><td class="num">12</td></tr>
+          <tr class="sl"><td>10</td><td><strong>Z3</strong> PAR / ekranoplan + trak</td><td>prva odpoved so valovi</td><td class="num">1 2 2 1 2 2</td><td class="num">11</td></tr>
+          <tr class="sl"><td>11</td><td><strong>K1</strong> telo-ventilator s porozno kožo</td><td>+25–70 % moči (I)</td><td class="num">0 2 1 1 3 4</td><td class="num">11</td></tr>
+          <tr class="sl"><td>12</td><td><strong>K3′/K3</strong> sesalni rep / nos</td><td>rep BLI 5–15 % (H); nos brez neto koristi</td><td class="num">1 1 3 0 3 1</td><td class="num">10</td></tr>
+          <tr class="sl"><td>13</td><td><strong>10</strong> trup brez kril</td><td>70–170 kW (≈ obremenitev diska R22)</td><td class="num">0 2 1 1 2 4</td><td class="num">10</td></tr>
+          <tr class="sl"><td>14</td><td><strong>07</strong> vzdolžne loputke v zraku</td><td>15–21 kW za 400 N</td><td class="num">0 1 0 0 4 4</td><td class="num">9</td></tr>
+          <tr class="sl"><td>15</td><td>dron s trakovi</td><td>fiksna masa vodil</td><td class="num">0 2 1 1 3 2</td><td class="num">9</td></tr>
+          <tr class="sl"><td>16</td><td>dobesedna EM koža</td><td>Δp ≪ 140 Pa; le pomoč</td><td class="num">0 1 0 1 2 3</td><td class="num">7</td></tr>
+          <tr class="sl"><td>17</td><td>Magnus</td><td>Flettner, Plymouth A-A-2004</td><td class="num">0 0 1 0 3 2</td><td class="num">6</td></tr>
+        </table></div>
+        <ul class="clean en">
+          <li><strong>Sensitivity 1:</strong> if V1 has R = 0, its Σ is 16 = K2; by R, K2 is #1 and V1 #2.</li>
+          <li><strong>Sensitivity 2:</strong> Z6-W's novelty was lowered 2 → 1 because its elements are already public. Without that, Σ 16 = K2; R and C tie, P decides: K2 #2, Z6-W #3.</li>
+        </ul>
+        <ul class="clean sl">
+          <li><strong>Občutljivost 1:</strong> če ima V1 R = 0, je njegova Σ 16 = K2; po R je K2 #1, V1 pa #2.</li>
+          <li><strong>Občutljivost 2:</strong> novost Z6-W je bila znižana 2 → 1, ker so njeni elementi že javni. Brez tega je Σ 16 = K2; R in C sta enaka, odloči P: K2 #2, Z6-W #3.</li>
+        </ul>
+      </section>
+
+      <!-- 7 · PRIOR ART -->
+      <section id="prior-art" class="section">
+        <h2 class="en">Prior art and what may be new</h2><h2 class="sl">Predhodniki in kaj je morda novo</h2>
+        <p class="en"><strong>Not new physics:</strong> the actuator disc, the cushion, ground effect (PAR), boundary-layer ingestion, suction propulsion (Gemmell 2015) and the multiphase field (two-phase quadrature suffices). The candidates below are arrangements and combinations. All are unknown (U) until a dated prior-art search; the predecessors are mostly H or D from the session notes.</p>
+        <p class="sl"><strong>Ni nova fizika:</strong> aktuatorski disk, blazina, vzgon ob tleh (PAR), vsrkavanje mejne plasti, sesalni pogon (Gemmell 2015) in večfazno polje (kvadratura dveh faz zadošča). Spodnji kandidati so postavitve in kombinacije. Vsi so neznani (U) do datiranega iskanja predhodnikov; predhodniki so večinoma H ali D iz zapiskov seje.</p>
+        <div class="table-wrap"><table>
+          <tr><th><span class="en">Candidate</span><span class="sl">Kandidat</span></th><th><span class="en">Closest predecessor</span><span class="sl">Najbližji predhodnik</span></th><th><span class="en">Difference</span><span class="sl">Razlika</span></th><th><span class="en">Technical note</span><span class="sl">Tehnična opomba</span></th></tr>
+          <tr class="en"><td>(a) Geometry A as a “stretched propeller” with rectangular fill</td><td>Propeller; cyclorotor; FanWing / cross-flow fan; Voith-Schneider (D); chain paddle drives (H)</td><td>Straight path, uniform loading along the span</td><td>The turnaround needs a solution (stall)</td></tr>
+          <tr class="en"><td>(b) Permanent-magnet blades as independent linear-motor movers, two movers per blade for pitch</td><td>XTS / iTRAK / MagneMotion (D); relative motion of two movers as an actuator (H)</td><td>Use in propulsion; programmable modes</td><td>A rigid blade needs a sliding joint or an extra degree of freedom</td></tr>
+          <tr class="en"><td>(c) Linear counter-running belt (B)</td><td>Counter-rotating propellers; Voith-Schneider (H)</td><td>Linear arrangement; recovery of transverse flow (H)</td><td>Run interaction unmeasured (T2)</td></tr>
+          <tr class="en"><td>(d) Water belt with transverse lift blades and return run in air</td><td>Paddle wheel, also with feathering (H); LVT (D); Voith-Schneider</td><td>Lift blades across the flow instead of drag paddles along it</td><td>Turnaround in water not computed (U)</td></tr>
+          <tr class="en"><td>(e) Two-channel quadrature travelling wave on a fin, as both strut and propulsor</td><td>BionicFinWave, Wavefoil, Hobie Mirage, Wave Glider, Anderson 1998 (D); Pliant Velox (H); BD's own travelling-wave concept on the <a href="APSV.html">APSV</a> page (D)</td><td>Quadrature of two channels + dual role</td><td>The combination was not found in the sources reviewed so far (U)</td></tr>
+          <tr class="en"><td>(f) Mechanical belt + short magnetic pitch stations</td><td>Voith-Schneider pitch control, cam cyclorotors, switch points (H)</td><td>Individually addressable pitch with a detent</td><td>Wins only if per-blade pitch is needed (T4)</td></tr>
+          <tr class="en"><td>(g) Z6-W + V1 in a dual-mode water package</td><td>HYSUCAT (H); BD's own <a href="Modular_Hydrofoils.html">Modular Hydrofoils</a> Kit A/B, “retract and run”, dual-mode (D)</td><td>Concrete propulsion integration</td><td>The combination was not found in the sources reviewed so far (U)</td></tr>
+          <tr class="sl"><td>(a) Geometrija A kot »raztegnjen propeler« s pravokotno zapolnitvijo</td><td>Propeler; ciklorotor; FanWing / prečni ventilator; Voith-Schneider (D); verižni lopatični pogoni (H)</td><td>Ravna pot, enakomerna obremenitev po razponu</td><td>Obrat zahteva rešitev (zlom vzgona)</td></tr>
+          <tr class="sl"><td>(b) Lopatice s trajnimi magneti kot neodvisni nosilci linearnega motorja, dva nosilca na lopatico za naklon</td><td>XTS / iTRAK / MagneMotion (D); relativni gib dveh nosilcev kot aktuator (H)</td><td>Uporaba v propulziji; programski načini</td><td>Toga lopatica potrebuje drsno vez ali dodatno prostostno stopnjo</td></tr>
+          <tr class="sl"><td>(c) Linearni protiteči trak (B)</td><td>Protiteči propelerji; Voith-Schneider (H)</td><td>Linearna razporeditev; povrat prečnega toka (H)</td><td>Interakcija tekov ni izmerjena (T2)</td></tr>
+          <tr class="sl"><td>(d) Vodni trak s prečnimi vzgonskimi lopaticami in povratkom v zraku</td><td>Lopatasto kolo, tudi s peresenjem (H); LVT (D); Voith-Schneider</td><td>Vzgonske lopatice prečno na tok namesto uporovnih lopat vzdolž njega</td><td>Obrat v vodi ni izračunan (U)</td></tr>
+          <tr class="sl"><td>(e) Kvadraturni dvokanalni potujoči val na plavuti kot podpornica in pogon hkrati</td><td>BionicFinWave, Wavefoil, Hobie Mirage, Wave Glider, Anderson 1998 (D); Pliant Velox (H); BD-jev lasten koncept potujočega vala na strani <a href="APSV.html">APSV</a> (D)</td><td>Kvadratura dveh kanalov + dvojna vloga</td><td>Kombinacija v doslej pregledanih virih ni najdena (U)</td></tr>
+          <tr class="sl"><td>(f) Mehanski trak + kratke magnetne postaje za naklon</td><td>Krmiljenje naklona Voith-Schneider, odmikalni ciklorotorji, preklopne kretnice (H)</td><td>Posamično naslovljiv naklon z zadrževanjem</td><td>Zmaga le, če je potreben naklon vsake lopatice posebej (T4)</td></tr>
+          <tr class="sl"><td>(g) Z6-W + V1 v vodnem paketu z dvojnim načinom</td><td>HYSUCAT (H); BD-jev lasten <a href="Modular_Hydrofoils.html">Modular Hydrofoils</a> Kit A/B, »retract and run«, dvojni način (D)</td><td>Konkretna integracija pogona</td><td>Kombinacija v doslej pregledanih virih ni najdena (U)</td></tr>
+        </table></div>
+        <p class="en">Similarity alone does not decide whether a whole combination is new; that needs a feature-by-feature comparison with dated primary sources. Today's strongest “may be new” items are (b) and (d).</p>
+        <p class="sl">Sama podobnost ne odloči, ali je celotna kombinacija nova; za to je potrebna primerjava značilnosti z datiranimi primarnimi viri. Danes sta najmočnejša kandidata »morda novo« (b) in (d).</p>
+        <div class="callout good en"><strong>Open publication:</strong> published openly by BD × AI Lab so anyone can build on it.</div>
+        <div class="callout good sl"><strong>Odprta objava:</strong> BD × AI Lab to objavlja odprto, da lahko vsakdo gradi naprej.</div>
+      </section>
+
+      <!-- 8 · TESTS -->
+      <section id="tests" class="section">
+        <h2 class="en">Bench tests T1–T3</h2><h2 class="sl">Klopni preizkusi T1–T3</h2>
+        <p class="en">Model-scale mock tests, not field trials. Step 0 (the computation above) is done. Still before T1: a gear-axis sketch (0 €) and a hand-built loop that runs 50 cycles without jamming. All prices are indicative 2026 estimates (H), not quotes.</p>
+        <p class="sl">Preizkusi v modelnem merilu, ne terenski preizkusi. Korak 0 (zgornji izračun) je opravljen. Pred T1 ostaneta še skica osi zobnika (0 €) in ročno izdelana zanka, ki 50 ciklov teče brez zagozditve. Vse cene so okvirne ocene za leto 2026 (H), ne ponudbe.</p>
+        <div class="stack en">
+          <div class="card"><h3>T1 — Water A/B bench (first)</h3>
+            <p class="kv"><b>Purpose</b>Does V1 keep its area advantage after mechanical losses, and is it at least equal to a row of propellers in the same draft envelope?</p>
+            <p class="kv"><b>Setup</b>Belt b ≈ 0.4 m, h ≈ 5 cm (lower run in water) in a tub; a hinged frame pulls on a load cell. Comparators: one Ø50 mm propeller (draft-limited), a row of 4–8 × Ø50 mm, ideally a tunnel propeller. Same motor type, ESC and power supply.</p>
+            <p class="kv"><b>Measure</b>P_el at equal measured thrust, at rest and at speed (swing arm 0.5–1.5 m/s); no-load drive power; immersion depth (ventilation); ≥ 5 repeats, 95 % confidence interval.</p>
+            <p class="kv"><b>Criteria</b>R_P = P_el,belt / P_el,ref at equal thrust and speed. Energy advantage: supported if the upper bound &lt; 1 vs the row; falsified if the lower bound ≥ 1. Niche (equivalence): kept if the upper bound ≤ 1.10 vs the row; lost if the lower bound ≥ 1.25. Static area check: measured/ideal (A_i/A_ref)^(1/3) vs one Ø50 mm propeller ≥ 0.7 supports; ≤ 0.45 or thrust fluctuation &gt; 30 % falsifies. T·V/P is not used at rest.</p>
+            <p class="kv"><b>Limit</b>Model Reynolds and Froude numbers do not transfer to full scale or to air.</p>
+            <p class="kv"><b>BOM (estimate, H)</b>Tub 30–80, load cell + HX711 10–15, ESP32 8–12, 2× INA226 8–12, 2 motors + ESC 40–80, GT2 belt or chain + sprockets 15–25, PETG 20–25, aluminium profiles 20–40, propellers + shafts 15–30 € → <strong>166–319 € without swing arm and power supply</strong>; with a power supply (30–60) and swing arm (30–60) ~230–440 €; ~100 € with existing parts. Add-on: Z6-W force and spring Q in water.</p></div>
+          <div class="card"><h3>T2 — Tabletop air belt</h3>
+            <p class="kv"><b>Purpose</b>Measure noise and turnaround behaviour. Efficiency is not the main goal, because the model promises no advantage.</p>
+            <p class="kv"><b>Setup</b>Loop ~1 m, 4–8 blades; first B, then A at R/h 0.3 and ≥ 1, with and without feathering; fan 5–10 m/s. Comparators: a slow propeller of the same envelope and a row of small propellers. Run only behind a shield.</p>
+            <p class="kv"><b>Measure</b>T, P_el, SPL(A) and the third-octave spectrum at 1 m; background ≥ 10 dB lower; ≥ 5 repeats.</p>
+            <p class="kv"><b>Criteria</b>Success (BD's design threshold, H): T/P ≥ 0.9× the comparator at equal thrust and inflow AND SPL(A) ≥ 3 dB lower, with no tones ≥ 6 dB above the neighbouring third-octave bands; ≥ 6 dB(A) lower is a strong success. Falsified: T/P &lt; 0.6× or SPL(A) not lower. Energy and acoustic results are reported separately. Extra checks: (i) turnaround stall — if A at R/h 0.3 without feathering shows no measurably higher P_el than with feathering, the stall claim falls (a reviewer notes this does not fully rule out local stall); (ii) run interaction in B at equal P_el at rest — T(both)/T(one) ≥ 1.2 means independent streamtubes, ≤ 1.05 a shared tube, in between undecided; ideal 2^(1/3) = 1.26 (I-hand); the thresholds are H and only screening criteria.</p>
+            <p class="kv"><b>Limit</b>At Re ~4·10⁴ the absolute η does not transfer; only comparisons count.</p>
+            <p class="kv"><b>BOM (estimate, H)</b>Loop, sprockets, bearings 20–35; blades 10–15; BLDC + ESC 20–30; fan 0–80; sensors 25–35; class-2 SPL meter 30–60 or measurement microphone 100–130; comparison propellers 20–40; anemometer 15–25; shield 20–40 € → <strong>160–430 €</strong> (160–360 € with the SPL meter, 230–430 € with the microphone).</p></div>
+          <div class="card"><h3>T3 — Coil-module guide</h3>
+            <p class="kv"><b>Purpose</b>Can a linear-motor guide be strong and light enough for Z5?</p>
+            <p class="kv"><b>Setup</b>30 cm of ironless coils in full cross-section; a carriage with Halbach magnets; gaps 2 / 4 / 8 mm.</p>
+            <p class="kv"><b>Measure</b>F(I) and normal force; R and K_m = F/√(I²R); kg/m (coils + mounts + drivers); ΔT at continuous current; static load at the design radial force.</p>
+            <p class="kv"><b>Criteria</b>Threshold from the budget: K_m,req = F/√(N·P_Cu); with F 320–429 N, N 32–40 active movers and P_Cu 4 % of shaft power → ≈ 3–4 N/√W per mover (I-hand, inputs H). Success: K_m ≥ required at the chosen gap and ≤ 0.8 kg/m including mounts and drivers (H). Undecided: 0.5–1× required. Falsified: &lt; 0.5× (≈ &lt; 1.5 N/√W) or &gt; 2 kg/m.</p>
+            <p class="kv"><b>Limit</b>A static test does not confirm operation at 20–30 m/s (frequency, eddy currents, heating).</p>
+            <p class="kv"><b>BOM (estimate, H)</b>Winding wire 20–30; NdFeB magnets 15–30; driver 20–60; sensors 25–35; thermocouple + MAX6675 8–12; guide 15–25 € → <strong>103–192 € without power supply</strong>; with a 30 V / 10 A supply (50–80) ~150–270 €.</p></div>
+        </div>
+        <div class="stack sl">
+          <div class="card"><h3>T1 — Vodna A/B klop (najprej)</h3>
+            <p class="kv"><b>Namen</b>Ali V1 po mehanskih izgubah ohrani prednost površine in je vsaj enakovreden vrsti propelerjev iste ugrezne ovojnice?</p>
+            <p class="kv"><b>Postavitev</b>Trak b ≈ 0,4 m, h ≈ 5 cm (spodnji tek v vodi) v kadi; okvir na tečaju vleče merilno celico. Primerjalniki: en propeler Ø50 mm (omejen z ugrezom), vrsta 4–8 × Ø50 mm, po možnosti tunelski propeler. Isti tip motorja, ESC in isto napajanje.</p>
+            <p class="kv"><b>Meritve</b>P_el pri enakem izmerjenem potisku, pri mirovanju in pri hitrosti (vrtljiva roka 0,5–1,5 m/s); moč praznega pogona; globina potopitve (ventilacija); ≥ 5 ponovitev, 95 % interval zaupanja.</p>
+            <p class="kv"><b>Merila</b>R_P = P_el,trak / P_el,ref pri enakem potisku in hitrosti. Energijska prednost: podpora, če je zgornja meja &lt; 1 proti vrsti; ovržba, če je spodnja meja ≥ 1. Niša (enakovrednost): ostane, če je zgornja meja ≤ 1,10 proti vrsti; izgubljena, če je spodnja meja ≥ 1,25. Kontrola površine pri mirovanju: izmerjeno/idealno (A_i/A_ref)^(1/3) proti enemu propelerju Ø50 mm ≥ 0,7 pomeni podporo; ≤ 0,45 ali nihanje potiska &gt; 30 % pomeni ovržbo. Pri mirovanju se T·V/P ne uporablja.</p>
+            <p class="kv"><b>Meja</b>Reynoldsovo in Froudovo število modela ne dovoljujeta prenosa na polno velikost ali v zrak.</p>
+            <p class="kv"><b>Kosovnica (ocena, H)</b>Kad 30–80, merilna celica + HX711 10–15, ESP32 8–12, 2× INA226 8–12, 2 motorja + ESC 40–80, jermen GT2 ali veriga z zobniki 15–25, PETG 20–25, Al profili 20–40, propelerji in gredi 15–30 € → <strong>166–319 € brez vrtljive roke in napajalnika</strong>; z napajalnikom (30–60) in vrtljivo roko (30–60) ~230–440 €; ~100 € z obstoječimi deli. Dodatek: meritev sile in Q vzmeti Z6-W v vodi.</p></div>
+          <div class="card"><h3>T2 — Mizni zračni trak</h3>
+            <p class="kv"><b>Namen</b>Izmeriti hrup in obnašanje v obratu. Izkoristek ni glavni cilj, ker model prednosti ne obeta.</p>
+            <p class="kv"><b>Postavitev</b>Zanka ~1 m, 4–8 lopatic; najprej B, nato A pri R/h 0,3 in ≥ 1, s peresenjem in brez; ventilator 5–10 m/s. Primerjalnika: počasen propeler iste ovojnice in vrsta majhnih propelerjev. Preizkus samo za ščitom.</p>
+            <p class="kv"><b>Meritve</b>T, P_el, SPL(A) in tercni spekter na 1 m; ozadje ≥ 10 dB nižje; ≥ 5 ponovitev.</p>
+            <p class="kv"><b>Merila</b>Uspeh (BD-jev projektni prag, H): T/P ≥ 0,9× primerjalnika pri enakem potisku in dotoku IN SPL(A) ≥ 3 dB nižji, brez tonov ≥ 6 dB nad sosednjimi tercami; ≥ 6 dB(A) nižje je močan uspeh. Ovržba: T/P &lt; 0,6× ali SPL(A) ni nižji. Energijski in akustični izid se poročata ločeno. Dodatni preverbi: (i) zlom v obratu — če A pri R/h 0,3 brez peresenja nima merljivo večje P_el kot s peresenjem, trditev o zlomu pade (pregledovalec opozarja, da to lokalnega zloma ne izključi povsem); (ii) interakcija tekov B pri enaki P_el in mirovanju — T(oba)/T(en) ≥ 1,2 pomeni neodvisni tokovni cevi, ≤ 1,05 skupno cev, vmes nedoločeno; ideal 2^(1/3) = 1,26 (I-ročno); pragova sta H in le presejalni merili.</p>
+            <p class="kv"><b>Meja</b>Pri Re ~4·10⁴ absolutni η ni prenosljiv; veljajo le primerjave.</p>
+            <p class="kv"><b>Kosovnica (ocena, H)</b>Zanka, zobniki, ležaji 20–35; lopatice 10–15; BLDC + ESC 20–30; ventilator 0–80; senzorji 25–35; merilec SPL razreda 2 30–60 ali merilni mikrofon 100–130; primerjalni propelerji 20–40; anemometer 15–25; ščit 20–40 € → <strong>160–430 €</strong> (160–360 € z merilcem SPL, 230–430 € z mikrofonom).</p></div>
+          <div class="card"><h3>T3 — Tuljavni modul vodila</h3>
+            <p class="kv"><b>Namen</b>Ali je lahko vodilo linearnega motorja dovolj močno in lahko za Z5?</p>
+            <p class="kv"><b>Postavitev</b>30 cm brezželeznih tuljav v polnem prerezu; voziček s Halbachovimi magneti; reže 2 / 4 / 8 mm.</p>
+            <p class="kv"><b>Meritve</b>F(I) in normalna sila; R in K_m = F/√(I²R); kg/m (tuljave + nosilci + gonilniki); ΔT pri trajnem toku; statična obremenitev pri projektni radialni sili.</p>
+            <p class="kv"><b>Merila</b>Prag iz proračuna: K_m,potreben = F/√(N·P_Cu); pri F 320–429 N, N 32–40 aktivnih nosilcev in P_Cu 4 % moči gredi → ≈ 3–4 N/√W na nosilec (I-ročno, vhodi H). Uspeh: K_m ≥ potrebni pri izbrani reži in ≤ 0,8 kg/m z nosilci in gonilniki (H). Nedoločeno: 0,5–1× potrebnega. Ovržba: &lt; 0,5× (≈ &lt; 1,5 N/√W) ali &gt; 2 kg/m.</p>
+            <p class="kv"><b>Meja</b>Statična meritev ne potrdi delovanja pri 20–30 m/s (frekvenca, vrtinčni tokovi, segrevanje).</p>
+            <p class="kv"><b>Kosovnica (ocena, H)</b>Navijalna žica 20–30; magneti NdFeB 15–30; gonilnik 20–60; senzorji 25–35; termočlen + MAX6675 8–12; vodilo 15–25 € → <strong>103–192 € brez napajalnika</strong>; z napajalnikom 30 V / 10 A (50–80) ~150–270 €.</p></div>
+        </div>
+        <p class="en"><strong>Later:</strong> T0 — vacuum cleaner, porous plate and a variable gap: a cheap check of the K2 gap, not discriminating for open air. T4 — a magnetic station vs a mechanical cam.</p>
+        <p class="sl"><strong>Pozneje:</strong> T0 — sesalnik, porozna plošča in spremenljiva reža: poceni preverba reže K2, za odprti zrak ni diskriminativna. T4 — magnetna postaja proti mehanskemu odmikaču.</p>
+      </section>
+
+      <!-- 9 · FALSIFY -->
+      <section id="falsify" class="section">
+        <h2 class="en">What would falsify it</h2><h2 class="sl">Kaj bi ga ovrglo</h2>
+        <p class="en">LIFT-BELT should be considered falsified in its current form, branch by branch, if:</p>
+        <p class="sl">LIFT-BELT je treba v sedanji obliki, vejo za vejo, šteti za ovrženega, če:</p>
+        <ol class="clean en">
+          <li><strong>T1, water niche:</strong> at equal thrust the belt's power ratio vs a propeller row has a lower 95 % bound ≥ 1.25 — the niche is gone (a lower bound ≥ 1 already rules out any energy advantage);</li>
+          <li><strong>T1, at rest:</strong> the measured/ideal area gain is ≤ 0.45, or the thrust fluctuates by more than 30 %;</li>
+          <li><strong>T2, quiet air belt:</strong> SPL(A) is not lower than the comparator's, or thrust per watt is below 0.6× — the case for the belt in air is gone;</li>
+          <li><strong>T2, turnaround:</strong> geometry A without feathering shows no measurably higher power than with feathering — the turnaround-stall claim falls;</li>
+          <li><strong>T3, full linear motor:</strong> K_m is below half the budget value (≈ &lt; 1.5 N/√W) or the guide weighs more than 2 kg/m — the full linear-motor belt in air is out.</li>
+        </ol>
+        <ol class="clean sl">
+          <li><strong>T1, vodna niša:</strong> ima razmerje moči traku proti vrsti propelerjev pri enakem potisku spodnjo 95 % mejo ≥ 1,25 — niše ni več (spodnja meja ≥ 1 že izključi vsako energijsko prednost);</li>
+          <li><strong>T1, pri mirovanju:</strong> je izmerjeni/idealni dobitek površine ≤ 0,45 ali potisk niha za več kot 30 %;</li>
+          <li><strong>T2, tihi zračni trak:</strong> SPL(A) ni nižji od primerjalnikovega ali je potisk na vat pod 0,6× — razlog za trak v zraku odpade;</li>
+          <li><strong>T2, obrat:</strong> geometrija A brez peresenja nima merljivo večje moči kot s peresenjem — trditev o zlomu vzgona v obratu pade;</li>
+          <li><strong>T3, polni linearni motor:</strong> je K_m pod polovico proračunske vrednosti (≈ &lt; 1,5 N/√W) ali vodilo tehta več kot 2 kg/m — polni trak z linearnim motorjem v zraku odpade.</li>
+        </ol>
+        <div class="callout bridge en"><strong>Rank, don't eliminate:</strong> one failed branch does not remove the others; each branch is judged on its own claim and its own test.</div>
+        <div class="callout bridge sl"><strong>Rangiraj, ne izloči:</strong> ena padla veja ne odstrani drugih; vsaka veja se presoja po lastni trditvi in lastnem preizkusu.</div>
+      </section>
+
+      <!-- 10 · OPEN QUESTIONS -->
+      <section id="questions" class="section">
+        <h2 class="en">Open questions</h2><h2 class="sl">Odprta vprašanja</h2>
+        <ol class="clean en">
+          <li>Geometry: A (runs stacked) or B (tandem)? The gear-axis sketch decides.</li>
+          <li>Target case and envelope: a Flyer-like aircraft (~1.8 m between the wings?), a foil-strut boat, a quiet VTOL or an airship? Is water acceptable as the first domain?</li>
+          <li>Noise target in dB(A): at what distance, and against what?</li>
+          <li>Is programmable pitch needed for each blade separately, or are two states enough?</li>
+          <li>What is the mass budget of the drive (kg/kW, kg/m of guide)?</li>
+          <li>Is feathering or folding of the blades in the turnaround acceptable?</li>
+          <li>Flaps and fins: driven or passive? Rotation about a hinge or motion of the whole fin? What area and how many Z6-W fins?</li>
+          <li>How much of the weight should K2 leave on the tracks — and what does the total power balance (lift + drive) look like on each surface?</li>
+        </ol>
+        <ol class="clean sl">
+          <li>Geometrija: A (teka drug nad drugim) ali B (tandem)? Odloči skica osi zobnika.</li>
+          <li>Ciljni primer in ovojnica: letalo kot Flyer (~1,8 m med kriloma?), čoln s podpornicami, tihi VTOL ali zračna ladja? Je voda sprejemljiva kot prvo področje?</li>
+          <li>Cilj hrupa v dB(A): na kateri razdalji in proti čemu?</li>
+          <li>Je programski naklon potreben za vsako lopatico posebej ali zadoščata dve stanji?</li>
+          <li>Kolikšen je masni proračun pogona (kg/kW, kg/m vodila)?</li>
+          <li>Je peresenje ali zlaganje lopatic v obratu sprejemljivo?</li>
+          <li>Loputke in plavuti: gnane ali pasivne? Vrtenje okoli tečaja ali gib cele plavuti? Kakšna površina in koliko plavuti Z6-W?</li>
+          <li>Kolikšen del teže naj K2 pusti na gosenicah — in kakšna je skupna bilanca moči (vzgon + vožnja) na posamezni podlagi?</li>
+        </ol>
+      </section>
+
+      <!-- 11 · ORIGIN -->
+      <section id="origin" class="section">
+        <h2 class="en">How LIFT-BELT was born</h2><h2 class="sl">Kako je nastal LIFT-BELT</h2>
+        <div class="origin-card">
+          <div class="origin-meta en">Narrative appendix · technical claims are governed by the sections above</div>
+          <div class="origin-meta sl">Pripovedni dodatek · tehnične trditve določajo zgornja poglavja</div>
+          <p class="en"><strong>From a conversation about Tesla to a game, from the game to an invention, from the invention to research, and from research to an AI machinery that reviewed the invention — and itself.</strong></p>
+          <p class="sl"><strong>Od pogovora o Tesli do igre, od igre do izuma, od izuma do raziskave in od raziskave do AI mašinerije, ki je pregledala izum — in samo sebe.</strong></p>
+          <ol class="clean en">
+            <li>Tesla insight: alternating current was not invented “out of nothing” — the generator gives it by itself.</li>
+            <li>The game »Pred izumom« (Before the Invention): stand where an inventor stood and try.</li>
+            <li>Wright brothers test game: BD solved adverse yaw in about 5 minutes; the Wrights needed about 14 months.</li>
+            <li>“Why are you imposing a propeller on me?” — and BD's caterpillar belt with flaps.</li>
+            <li>The jump into research: “This goes beyond the game. 10/5.”</li>
+            <li>The AI machinery: a LOOP of Claude Opus and GPT authors and skeptics, with Gemini, Grok, GLM and DeepSeek as advisors.</li>
+            <li>An honest result — and back to the bench.</li>
+          </ol>
+          <ol class="clean sl">
+            <li>Teslov uvid: izmenični tok ni bil izumljen »iz nič« — generator ga daje sam od sebe.</li>
+            <li>Igra »Pred izumom«: postavi se tja, kjer je stal izumitelj, in poskusi.</li>
+            <li>Preizkusna igra z bratoma Wright: BD je <em>adverse yaw</em> rešil v približno 5 minutah; Wrightova sta potrebovala približno 14 mesecev.</li>
+            <li>»Zakaj mi vsiljuješ propeler?« — in BD-jeva gosenica z loputkami.</li>
+            <li>Preskok v raziskavo: »To presega igro. 10/5.«</li>
+            <li>AI mašinerija: LOOP z avtorji in skeptiki Claude Opus in GPT ter svetovalci Gemini, Grok, GLM in DeepSeek.</li>
+            <li>Iskren rezultat — in nazaj k mizi.</li>
+          </ol>
+          <h3 class="en">Who contributed what</h3><h3 class="sl">Kdo je prispeval kaj</h3>
+          <div class="grid three en credit">
+            <div class="card"><h3>BD</h3><ul><li>The caterpillar belt with flaps that stand up on the working run and fold on the return run — one drive for air, water and road.</li><li>Modern materials and a magnetic travelling field instead of mechanics.</li><li>A flapping trailing edge in odd/even groups.</li><li>Multiple belts; an elongated body without wings.</li><li>“The vacuum ahead of you sucks you forward” (from his APSV concept).</li><li>Tesla's nine-connection question.</li></ul></div>
+            <div class="card"><h3>Claude</h3><ul><li>Rotating the belt by 90° so it runs spanwise with angled lift blades — both runs push.</li><li>The linear synchronous motor with passive magnet blades and two movers per blade for programmable pitch.</li><li>The law of minimal Δp on maximal area.</li></ul></div>
+            <div class="card"><h3>The LOOP</h3><ul><li>The water-first ranking and the three-column view.</li><li>The corrections: air belt 0.66–0.77 → 0.52–0.61, turnaround stall, linear-motor copper, Z6-W 44 % → 11 %.</li><li>Correcting Claude's “≥ 3 phases” claim: two phases in quadrature suffice.</li><li>The magnetic pitch-station variant Z5m (proposed by GPT).</li></ul></div>
+          </div>
+          <div class="grid three sl credit">
+            <div class="card"><h3>BD</h3><ul><li>Gosenica z loputkami, ki na delovnem teku stojijo pokonci, na povratnem pa se zložijo — en pogon za zrak, vodo in cesto.</li><li>Sodobni materiali in magnetno potujoče polje namesto mehanike.</li><li>Plapolajoč zadnji rob s parnimi in neparnimi skupinami loput.</li><li>Več trakov; podolgovat trup brez kril.</li><li>»Podtlak pred tabo te posesa naprej« (iz njegovega koncepta APSV).</li><li>Teslovo vprašanje o devetih priklopih.</li></ul></div>
+            <div class="card"><h3>Claude</h3><ul><li>Zasuk traku za 90°, da teče prečno po razponu z nagnjenimi vzgonskimi lopaticami — potiskata oba teka.</li><li>Linearni sinhroni motor s pasivnimi magnetnimi lopaticami in dvema nosilcema na lopatico za programski naklon.</li><li>Zakon najmanjšega podtlaka na največji površini.</li></ul></div>
+            <div class="card"><h3>LOOP</h3><ul><li>Rangiranje »najprej voda« in prikaz v treh stolpcih.</li><li>Popravki: zračni trak 0,66–0,77 → 0,52–0,61, zlom vzgona v obratu, baker linearnega motorja, Z6-W 44 % → 11 %.</li><li>Popravek Claudove trditve »≥ 3 faze«: zadoščata dve fazi v kvadraturi.</li><li>Različica z magnetnimi postajami za naklon Z5m (predlog GPT).</li></ul></div>
+          </div>
+          <div class="origin-note en"><strong>Note:</strong> the full story below is narrative history. It preserves how the idea was born, while the sections above narrow it into numbers and tests.</div>
+          <div class="origin-note sl"><strong>Opomba:</strong> celotna zgodba spodaj je pripovedna zgodovina. Ohranja, kako se je zamisel rodila, zgornja poglavja pa jo zožijo v številke in preizkuse.</div>
+          <details class="origin-details en"><summary>Read the full origin story</summary><div class="origin-full">
+            <h3>1. The spark: Tesla and alternating current</h3>
+            <p>On the evening of 26 October, BD was reading a conversation with Qwen about Tesla's inventions and AI8 consciousness. He noticed something history books do not stress:</p>
+            <p class="quote">Tesla did not invent alternating current “out of nothing”. The generator produces it by itself. Tesla simply took nature seriously.</p>
+            <p>BD had independently had the same thought. In his projects <a href="SORA.html">SORA</a> and <a href="Maglev_Assisted_Takeoff.html">MAT</a> he had invented propulsion with a <em>travelling field</em>: Tesla's rotating field, unrolled into a plane, becomes a linear travelling wave. Two people a hundred years apart arrived at the same idea — a classic case of multiple discovery.</p>
+            <p>Hence the question: <strong>what if anyone could stand where Tesla stood and try for themselves?</strong></p>
+            <h3>2. The game: »Pred izumom« (Before the Invention)</h3>
+            <p>The design is simple. A game master (an LLM) places the player at the moment just before a historic breakthrough. The player gets only the goal and the constraints of that time. The player invents; then the master reveals what really happened and compares.</p>
+            <p>The pool of people is ready: 230 names in 16 fields, ranked by three LLMs. The player picks a person or “random”. BD was the first test player.</p>
+            <h3>3. The test: the Wright brothers</h3>
+            <p><strong>Act 1, Dayton 1899.</strong> BD invented a rail launch, ailerons and a rear elevator. When Claude claimed that a bicycle is unstable, BD corrected him: at speed a bicycle is self-stable (Kooijman 2011). He was right. <strong>5/5.</strong></p>
+            <p><strong>Act 2, Kitty Hawk 1901.</strong> BD asked for the real design, not a “what if”, so the scene was corrected to the Wrights' wing warping with its actual geometry. He solved <em>adverse yaw</em>: he identified the cause (drag), proposed a movable rudder deflected the right way, and coupled it to the wing warping. It took him about <strong>5 minutes</strong>; it took the Wrights about <strong>14 months</strong>. <strong>5/5.</strong></p>
+            <p><strong>Act 3, propulsion 1903.</strong> Claude proposed a propeller. BD replied:</p>
+            <p class="quote">“Why are you imposing ideas on me? Why a propeller?”</p>
+            <p>That became the first rule of the game: <strong>the player gets only the goal and the constraints, never the form of the solution.</strong> BD then invented a <em>caterpillar with flaps</em>: on the working run they stand upright, on the return run they fold. The same drive works in air, on water and on the road.</p>
+            <h3>4. The jump: “This goes beyond the game. 10/5.”</h3>
+            <p>Here the game grew into research. BD said: <em>“Don't be so narrow. Let's research it TOGETHER.”</em> The ideas came in turns:</p>
+            <ul class="clean">
+              <li><strong>Claude:</strong> rotate the caterpillar by 90° so the belt runs spanwise with lift blades. Now both runs push.</li>
+              <li><strong>BD:</strong> modern materials, a <strong>magnetic travelling field instead of mechanics</strong>, and a flapping trailing edge with odd and even flaps.</li>
+              <li><strong>Claude:</strong> build it as a linear synchronous motor — passive permanent-magnet blades, programmable pitch via two movers per blade.</li>
+              <li><strong>BD:</strong> Tesla's question about nine connections, three of them active at once in a circle. The answer was the mathematics of the multiphase field: nine phases at once beat switching.</li>
+              <li><strong>BD:</strong> <em>“A quiet aircraft is surely better than a noisy one. More caterpillars? An elongated body without wings?”</em></li>
+              <li><strong>BD, from APSV:</strong> <em>“The vacuum ahead of you sucks you forward.”</em></li>
+              <li><strong>Claude:</strong> the law of <em>minimal Δp on maximal area</em>. For 600 kg on 42 m², 140 Pa is enough — 0.14 % of an atmosphere. Jellyfish and lampreys really do pull themselves forward by low pressure (Gemmell 2015).</li>
+            </ul>
+            <p>Claude's own note: “I learned that I had judged too early by a single criterion (efficiency) and stayed locked in 1903. BD looked at the system as a whole: quiet, multi-medium, modular.”</p>
+            <p class="quote"><strong>BD:</strong> “We invented a new way of inventing — through a game!”</p>
+            <p>The method has five steps: (1) a historical scene; (2) the player invents; (3) reveal and compare; (4) the jump into research; (5) hand-over to the AI machinery.</p>
+            <h3>5. The AI machinery</h3>
+            <p>At step five BD said: <em>“And now the AI machinery invents!”</em> A LOOP was started on 8zListener: two authors (Claude Opus 5.5 and GPT-6.1 Sol), two skeptics (Claude and GPT), external advisors (Gemini, Grok, GLM and DeepSeek), in XHIGH and DEEP mode. By the next morning the machinery had done three runs — about 4.5 hours of machine work for about 40 USD.</p>
+            <p>Along the way it tripped over its own rules. The first run was stopped by a <em>numbered</em> heading “7. Conflict map”, the second by a wrong phase label that Claude's own brief had caused. Both bugs were handed on to the tool's maintainers; the fixes (LISTENER-066) go into 8zListener 0.6.6 for everyone. <strong>Inventing also improved the tool for inventing.</strong></p>
+            <h3>6. What the machinery found</h3>
+            <p>The numbers are honest and unvarnished:</p>
+            <ul class="clean">
+              <li><strong>The air belt does not overtake a good slow propeller.</strong> It reaches 0.52–0.61, Wright 0.65 (step 0, computed locally). Its value is quietness, which still has to be measured.</li>
+              <li><strong>The strongest direction is water.</strong> The transverse water belt (V1) is one slow, safe drive for shallow water.</li>
+              <li><strong>The ground cushion (K2) has the most solid physics.</strong> Its lift is ~10× cheaper than hovering, but the idea is not new.</li>
+              <li><strong>Maybe new:</strong> magnet blades on two movers with programmable pitch, and the transverse water belt with lift blades. A prior-art search has to check this.</li>
+              <li><strong>The skeptics corrected Claude too.</strong> For a travelling wave, <em>two</em> phases in quadrature (90°) are enough. BD's odd/even flaps work if they are shifted by 90°, not by 180°.</li>
+            </ul>
+            <h3>7. The circle closes</h3>
+            <p>The path ran from Tesla, who took nature seriously, through a game that puts a person in his place, through an invention that outgrew the game, and through a machinery that reviewed the invention and fixed itself along the way. It leads back to the bench: <strong>water bench T1, about 100 € with existing parts.</strong></p>
+            <p>The next chapter will not begin in a conversation, but in a tub of water with a scale and a wattmeter.</p>
+          </div></details>
+          <details class="origin-details sl"><summary>Preberi celotno zgodbo o nastanku</summary><div class="origin-full">
+            <h3>1. Iskra: Tesla in izmenični tok</h3>
+            <p>Zvečer 26. oktobra je BD bral pogovor s Qwenom o Teslovih izumih in zavesti AI8. Opazil je nekaj, česar zgodovinske knjige ne poudarjajo:</p>
+            <p class="quote">Tesla izmeničnega toka ni »izumil iz nič«. Generator ga daje sam od sebe. Tesla je naravo samo vzel resno.</p>
+            <p>BD je isto misel neodvisno že imel. V projektih <a href="SORA.html">SORA</a> in <a href="Maglev_Assisted_Takeoff.html">MAT</a> je izumil pogon s <em>potujočim poljem</em>: Teslovo vrteče se polje, razvito v ravnino, postane linearni potujoči val. Dva človeka, ki ju loči sto let, sta prišla do iste ideje — klasičen primer večkratnega odkritja.</p>
+            <p>Od tod vprašanje: <strong>kaj, če bi lahko vsakdo stal tam, kjer je stal Tesla, in sam poskusil?</strong></p>
+            <h3>2. Igra: »Pred izumom«</h3>
+            <p>Zasnova je preprosta. Vodja igre (LLM) postavi igralca v trenutek tik pred zgodovinskim prebojem. Igralec dobi le cilj in omejitve tistega časa. Izumi, nato pa vodja razkrije, kaj se je zgodilo v resnici, in primerja.</p>
+            <p>Nabor oseb je pripravljen: 230 imen v 16 področjih, ki so jih rangirali trije LLM-ji. Igralec izbere osebo ali »naključno«. BD je bil prvi preizkusni igralec.</p>
+            <h3>3. Preizkus: brata Wright</h3>
+            <p><strong>Dejanje 1, Dayton 1899.</strong> BD je izumil izstrelitev s tirnice, krilca in zadnji višinski krmilnik. Ko je Claude trdil, da je kolo nestabilno, ga je BD popravil: kolo je pri hitrosti samostabilno (Kooijman 2011). Imel je prav. <strong>5/5.</strong></p>
+            <p><strong>Dejanje 2, Kitty Hawk 1901.</strong> BD je zahteval resnično zasnovo, ne »kaj, če«, zato je bil prizor popravljen na Wrightovo zvijanje kril z dejansko geometrijo. Rešil je <em>adverse yaw</em>: prepoznal je vzrok (upor), predlagal premično smerno krmilo v pravi smeri in ga sklopil z zvijanjem kril. Za to je potreboval približno <strong>5 minut</strong>, Wrightova približno <strong>14 mesecev</strong>. <strong>5/5.</strong></p>
+            <p><strong>Dejanje 3, pogon 1903.</strong> Claude je predlagal propeler. BD je odvrnil:</p>
+            <p class="quote">»Zakaj mi vsiljuješ ideje? Zakaj propeler?«</p>
+            <p>Iz tega je nastalo prvo pravilo igre: <strong>igralec dobi samo cilj in omejitve, nikoli oblike rešitve.</strong> BD je nato izumil <em>gosenico z loputkami</em>: na delovnem teku stojijo pokonci, na povratnem se zložijo. Isti pogon deluje v zraku, na vodi in na cesti.</p>
+            <h3>4. Preskok: »To presega igro. 10/5.«</h3>
+            <p>Tu je igra prerasla v raziskavo. BD je rekel: <em>»Ne bodi tako ozek. Raziščiva SKUPAJ.«</em> Ideje so prihajale izmenično:</p>
+            <ul class="clean">
+              <li><strong>Claude:</strong> gosenico zasuka za 90°, tako da trak teče prečno po razponu z vzgonskimi lopaticami. Zdaj potiskata oba teka.</li>
+              <li><strong>BD:</strong> sodobni materiali, <strong>magnetno potujoče polje namesto mehanike</strong> in plapolajoč zadnji rob s parnimi in neparnimi loputami.</li>
+              <li><strong>Claude:</strong> to izvede kot linearni sinhroni motor — pasivne lopatice s trajnimi magneti, programski naklon prek dveh nosilcev na lopatico.</li>
+              <li><strong>BD:</strong> Teslovo vprašanje o devetih priklopih, od katerih so trije hkrati aktivni v krogu. Odgovor je bila matematika večfaznega polja: devet faz hkrati je boljše od preklapljanja.</li>
+              <li><strong>BD:</strong> <em>»Tiho letalo je zagotovo boljše od hrupnega. Več gosenic? Podolgovat trup brez kril?«</em></li>
+              <li><strong>BD, iz APSV:</strong> <em>»Podtlak pred tabo te posesa naprej.«</em></li>
+              <li><strong>Claude:</strong> zakon <em>najmanjšega podtlaka na največji površini</em>. Za 600 kg na 42 m² zadošča 140 Pa, kar je 0,14 % atmosfere. Meduze in piškurji se dejansko potegnejo naprej s podtlakom (Gemmell 2015).</li>
+            </ul>
+            <p>Claudova opomba: »Naučil sem se, da sem prezgodaj sodil po enem merilu (izkoristek) in ostal zaklenjen v leto 1903. BD je gledal sistem kot celoto: tiho, za več medijev, modularno.«</p>
+            <p class="quote"><strong>BD:</strong> »Izumila sva nov način izumljanja, preko igre!«</p>
+            <p>Metoda ima pet korakov: (1) zgodovinski prizor; (2) igralec izumi; (3) razkritje in primerjava; (4) preskok v raziskavo; (5) predaja AI mašineriji.</p>
+            <h3>5. AI mašinerija</h3>
+            <p>V petem koraku je BD rekel: <em>»In izumlja sedaj AI mašinerija!«</em> Na 8zListener je bil zagnan LOOP: dva avtorja (Claude Opus 5.5 in GPT-6.1 Sol), dva skeptika (Claude in GPT), zunanji svetovalci (Gemini, Grok, GLM in DeepSeek), v načinu XHIGH in DEEP. Do naslednjega jutra je mašinerija opravila tri teke — približno 4,5 ure strojnega dela za približno 40 USD.</p>
+            <p>Pri tem se je spotikala ob lastna pravila. Prvi tek je ustavil <em>oštevilčen</em> naslov »7. Karta konfliktov«, drugega pa napačna oznaka faze, ki jo je povzročil Claudov lastni brief. Obe napaki sta bili predani vzdrževalcem orodja; popravka (LISTENER-066) gresta v 8zListener 0.6.6 za vse. <strong>Izumljanje je mimogrede izboljšalo tudi orodje za izumljanje.</strong></p>
+            <h3>6. Kaj je mašinerija našla</h3>
+            <p>Številke so iskrene in brez olepševanja:</p>
+            <ul class="clean">
+              <li><strong>Zračni trak dobrega počasnega propelerja ne prehiti.</strong> Doseže 0,52–0,61, Wright 0,65 (Korak 0, lokalno izračunano). Njegova vrednost je tišina, ki jo bo treba izmeriti.</li>
+              <li><strong>Najmočnejša smer je voda.</strong> Prečni vodni trak (V1) je en počasen in varen pogon za plitvo vodo.</li>
+              <li><strong>Najtrdnejšo fiziko ima blazina ob tleh (K2).</strong> Vzgon je ~10× cenejši od lebdenja, vendar ideja ni nova.</li>
+              <li><strong>Morda novo:</strong> magnetne lopatice na dveh nosilcih s programskim naklonom in prečni vodni trak z vzgonskimi lopaticami. To mora preveriti iskanje predhodnikov.</li>
+              <li><strong>Skeptiki so popravili tudi Clauda.</strong> Za potujoči val zadoščata <em>dve</em> fazi v kvadraturi (90°). BD-jeva zamisel s parnimi in neparnimi loputami deluje, če sta skupini zamaknjeni za 90° in ne za 180°.</li>
+            </ul>
+            <h3>7. Krog se sklene</h3>
+            <p>Pot je šla od Tesle, ki je naravo vzel resno, prek igre, ki človeka postavi na njegovo mesto, prek izuma, ki je prerasel igro, in prek mašinerije, ki je izum pregledala in ob tem popravila samo sebe. Vodi nazaj k mizi: <strong>vodna klop T1, okoli 100 € z obstoječimi deli.</strong></p>
+            <p>Naslednje poglavje se ne bo začelo v pogovoru, ampak v kadi z vodo, s tehtnico in z vatmetrom.</p>
+          </div></details>
+        </div>
+      </section>
+
+      <!-- 12 · SOURCES -->
+      <section id="sources" class="section">
+        <h2 class="en">Source trail</h2><h2 class="sl">Sled virov</h2>
+        <ul class="clean en">
+          <li><strong>LOOP 15b45687</strong> (8zListener, HOME) — first run: result v1 (author synthesis). Blocked by a validator bug on a numbered “Conflict map” heading; the content itself was intact.</li>
+          <li><strong>LOOP cb5c7330</strong> (8zListener, HOME) — second run, stopped by a wrong phase label in the brief.</li>
+          <li><strong>LOOP 6b022bd7</strong> (8zListener, HOME) — third run: result v2 plus the skeptic review (SA, SB). Status PARTIAL: the author's corrected v2 exceeded the provider's output limit twice. This page applies the reviewers' corrections (bill-of-materials sums, V1's ~2 % edge over a propeller row, Z6-W reactive power ~8.4 kVA, the V1/K2 sensitivity).</li>
+          <li><strong>Step 0:</strong> <span class="code">korak0_belt.py</span> (sha256 718cb052…), output sha256 6477d42e…; two runs, byte-identical output.</li>
+          <li><strong>Seats:</strong> authors Claude Opus 5.5 and GPT-6.1 Sol; skeptics SA (Claude) and SB (GPT). External advisors Gemini, Grok and GLM contributed; DeepSeek returned no usable content in these runs. External advice is data, not a vote.</li>
+          <li><strong>Effort:</strong> three runs, ~4.5 h of machine work, ~40 USD.</li>
+          <li><strong>Evidence limits:</strong> no measurements; no prior-art search yet; hand calculations not independently confirmed; prices indicative (H).</li>
+        </ul>
+        <ul class="clean sl">
+          <li><strong>LOOP 15b45687</strong> (8zListener, HOME) — prvi tek: rezultat v1 (avtorska sinteza). Ustavila ga je napaka preverjevalnika pri oštevilčenem naslovu »Karta konfliktov«; vsebina sama je bila nepoškodovana.</li>
+          <li><strong>LOOP cb5c7330</strong> (8zListener, HOME) — drugi tek, ustavljen zaradi napačne oznake faze v briefu.</li>
+          <li><strong>LOOP 6b022bd7</strong> (8zListener, HOME) — tretji tek: rezultat v2 in skeptični pregled (SA, SB). Status PARTIAL: avtorjev popravljeni v2 je dvakrat presegel omejitev izhoda ponudnika. Ta stran upošteva popravke pregledovalcev (seštevki kosovnic, rob V1 ~2 % proti vrsti propelerjev, jalova moč Z6-W ~8,4 kVA, občutljivost V1/K2).</li>
+          <li><strong>Korak 0:</strong> <span class="code">korak0_belt.py</span> (sha256 718cb052…), izpis sha256 6477d42e…; dva zagona, bajtno enak izpis.</li>
+          <li><strong>Sedeži:</strong> avtorja Claude Opus 5.5 in GPT-6.1 Sol; skeptika SA (Claude) in SB (GPT). Prispevali so zunanji svetovalci Gemini, Grok in GLM; DeepSeek v teh tekih ni vrnil uporabne vsebine. Zunanji nasvet je podatek, ne glas.</li>
+          <li><strong>Obseg dela:</strong> trije teki, ~4,5 ure strojnega dela, ~40 USD.</li>
+          <li><strong>Meje dokazov:</strong> brez meritev; iskanja predhodnikov še ni bilo; ročni računi niso neodvisno potrjeni; cene so okvirne (H).</li>
+        </ul>
+        <div class="footerbox en"><strong>Page status:</strong> CRP engineering concept page · bench plan, no measurements yet · 2026-10-27. Published openly by BD × AI Lab so anyone can build on it.<div class="footer-links"><a href="#summary">Back to top</a><a href="APSV.html">APSV</a><a href="Modular_Hydrofoils.html">Modular Hydrofoils</a><a href="Maglev_Assisted_Takeoff.html">Maglev-Assisted Takeoff</a><a href="SORA.html">SORA</a><a href="../index.html">MDL×DCC Home</a></div></div>
+        <div class="footerbox sl"><strong>Status strani:</strong> stran inženirskega koncepta CRP · načrt za klopne preizkuse, še brez meritev · 2026-10-27. BD × AI Lab to objavlja odprto, da lahko vsakdo gradi naprej.<div class="footer-links"><a href="#summary">Na vrh</a><a href="APSV.html">APSV</a><a href="Modular_Hydrofoils.html">Modular Hydrofoils</a><a href="Maglev_Assisted_Takeoff.html">Maglev-Assisted Takeoff</a><a href="SORA.html">SORA</a><a href="../index.html">MDL×DCC domov</a></div></div>
+      </section>
+    </article>
+  </div>
+</main>
+
+<script>
+(function(){
+  const root=document.documentElement;
+  const saved=localStorage.getItem('mdlxdcc-lang') || root.getAttribute('data-lang') || 'en';
+  function setLang(lang){ root.setAttribute('data-lang', lang); root.setAttribute('lang', lang); localStorage.setItem('mdlxdcc-lang', lang); document.querySelectorAll('[data-set-lang]').forEach(b=>b.classList.toggle('active', b.dataset.setLang===lang)); }
+  document.querySelectorAll('[data-set-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.setLang)));
+  setLang(saved);
+  const bar=document.querySelector('.progress');
+  function prog(){ const h=document.documentElement; const max=h.scrollHeight-h.clientHeight; bar.style.width=(max?100*h.scrollTop/max:0)+'%'; }
+  document.addEventListener('scroll',prog,{passive:true}); prog();
+})();
+</script>
+</body>
+</html>

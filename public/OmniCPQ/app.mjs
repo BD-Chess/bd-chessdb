@@ -809,8 +809,10 @@ $('cpq-user-file').onchange=async event=>{
 $('documents-seed').onchange=async event=>{
   const file=event.target.files?.[0];if(!file||state.role!=='owner')return;const label=$('documents-import-status');
   if(file.size>1000000){label.textContent='Paket je prevelik.';return;}
-  try{label.textContent='Preverjam in shranjujem dokumentacijo …';const r=await fetch('/.netlify/functions/omnicpq-documents',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:await file.text()});
-    if(!r.ok)throw Error('Uvoz ni potrjen ('+r.status+').');const result=await r.json();label.textContent=result.status==='PRIVATE_STORAGE_SEEDED'?'Dokumentacija v17 je shranjena in preverjena.':'Uvoz ni potrjen.';
+  try{label.textContent='Preverjam in shranjujem zasebni paket …';const r=await fetch('/.netlify/functions/omnicpq-documents',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:await file.text()});
+    if(!r.ok)throw Error('Uvoz ni potrjen ('+r.status+').');const result=await r.json();
+    if(result.status!=='PRIVATE_STORAGE_SEEDED'||typeof result.version!=='string'||!/^[a-f0-9]{64}$/.test(result.sha256||''))throw Error('Uvoz ni potrjen.');
+    label.textContent='Zasebni paket '+result.version+' je shranjen in preverjen.';
   }catch(e){label.textContent=e.message;}finally{event.target.value='';}
 };
 $('browser-disconnect').onclick = () => { stopAgent('DISCONNECTED');disconnectBrowser(true); };
