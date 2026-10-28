@@ -14,7 +14,7 @@ const STORAGE = 'omnicpq:workspace:v1', PREFS = 'omnicpq:preferences:v1';
 let browserBridge = createLegacyBridge();
 const navigationProposal=(text,observation)=>observation?.schema==='omnicpq.gui.observation.v2'?guiProposal(text,observation):legacyProposal(text,observation);
 const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready: false, ownerVerified: false, snapshot: null,
-  capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
+  capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, localSaveFailed: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
   browserConnected: false, browserObservation: null, browserStop: false, browserPaused: false, guiCheckpoint: null, agentRun:null, pendingDraft: null, release: null,
   comparisonPartner: 'copilot', partnerInputs: {} };
 let installEvent, registration, accessEpoch = 0, experience;
@@ -93,12 +93,13 @@ function localWrite() {
   if (state.role === 'demo') return true;
   try {
     localStorage.setItem(PREFS, JSON.stringify({ theme: $('theme').value, profile: state.profile, persist: state.persist }));
-    if (state.persist) localStorage.setItem(STORAGE, JSON.stringify({ ...exportSession(state), accountId: state.accountId, draft: $('message').value,
+    if (state.persist) localStorage.setItem(STORAGE, JSON.stringify({ ...exportSession(state,{local:true}), accountId: state.accountId, draft: $('message').value,
       context: getContext(), service: $('service').value, mode: state.mode,
       checkpoint:state.guiCheckpoint?{goal:state.guiCheckpoint.goal,step:state.guiCheckpoint.step,status:state.guiCheckpoint.status,at:state.guiCheckpoint.at,documentKey:state.guiCheckpoint.documentKey,afterRevision:state.guiCheckpoint.afterRevision}:null }));
     else localStorage.removeItem(STORAGE);
+    state.localSaveFailed = false;
     return true;
-  } catch { notice('Lokalno shranjevanje ni uspelo. Izvozi pomemben pogovor, preden zapreš stran.'); return false; }
+  } catch { state.localSaveFailed = true; notice('Lokalno shranjevanje ni uspelo. Izvozi pomemben pogovor, preden zapreš stran.'); return false; }
 }
 function getContext() { return { text: $('context-text').value, manualUrl: $('manual-url').value, environment: $('environment').value, workspace:normalizeWorkspace(Object.fromEntries(Object.keys(CONTEXT_FIELDS).map(key=>[key,$('shared-'+key).value]))) }; }
 function conversationHistory() { return conversationForModel(state.messages); }
@@ -755,7 +756,7 @@ async function installWorker() {
       if (state.busy || state.snapshot) { notice('Posodobitev počaka: najprej dokončaj odgovor in uporabi ali odstrani priloženo sliko.'); return; }
       if (state.capture || state.browserConnected) { notice('Pred posodobitvijo prekini deljenje zaslona in CPQ povezavo. Pogovor lahko ohraniš z lokalnim shranjevanjem ali izvozom.'); return; }
       if (hasComparisonDraft() || state.pendingDraft) { notice('Pred posodobitvijo shrani in izvozi razdelano primerjavo ter dokončaj izbiro osnutka.'); return; }
-      if (!state.persist && hasBusinessContext()) { notice('Za ohranitev pogovora med posodobitvijo vklopi lokalno shranjevanje v nastavitvah ali najprej izvozi in odpri nov pogovor.'); return; }
+      if ((!state.persist || state.localSaveFailed) && hasBusinessContext()) { notice('Za ohranitev pogovora med posodobitvijo vklopi lokalno shranjevanje v nastavitvah ali najprej izvozi in odpri nov pogovor.'); return; }
       if (!localWrite()) return;
       if (registration.waiting) { registration.waiting.postMessage({ type: 'APPLY_UPDATE' });
         navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true }); }
@@ -775,7 +776,7 @@ try {
     if (data?.schema === 'omnicpq.session.v1' && Array.isArray(data.messages)) {
       state.accountId = data.accountId || null;
       if(data.checkpoint&&typeof data.checkpoint.goal==='string')state.guiCheckpoint={...data.checkpoint,status:'RESTORED_OBSERVE_REQUIRED'};
-      state.messages = data.messages.filter(m => ['user', 'assistant'].includes(m.role) && typeof m.content === 'string').slice(-100).map(m => ({ ...m, status: m.status === 'streaming' ? 'partial' : m.status }));
+      state.messages = data.messages.filter(m => ['user', 'assistant'].includes(m.role) && typeof m.content === 'string').map(m => ({ ...m, status: m.status === 'streaming' ? 'partial' : m.status }));
       state.comparisons = Array.isArray(data.comparisons) ? data.comparisons : [];
       state.mode = normalizeMode(data.mode); $('message').value = String(data.draft || '').slice(0, 16000);
       for(const [key,value] of Object.entries(normalizeWorkspace(data.context?.workspace)))$('shared-'+key).value=value;
@@ -900,7 +901,7 @@ $('logout').onclick = async () => {
 };
 window.addEventListener('offline', () => { state.controller?.abort(); notice('Brez povezave. Osnutek ostane; vprašanj ne pošiljamo samodejno.'); health(); });
 window.addEventListener('online', () => { notice('Povezava je obnovljena. Vprašanje pošlji, ko želiš.'); health(); });
-window.addEventListener('beforeunload', event => { if (state.busy || state.snapshot || hasComparisonDraft() || (!state.persist && hasBusinessContext())) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('beforeunload', event => { if (state.busy || state.snapshot || hasComparisonDraft() || ((!state.persist || state.localSaveFailed) && hasBusinessContext())) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', disconnect);
 window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installEvent = event; $('install').hidden = false; });
 $('install').onclick = async () => { if (!installEvent) return; await installEvent.prompt(); await installEvent.userChoice; installEvent = null; $('install').hidden = true; };

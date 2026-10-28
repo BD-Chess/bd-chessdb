@@ -205,7 +205,7 @@ test('activeTab on CPQ does not require PWA URL visibility; fresh browser-verifi
   const f=fixture();try{
     const original=f.api.tabs.get;f.api.tabs.get=async id=>id===23?{id,incognito:false}:original(id);
     await f.pair();assert.equal(f.storage.guiPair.pairingVerification,'VERIFIED_EXTERNAL_SENDER_URL_METADATA_WITHHELD');
-    assert.equal((await f.client.connect()).capabilities.workerVersion,'1.2.5');
+    assert.equal((await f.client.connect()).capabilities.workerVersion,'1.2.6');
     assert((await f.client.observe()).controls.length>0);
     const token=f.storage.guiPair.token;
     for(const sender of [{url:'https://outside.invalid/',frameId:0,tab:{id:23}},
@@ -313,7 +313,7 @@ test('visible same-origin frame observation binds frame geometry and retains the
     const top=(await f.page({type:'observe',origin,scope:'order'})).observation;assert.equal(top.frames[0].path,'0');assert(top.frames[0].accessible);
     const r=await f.page({type:'observe',origin,scope:'order',framePath:'0'});assert(r.ok);assert.equal(r.observation.framePath,'0');
     assert.equal(r.observation.controls.find(c=>c.label==='Embedded value').value,'kept');assert.equal(r.observation.documentKey,'SYNTHETIC');
-    assert.equal(r.observation.runtime.pageVersion,'1.2.5');assert.equal(f.d.querySelector('#cpu').value,'1');
+    assert.equal(r.observation.runtime.pageVersion,'1.2.6');assert.equal(f.d.querySelector('#cpu').value,'1');
     assert.equal((await f.page({type:'observe',origin,scope:'order',framePath:'99'})).error,'CPQ_FRAME_CHANGED');
   }finally{f.dom.window.close();}
 });

@@ -1,0 +1,51 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {localSession,exportSession} from '../../public/OmniCPQ/core.mjs';
+import {conversationForModel} from '../../public/OmniCPQ/agent-session.mjs';
+import {JSDOM} from 'jsdom';
+import {readFile} from 'node:fs/promises';
+import * as runtime from './app-runtime-imports.mjs';
+import * as core from '../../public/OmniCPQ/core.mjs';
+import * as prompts from '../../public/OmniCPQ/prompts.mjs';
+import * as starters from '../../public/OmniCPQ/starters.mjs';
+import * as bridge from '../../public/OmniCPQ/browser-bridge.mjs';
+import {APP_VERSION,SKILL} from '../../functions/lib/omnicpq/identity.mjs';
+import {starterMetadata} from '../../functions/lib/omnicpq/browser.mjs';
+test('long GUI history fits local quota while all human text, receipts and continuation semantics survive',()=>{
+ const messages=[];
+ for(let i=0;i<90;i++)messages.push({role:i%2?'assistant':'user',content:i===88?'Disk 2000, keep Ubuntu':'Synthetic conversation '+i,status:'complete',input:{canonical:'X'.repeat(80000),inputHash:'input-'+i,automaticContinuation:i>2&&i<88,agentRunId:'SYNTHETIC',agentStep:i},meta:{requestId:'request-'+i,browserNavigation:i%2?{summary:'Observed value retained',receipt:{actionId:'action-'+i,status:'DISPATCHED'}}:undefined}});
+ const state={mode:'work',messages,comparisons:[]};
+ const local=localSession(state),restored=JSON.parse(JSON.stringify(local));
+ assert(JSON.stringify(exportSession(state)).length>5_000_000);
+ assert(JSON.stringify(local).length<100_000);
+ assert.equal(restored.messages.length,messages.length);
+ assert.deepEqual(restored.messages.map(m=>m.content),messages.map(m=>m.content));
+ assert.deepEqual(conversationForModel(restored.messages),conversationForModel(messages));
+ assert.deepEqual(restored.messages.map(m=>m.meta),JSON.parse(JSON.stringify(messages.map(m=>m.meta))));
+ assert.equal(restored.messages[88].input.inputHash,'input-88');
+ assert.equal(messages[88].input.canonical.length,80000);
+ assert.equal(exportSession(state).messages[88].input.canonical.length,80000);
+});
+test('restore keeps all human messages beyond 100 and failed persistence protects the open tab',async()=>{
+ const dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:'https://www.mdlxdcc.org/omnicpq/',runScripts:'outside-only',pretendToBeVisual:true});
+ const w=dom.window;
+ try{
+  Object.assign(w,{...runtime,...core,...prompts,...starters,...bridge,Response,Blob,AbortController});
+  w.matchMedia=()=>({matches:false});w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+  const messages=Array.from({length:118},(_,i)=>({role:i%2?'assistant':'user',content:'Human context '+i,status:'complete',input:{inputHash:'H'+i}}));
+  w.localStorage.setItem('omnicpq:preferences:v1',JSON.stringify({persist:true,profile:'careful'}));
+  w.localStorage.setItem('omnicpq:workspace:v1',JSON.stringify({...core.localSession({messages,mode:'work'}),accountId:'synthetic-owner',draft:'KEEP_DRAFT'}));
+  w.fetch=async()=>Response.json({ok:true,available:true,version:APP_VERSION,account:{id:'synthetic-owner',role:'owner'},privateKnowledge:'VERIFIED',starterPrompts:starterMetadata,skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[]});
+  const code=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,'').replace('health(); installWorker();','window.boot=health();');
+  w.eval(code+'\nwindow.app={state,localWrite};');await w.boot;
+  assert.equal(w.app.state.messages.length,118);assert.equal(w.app.state.messages[0].content,'Human context 0');
+  assert.equal(w.document.querySelector('#message').value,'KEEP_DRAFT');
+  const original=w.Storage.prototype.setItem;
+  w.Storage.prototype.setItem=function(key,value){if(key==='omnicpq:workspace:v1')throw new w.DOMException('Synthetic quota full','QuotaExceededError');return original.call(this,key,value);};
+  assert.equal(w.app.localWrite(),false);assert.equal(w.app.state.localSaveFailed,true);
+  const failure=new w.Event('beforeunload',{cancelable:true});w.dispatchEvent(failure);assert.equal(failure.defaultPrevented,true);
+  w.Storage.prototype.setItem=original;
+  assert.equal(w.app.localWrite(),true);assert.equal(w.app.state.localSaveFailed,false);
+  assert.equal(JSON.parse(w.localStorage.getItem('omnicpq:workspace:v1')).messages.length,118);
+ }finally{dom.window.close();}
+});

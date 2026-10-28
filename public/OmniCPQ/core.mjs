@@ -92,11 +92,24 @@ export function csv(rows) {
   };
   return '\uFEFF' + [fields, ...rows.map(row => fields.map(key => row[key]))].map(row => row.map(cell).join(',')).join('\r\n');
 }
-export function exportSession(state) {
+export function exportSession(state, { local = false } = {}) {
+  if (local) return localSession(state);
   // Explicit export is the only path out of memory. No cookies, images, or credentials.
   return { schema: 'omnicpq.session.v1', appVersion: APP_VERSION, exportedAt: new Date().toISOString(),
     release: state.release || {source_sha:'UNKNOWN',fingerprint:'UNKNOWN'},
     mode: state.mode, messages: state.messages.map(({ role, content, meta, status, input, startedAt, ttftMs, totalMs }) =>
       ({ role, content, meta, status, input, startedAt, ttftMs, totalMs })), comparisons: state.comparisons || [] };
+}
+
+// Local history retains conversation and execution evidence without repeatedly
+// storing the complete canonical request. Explicit JSON exports stay complete.
+export function localSession(state) {
+  const session = exportSession(state);
+  return { ...session, persistence: { canonicalInputs: 'omitted', inputHashes: 'retained' },
+    messages: session.messages.map(message => {
+      if (!message.input || typeof message.input !== 'object') return message;
+      const { canonical, ...input } = message.input;
+      return { ...message, input };
+    }) };
 }
 
