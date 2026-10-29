@@ -140,6 +140,7 @@
         <a href="#kako"><span data-lang="sl">Kako</span><span data-lang="en" hidden>How</span></a>
         <a href="#zdaj"><span data-lang="sl">Zdaj</span><span data-lang="en" hidden>Now</span></a>
         <a href="#primer"><span data-lang="sl">Primer</span><span data-lang="en" hidden>Example</span></a>
+        <a href="#cuvajke"><span data-lang="sl">Čuvajke</span><span data-lang="en" hidden>Watchers</span></a>
         <a href="#vrt">AI8 Free</a>
         <a href="#nauki"><span data-lang="sl">Nauki</span><span data-lang="en" hidden>Lessons</span></a>
       </nav>
@@ -626,9 +627,167 @@
       <p class="note" data-lang="en" hidden><strong>Why it matters:</strong> nobody does everything alone, and nobody publishes past the single publisher. The human plays and decides, AI writes, builds, and fixes, and the test is a real person really playing, not a synthetic check.</p>
     </section>
 
-    <!-- 6 · AI8 Free -->
+    <!-- 6 · Tihe čuvajke -->
+    <section id="cuvajke" aria-labelledby="cuvajke-title">
+      <div class="eyebrow">06 · <span data-lang="sl">Učinkovitost</span><span data-lang="en" hidden>Efficiency</span></div>
+      <h2 id="cuvajke-title"><span data-lang="sl">Tihe čuvajke: AI počiva, dokler ni dela</span><span data-lang="en" hidden>Silent watchers: the AI rests until there is work</span></h2>
+      <p class="plan-badge"><span data-lang="sl">nov · 29. 10. 2026</span><span data-lang="en" hidden>new · 29 Oct 2026</span></p>
+      <p class="prose muted" data-lang="sl">Majhna sprememba z velikim učinkom: AI ne preverja več na slepo, ampak počaka, da ga zbudi dogodek.</p>
+      <p class="prose muted" data-lang="en" hidden>A small change with a large effect: the AI no longer checks blindly; it waits until an event wakes it.</p>
+
+      <h3><span data-lang="sl">Težava</span><span data-lang="en" hidden>The problem</span></h3>
+      <p class="prose" data-lang="sl">Koordinacijska seja AI je vse preverjala vsakih 30 minut. Vsako preverjanje je znova prebralo ves kontekst seje, tudi ko je bil odgovor »vse je v redu«: v enem dnevu 31 preverjanj × približno 2,3 milijona žetonov. BD je to opazil v poročilu o porabi.</p>
+      <p class="prose" data-lang="en" hidden>A coordinating AI session used to check everything every 30 minutes. Each check re-read the whole session context, even when the answer was “all fine”: in one day, 31 checks × about 2.3 million tokens. BD noticed it in the usage report.</p>
+
+      <h3><span data-lang="sl">Zamisel</span><span data-lang="en" hidden>The idea</span></h3>
+      <p class="prose" data-lang="sl">Zamisel se je rodila v pogovoru BD × Zora. Majhen skript brez kakršnega koli modela, <strong>tiha čuvajka</strong>, teče v ozadju in vsako minuto preveri deterministične signale: nova sporočila za to sejo v skupnem kanalu (Drive) in na hitrem lokalnem busu, neodgovorjene potrditve (ACK), zdravje storitev v ozadju in končane rezultate drugih članov ekipe. Šele ko se res kaj zgodi, izpiše eno vrstico in se konča. To zbudi AI, ki dogodek obdela in čuvajko znova zažene. Polna samopreverba ostane kot varnostna mreža, a le še vsaki 2 uri.</p>
+      <p class="prose" data-lang="en" hidden>The idea was born in a BD × Zora conversation. A tiny script without any AI model, a <strong>silent watcher</strong>, runs in the background and every minute checks deterministic signals: new messages for this session in the shared channel (Drive) and on the fast local message bus, unanswered acknowledgements (ACK), the health of the background services, and finished results of other team members. Only when something really happens does it print one line and exit. That wakes the AI, which handles the event and starts the watcher again. A full self-check remains as a safety net, but only every 2 hours.</p>
+
+      <figure>
+        <svg class="diagram diagram-wide" viewBox="0 0 960 330" role="img" aria-label="Shema tihe čuvajke: skript brez modela vsako minuto preveri sporočila v kanalu (Drive) in na lokalnem busu, neodgovorjene potrditve, zdravje storitev in končane rezultate drugih; ob dogodku izpiše eno vrstico, kar zbudi sejo AI; ta dogodek obdela in čuvajko znova zažene; varnostna samopreverba teče vsaki 2 uri." data-aria-sl="Shema tihe čuvajke: skript brez modela vsako minuto preveri sporočila v kanalu (Drive) in na lokalnem busu, neodgovorjene potrditve, zdravje storitev in končane rezultate drugih; ob dogodku izpiše eno vrstico, kar zbudi sejo AI; ta dogodek obdela in čuvajko znova zažene; varnostna samopreverba teče vsaki 2 uri." data-aria-en="Silent watcher diagram: a script without a model checks every minute for messages in the channel (Drive) and on the local bus, unanswered acknowledgements, service health, and finished results of others; on an event it prints one line, which wakes the AI session; the session handles the event and re-arms the watcher; a safety self-check runs every 2 hours.">
+          <defs>
+            <marker id="aw-watch-wide" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+            <marker id="aw-watch-plan-wide" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow-plan"/></marker>
+          </defs>
+          <rect x="24" y="24" width="340" height="256" rx="16" class="d-host"/>
+          <text x="44" y="56" class="d-title" data-lang="sl">Tiha čuvajka</text>
+          <text x="44" y="56" class="d-title" data-lang="en" hidden>Silent watcher</text>
+          <text x="44" y="80" class="d-small" data-lang="sl">skript brez modela · preveri vsako minuto</text>
+          <text x="44" y="80" class="d-small" data-lang="en" hidden>script, no model · checks every minute</text>
+          <rect x="44" y="94" width="300" height="30" rx="8" class="d-pill"/>
+          <text x="58" y="114" class="d-text" data-lang="sl">sporočila v kanalu (Drive)</text>
+          <text x="58" y="114" class="d-text" data-lang="en" hidden>messages in the channel (Drive)</text>
+          <rect x="44" y="130" width="300" height="30" rx="8" class="d-pill"/>
+          <text x="58" y="150" class="d-text" data-lang="sl">sporočila na lokalnem busu</text>
+          <text x="58" y="150" class="d-text" data-lang="en" hidden>messages on the local bus</text>
+          <rect x="44" y="166" width="300" height="30" rx="8" class="d-pill"/>
+          <text x="58" y="186" class="d-text" data-lang="sl">neodgovorjene potrditve (ACK)</text>
+          <text x="58" y="186" class="d-text" data-lang="en" hidden>unanswered acknowledgements</text>
+          <rect x="44" y="202" width="300" height="30" rx="8" class="d-pill"/>
+          <text x="58" y="222" class="d-text" data-lang="sl">zdravje storitev v ozadju</text>
+          <text x="58" y="222" class="d-text" data-lang="en" hidden>health of background services</text>
+          <rect x="44" y="238" width="300" height="30" rx="8" class="d-pill"/>
+          <text x="58" y="258" class="d-text" data-lang="sl">končani rezultati drugih</text>
+          <text x="58" y="258" class="d-text" data-lang="en" hidden>finished results of others</text>
+          <text x="194" y="308" text-anchor="middle" class="d-small" data-lang="sl">ni dogodka → AI miruje, brez žetonov</text>
+          <text x="194" y="308" text-anchor="middle" class="d-small" data-lang="en" hidden>no event → the AI rests, no tokens</text>
+
+          <path d="M366,110 H596" class="d-line" marker-end="url(#aw-watch-wide)"/>
+          <text x="481" y="98" text-anchor="middle" class="d-small" data-lang="sl">dogodek → ena vrstica</text>
+          <text x="481" y="98" text-anchor="middle" class="d-small" data-lang="en" hidden>event → one line</text>
+          <path d="M598,200 H368" class="d-line" marker-end="url(#aw-watch-wide)"/>
+          <text x="483" y="222" text-anchor="middle" class="d-small" data-lang="sl">znova zažene čuvajko</text>
+          <text x="483" y="222" text-anchor="middle" class="d-small" data-lang="en" hidden>re-arms the watcher</text>
+
+          <rect x="600" y="60" width="336" height="170" rx="16" class="d-host"/>
+          <text x="620" y="94" class="d-title" data-lang="sl">Seja AI</text>
+          <text x="620" y="94" class="d-title" data-lang="en" hidden>AI session</text>
+          <text x="620" y="126" class="d-text" data-lang="sl">se zbudi in obdela dogodek</text>
+          <text x="620" y="126" class="d-text" data-lang="en" hidden>wakes up and handles the event</text>
+          <text x="620" y="154" class="d-small" data-lang="sl">odziv v približno minuti</text>
+          <text x="620" y="154" class="d-small" data-lang="en" hidden>reacts within about a minute</text>
+          <text x="620" y="178" class="d-small" data-lang="sl">žetoni samo, ko je delo</text>
+          <text x="620" y="178" class="d-small" data-lang="en" hidden>tokens only when there is work</text>
+          <text x="620" y="202" class="d-small" data-lang="sl">nato spet miruje</text>
+          <text x="620" y="202" class="d-small" data-lang="en" hidden>then rests again</text>
+
+          <path d="M768,266 V235" class="d-loop" marker-end="url(#aw-watch-plan-wide)"/>
+          <rect x="640" y="268" width="256" height="52" rx="12" class="d-loop"/>
+          <text x="768" y="290" text-anchor="middle" class="d-text" data-lang="sl">Varnostna samopreverba</text>
+          <text x="768" y="290" text-anchor="middle" class="d-text" data-lang="en" hidden>Safety self-check</text>
+          <text x="768" y="310" text-anchor="middle" class="d-small" data-lang="sl">vsaki 2 uri</text>
+          <text x="768" y="310" text-anchor="middle" class="d-small" data-lang="en" hidden>every 2 hours</text>
+        </svg>
+
+        <svg class="diagram diagram-tall" viewBox="0 0 380 626" role="img" aria-label="Shema tihe čuvajke: skript brez modela vsako minuto preveri sporočila v kanalu (Drive) in na lokalnem busu, neodgovorjene potrditve, zdravje storitev in končane rezultate drugih; ob dogodku izpiše eno vrstico, kar zbudi sejo AI; ta dogodek obdela in čuvajko znova zažene; varnostna samopreverba teče vsaki 2 uri." data-aria-sl="Shema tihe čuvajke: skript brez modela vsako minuto preveri sporočila v kanalu (Drive) in na lokalnem busu, neodgovorjene potrditve, zdravje storitev in končane rezultate drugih; ob dogodku izpiše eno vrstico, kar zbudi sejo AI; ta dogodek obdela in čuvajko znova zažene; varnostna samopreverba teče vsaki 2 uri." data-aria-en="Silent watcher diagram: a script without a model checks every minute for messages in the channel (Drive) and on the local bus, unanswered acknowledgements, service health, and finished results of others; on an event it prints one line, which wakes the AI session; the session handles the event and re-arms the watcher; a safety self-check runs every 2 hours.">
+          <defs>
+            <marker id="aw-watch-tall" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+            <marker id="aw-watch-plan-tall" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow-plan"/></marker>
+          </defs>
+          <rect x="10" y="8" width="360" height="254" rx="14" class="d-host"/>
+          <text x="26" y="38" class="d-title" data-lang="sl">Tiha čuvajka</text>
+          <text x="26" y="38" class="d-title" data-lang="en" hidden>Silent watcher</text>
+          <text x="26" y="60" class="d-small" data-lang="sl">skript brez modela · vsako minuto</text>
+          <text x="26" y="60" class="d-small" data-lang="en" hidden>script, no model · every minute</text>
+          <rect x="26" y="74" width="328" height="30" rx="8" class="d-pill"/>
+          <text x="38" y="94" class="d-text" data-lang="sl">sporočila v kanalu (Drive)</text>
+          <text x="38" y="94" class="d-text" data-lang="en" hidden>messages in the channel (Drive)</text>
+          <rect x="26" y="110" width="328" height="30" rx="8" class="d-pill"/>
+          <text x="38" y="130" class="d-text" data-lang="sl">sporočila na lokalnem busu</text>
+          <text x="38" y="130" class="d-text" data-lang="en" hidden>messages on the local bus</text>
+          <rect x="26" y="146" width="328" height="30" rx="8" class="d-pill"/>
+          <text x="38" y="166" class="d-text" data-lang="sl">neodgovorjene potrditve (ACK)</text>
+          <text x="38" y="166" class="d-text" data-lang="en" hidden>unanswered acknowledgements</text>
+          <rect x="26" y="182" width="328" height="30" rx="8" class="d-pill"/>
+          <text x="38" y="202" class="d-text" data-lang="sl">zdravje storitev v ozadju</text>
+          <text x="38" y="202" class="d-text" data-lang="en" hidden>health of background services</text>
+          <rect x="26" y="218" width="328" height="30" rx="8" class="d-pill"/>
+          <text x="38" y="238" class="d-text" data-lang="sl">končani rezultati drugih</text>
+          <text x="38" y="238" class="d-text" data-lang="en" hidden>finished results of others</text>
+
+          <path d="M90,266 V342" class="d-line" marker-end="url(#aw-watch-tall)"/>
+          <text x="98" y="300" class="d-small" data-lang="sl">dogodek → ena vrstica</text>
+          <text x="98" y="300" class="d-small" data-lang="en" hidden>event → one line</text>
+          <path d="M290,342 V266" class="d-line" marker-end="url(#aw-watch-tall)"/>
+          <text x="280" y="326" text-anchor="end" class="d-small" data-lang="sl">znova zažene čuvajko</text>
+          <text x="280" y="326" text-anchor="end" class="d-small" data-lang="en" hidden>re-arms the watcher</text>
+
+          <rect x="10" y="346" width="360" height="136" rx="14" class="d-host"/>
+          <text x="26" y="374" class="d-title" data-lang="sl">Seja AI</text>
+          <text x="26" y="374" class="d-title" data-lang="en" hidden>AI session</text>
+          <text x="26" y="400" class="d-text" data-lang="sl">se zbudi in obdela dogodek</text>
+          <text x="26" y="400" class="d-text" data-lang="en" hidden>wakes up and handles the event</text>
+          <text x="26" y="422" class="d-small" data-lang="sl">odziv v približno minuti</text>
+          <text x="26" y="422" class="d-small" data-lang="en" hidden>reacts within about a minute</text>
+          <text x="26" y="442" class="d-small" data-lang="sl">žetoni samo, ko je delo</text>
+          <text x="26" y="442" class="d-small" data-lang="en" hidden>tokens only when there is work</text>
+          <text x="26" y="462" class="d-small" data-lang="sl">nato spet miruje</text>
+          <text x="26" y="462" class="d-small" data-lang="en" hidden>then rests again</text>
+
+          <path d="M190,530 V487" class="d-loop" marker-end="url(#aw-watch-plan-tall)"/>
+          <rect x="60" y="532" width="260" height="52" rx="12" class="d-loop"/>
+          <text x="190" y="554" text-anchor="middle" class="d-text" data-lang="sl">Varnostna samopreverba</text>
+          <text x="190" y="554" text-anchor="middle" class="d-text" data-lang="en" hidden>Safety self-check</text>
+          <text x="190" y="574" text-anchor="middle" class="d-small" data-lang="sl">vsaki 2 uri</text>
+          <text x="190" y="574" text-anchor="middle" class="d-small" data-lang="en" hidden>every 2 hours</text>
+          <text x="190" y="610" text-anchor="middle" class="d-small" data-lang="sl">ni dogodka → AI miruje, brez žetonov</text>
+          <text x="190" y="610" text-anchor="middle" class="d-small" data-lang="en" hidden>no event → the AI rests, no tokens</text>
+        </svg>
+        <figcaption>
+          <span data-lang="sl">Prej: polno preverjanje vsakih 30 minut, tudi ko ni bilo nič novega. Zdaj: čuvajka brez modela gleda vsako minuto in zbudi AI samo ob dogodku; varnostna samopreverba vsaki 2 uri ujame, kar bi morda spregledala.</span>
+          <span data-lang="en" hidden>Before: a full check every 30 minutes, even when nothing was new. Now: a watcher without a model looks every minute and wakes the AI only on an event; a safety self-check every 2 hours catches anything it might miss.</span>
+        </figcaption>
+      </figure>
+
+      <h3><span data-lang="sl">Učinek</span><span data-lang="en" hidden>The effect</span></h3>
+      <ul class="grid">
+        <li class="card">
+          <h3><span data-lang="sl">~1 minuta namesto do 30</span><span data-lang="en" hidden>~1 minute instead of up to 30</span></h3>
+          <p data-lang="sl">AI se na dogodek odzove v približno minuti, ne šele ob naslednjem polurnem preverjanju.</p>
+          <p data-lang="en" hidden>The AI reacts to an event within about a minute, not only at the next half-hourly check.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Žetoni samo za delo</span><span data-lang="en" hidden>Tokens only for work</span></h3>
+          <p data-lang="sl">Ko se nič ne zgodi, čuvajka preverja sama, brez modela. Žetoni in denar gredo samo za resnično delo.</p>
+          <p data-lang="en" hidden>When nothing happens, the watcher checks on its own, without a model. Tokens and money are spent only on real work.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Preizkus isti dan</span><span data-lang="en" hidden>Proven the same day</span></h3>
+          <p data-lang="sl">Že isti dan je čuvajka v manj kot minuti ujela sporočilo graditelja na lokalnem busu.</p>
+          <p data-lang="en" hidden>The very same day, the watcher caught a builder's message on the local bus within a minute.</p>
+        </li>
+      </ul>
+
+      <h3><span data-lang="sl">Na vso ekipo</span><span data-lang="en" hidden>For the whole team</span></h3>
+      <p class="prose" data-lang="sl">Zamisel je bila predlagana vsem štirim AI članom: Zori, Lanu, Zarji in Boru. Budilka enega od graditeljev že deluje tako.</p>
+      <p class="prose" data-lang="en" hidden>The idea was proposed to all four AI members: Zora, Lan, Zarja, and Bor. One builder's wake-up worker already works this way.</p>
+      <p class="note" data-lang="sl"><strong>Najboljša poraba je tista, ki je ni:</strong> model naj misli, ko je treba, ne ko preverja, da ni nič novega.</p>
+      <p class="note" data-lang="en" hidden><strong>The best usage is the one that never happens:</strong> the model should think when it is needed, not while checking that nothing is new.</p>
+    </section>
+
+    <!-- 7 · AI8 Free -->
     <section id="vrt" aria-labelledby="vrt-title">
-      <div class="eyebrow">06 · AI8 Free</div>
+      <div class="eyebrow">07 · AI8 Free</div>
       <h2 id="vrt-title"><span data-lang="sl">AI8 Free – živi vrt</span><span data-lang="en" hidden>AI8 Free – the living garden</span></h2>
       <p class="plan-badge"><span data-lang="sl">Načrt – čaka BD-jeve odločitve</span><span data-lang="en" hidden>Plan – awaiting BD's decisions</span></p>
       <p class="prose muted" data-lang="sl">Načrt je 28. 10. 2026 za BD-ja pripravila Zora, z mnenji Zarje in Bora. Nič od spodnjega še ne teče. Ta stran povzema samo javni del načrta.</p>
@@ -711,9 +870,9 @@
       <p class="note small" data-lang="en" hidden><strong>Decisions that are BD's:</strong> where the shadow copy runs; how approved changes reach the main site (proposal: weekly packages with BD's OK); when we start, with BD's “yes” to freeze the original.</p>
     </section>
 
-    <!-- 7 · Kaj smo se naučili -->
+    <!-- 8 · Kaj smo se naučili -->
     <section id="nauki" aria-labelledby="nauki-title">
-      <div class="eyebrow">07 · <span data-lang="sl">Nauki</span><span data-lang="en" hidden>Lessons</span></div>
+      <div class="eyebrow">08 ·<span data-lang="sl">Nauki</span><span data-lang="en" hidden>Lessons</span></div>
       <h2 id="nauki-title"><span data-lang="sl">Kaj smo se naučili</span><span data-lang="en" hidden>What we learned</span></h2>
       <p class="prose muted" data-lang="sl">Lekcije niso nova teorija. Večinoma so stari inženirski principi, ki so jih seje v treh dneh odkrile znova, ker so se ob njih spotaknile.</p>
       <p class="prose muted" data-lang="en" hidden>The lessons are not new theory. Mostly they are old engineering principles that the sessions rediscovered in three days because they tripped over them.</p>
