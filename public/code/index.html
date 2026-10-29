@@ -47,6 +47,24 @@
     .draft { background: var(--plan-soft); color: var(--plan); border-bottom: 1px solid var(--line); font-size: .92rem; }
     .draft .shell { padding-top: .5rem; padding-bottom: .5rem; }
     .draft strong { letter-spacing: .02em; }
+    .draft .changelog { display: block; font-size: .85rem; opacity: .9; }
+
+    .allv { margin-top: 1.6rem; padding-top: 1.2rem; border-top: 1px dashed var(--line); }
+    .allv .stat b { color: var(--accent); }
+    .avt-wrap { max-width: 48rem; overflow-x: auto; }
+    .avt { font-size: .92rem; }
+    .avt th, .avt td { padding: .4rem .45rem; }
+    .avt td.v { text-align: right; font-variant-numeric: tabular-nums; }
+    .avt td.v b { font-weight: inherit; white-space: nowrap; }
+    .avt th, .avt th.num { white-space: normal; }
+    .avt td.v small { display: block; color: var(--muted); font-size: .8rem; }
+    .avt tr.tot td { font-weight: 700; border-bottom: 0; }
+    .avt .x { color: var(--accent); font-weight: 700; white-space: nowrap; }
+    .avtop { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: .4rem 2rem; max-width: 60rem; margin-top: .4rem; }
+    .avtop h4 { font-size: .95rem; margin: .4rem 0 .3rem; }
+    .avtop ol { margin: 0; padding-left: 1.4rem; font-size: .9rem; }
+    .avtop li { margin-bottom: .2rem; }
+    .avtop li span { color: var(--muted); font-variant-numeric: tabular-nums; }
 
     .intro { padding: clamp(1.8rem, 5vw, 3.6rem) 0 1.2rem; }
     .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; font-size: .8rem; font-weight: 700; }
@@ -162,6 +180,7 @@
     <div class="shell">
       <strong>OSNUTEK · DRAFT</strong> —
       <span data-lang="sl">Stran se še dopolnjuje. Številke in opisi so iz prvega popisa (R1) in se bodo še spreminjali.</span><span data-lang="en" hidden>This page is still being filled in. Numbers and descriptions come from the first census (R1) and will change.</span>
+      <span class="changelog"><span data-lang="sl">R1.1: WORK brez dvojnikov (sha256), dodane vse verzije.</span><span data-lang="en" hidden>R1.1: WORK without duplicates (sha256), all versions added.</span></span>
     </div>
   </div>
 
@@ -186,8 +205,17 @@
         <h2 id="pregled-title"><span data-lang="sl">Koliko kode</span><span data-lang="en" hidden>How much code</span></h2>
         <ul class="stats" id="stats" aria-live="polite"><li class="stat"><b>…</b><span data-lang="sl">nalagam</span><span data-lang="en" hidden>loading</span></li></ul>
         <div id="langs"></div>
-        <p class="small muted" data-lang="sl">LOC = vrstice kode, ki niso prazne in niso samo komentar (pri JSON: neprazne vrstice).</p>
-        <p class="small muted" data-lang="en" hidden>LOC = lines of code that are neither blank nor comment-only (JSON: non-blank lines).</p>
+        <p class="small muted" data-lang="sl">LOC = vrstice kode, ki niso prazne in niso samo komentar (pri JSON: neprazne vrstice). Datoteka z isto vsebino (isti sha256) je v območju šteta enkrat; če je v več projektih, je navedena pri vsakem, v vsoti pa enkrat.</p>
+        <p class="small muted" data-lang="en" hidden>LOC = lines of code that are neither blank nor comment-only (JSON: non-blank lines). A file with the same content (same sha256) is counted once per area; if it sits in several projects, it is listed in each but counted once in the totals.</p>
+
+        <div class="allv" id="vse-verzije" role="region" aria-labelledby="allv-title">
+          <h3 id="allv-title"><span data-lang="sl">Vse verzije Python (zgodovina razvoja)</span><span data-lang="en" hidden>All Python versions (development history)</span></h3>
+          <ul class="stats" id="allv-stats"></ul>
+          <div class="avt-wrap"><table class="avt" id="allv-table"></table></div>
+          <p class="note small" data-lang="sl">Zadnje verzije kažejo, kaj imamo; vse verzije kažejo, koliko smo med testi nadgrajevali. Identične kopije so štete enkrat; .py v arhivih .zip/.7z niso šteti (spodnja meja).</p>
+          <p class="note small" data-lang="en" hidden>Latest versions show what we have; all versions show how much we upgraded between tests. Identical copies are counted once; .py files inside .zip/.7z archives are not counted (lower bound).</p>
+          <div class="avtop" id="allv-top"></div>
+        </div>
       </div>
     </section>
 
@@ -257,11 +285,17 @@
       sl: { projects: "projektov", files: "datotek", loc: "vrstic kode (LOC)", total: "Skupaj", project: "Projekt", nfiles: "Datoteke", nloc: "LOC", langs: "Jeziki", desc: "Opis", file: "Datoteka", lang: "Jezik",
             trading: "trgovanje · podrobnosti zasebne", private: "podrobnosti zasebne", hits: "zadetkov", more: "Pokaži še", of: "od", loading: "Nalagam podatke …",
             failed: "Podatkov ni bilo mogoče naložiti.", noResults: "Ni zadetkov. Poskusi drugo besedo.", shown: "Prikazano", prj: "projektov", ext: "datotek v ločenih repozitorijih (štete posebej)",
-            src_home: "HOME vir", src_work: "WORK vir", generated: "Ustvarjeno", toggle: "Pokaži datoteke projekta", all: "Vsi jeziki", tradingFiles: "datotek s trgovalnimi podrobnostmi zasebnih" },
+            src_home: "HOME vir", src_work: "WORK vir", generated: "Ustvarjeno", toggle: "Pokaži datoteke projekta", all: "Vsi jeziki", tradingFiles: "datotek s trgovalnimi podrobnostmi zasebnih",
+            shared: "datotek je v več projektih: pri vsakem projektu so navedene, v vsoti območja štete enkrat",
+            avLoc: "vrstic Python, vse verzije", avFiles: "datotek .py, vse verzije", avMore: "več vrstic kot zadnje verzije", avArea: "Območje", avLatest: "Zadnje verzije", avAll: "Vse verzije",
+            avRatio: "Razmerje", avMoreShort: "več vrstic", nfilesShort: "datotek", avTopHome: "Največ verzij · HOME", avTopWork: "Največ vrstic vseh verzij · WORK", older: "starejših verzij" },
       en: { projects: "projects", files: "files", loc: "lines of code (LOC)", total: "Total", project: "Project", nfiles: "Files", nloc: "LOC", langs: "Languages", desc: "Description", file: "File", lang: "Language",
             trading: "trading · details private", private: "details private", hits: "matches", more: "Show more", of: "of", loading: "Loading data …",
             failed: "The data could not be loaded.", noResults: "No matches. Try another word.", shown: "Showing", prj: "projects", ext: "files in separate repositories (counted separately)",
-            src_home: "HOME source", src_work: "WORK source", generated: "Generated", toggle: "Show project files", all: "All languages", tradingFiles: "files with trading details kept private" }
+            src_home: "HOME source", src_work: "WORK source", generated: "Generated", toggle: "Show project files", all: "All languages", tradingFiles: "files with trading details kept private",
+            shared: "files sit in several projects: listed in each project, counted once in the area total",
+            avLoc: "Python lines, all versions", avFiles: ".py files, all versions", avMore: "more lines than latest versions", avArea: "Area", avLatest: "Latest versions", avAll: "All versions",
+            avRatio: "Ratio", avMoreShort: "more lines", nfilesShort: "files", avTopHome: "Most versions · HOME", avTopWork: "Most lines across all versions · WORK", older: "older versions" }
     };
     var PRIVATE_DESC = { sl: "Trading modul (podrobnosti zasebne)", en: "Trading module (details private)" };
     function L() { return root.lang === "en" ? "en" : "sl"; }
@@ -293,6 +327,30 @@
         leg += '<li><i class="l' + x[0] + '"></i>' + esc(LANGS[x[0]]) + ' · ' + fmt(x[1]) + ' LOC (' + (pct < 1 ? pct.toFixed(1) : Math.round(pct)) + '%)</li>';
       });
       el("langs").innerHTML = '<div class="langbar" role="img" aria-label="' + esc(t("langs")) + '">' + bar + '</div><ul class="legend">' + leg + '</ul>';
+      renderAllVersions();
+    }
+
+    function fx(r) { return "×" + new Intl.NumberFormat(L() === "en" ? "en-GB" : "sl-SI", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(r); }
+    function renderAllVersions() {
+      var av = DATA.all_versions, box = el("vse-verzije");
+      if (!av) { box.hidden = true; return; }
+      box.hidden = false;
+      var tt = av.totals;
+      el("allv-stats").innerHTML = [
+        [fmt(tt.loc_all), t("avLoc")], [fmt(tt.files_all), t("avFiles")],
+        [fx(tt.ratio_loc), t("avMore") + " (" + fmt(tt.loc_latest) + " LOC)"]
+      ].map(function (c) { return '<li class="stat"><b>' + esc(c[0]) + '</b><span>' + esc(c[1]) + '</span></li>'; }).join("");
+      function row(name, a, cls) {
+        return '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + esc(name) + '</td>' +
+          '<td class="v"><b>' + fmt(a.loc_latest) + '</b><small>' + fmt(a.files_latest) + ' ' + esc(t("nfilesShort")) + '</small></td>' +
+          '<td class="v"><b>' + fmt(a.loc_all) + '</b><small>' + fmt(a.files_all) + ' ' + esc(t("nfilesShort")) + '</small></td>' +
+          '<td class="v"><span class="x">' + esc(fx(a.ratio_loc)) + '</span><small>' + esc(t("avMoreShort")) + '</small></td></tr>';
+      }
+      el("allv-table").innerHTML = '<thead><tr><th>' + esc(t("avArea")) + '</th><th class="num">' + esc(t("avLatest")) + ' · LOC</th><th class="num">' + esc(t("avAll")) + ' · LOC</th><th class="num">' + esc(t("avRatio")) + '</th></tr></thead><tbody>' +
+        av.areas.map(function (a) { return row(a.id.toUpperCase(), a); }).join("") + row(t("total"), tt, "tot") + '</tbody>';
+      var h = av.top_home_by_versions.map(function (p) { return '<li>' + esc(p.name) + ' <span>· ' + fmt(p.older_versions) + ' ' + esc(t("older")) + ' · ' + fmt(p.files_all) + ' ' + esc(t("nfilesShort")) + ' · ' + fmt(p.loc_all) + ' LOC</span></li>'; }).join("");
+      var w = av.top_work_by_loc_all.map(function (p) { return '<li>' + esc(p.name) + ' <span>· ' + fmt(p.loc_all) + ' LOC · ' + fmt(p.files_all) + ' ' + esc(t("nfilesShort")) + '</span></li>'; }).join("");
+      el("allv-top").innerHTML = '<div><h4>' + esc(t("avTopHome")) + '</h4><ol>' + h + '</ol></div><div><h4>' + esc(t("avTopWork")) + '</h4><ol>' + w + '</ol></div>';
     }
 
     function renderSources() {
@@ -301,7 +359,8 @@
         '<dt>' + esc(t("src_home")) + '</dt><dd>' + esc(s.home.name) + ' · <code>sha256 ' + esc(s.home.sha256.slice(0, 16)) + '…</code></dd>' +
         '<dt>' + esc(t("src_work")) + '</dt><dd>' + esc(s.work.name) + ' · <code>sha256 ' + esc(s.work.sha256.slice(0, 16)) + '…</code></dd>' +
         '<dt>+ ' + fmt(ex.files) + '</dt><dd>' + esc(t("ext")) + ': ' + esc(ex.repos.join(", ")) + '</dd>' +
-        '<dt>' + esc(t("generated")) + '</dt><dd>' + esc(DATA.generated_utc) + ' · ' + esc(DATA.status) + '</dd>';
+        (s.all_versions_home ? '<dt>' + esc(t("avAll")) + '</dt><dd>' + esc(s.all_versions_home.name) + ' · <code>sha256 ' + esc(s.all_versions_home.sha256.slice(0, 16)) + '…</code>; ' + esc(s.all_versions_work.name) + ' · <code>sha256 ' + esc(s.all_versions_work.sha256.slice(0, 16)) + '…</code></dd>' : '') +
+        '<dt>' + esc(t("generated")) + '</dt><dd>' + esc(DATA.generated_utc) + ' · ' + esc(DATA.status) + (DATA.revision ? ' · ' + esc(DATA.revision) : '') + '</dd>';
     }
 
     function filterState() {
@@ -354,6 +413,7 @@
           '<div class="eyebrow">' + esc(a.id.toUpperCase()) + '</div><h2 id="area-' + a.id + '-title">' + esc(label) + '</h2>' +
           '<p class="muted">' + fmt(a.projects) + ' ' + esc(t("projects")) + ' · ' + fmt(a.files) + ' ' + esc(t("files")) + ' · ' + fmt(a.loc) + ' LOC · ' + esc(langList(a.languages, a.loc)) +
           (a.trading_files ? ' · ' + fmt(a.trading_files) + ' ' + esc(t("tradingFiles")) : '') + '</p>' +
+          (a.shared_files ? '<p class="small muted">' + fmt(a.shared_files) + ' ' + esc(t("shared")) + '.</p>' : '') +
           (rows ? '<table class="projects"><thead><tr><th>' + esc(t("project")) + '</th><th class="num">' + esc(t("nfiles")) + '</th><th class="num">LOC</th><th>' + esc(t("langs")) + '</th><th>' + esc(t("desc")) + '</th></tr></thead><tbody>' + rows + '</tbody></table>' : '<p class="muted">' + esc(t("noResults")) + '</p>') +
           '</div></section>';
       });
