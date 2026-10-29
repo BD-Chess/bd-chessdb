@@ -148,5 +148,15 @@ test('fixture HTML mirrors JSON: 3 acts × 3 steps, first visible, all other ste
   }
   for (const act of game.acts) assert.equal(game.steps.filter(s => s.act === act.act).length, 3);
   assert.match(html, /name="robots" content="noindex"/);
-  assert.equal(/<script\b/i.test(html), false, 'content-only fixture follows the no-JavaScript page-author contract');
+  const injections = [
+    '<link rel="stylesheet" href="/assets/game-guide/game-guide.css">',
+    '<script type="module" src="/assets/game-guide/game-guide.js"></script>'
+  ];
+  let content = html;
+  for (const line of injections) {
+    assert.equal(content.split(line).length - 1, 1, 'exactly one trusted injection: ' + line);
+    content = content.replace(line, '');
+  }
+  assert.equal(/<script\b|\son[a-z]+\s*=|javascript\s*:/i.test(content), false, 'only the two trusted asset lines may inject runtime code');
+  assert.equal(/<link\b/i.test(content), false, 'no additional asset injection');
 });
