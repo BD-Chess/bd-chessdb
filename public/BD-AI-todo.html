@@ -55,6 +55,7 @@ th{background:var(--wash);position:sticky;top:0}
 tr:last-child td{border-bottom:0}
 td.id{min-width:70px;color:var(--accent2);font-weight:600;white-space:nowrap}
 .para{margin:6px 0;max-width:90ch}
+details.fold{margin:26px 0 8px}details.fold>summary{cursor:pointer;padding:10px 0;color:var(--muted)}details.fold>summary h2{display:inline;margin:0;font-size:1.2rem}
 .family{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
 .card{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px}
 .card h3{margin:0 0 2px;font-size:1rem}.card .who{color:var(--muted);font-size:.78rem;margin-bottom:6px}
@@ -147,7 +148,7 @@ function cellNode(c,isId){const td=el('td',isId?'id':'');if(c&&typeof c==='objec
 function itemNode(it,i,focus){const li=el('li','item'+(focus?' focus':''));li.append(el('span','rk',i?String(i).padStart(2,'0'):''));const b=el('div');const h=el('h3');h.append(el('span','id',it.id||''),document.createTextNode(it.t||''));b.append(h);if(it.s)b.append(el('p','',it.s));li.append(b);li.append(el('span','pt',it.pt!=null?String(it.pt):''));const m=el('div','meta');if(it.st&&ST[it.st])m.append(el('span',ST[it.st][1],ST[it.st][0]));if(it.ev)m.append(el('span','tag '+it.ev,it.ev));if(it.g)m.append(el('span','tag',it.g));if(m.childNodes.length)li.append(m);li.dataset.s=((it.id||'')+' '+(it.t||'')+' '+(it.s||'')+' '+(it.g||'')).toLowerCase();return li;}
 function block(b){
   const w=el('div');
-  if(b.cap){w.append(el('h2','',L(b.cap)));}
+  if(b.cap&&!b.fold){w.append(el('h2','',L(b.cap)));}
   if(b.k==='cards'){const ol=el('ol','items');b.items.forEach((it,i)=>ol.append(itemNode(it,b.rank?i+1:0,!!b.focus)));w.append(ol);}
   else if(b.k==='notes'){const ul=el('ul','items');b.items.forEach(it=>ul.append(itemNode(it,0,false)));w.append(ul);}
   else if(b.k==='table'){const box=el('div','tbl');const t=el('table');const th=el('thead'),hr=el('tr');b.cols.forEach(c=>hr.append(el('th','',c)));th.append(hr);t.append(th);const tb=el('tbody');b.rows.forEach(r=>{const tr=el('tr');r.forEach((c,i)=>tr.append(cellNode(c,i===0&&b.idcol)));tr.dataset.s=r.map(c=>typeof c==='object'&&c?c.x:c).join(' ').toLowerCase();tb.append(tr);});t.append(tb);box.append(t);w.append(box);}
@@ -155,6 +156,7 @@ function block(b){
   else if(b.k==='family'){const g=el('div','family');b.items.forEach(f=>{const c=el('div','card');c.append(el('h3','',f.name),el('div','who',f.role),el('div','who','Vprašanje: '+(f.asked||'prvič 27. 10. 04:44')));if(f.items&&f.items.length){const u=el('ul');f.items.forEach(x=>u.append(el('li','',x)));c.append(u);}else c.append(el('p','empty','Še brez odgovora.'));g.append(c);});w.append(g);}
   else if(b.k==='log'){const u=el('ul');b.items.forEach(x=>{const l=el('li','',x);l.dataset.s=x.toLowerCase();u.append(l);});w.append(u);}
   else if(b.k==='stamp'){const p=el('p','stamp');b.items.forEach(([k,v])=>{const s=el('span');s.append(document.createTextNode(k+': '),el('b','',v));p.append(s);});w.append(p);}
+  if(b.fold&&b.cap){const d=el('details','fold');const s=el('summary');s.append(el('h2','',L(b.cap)));d.append(s,...w.childNodes);return d;}
   return w;
 }
 function renderTabs(){const t=$('#tabs');t.replaceChildren();DATA.tabs.forEach(tab=>{const b=el('button','',L(tab.title));b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(tab.id===CUR));b.addEventListener('click',()=>{CUR=tab.id;history.replaceState(null,'','#'+tab.id);$('#q').value='';renderTabs();renderView();});t.append(b);});}
