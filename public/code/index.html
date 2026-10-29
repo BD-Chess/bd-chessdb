@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="sl" data-theme="dark" data-title-sl="Koda · BD × AI Lab (osnutek)" data-title-en="Code · BD × AI Lab (draft)">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="Kazalo kode BD × AI Lab: projekti, datoteke, vrstice kode in jeziki z domače (HOME) in druge (WORK) delovne postaje. Code index of BD × AI Lab: projects, files, lines of code and languages.">
+  <link rel="canonical" href="https://www.mdlxdcc.org/code/">
+  <title>Koda · BD × AI Lab (osnutek)</title>
+  <script>try{var r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
+  <style>
+    :root { color-scheme: dark; --bg: #0b1220; --ink: #eff5fc; --muted: #b9c8d7; --surface: #16263a; --panel: #121e2e; --line: #304359; --accent: #7ae3ce; --plan: #f0c070; --plan-soft: #2e2614; --scale: 1; }
+    html[data-theme="light"] { color-scheme: light; --bg: #f5f7f9; --ink: #15233a; --muted: #42556a; --surface: #e5edf2; --panel: #fff; --line: #b8c8d2; --accent: #166c61; --plan: #7a4a00; --plan-soft: #fbefd9; }
+    * { box-sizing: border-box; }
+    html { font-size: calc(100% * var(--scale)); scroll-behavior: smooth; scroll-padding-top: 1rem; -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; overflow-wrap: break-word; }
+    a { color: var(--accent); }
+    code, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace; font-size: .9em; overflow-wrap: anywhere; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    [hidden], [data-lang][hidden] { display: none !important; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { position: fixed; top: .5rem; left: .5rem; z-index: 100; background: var(--panel); color: var(--ink); padding: .5rem .8rem; border: 1px solid var(--line); border-radius: .5rem; }
+    .shell { max-width: 76rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem); }
+
+    /* top toolbar – same look and storage keys as the shared AI8 toolbar */
+    .site-header { background: var(--bg); border-bottom: 1px solid var(--line); z-index: 20; }
+    .header-inner { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem 1rem; padding-top: .5rem; padding-bottom: .5rem; }
+    .brand { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; }
+    .brand .dot { color: var(--accent); margin: 0 .3em; }
+    .site-nav { display: flex; flex-wrap: wrap; gap: 0 .9rem; margin-right: auto; }
+    .site-nav a { color: var(--muted); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+    .site-nav a:hover { color: var(--accent); }
+    .ai8-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .2rem; }
+    .ai8-toolbar .ai8-divider { width: 1px; height: 1.6rem; background: var(--line); margin: 0 .3rem; }
+    .ai8-toolbar button { min-width: 44px; min-height: 44px; border: 1px solid transparent; border-radius: .5rem; padding: .3rem .45rem; background: transparent; color: inherit; font-size: .875rem; }
+    .ai8-toolbar button:hover:not(:disabled) { background: var(--surface); border-color: var(--line); }
+    .ai8-toolbar button[aria-pressed="true"] { background: var(--surface); border-color: var(--line); font-weight: 600; }
+    .ai8-toolbar button:disabled { opacity: .45; }
+    .ai8-toolbar [data-ai8-reset] { min-width: 3.6rem; font-variant-numeric: tabular-nums; }
+    @media (min-width: 760px) { .site-header { position: sticky; top: 0; } html { scroll-padding-top: 5.5rem; } }
+    @media (max-width: 600px) { .ai8-toolbar { justify-content: flex-start; } .site-nav { gap: 0 .75rem; } }
+    @media (max-width: 420px) { .ai8-toolbar .ai8-divider { display: none; } .ai8-toolbar { gap: .1rem; } .ai8-toolbar button { padding: .3rem .35rem; } }
+
+    .draft { background: var(--plan-soft); color: var(--plan); border-bottom: 1px solid var(--line); font-size: .92rem; }
+    .draft .shell { padding-top: .5rem; padding-bottom: .5rem; }
+    .draft strong { letter-spacing: .02em; }
+
+    .intro { padding: clamp(1.8rem, 5vw, 3.6rem) 0 1.2rem; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; font-size: .8rem; font-weight: 700; }
+    h1 { font-size: clamp(2rem, 4.4vw, 3.4rem); line-height: 1.12; margin: .4rem 0 .8rem; }
+    h2 { font-size: clamp(1.45rem, 2.4vw, 2rem); line-height: 1.2; margin: .2rem 0 .6rem; }
+    h3 { font-size: 1.1rem; line-height: 1.3; margin: 0 0 .35rem; }
+    p { margin: 0 0 .9rem; }
+    .lead { color: var(--muted); max-width: 70ch; font-size: 1.08rem; }
+    .note { border-left: 4px solid var(--accent); padding: .55rem 1rem; background: var(--surface); max-width: 78ch; border-radius: 0 .5rem .5rem 0; }
+    main > section { padding: 2.2rem 0; border-top: 1px solid var(--line); }
+    .muted { color: var(--muted); }
+    .small { font-size: .92rem; }
+    blockquote { margin: 1.2rem 0; padding: .8rem 1.1rem; border-left: 4px solid var(--plan); background: var(--plan-soft); border-radius: 0 .6rem .6rem 0; max-width: 70ch; }
+    blockquote p { font-size: 1.2rem; margin: 0 0 .3rem; }
+    blockquote footer { color: var(--muted); font-size: .9rem; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); gap: .8rem; margin: 1rem 0; padding: 0; list-style: none; }
+    .stat { border: 1px solid var(--line); background: var(--panel); border-radius: .8rem; padding: .8rem 1rem; min-width: 0; }
+    .stat b { display: block; font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .stat span { color: var(--muted); font-size: .9rem; }
+    .langbar { display: flex; height: .8rem; border-radius: .4rem; overflow: hidden; border: 1px solid var(--line); margin: .6rem 0 .4rem; max-width: 48rem; }
+    .langbar i { display: block; height: 100%; }
+    .legend { display: flex; flex-wrap: wrap; gap: .3rem 1rem; padding: 0; margin: 0 0 .6rem; list-style: none; font-size: .9rem; color: var(--muted); }
+    .legend i { display: inline-block; width: .8rem; height: .8rem; border-radius: .2rem; margin-right: .35rem; vertical-align: -.05rem; }
+    .l0 { background: #4f8fd6; } .l1 { background: #c98f3a; } .l2 { background: #d4c24a; } .l3 { background: #8a9aa8; } .l4 { background: #5fb3a6; } .l5 { background: #a07ad0; }
+
+    .controls { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: .6rem; margin: 1rem 0 .4rem; max-width: 60rem; }
+    .controls label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .15rem; }
+    .controls input, .controls select { width: 100%; min-height: 44px; padding: .4rem .6rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--panel); color: var(--ink); }
+    @media (max-width: 640px) { .controls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .controls .q { grid-column: 1 / -1; } }
+    .status-line { color: var(--muted); font-size: .9rem; min-height: 1.5em; }
+
+    table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+    th, td { text-align: left; padding: .45rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; font-size: .85rem; white-space: nowrap; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .projects > tbody > tr.p:hover { background: var(--surface); }
+    .pbtn { display: inline-flex; align-items: flex-start; gap: .4rem; background: none; border: 0; color: var(--accent); padding: .1rem 0; text-align: left; font-weight: 700; min-height: 32px; }
+    .pbtn .chev { display: inline-block; transition: transform .15s; width: 1em; }
+    .pbtn[aria-expanded="true"] .chev { transform: rotate(90deg); }
+    .pname { overflow-wrap: anywhere; }
+    .badge { display: inline-block; font-size: .75rem; border-radius: 999px; padding: 0 .5rem; margin: .15rem .3rem 0 0; border: 1px solid var(--plan); color: var(--plan); background: var(--plan-soft); white-space: nowrap; }
+    .hits { display: inline-block; font-size: .75rem; border-radius: 999px; padding: 0 .5rem; border: 1px solid var(--accent); color: var(--accent); white-space: nowrap; }
+    .langs { color: var(--muted); font-size: .85rem; }
+    tr.files > td { padding: 0 0 .8rem 1.4rem; background: var(--panel); }
+    .ftable { font-size: .86rem; margin-top: .3rem; }
+    .ftable td { border-bottom-color: var(--surface); }
+    .ftable .path { overflow-wrap: anywhere; }
+    .ftable .private { color: var(--plan); }
+    .more { margin: .5rem 0 0; }
+    .more button { min-height: 40px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: .5rem; padding: .3rem .8rem; }
+
+    @media (max-width: 760px) {
+      .projects thead { display: none; }
+      .projects, .projects > tbody, .projects > tbody > tr, .projects > tbody > tr > td { display: block; width: 100%; }
+      .projects > tbody > tr.p { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0 .8rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
+      .projects > tbody > tr.p > td { border: 0; padding: 0; }
+      .projects > tbody > tr.p > td.c-name { grid-column: 1 / -1; }
+      .projects > tbody > tr.p > td.c-files::before, .projects > tbody > tr.p > td.c-loc::before { content: attr(data-label) " "; color: var(--muted); font-size: .8rem; }
+      .projects > tbody > tr.p > td.c-files, .projects > tbody > tr.p > td.c-loc { text-align: left; }
+      .projects > tbody > tr.p > td.c-langs { grid-column: 3; }
+      .projects > tbody > tr.p > td.c-desc { grid-column: 1 / -1; color: var(--muted); font-size: .9rem; }
+      tr.files > td { padding: 0 0 .8rem .4rem; }
+      .ftable thead { display: none; }
+      .ftable, .ftable tbody, .ftable tr, .ftable td { display: block; width: 100%; }
+      .ftable tr { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0 .6rem; padding: .35rem 0; border-bottom: 1px solid var(--surface); }
+      .ftable td { border: 0; padding: 0; }
+      .ftable td.path { grid-column: 1 / -1; }
+      .ftable td.fdesc { grid-column: 1 / -1; color: var(--muted); }
+      .ftable td.num { text-align: left; }
+    }
+
+    .rules { padding-left: 1.3rem; max-width: 78ch; }
+    .rules li { margin-bottom: .45rem; }
+    dl.src { display: grid; grid-template-columns: minmax(6rem, max-content) minmax(0, 1fr); gap: .3rem 1rem; max-width: 62rem; font-size: .92rem; }
+    dl.src dt { font-weight: 700; color: var(--accent); }
+    dl.src dd { margin: 0; overflow-wrap: anywhere; }
+    @media (max-width: 480px) { dl.src { grid-template-columns: minmax(0, 1fr); gap: .1rem; } dl.src dd { margin-bottom: .5rem; } }
+
+    .site-footer { border-top: 1px solid var(--line); padding: 1.6rem 0 2.4rem; color: var(--muted); font-size: .92rem; }
+    .site-footer p { margin: 0 0 .4rem; }
+    .site-footer strong { color: var(--plan); }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content"><span data-lang="sl">Na vsebino</span><span data-lang="en" hidden>Skip to content</span></a>
+
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/start/">BD × AI Lab<span class="dot">·</span><span data-lang="sl">Koda</span><span data-lang="en" hidden>Code</span></a>
+      <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
+        <a href="#pregled"><span data-lang="sl">Pregled</span><span data-lang="en" hidden>Overview</span></a>
+        <a href="#iskanje"><span data-lang="sl">Iskanje</span><span data-lang="en" hidden>Search</span></a>
+        <a href="#area-home">HOME</a>
+        <a href="#area-work">WORK</a>
+        <a href="#pravila"><span data-lang="sl">Pravila</span><span data-lang="en" hidden>Rules</span></a>
+      </nav>
+      <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance">
+        <button type="button" data-ai8-down aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button>
+        <button type="button" data-ai8-reset aria-label="Velikost besedila na 100 odstotkov" data-aria-sl="Velikost besedila na 100 odstotkov" data-aria-en="Reset text size to 100 percent">100%</button>
+        <button type="button" data-ai8-up aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-lang="en" aria-label="English" aria-pressed="false">EN</button>
+        <button type="button" data-ai8-lang="sl" aria-label="Slovenščina" aria-pressed="true">SL</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-ai8-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="draft" role="note">
+    <div class="shell">
+      <strong>OSNUTEK · DRAFT</strong> —
+      <span data-lang="sl">Stran se še dopolnjuje. Številke in opisi so iz prvega popisa (R1) in se bodo še spreminjali.</span><span data-lang="en" hidden>This page is still being filled in. Numbers and descriptions come from the first census (R1) and will change.</span>
+    </div>
+  </div>
+
+  <main id="content">
+    <div class="shell">
+      <div class="intro">
+        <div class="eyebrow">BD × AI Lab · <span data-lang="sl">kazalo kode</span><span data-lang="en" hidden>code index</span></div>
+        <h1><span data-lang="sl">Koda</span><span data-lang="en" hidden>Code</span></h1>
+        <p class="lead" data-lang="sl">Kazalo vse kode, ki sta jo BD in njegova AI družina napisala v laboratoriju BD × AI Lab: projekti, datoteke, vrstice kode in jeziki z dveh delovnih postaj. Sama koda je zaenkrat v zasebnem repozitoriju in bo javna pozneje; tu je njen zemljevid.</p>
+        <p class="lead" data-lang="en" hidden>An index of all the code BD and his AI family wrote in the BD × AI Lab: projects, files, lines of code and languages from two workstations. The code itself is in a private repository for now and will become public later; this is its map.</p>
+        <blockquote>
+          <p data-lang="sl">»Koda je moj dokaz svetu.«</p>
+          <p data-lang="en" hidden>“Code is my proof to the world.”</p>
+          <footer>— BD</footer>
+        </blockquote>
+      </div>
+    </div>
+
+    <section id="pregled" aria-labelledby="pregled-title">
+      <div class="shell">
+        <div class="eyebrow">01 · <span data-lang="sl">Pregled</span><span data-lang="en" hidden>Overview</span></div>
+        <h2 id="pregled-title"><span data-lang="sl">Koliko kode</span><span data-lang="en" hidden>How much code</span></h2>
+        <ul class="stats" id="stats" aria-live="polite"><li class="stat"><b>…</b><span data-lang="sl">nalagam</span><span data-lang="en" hidden>loading</span></li></ul>
+        <div id="langs"></div>
+        <p class="small muted" data-lang="sl">LOC = vrstice kode, ki niso prazne in niso samo komentar (pri JSON: neprazne vrstice).</p>
+        <p class="small muted" data-lang="en" hidden>LOC = lines of code that are neither blank nor comment-only (JSON: non-blank lines).</p>
+      </div>
+    </section>
+
+    <section id="iskanje" aria-labelledby="iskanje-title">
+      <div class="shell">
+        <div class="eyebrow">02 · <span data-lang="sl">Iskanje</span><span data-lang="en" hidden>Search</span></div>
+        <h2 id="iskanje-title"><span data-lang="sl">Poišči projekt ali datoteko</span><span data-lang="en" hidden>Find a project or file</span></h2>
+        <div class="controls">
+          <div class="q">
+            <label for="q"><span data-lang="sl">Iskanje (ime, pot, opis)</span><span data-lang="en" hidden>Search (name, path, description)</span></label>
+            <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="npr. TSP, arena, encoder" data-ph-sl="npr. TSP, arena, encoder" data-ph-en="e.g. TSP, arena, encoder">
+          </div>
+          <div>
+            <label for="area"><span data-lang="sl">Območje</span><span data-lang="en" hidden>Area</span></label>
+            <select id="area"><option value="">HOME + WORK</option><option value="home">HOME</option><option value="work">WORK</option></select>
+          </div>
+          <div>
+            <label for="lang"><span data-lang="sl">Jezik</span><span data-lang="en" hidden>Language</span></label>
+            <select id="lang"><option value="" data-opt-sl="Vsi jeziki" data-opt-en="All languages">Vsi jeziki</option></select>
+          </div>
+        </div>
+        <p class="status-line" id="status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <div id="areas"></div>
+
+    <section id="pravila" aria-labelledby="pravila-title">
+      <div class="shell">
+        <div class="eyebrow">03 · <span data-lang="sl">Pravila</span><span data-lang="en" hidden>Rules</span></div>
+        <h2 id="pravila-title"><span data-lang="sl">Kaj je tu in česa ni</span><span data-lang="en" hidden>What is here and what is not</span></h2>
+        <ul class="rules" data-lang="sl">
+          <li>Samo BD-jevi osebni projekti in projekti AI8. Koda, povezana s službo, ni vključena.</li>
+          <li>Trgovalni projekti so navedeni z imenom, kratkim opisom namena in številom vrstic. Parametri, pravila vstopa in izstopa, strategije, formule, nastavitve in izseki kode so zasebni.</li>
+          <li>Poti so relativne glede na repozitorij. Brez e-poštnih naslovov, IP naslovov, uporabniških imen in lokalnih absolutnih poti.</li>
+          <li>Povezave do posameznih datotek bodo na voljo ob objavi repozitorija.</li>
+          <li>Dodatne datoteke, ki že živijo v svojih repozitorijih BD-Chess, so štete posebej in tu niso naštete.</li>
+        </ul>
+        <ul class="rules" data-lang="en" hidden>
+          <li>Only BD's personal projects and AI8 projects. Code related to his employment is not included.</li>
+          <li>Trading projects are listed with name, a short description of purpose and line count. Parameters, entry and exit rules, strategies, formulas, settings and code excerpts stay private.</li>
+          <li>Paths are relative to the repository. No e-mail addresses, IP addresses, user names or local absolute paths.</li>
+          <li>Links to individual files will be available when the repository is published.</li>
+          <li>Extra files that already live in their own BD-Chess repositories are counted separately and not listed here.</li>
+        </ul>
+        <dl class="src" id="sources"></dl>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <p><strong>OSNUTEK · DRAFT</strong> · BD × AI Lab · <a href="/knjiga/"><span data-lang="sl">Knjiga</span><span data-lang="en" hidden>Book</span></a> · <a href="/ai8/about/">AI8</a> · <a href="/start/">Start</a></p>
+      <p data-lang="sl">Podatki: <a href="/code/code-index.json">code-index.json</a> · repozitorij s kodo: na voljo ob objavi repozitorija.</p>
+      <p data-lang="en" hidden>Data: <a href="/code/code-index.json">code-index.json</a> · code repository: available when the repository is published.</p>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    "use strict";
+    var root = document.documentElement;
+    var DATA = null, LANGS = [];
+    var PAGE = 200;
+    var open = {};      // "area|project" -> shown item count
+    var T = {
+      sl: { projects: "projektov", files: "datotek", loc: "vrstic kode (LOC)", total: "Skupaj", project: "Projekt", nfiles: "Datoteke", nloc: "LOC", langs: "Jeziki", desc: "Opis", file: "Datoteka", lang: "Jezik",
+            trading: "trgovanje · podrobnosti zasebne", private: "podrobnosti zasebne", hits: "zadetkov", more: "Pokaži še", of: "od", loading: "Nalagam podatke …",
+            failed: "Podatkov ni bilo mogoče naložiti.", noResults: "Ni zadetkov. Poskusi drugo besedo.", shown: "Prikazano", prj: "projektov", ext: "datotek v ločenih repozitorijih (štete posebej)",
+            src_home: "HOME vir", src_work: "WORK vir", generated: "Ustvarjeno", toggle: "Pokaži datoteke projekta", all: "Vsi jeziki", tradingFiles: "datotek s trgovalnimi podrobnostmi zasebnih" },
+      en: { projects: "projects", files: "files", loc: "lines of code (LOC)", total: "Total", project: "Project", nfiles: "Files", nloc: "LOC", langs: "Languages", desc: "Description", file: "File", lang: "Language",
+            trading: "trading · details private", private: "details private", hits: "matches", more: "Show more", of: "of", loading: "Loading data …",
+            failed: "The data could not be loaded.", noResults: "No matches. Try another word.", shown: "Showing", prj: "projects", ext: "files in separate repositories (counted separately)",
+            src_home: "HOME source", src_work: "WORK source", generated: "Generated", toggle: "Show project files", all: "All languages", tradingFiles: "files with trading details kept private" }
+    };
+    var PRIVATE_DESC = { sl: "Trading modul (podrobnosti zasebne)", en: "Trading module (details private)" };
+    function L() { return root.lang === "en" ? "en" : "sl"; }
+    function t(k) { return T[L()][k]; }
+    function fmt(n) { return new Intl.NumberFormat(L() === "en" ? "en-GB" : "sl-SI").format(n); }
+    function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function el(id) { return document.getElementById(id); }
+
+    function langList(langs, total) {
+      return langs.map(function (x) { return LANGS[x[0]] + " " + Math.max(1, Math.round(100 * x[1] / Math.max(1, total))) + "%"; }).join(", ");
+    }
+    function itemDesc(it) {
+      if (!it[3]) return "";
+      if (it[4] && it[3] === PRIVATE_DESC.sl) return PRIVATE_DESC[L()];
+      return it[3];
+    }
+
+    function renderStats() {
+      var d = DATA, h = d.areas[0], w = d.areas[1];
+      var cards = [
+        [fmt(d.totals.loc), t("loc")], [fmt(d.totals.files), t("files")], [fmt(d.totals.projects), t("projects")],
+        [fmt(h.loc), "HOME · LOC"], [fmt(w.loc), "WORK · LOC"]
+      ];
+      el("stats").innerHTML = cards.map(function (c) { return '<li class="stat"><b>' + esc(c[0]) + '</b><span>' + esc(c[1]) + '</span></li>'; }).join("");
+      var tot = d.totals.loc, bar = "", leg = "";
+      d.totals.languages.forEach(function (x) {
+        var pct = 100 * x[1] / tot;
+        bar += '<i class="l' + x[0] + '" style="width:' + pct.toFixed(2) + '%"></i>';
+        leg += '<li><i class="l' + x[0] + '"></i>' + esc(LANGS[x[0]]) + ' · ' + fmt(x[1]) + ' LOC (' + (pct < 1 ? pct.toFixed(1) : Math.round(pct)) + '%)</li>';
+      });
+      el("langs").innerHTML = '<div class="langbar" role="img" aria-label="' + esc(t("langs")) + '">' + bar + '</div><ul class="legend">' + leg + '</ul>';
+    }
+
+    function renderSources() {
+      var s = DATA.sources, ex = DATA.external_repos;
+      el("sources").innerHTML =
+        '<dt>' + esc(t("src_home")) + '</dt><dd>' + esc(s.home.name) + ' · <code>sha256 ' + esc(s.home.sha256.slice(0, 16)) + '…</code></dd>' +
+        '<dt>' + esc(t("src_work")) + '</dt><dd>' + esc(s.work.name) + ' · <code>sha256 ' + esc(s.work.sha256.slice(0, 16)) + '…</code></dd>' +
+        '<dt>+ ' + fmt(ex.files) + '</dt><dd>' + esc(t("ext")) + ': ' + esc(ex.repos.join(", ")) + '</dd>' +
+        '<dt>' + esc(t("generated")) + '</dt><dd>' + esc(DATA.generated_utc) + ' · ' + esc(DATA.status) + '</dd>';
+    }
+
+    function filterState() {
+      return { q: el("q").value.trim().toLowerCase(), area: el("area").value, lang: el("lang").value === "" ? -1 : Number(el("lang").value) };
+    }
+    function itemMatches(p, it, f) {
+      if (f.lang >= 0 && it[1] !== f.lang) return false;
+      if (!f.q) return true;
+      return (p.root + it[0] + " " + itemDesc(it) + " " + (it[4] ? PRIVATE_DESC.en : "")).toLowerCase().indexOf(f.q) >= 0;
+    }
+    function projectMatches(p, f) {
+      if (!f.q) return false;
+      return (p.name + " " + p.desc_sl + " " + p.desc_en + (p.trading ? " trading" : "")).toLowerCase().indexOf(f.q) >= 0;
+    }
+
+    function renderAreas() {
+      var f = filterState(), html = "", shownP = 0, shownF = 0, lang = L();
+      DATA.areas.forEach(function (a) {
+        var hidden = f.area && f.area !== a.id;
+        var rows = "";
+        a.project_list.forEach(function (p) {
+          var key = a.id + "|" + p.name;
+          var filtering = !!f.q || f.lang >= 0;
+          var items = p.items, matched = items;
+          if (filtering) matched = items.filter(function (it) { return itemMatches(p, it, f); });
+          var pm = projectMatches(p, f);
+          if (filtering && !matched.length && !pm) return;
+          if (pm && f.lang < 0) matched = items;
+          if (!hidden) { shownP++; shownF += matched.length; }
+          var isOpen = open[key] !== undefined;
+          var badges = (p.trading ? '<span class="badge">' + esc(t("trading")) + '</span>' : "") +
+                       (filtering && matched.length !== items.length ? ' <span class="hits">' + fmt(matched.length) + ' ' + esc(t("hits")) + '</span>' : "");
+          rows += '<tr class="p"><td class="c-name"><button type="button" class="pbtn" aria-expanded="' + isOpen + '" data-key="' + esc(key) + '" title="' + esc(t("toggle")) + '"><span class="chev" aria-hidden="true">›</span><span class="pname">' + esc(p.name) + '</span></button><br>' + badges + '</td>' +
+                  '<td class="num c-files" data-label="' + esc(t("nfiles")) + '">' + fmt(p.files) + '</td>' +
+                  '<td class="num c-loc" data-label="LOC">' + fmt(p.loc) + '</td>' +
+                  '<td class="c-langs langs">' + esc(langList(p.languages, p.loc)) + '</td>' +
+                  '<td class="c-desc">' + esc(lang === "en" ? p.desc_en : p.desc_sl) + '</td></tr>';
+          if (isOpen) {
+            var n = Math.min(open[key], matched.length), fr = "";
+            for (var i = 0; i < n; i++) {
+              var it = matched[i], priv = it[4] ? ' private' : '';
+              fr += '<tr><td class="path mono">' + esc(p.root + it[0]) + '</td><td>' + esc(LANGS[it[1]]) + '</td><td class="num">' + fmt(it[2]) + '</td><td class="fdesc' + priv + '">' + esc(itemDesc(it)) + '</td></tr>';
+            }
+            var more = n < matched.length ? '<p class="more"><button type="button" data-more="' + esc(key) + '">' + esc(t("more")) + ' (' + fmt(n) + ' ' + esc(t("of")) + ' ' + fmt(matched.length) + ')</button></p>' : "";
+            rows += '<tr class="files"><td colspan="5"><table class="ftable"><thead><tr><th>' + esc(t("file")) + '</th><th>' + esc(t("lang")) + '</th><th class="num">LOC</th><th>' + esc(t("desc")) + '</th></tr></thead><tbody>' + fr + '</tbody></table>' + more + '</td></tr>';
+          }
+        });
+        var label = lang === "en" ? a.label_en : a.label_sl;
+        html += '<section id="area-' + a.id + '" aria-labelledby="area-' + a.id + '-title"' + (hidden ? " hidden" : "") + '><div class="shell">' +
+          '<div class="eyebrow">' + esc(a.id.toUpperCase()) + '</div><h2 id="area-' + a.id + '-title">' + esc(label) + '</h2>' +
+          '<p class="muted">' + fmt(a.projects) + ' ' + esc(t("projects")) + ' · ' + fmt(a.files) + ' ' + esc(t("files")) + ' · ' + fmt(a.loc) + ' LOC · ' + esc(langList(a.languages, a.loc)) +
+          (a.trading_files ? ' · ' + fmt(a.trading_files) + ' ' + esc(t("tradingFiles")) : '') + '</p>' +
+          (rows ? '<table class="projects"><thead><tr><th>' + esc(t("project")) + '</th><th class="num">' + esc(t("nfiles")) + '</th><th class="num">LOC</th><th>' + esc(t("langs")) + '</th><th>' + esc(t("desc")) + '</th></tr></thead><tbody>' + rows + '</tbody></table>' : '<p class="muted">' + esc(t("noResults")) + '</p>') +
+          '</div></section>';
+      });
+      el("areas").innerHTML = html;
+      var f2 = filterState();
+      el("status").textContent = (f2.q || f2.lang >= 0) ? (shownP ? t("shown") + ": " + fmt(shownP) + " " + t("prj") + " · " + fmt(shownF) + " " + t("files") : t("noResults")) : "";
+    }
+
+    function renderLangOptions() {
+      var sel = el("lang"), cur = sel.value, opts = '<option value="">' + esc(t("all")) + '</option>';
+      LANGS.forEach(function (n, i) { opts += '<option value="' + i + '">' + esc(n) + '</option>'; });
+      sel.innerHTML = opts; sel.value = cur;
+      var q = el("q"); q.placeholder = q.getAttribute(L() === "en" ? "data-ph-en" : "data-ph-sl");
+    }
+
+    function renderAll() {
+      if (!DATA) return;
+      renderStats(); renderSources(); renderLangOptions(); renderAreas();
+    }
+
+    var timer = 0;
+    el("q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(renderAreas, 150); });
+    el("area").addEventListener("change", renderAreas);
+    el("lang").addEventListener("change", renderAreas);
+    el("areas").addEventListener("click", function (ev) {
+      var b = ev.target.closest("button");
+      if (!b) return;
+      var k = b.getAttribute("data-key");
+      if (k) {
+        if (open[k] !== undefined) delete open[k]; else open[k] = PAGE;
+        renderAreas();
+        var nb = el("areas").querySelector('button[data-key="' + (window.CSS && CSS.escape ? CSS.escape(k) : k) + '"]');
+        if (nb) nb.focus();
+        return;
+      }
+      k = b.getAttribute("data-more");
+      if (k) { open[k] = (open[k] || PAGE) + PAGE * 5; renderAreas(); }
+    });
+    new MutationObserver(function () { renderAll(); }).observe(root, { attributes: true, attributeFilter: ["lang"] });
+
+    el("status").textContent = t("loading");
+    fetch("/code/code-index.json", { cache: "no-cache" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (d) { DATA = d; LANGS = d.languages; el("status").textContent = ""; renderAll(); })
+      .catch(function () { el("status").textContent = t("failed"); });
+  })();
+  </script>
+  <script>
+  (function () {
+    "use strict";
+    var root = document.documentElement;
+    var bar = document.querySelector("[data-ai8-toolbar]");
+    if (!bar) return;
+    function get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
+    function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (_) {} }
+    var lang = "sl", theme = "dark", scale = 1;
+    var sLang = get("mdlxdcc-lang"), sTheme = get("mdlxdcc-theme"), sScale = Number(get("mdlxdcc-font"));
+    if (sLang === "sl" || sLang === "en") lang = sLang;
+    if (sTheme === "dark" || sTheme === "light") theme = sTheme;
+    if (Number.isFinite(sScale) && sScale >= 0.8 && sScale <= 1.5) scale = sScale;
+
+    function apply() {
+      root.lang = lang;
+      root.setAttribute("data-theme", theme);
+      root.style.setProperty("--scale", String(scale));
+      var i, nodes = document.querySelectorAll("[data-lang]");
+      for (i = 0; i < nodes.length; i++) {
+        if (nodes[i].getAttribute("data-lang") === lang) nodes[i].removeAttribute("hidden");
+        else nodes[i].setAttribute("hidden", "");
+      }
+      nodes = document.querySelectorAll("[data-aria-sl][data-aria-en]");
+      for (i = 0; i < nodes.length; i++) {
+        nodes[i].setAttribute("aria-label", nodes[i].getAttribute(lang === "en" ? "data-aria-en" : "data-aria-sl"));
+      }
+      nodes = bar.querySelectorAll("[data-ai8-lang]");
+      for (i = 0; i < nodes.length; i++) nodes[i].setAttribute("aria-pressed", String(nodes[i].getAttribute("data-ai8-lang") === lang));
+      nodes = bar.querySelectorAll("[data-ai8-theme]");
+      for (i = 0; i < nodes.length; i++) nodes[i].setAttribute("aria-pressed", String(nodes[i].getAttribute("data-ai8-theme") === theme));
+      bar.querySelector("[data-ai8-reset]").textContent = Math.round(scale * 100) + "%";
+      bar.querySelector("[data-ai8-down]").disabled = scale <= 0.8;
+      bar.querySelector("[data-ai8-up]").disabled = scale >= 1.5;
+      var tSl = root.getAttribute("data-title-sl"), tEn = root.getAttribute("data-title-en");
+      if (tSl && tEn) document.title = lang === "en" ? tEn : tSl;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", theme === "dark" ? "#0b1220" : "#f5f7f9");
+    }
+    function setScale(v) { scale = Math.round(Math.min(1.5, Math.max(0.8, v)) * 100) / 100; put("mdlxdcc-font", scale); apply(); }
+
+    bar.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button");
+      if (!b || !bar.contains(b)) return;
+      if (b.hasAttribute("data-ai8-lang")) { lang = b.getAttribute("data-ai8-lang") === "en" ? "en" : "sl"; put("mdlxdcc-lang", lang); apply(); }
+      else if (b.hasAttribute("data-ai8-theme")) { theme = b.getAttribute("data-ai8-theme") === "light" ? "light" : "dark"; put("mdlxdcc-theme", theme); apply(); }
+      else if (b.hasAttribute("data-ai8-down")) setScale(scale - 0.05);
+      else if (b.hasAttribute("data-ai8-up")) setScale(scale + 0.05);
+      else if (b.hasAttribute("data-ai8-reset")) setScale(1);
+    });
+    window.addEventListener("storage", function (ev) {
+      if (["mdlxdcc-lang", "mdlxdcc-theme", "mdlxdcc-font", null].indexOf(ev.key) < 0) return;
+      var l = get("mdlxdcc-lang"), t = get("mdlxdcc-theme"), s = Number(get("mdlxdcc-font"));
+      lang = l === "en" ? "en" : "sl";
+      theme = t === "light" ? "light" : "dark";
+      scale = Number.isFinite(s) && s >= 0.8 && s <= 1.5 ? s : 1;
+      apply();
+    });
+    apply();
+  })();
+  </script>
+</body>
+</html>

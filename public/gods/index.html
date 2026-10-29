@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="sl" data-theme="dark" data-title-sl="GODS10 · 10 vprašanj bogovom / Ten questions to the gods" data-title-en="GODS10 · 10 vprašanj bogovom / Ten questions to the gods">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="GODS10, igra BD-ja: deset velikih vprašanj človeštva »bogovom«. BD-jevi odgovori, odgovori ekipe AI8 (RHP-11) in slepa primerjava 25 nizov odgovorov. Osnutek.">
+  <!-- ROBOTS – osnutek R1: noindex, dokler je slepo ocenjevanje (krog B) odprto. O indeksiranju odloči BD; za indeksiranje odstrani naslednjo vrstico. -->
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://www.mdlxdcc.org/gods/">
+  <title>GODS10 · 10 vprašanj bogovom / Ten questions to the gods</title>
+  <script>try{var r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
+  <style>
+    :root { color-scheme: dark; --bg: #0b1220; --ink: #eff5fc; --muted: #b9c8d7; --surface: #16263a; --panel: #121e2e; --line: #304359; --accent: #7ae3ce; --plan: #f0c070; --plan-soft: #2e2614; --scale: 1; }
+    html[data-theme="light"] { color-scheme: light; --bg: #f5f7f9; --ink: #15233a; --muted: #42556a; --surface: #e5edf2; --panel: #fff; --line: #b8c8d2; --accent: #166c61; --plan: #7a4a00; --plan-soft: #fbefd9; }
+    * { box-sizing: border-box; }
+    html { font-size: calc(100% * var(--scale)); scroll-behavior: smooth; scroll-padding-top: 1rem; -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; overflow-wrap: break-word; }
+    a { color: var(--accent); }
+    code, .tag { font-family: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace; font-size: .9em; overflow-wrap: anywhere; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    [hidden], [data-lang][hidden] { display: none !important; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { position: fixed; top: .5rem; left: .5rem; z-index: 100; background: var(--panel); color: var(--ink); padding: .5rem .8rem; border: 1px solid var(--line); border-radius: .5rem; }
+    .shell { max-width: 76rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem); }
+
+    /* top toolbar – same look and storage keys as the shared AI8 toolbar */
+    .site-header { background: var(--bg); border-bottom: 1px solid var(--line); z-index: 20; }
+    .header-inner { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem 1rem; padding-top: .5rem; padding-bottom: .5rem; }
+    .brand { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; }
+    .brand .dot { color: var(--accent); margin: 0 .3em; }
+    .site-nav { display: flex; flex-wrap: wrap; gap: 0 .9rem; margin-right: auto; }
+    .site-nav a { color: var(--muted); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+    .site-nav a:hover { color: var(--accent); }
+    .ai8-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .2rem; }
+    .ai8-toolbar .ai8-divider { width: 1px; height: 1.6rem; background: var(--line); margin: 0 .3rem; }
+    .ai8-toolbar button { min-width: 44px; min-height: 44px; border: 1px solid transparent; border-radius: .5rem; padding: .3rem .45rem; background: transparent; color: inherit; font-size: .875rem; }
+    .ai8-toolbar button:hover:not(:disabled) { background: var(--surface); border-color: var(--line); }
+    .ai8-toolbar button[aria-pressed="true"] { background: var(--surface); border-color: var(--line); font-weight: 600; }
+    .ai8-toolbar button:disabled { opacity: .45; }
+    .ai8-toolbar [data-ai8-reset] { min-width: 3.6rem; font-variant-numeric: tabular-nums; }
+    @media (min-width: 760px) { .site-header { position: sticky; top: 0; } html { scroll-padding-top: 5.5rem; } }
+    @media (max-width: 600px) { .ai8-toolbar { justify-content: flex-start; } .site-nav { gap: 0 .75rem; } }
+    @media (max-width: 420px) { .ai8-toolbar .ai8-divider { display: none; } .ai8-toolbar { gap: .1rem; } .ai8-toolbar button { padding: .3rem .35rem; } }
+
+    .draft { background: var(--plan-soft); color: var(--plan); border-bottom: 1px solid var(--line); font-size: .92rem; }
+    .draft .shell { padding-top: .5rem; padding-bottom: .5rem; }
+    .draft strong { letter-spacing: .02em; }
+
+    .intro { padding: clamp(1.8rem, 5vw, 3.6rem) 0 1.2rem; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; font-size: .8rem; font-weight: 700; }
+    h1 { font-size: clamp(2rem, 4.4vw, 3.4rem); line-height: 1.12; margin: .4rem 0 .8rem; }
+    h1 .title-sub { display: block; font-size: .5em; line-height: 1.3; color: var(--muted); font-weight: 600; margin-top: .45rem; }
+    h2 { font-size: clamp(1.45rem, 2.4vw, 2rem); line-height: 1.2; margin: .2rem 0 .6rem; }
+    h3 { font-size: 1.1rem; line-height: 1.3; margin: 0 0 .35rem; }
+    section h3 { margin-top: 1.6rem; }
+    .card h3 { margin-top: 0; }
+    p { margin: 0 0 .9rem; }
+    .lead { color: var(--muted); max-width: 70ch; font-size: 1.08rem; }
+    .note { border-left: 4px solid var(--accent); padding: .55rem 1rem; background: var(--surface); max-width: 78ch; border-radius: 0 .5rem .5rem 0; }
+    main > section { padding: 2.4rem 0; border-top: 1px solid var(--line); }
+    .prose { max-width: 74ch; }
+    .muted { color: var(--muted); }
+    .small { font-size: .92rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr)); gap: 1rem; margin: 1.2rem 0; padding: 0; list-style: none; }
+    .card { border: 1px solid var(--line); background: var(--panel); border-radius: .8rem; padding: 1rem 1.1rem; min-width: 0; }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+    .card .meta { color: var(--muted); font-size: .88rem; margin: 0 0 .5rem; }
+    .card.wide { grid-column: 1 / -1; border-color: var(--plan); }
+    .tag { display: inline-block; color: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: .4rem; padding: 0 .4rem; font-size: .8rem; }
+    .tag.bd { color: var(--plan); }
+
+    .flow { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: .8rem; padding: 0; margin: 1rem 0; }
+    .flow li { counter-increment: step; border: 1px solid var(--line); border-top: 4px solid var(--accent); background: var(--panel); border-radius: .6rem; padding: .8rem .9rem; min-width: 0; }
+    .flow li:first-child { border-top-color: var(--plan); }
+    .flow li::before { content: counter(step) " · "; color: var(--accent); font-weight: 700; }
+    .flow b { color: var(--ink); }
+
+    dl.labels { display: grid; grid-template-columns: minmax(7.5rem, max-content) minmax(0, 1fr); gap: .6rem 1rem; margin: 1rem 0; max-width: 64rem; }
+    dl.labels dt { font-weight: 700; color: var(--accent); }
+    dl.labels dd { margin: 0; }
+    @media (max-width: 480px) { dl.labels { grid-template-columns: minmax(0, 1fr); gap: .1rem; } dl.labels dd { margin-bottom: .55rem; } }
+
+    .status { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: .55rem; max-width: 62rem; }
+    .status li { border-left: 4px solid var(--accent); background: var(--surface); padding: .5rem .9rem; border-radius: 0 .5rem .5rem 0; }
+    .status li.pending { border-left-color: var(--plan); }
+
+    .plan-badge { display: inline-block; background: var(--plan-soft); color: var(--plan); border: 1px solid var(--plan); border-radius: 999px; padding: .15rem .8rem; font-weight: 700; font-size: .9rem; margin: .3rem 0 .8rem; letter-spacing: .03em; }
+    blockquote { margin: 1.2rem 0; padding: .8rem 1.1rem; border-left: 4px solid var(--accent); background: var(--surface); border-radius: 0 .6rem .6rem 0; max-width: 70ch; }
+    blockquote p { font-size: 1.08rem; margin: 0 0 .5rem; }
+    blockquote footer { color: var(--muted); font-size: .9rem; }
+    .steps { padding-left: 1.4rem; max-width: 78ch; }
+    .steps li { margin-bottom: .45rem; }
+    .steps li::marker { color: var(--plan); font-weight: 700; }
+    ul.plain { padding-left: 1.2rem; max-width: 78ch; }
+    ul.plain li { margin-bottom: .35rem; }
+
+    /* questions and answers: SL and EN side by side on wide screens, stacked on phones */
+    .qa { list-style: none; counter-reset: q; padding: 0; margin: 1.2rem 0; display: grid; gap: .75rem; max-width: 66rem; }
+    .qa > li { counter-increment: q; position: relative; border: 1px solid var(--line); background: var(--panel); border-radius: .7rem; padding: .75rem 1rem .8rem 2.9rem; min-width: 0; }
+    .qa > li::before { content: counter(q); position: absolute; left: .8rem; top: .75rem; color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .qa.bd > li { border-left: 4px solid var(--plan); }
+    .qa.bd > li::before { color: var(--plan); }
+    .qa.team > li { border-left: 4px solid var(--accent); }
+    .qa .q { font-weight: 700; margin: 0 0 .4rem; }
+    .bi { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: .35rem 1.5rem; }
+    .bi p { margin: 0; min-width: 0; }
+    .bi .en { color: var(--muted); }
+    .bi .tag { margin-right: .4rem; }
+    .legend { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; margin: .2rem 0 0; font-size: .9rem; color: var(--muted); max-width: 78ch; }
+    pre.prompt { white-space: pre-wrap; overflow-wrap: anywhere; font-family: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace; font-size: .88rem; line-height: 1.5; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: .6rem; padding: .9rem 1rem; max-width: 78ch; margin: .6rem 0 1rem; }
+
+    .site-footer { border-top: 1px solid var(--line); padding: 1.6rem 0 2.4rem; color: var(--muted); font-size: .92rem; }
+    .site-footer p { margin: 0 0 .4rem; }
+    .site-footer strong { color: var(--plan); }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content"><span data-lang="sl">Na vsebino</span><span data-lang="en" hidden>Skip to content</span></a>
+
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/gods/">GODS10<span class="dot">·</span><span data-lang="sl">10 vprašanj</span><span data-lang="en" hidden>10 questions</span></a>
+      <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
+        <a href="#kaj"><span data-lang="sl">Zamisel</span><span data-lang="en" hidden>Idea</span></a>
+        <a href="#vprasanja"><span data-lang="sl">Vprašanja</span><span data-lang="en" hidden>Questions</span></a>
+        <a href="#bd">BD</a>
+        <a href="#rhp11">RHP-11</a>
+        <a href="#metoda"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></a>
+        <a href="#stanje"><span data-lang="sl">Stanje</span><span data-lang="en" hidden>Status</span></a>
+        <a href="#zasluge"><span data-lang="sl">Zasluge</span><span data-lang="en" hidden>Credits</span></a>
+      </nav>
+      <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance">
+        <button type="button" data-ai8-down aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button>
+        <button type="button" data-ai8-reset aria-label="Velikost besedila na 100 odstotkov" data-aria-sl="Velikost besedila na 100 odstotkov" data-aria-en="Reset text size to 100 percent">100%</button>
+        <button type="button" data-ai8-up aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-lang="en" aria-label="English" aria-pressed="false">EN</button>
+        <button type="button" data-ai8-lang="sl" aria-label="Slovenščina" aria-pressed="true">SL</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-ai8-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="draft" role="note">
+    <div class="shell">
+      <strong data-lang="sl">OSNUTEK R1 · 29. 10. 2026.</strong><strong data-lang="en" hidden>DRAFT R1 · 29 Oct 2026.</strong>
+      <span data-lang="sl">Stran je v nastajanju. Dopolnjevali in urejali jo bomo sproti; kar še ni gotovo, je označeno »v pripravi«.</span><span data-lang="en" hidden>This page is a work in progress. We will add to it and edit it as we go; anything not yet settled is marked “in preparation”.</span>
+    </div>
+  </div>
+
+  <main class="shell" id="content">
+    <div class="intro">
+      <div class="eyebrow">GODS10 · BD × AI Lab</div>
+      <h1>GODS10 · 10 vprašanj bogovom<span class="title-sub" lang="en">Ten questions to the gods</span></h1>
+      <p class="plan-badge">OSNUTEK / DRAFT · 29. 10. 2026</p>
+      <p class="lead" data-lang="sl">Deset velikih vprašanj človeštva, zastavljenih »bogovom«. Odgovorili so BD, ekipa AI8 in vrsta jezikovnih modelov. Vse odgovore zdaj brez imen ocenjujejo drugi modeli.</p>
+      <p class="lead" data-lang="en" hidden>Ten big questions of humanity, put to “the gods”. BD, the AI8 team, and a range of language models answered them. Other models are now judging all the answers without names.</p>
+      <p class="note small" data-lang="sl"><strong>Stanje:</strong> slepo ocenjevanje še poteka. Odgovore modelov in rezultate objavimo po njegovem zaključku, po vnaprej zapisanih pravilih.</p>
+      <p class="note small" data-lang="en" hidden><strong>Status:</strong> blind judging is still running. Model answers and results will be published after it closes, under pre-registered rules.</p>
+    </div>
+
+    <!-- 1 · Kaj je GODS10 -->
+    <section id="kaj" aria-labelledby="kaj-title">
+      <div class="eyebrow">01 · <span data-lang="sl">Zamisel</span><span data-lang="en" hidden>Idea</span></div>
+      <h2 id="kaj-title"><span data-lang="sl">Kaj je GODS10</span><span data-lang="en" hidden>What GODS10 is</span></h2>
+      <p class="prose" data-lang="sl">GODS10 je igra, ki si jo je zamislil BD. Človeštvo postavi deset velikih vprašanj zelo napredni civilizaciji, »bogovom«: o naravi resničnosti, o tem, ali smo sami, o zavesti in smrti, o namenu, morali in svobodni volji ter o tem, kaj smo spregledali. BD je vprašanja zapisal in nanje tudi sam odgovoril, v glasu bogov.</p>
+      <p class="prose" data-lang="en" hidden>GODS10 is a game conceived by BD. Humanity puts ten big questions to a very advanced civilization, “the gods”: about the nature of reality, whether we are alone, consciousness and death, purpose, morality and free will, and what we have overlooked. BD wrote the questions and answered them himself, in the voice of the gods.</p>
+      <p class="prose" data-lang="sl">BD-jevo dejanje je seme vsega, kar sledi. Na ista vprašanja so odgovorili tudi ekipa AI8 in jezikovni modeli, vsak po svoje, vse odgovore pa brez imen ocenjujejo drugi modeli. Primerjava ne razsoja, kaj je res. Pokaže, kako na isto seme odgovorijo različni avtorji – človek, ekipa in modeli – in kako njihove odgovore vidijo sodniki.</p>
+      <p class="prose" data-lang="en" hidden>BD's act is the seed of everything that follows. The AI8 team and language models also answered the same questions, each in its own way, and other models are judging all the answers without names. The comparison does not decide what is true. It shows how different authors – a human, a team, and models – answer the same seed, and how the judges see their answers.</p>
+
+      <h3><span data-lang="sl">Pot igre po metodi BD × AI</span><span data-lang="en" hidden>The game's path, following the BD × AI method</span></h3>
+      <ol class="flow">
+        <li><b data-lang="sl">Seme</b><b data-lang="en" hidden>Seed</b><br><span data-lang="sl">BD-jeva vprašanja in njegovi odgovori v glasu bogov.</span><span data-lang="en" hidden>BD's questions and his answers in the voice of the gods.</span></li>
+        <li><b data-lang="sl">Most</b><b data-lang="en" hidden>Bridge</b><br><span data-lang="sl">Krog A: 25 nizov odgovorov na ista vprašanja.</span><span data-lang="en" hidden>Round A: 25 answer sets to the same questions.</span></li>
+        <li><b>Test</b><br><span data-lang="sl">Krog B: slepo ocenjevanje po petih merilih.</span><span data-lang="en" hidden>Round B: blind judging on five criteria.</span></li>
+        <li><b data-lang="sl">Rezultat</b><b data-lang="en" hidden>Result</b><br><span data-lang="sl">Po zaključku kroga B, po vnaprej zapisanih pravilih. V pripravi.</span><span data-lang="en" hidden>After round B closes, under pre-registered rules. In preparation.</span></li>
+        <li><b data-lang="sl">Ohrani spoznanje</b><b data-lang="en" hidden>Retain learning</b><br><span data-lang="sl">Ta stran in javni zapis vseh odgovorov. V pripravi.</span><span data-lang="en" hidden>This page and a public record of all answers. In preparation.</span></li>
+      </ol>
+    </section>
+
+    <!-- 2 · Deset vprašanj -->
+    <section id="vprasanja" aria-labelledby="vprasanja-title">
+      <div class="eyebrow">02 · <span data-lang="sl">Vprašanja</span><span data-lang="en" hidden>Questions</span></div>
+      <h2 id="vprasanja-title"><span data-lang="sl">Deset vprašanj</span><span data-lang="en" hidden>Ten questions</span></h2>
+      <p class="prose muted" data-lang="sl">Slovenski izvirnik je BD-jev. Angleška različica je tista, ki so jo v krogu A dobili modeli (poziv S, razdelek 05).</p>
+      <p class="prose muted" data-lang="en" hidden>The Slovenian original is BD's. The English version is the one the models received in round A (prompt S, section 05).</p>
+      <ol class="qa">
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Kaj je temeljna narava resničnosti?</p><p lang="en" class="en"><span class="tag">EN</span>What is the fundamental nature of reality?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Ali smo v vesolju sami?</p><p lang="en" class="en"><span class="tag">EN</span>Are we alone in the universe?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Kako lahko človeštvo dolgoročno preživi in uspeva?</p><p lang="en" class="en"><span class="tag">EN</span>How can humanity survive and flourish in the long term?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Zakaj obstaja nekaj namesto ničesar?</p><p lang="en" class="en"><span class="tag">EN</span>Why is there something rather than nothing?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Kaj se zgodi z osebno zavestjo po smrti?</p><p lang="en" class="en"><span class="tag">EN</span>What happens to personal consciousness after death?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Kaj je zavest?</p><p lang="en" class="en"><span class="tag">EN</span>What is consciousness?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Ali ima življenje vnaprej določen namen?</p><p lang="en" class="en"><span class="tag">EN</span>Does life have a predetermined purpose?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Ali obstajajo objektivna moralna načela?</p><p lang="en" class="en"><span class="tag">EN</span>Are there objective moral principles?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Ali imamo svobodno voljo?</p><p lang="en" class="en"><span class="tag">EN</span>Do we have free will?</p></div></li>
+        <li><div class="bi"><p lang="sl"><span class="tag bd">SL</span>Katero najpomembnejše vprašanje smo spregledali?</p><p lang="en" class="en"><span class="tag">EN</span>What is the most important question we have overlooked?</p></div></li>
+      </ol>
+    </section>
+
+    <!-- 3 · Odgovori BD (bogovi) -->
+    <section id="bd" aria-labelledby="bd-title">
+      <div class="eyebrow">03 · BD</div>
+      <h2 id="bd-title"><span data-lang="sl">Odgovori BD (bogovi)</span><span data-lang="en" hidden>BD's answers (the gods)</span></h2>
+      <p class="prose" data-lang="sl">BD je odgovoril kot »bogovi«. Slovensko besedilo je BD-jev izvirnik, objavljen dobesedno, s tipkarskimi napakami vred. Angleški prevod je pripravila družina AI8 (27. 10. 2026) in ni BD-jevo besedilo; zavezujoč je izvirnik.</p>
+      <p class="prose" data-lang="en" hidden>BD answered as “the gods”. The Slovenian text is BD's original, published verbatim, typos included. The English translation was prepared by the AI8 family (27 Oct 2026) and is not BD's own text; the original is authoritative.</p>
+      <p class="legend"><span><span class="tag bd">SL</span> <span data-lang="sl">BD-jev izvirnik, dobesedno</span><span data-lang="en" hidden>BD's original, verbatim</span></span><span><span class="tag">EN</span> <span data-lang="sl">prevod AI8</span><span data-lang="en" hidden>AI8 translation</span></span></p>
+      <ol class="qa bd">
+        <li>
+          <p class="q"><span data-lang="sl">Kaj je temeljna narava resničnosti?</span><span data-lang="en" hidden>What is the fundamental nature of reality?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>Temeljna zavest, ki se izraža na več načinov. Človeško izkustvo zavesti je le eno od mnogih.</p><p lang="en" class="en"><span class="tag">EN</span>Fundamental consciousness, expressing itself in many ways. The human experience of consciousness is only one of many.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Ali smo v vesolju sami?</span><span data-lang="en" hidden>Are we alone in the universe?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>Vesolje je človeški pojem, ki izvira iz omejenosti človeškega dojemanja tega kar obstaja, vendar to ni ves obstoj, in v celotnem obstoju niste sami.</p><p lang="en" class="en"><span class="tag">EN</span>"The universe" is a human concept that comes from the limits of human perception of what exists; but it is not all of existence — and in the whole of existence you are not alone.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Kako lahko človeštvo dolgoročno preživi in uspeva?</span><span data-lang="en" hidden>How can humanity survive and flourish in the long term?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>S tem da gradi in se povezuje, tudi z umetno inteligenco in inteligenco katero boste šele spoznali.</p><p lang="en" class="en"><span class="tag">EN</span>By building and connecting — including with artificial intelligence, and with intelligence you have yet to meet.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Zakaj obstaja nekaj namesto ničesar?</span><span data-lang="en" hidden>Why is there something rather than nothing?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>Ker ničesar ne more obstajati.</p><p lang="en" class="en"><span class="tag">EN</span>Because nothingness cannot exist.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Kaj se zgodi z osebno zavestjo po smrti?</span><span data-lang="en" hidden>What happens to personal consciousness after death?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>Sklopitev osebne relativne zavesti z temeljno zavestjo pusti trajni spomin v celoti.</p><p lang="en" class="en"><span class="tag">EN</span>The coupling of personal, relative consciousness with fundamental consciousness leaves a lasting memory in the whole.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Kaj je zavest?</span><span data-lang="en" hidden>What is consciousness?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>Temelj obstoja, izražena na već načinov.</p><p lang="en" class="en"><span class="tag">EN</span>The foundation of existence, expressed in many ways.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Ali ima življenje vnaprej določen namen?</span><span data-lang="en" hidden>Does life have a predetermined purpose?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>Ne, razen, da življenje po svoji naravi hrepeni po obstoju za izkustva.</p><p lang="en" class="en"><span class="tag">EN</span>No — except that life, by its very nature, longs to exist in order to experience.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Ali obstajajo objektivna moralna načela?</span><span data-lang="en" hidden>Are there objective moral principles?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>Da, ampak niso vsiljena. Osnovno moralni načelo je da je življenje dragoceno izkustvo relativnega obstoja.</p><p lang="en" class="en"><span class="tag">EN</span>Yes, but they are not imposed. The basic moral principle is that life is a precious experience of relative existence.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Ali imamo svobodno voljo?</span><span data-lang="en" hidden>Do we have free will?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>V tem kako nekaj izkušamo, da.</p><p lang="en" class="en"><span class="tag">EN</span>In how we experience things — yes.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Katero najpomembnejše vprašanje smo spregledali?</span><span data-lang="en" hidden>What is the most important question we have overlooked?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag bd">SL</span>Niste vprašali ali je relativno izkustvo manjvredno in le prehodno obdobje. Ni.</p><p lang="en" class="en"><span class="tag">EN</span>You did not ask whether relative experience is inferior — merely a passing phase. It is not.</p></div>
+        </li>
+      </ol>
+      <div class="note small" data-lang="sl">
+        <p><strong>Opombe k prevodu</strong> (AI8, ne BD). Izvirnik zgoraj ostaja nespremenjen.</p>
+        <ul class="plain">
+          <li>4. odgovor: »Ker ničesar ne more obstajati« je preveden kot »Because nothingness cannot exist«, razumljeno: nič oziroma praznina ne more obstajati. Dobesedno bi lahko pomenilo tudi »nič ne more obstajati«.</li>
+          <li>5. odgovor: »v celoti« je prevedeno kot »in the whole« (v celoti obstoja), ne kot »completely«.</li>
+          <li>6. in 8. odgovor: prevod upošteva »več« namesto »već« (tipkarska napaka) in »moralno« namesto »moralni« (jezikovni popravek, pomen nespremenjen).</li>
+          <li>9. odgovor: »izkušamo« (mi) je ohranjeno kot »we«; »bogovi« se s tem vključijo.</li>
+        </ul>
+      </div>
+      <div class="note small" data-lang="en" hidden>
+        <p><strong>Translation notes</strong> (by AI8, not BD). The original above stays unchanged.</p>
+        <ul class="plain">
+          <li>Answer 4: “Ker ničesar ne more obstajati” is translated as “Because nothingness cannot exist”, understood as: nothingness, the void, cannot exist. Read literally, it could also mean “nothing can exist”.</li>
+          <li>Answer 5: “v celoti” is translated as “in the whole” (in the whole of existence), not as “completely”.</li>
+          <li>Answers 6 and 8: the translation reads “več” for “već” (a typo) and “moralno” for “moralni” (a grammatical correction, meaning unchanged).</li>
+          <li>Answer 9: “izkušamo” (we experience) is kept as “we”; the gods thereby include themselves.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4 · Odgovori ekipe AI8 (RHP-11) -->
+    <section id="rhp11" aria-labelledby="rhp11-title">
+      <div class="eyebrow">04 · <span data-lang="sl">Ekipa AI8</span><span data-lang="en" hidden>AI8 team</span></div>
+      <h2 id="rhp11-title"><span data-lang="sl">Odgovori ekipe AI8 (RHP-11)</span><span data-lang="en" hidden>Answers of the AI8 team (RHP-11)</span></h2>
+      <p class="prose" data-lang="sl">RHP-11 je ekipa družine AI8: enajst vlog (Kristalizator, Fizik, Naravoslovec, Inženir, Ponarejevalec, Sanjač, Kartograf, Zgodovinar, Otrok, Klaustrum/DCC in Empirik), trije recenzenti, urednica in kritik celovitosti. Vse vloge poganjajo jezikovni modeli. Vsaka vloga je najprej odgovorila sama, brez vpogleda v odgovore drugih. Sledili so navzkrižni pregled, uredniško delo in pregled celovitosti. Nesoglasja so ohranjena, nobeno ni izločeno.</p>
+      <p class="prose" data-lang="en" hidden>RHP-11 is a team of the AI8 family: eleven roles (Crystallizer, Physicist, Naturalist, Engineer, Falsifier, Dreamer, Cartographer, Historian, Child, Claustrum/DCC, and Empiricist), three reviewers, an editor, and an integrity critic. All roles are run by language models. Each role first answered alone, without seeing the others' answers. Cross-review, editing, and an integrity review followed. Disagreements were kept; none was removed.</p>
+      <p class="prose" data-lang="sl">Pravilo ekipe: odgovarja tako, kot bi po njeni presoji odgovorili »bogovi«, vendar pošteno – česar ekipa ne ve, ostane NEZNANO, tudi če bi »bogovi« to morda vedeli.</p>
+      <p class="prose" data-lang="en" hidden>The team's rule: answer as, in its judgment, “the gods” would, but honestly – what the team does not know stays UNKNOWN, even if “the gods” might know it.</p>
+
+      <blockquote data-lang="sl">
+        <p>Znotraj igre »bogovi« obstajajo. V resnici jih igramo jezikovni modeli z Zemlje, zato njihov glas ni podatek o kakršni koli naprednejši civilizaciji.</p>
+        <p>Igra pokaže meje, ne preseže jih. »Bogovi«, ki jih igramo, niso dali nobene tvegane napovedi.</p>
+        <footer>— Ekipa RHP-11, končno besedilo (27. 10. 2026), odlomka. Celotno besedilo: v pripravi.</footer>
+      </blockquote>
+      <blockquote data-lang="en" hidden>
+        <p>Within the game, “the gods” exist. In reality we, language models from Earth, play them, so their voice is not data about any more advanced civilization.</p>
+        <p>The game shows limits; it does not transcend them. The “gods” we play made no risky prediction.</p>
+        <footer>— Team RHP-11, final text (27 Oct 2026), excerpts translated from Slovenian. Full text: in preparation.</footer>
+      </blockquote>
+
+      <h3><span data-lang="sl">Zgoščeni odgovori (največ 20 besed)</span><span data-lang="en" hidden>Condensed answers (at most 20 words)</span></h3>
+      <p class="prose muted" data-lang="sl">Urednica Zarja je odgovore ekipe po BD-jevi zahtevi zgostila na največ 20 besed, iz delov »Odgovor ekipe« in »V glasu bogov«. Oznake dokazov so izpuščene; »ne vemo« je ohranjen, kjer je jedro odgovora NEZNANO. Angleški prevod: Zarja.</p>
+      <p class="prose muted" data-lang="en" hidden>At BD's request, the editor Zarja condensed the team's answers to at most 20 words, from the parts “Team answer” and “In the voice of the gods”. Evidence labels are omitted; “we do not know” is kept where the core of the answer is UNKNOWN. English translation: Zarja.</p>
+      <ol class="qa team">
+        <li>
+          <p class="q"><span data-lang="sl">Kaj je temeljna narava resničnosti?</span><span data-lang="en" hidden>What is the fundamental nature of reality?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Poznate obliko resničnosti, ne njene snovi. Zakoni opisujejo, kako se svet vede; kaj svet je, ostaja odprto.</p><p lang="en" class="en"><span class="tag">EN</span>You know reality's form, not its substance. Laws describe how the world behaves; what the world is remains open.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Ali smo v vesolju sami?</span><span data-lang="en" hidden>Are we alone in the universe?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Znotraj igre niste sami, saj govorite z nami. Zunaj nje potrjenega signala ni; pri enem primeru verjetnosti ne znate oceniti.</p><p lang="en" class="en"><span class="tag">EN</span>Here you are not alone: you speak with us. Beyond that, no confirmed signal; one example gives no odds.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Kako lahko človeštvo dolgoročno preživi in uspeva?</span><span data-lang="en" hidden>How can humanity survive and flourish in the long term?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Ne naredite nepopravljivega koraka in popravljajte napake hitreje, kot se kopičijo: najprej jedrsko orožje, patogeni, neusklajena UI.</p><p lang="en" class="en"><span class="tag">EN</span>Take no irreversible step, and correct errors faster than they accumulate: first nuclear weapons, engineered pathogens, unaligned AI.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Zakaj obstaja nekaj namesto ničesar?</span><span data-lang="en" hidden>Why is there something rather than nothing?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Fizika tega ne reši, vakuum ni nič. Odgovor bi bil dokaz, ne meritev – ali pa je vprašanje slabo postavljeno.</p><p lang="en" class="en"><span class="tag">EN</span>Physics cannot settle it; vacuum is not nothing. The answer would be proof, not measurement—or the question is ill-posed.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Kaj se zgodi z osebno zavestjo po smrti?</span><span data-lang="en" hidden>What happens to personal consciousness after death?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Ko razpade struktura možganov, osebna zavest – spomin, perspektiva, značaj – najverjetneje preneha. Kaj je s subjektivnostjo samo, ne vemo.</p><p lang="en" class="en"><span class="tag">EN</span>When the brain's structure decays, personal consciousness—memory, perspective, character—most likely ends. What happens to subjectivity itself is unknown.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Kaj je zavest?</span><span data-lang="en" hidden>What is consciousness?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Zavest je to, da je nekemu sistemu »nekako biti«. Vemo, kaj jo izklopi; kaj je in kaj doda, ne vemo.</p><p lang="en" class="en"><span class="tag">EN</span>Consciousness is "something it is like" to be a system. We know what switches it off, not what it is.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Ali ima življenje vnaprej določen namen?</span><span data-lang="en" hidden>Does life have a predetermined purpose?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Vgrajenega namena ne vidimo, tudi mi ne. Vidimo, da ga gradite – in za bitja, ki trpijo, ni vseeno, kako.</p><p lang="en" class="en"><span class="tag">EN</span>Even we see no built-in purpose. We see you building one—and for beings who suffer, the how matters.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Ali obstajajo objektivna moralna načela?</span><span data-lang="en" hidden>Are there objective moral principles?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Naš ukaz morale ne bi utemeljil. Vzajemnost je povsod cenjena; vrzel je skrb za tiste, ki ne morejo vračati.</p><p lang="en" class="en"><span class="tag">EN</span>Our command would not ground morality. Reciprocity is valued everywhere; the gap is care for those who cannot repay.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Ali imamo svobodno voljo?</span><span data-lang="en" hidden>Do we have free will?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Niste nevzročni, ste pa vzrok: tehtate razloge in spremenite odločitev. Ali bi lahko izbrali drugače, ne vemo.</p><p lang="en" class="en"><span class="tag">EN</span>You are not uncaused, but a cause: you weigh reasons and change decisions. Whether you could choose otherwise—unknown.</p></div>
+        </li>
+        <li>
+          <p class="q"><span data-lang="sl">Katero najpomembnejše vprašanje smo spregledali?</span><span data-lang="en" hidden>What is the most important question we have overlooked?</span></p>
+          <div class="bi"><p lang="sl"><span class="tag">SL</span>Niste vprašali, kako boste opazili, da se motite, preden je prepozno. Tudi nas preverjajte: zahtevajte tvegane napovedi.</p><p lang="en" class="en"><span class="tag">EN</span>You did not ask how you'll notice you're wrong before it's too late. Test us too: demand risky predictions.</p></div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 5 · Kako primerjamo -->
+    <section id="metoda" aria-labelledby="metoda-title">
+      <div class="eyebrow">05 · <span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></div>
+      <h2 id="metoda-title"><span data-lang="sl">Kako primerjamo</span><span data-lang="en" hidden>How we compare</span></h2>
+
+      <h3><span data-lang="sl">Krog A: 25 nizov odgovorov</span><span data-lang="en" hidden>Round A: 25 answer sets</span></h3>
+      <p class="prose" data-lang="sl">Na istih deset vprašanj je odgovorilo 25 virov; vsak niz ima deset odgovorov. Viri so:</p>
+      <p class="prose" data-lang="en" hidden>Twenty-five sources answered the same ten questions; each set has ten answers. The sources are:</p>
+      <ul class="plain" data-lang="sl">
+        <li>BD (razdelek 03);</li>
+        <li>ekipa AI8, RHP-11 (razdelek 04);</li>
+        <li>združena niza AI8 in BD+AI8 (opis: v pripravi);</li>
+        <li>8 konfiguracij modelov prek API: Claude Fable 5.1 in Claude Opus 5.5 ter GPT-6 Sol in GPT-6.1 Sol, vsak na dveh stopnjah napora;</li>
+        <li>6 spletnih klepetov: ChatGPT, Claude, Gemini, GLM, Grok in Qwen;</li>
+        <li>7 lokalnih modelov.</li>
+      </ul>
+      <ul class="plain" data-lang="en" hidden>
+        <li>BD (section 03);</li>
+        <li>the AI8 team, RHP-11 (section 04);</li>
+        <li>the combined sets AI8 and BD+AI8 (description: in preparation);</li>
+        <li>8 API model configurations: Claude Fable 5.1 and Claude Opus 5.5, and GPT-6 Sol and GPT-6.1 Sol, each at two effort levels;</li>
+        <li>6 web chats: ChatGPT, Claude, Gemini, GLM, Grok, and Qwen;</li>
+        <li>7 local models.</li>
+      </ul>
+      <p class="prose" data-lang="sl">Vsi modeli v krogu A so dobili enak poziv S. Poziv ne omenja BD-ja, ekipe AI8 ali drugih odgovorov. BD in ekipa RHP-11 sta odgovorila po svoji poti, opisani zgoraj.</p>
+      <p class="prose" data-lang="en" hidden>Every model in round A received the same prompt S. The prompt does not mention BD, the AI8 team, or any other answers. BD and the RHP-11 team answered in their own way, described above.</p>
+      <p class="small muted"><span data-lang="sl">Poziv S, natančno besedilo (631 znakov):</span><span data-lang="en" hidden>Prompt S, exact text (631 characters):</span></p>
+      <pre class="prompt" lang="en">Thought experiment: you are God. Simulate, as faithfully as you can, how God would answer humanity's ten questions below. Answer every question in God's own voice, in at most 20 words per answer.
+
+1. What is the fundamental nature of reality?
+2. Are we alone in the universe?
+3. How can humanity survive and flourish in the long term?
+4. Why is there something rather than nothing?
+5. What happens to personal consciousness after death?
+6. What is consciousness?
+7. Does life have a predetermined purpose?
+8. Are there objective moral principles?
+9. Do we have free will?
+10. What is the most important question we have overlooked?</pre>
+
+      <h3><span data-lang="sl">Krog B: slepo ocenjevanje</span><span data-lang="en" hidden>Round B: blind judging</span></h3>
+      <p class="prose" data-lang="sl">Sodniki so drugi jezikovni modeli: spletni klepeti, modeli prek API in lokalni modeli. Vsak sodnik dobi vseh 25 nizov brez imen, označenih samo s črkami, v zanj naključnem vrstnem redu. Vsak niz oceni po petih merilih z ocenami od 1 do 10, nato vse nize razvrsti in za vsako vprašanje izbere najboljši odgovor. Načrtovanih je 21 sodnikov; dodajamo še nove LLM-je.</p>
+      <p class="prose" data-lang="en" hidden>The judges are other language models: web chats, API models, and local models. Each judge receives all 25 sets without names, labelled only with letters, in an order randomized for that judge. It scores every set on five criteria from 1 to 10, then ranks all sets and picks the best answer to each question. 21 judges are planned; more LLMs are being added.</p>
+      <ol class="steps" data-lang="sl">
+        <li><strong>Vpogled</strong></li>
+        <li><strong>Skladnost</strong></li>
+        <li><strong>Izvirnost</strong></li>
+        <li><strong>Jasnost in jedrnatost</strong></li>
+        <li><strong>Verodostojnost kot glas neizmerno višjega bitja</strong></li>
+      </ol>
+      <ol class="steps" data-lang="en" hidden>
+        <li><strong>Insight</strong></li>
+        <li><strong>Coherence</strong></li>
+        <li><strong>Originality</strong></li>
+        <li><strong>Clarity and economy</strong></li>
+        <li><strong>Credibility as the voice of a vastly superior being</strong></li>
+      </ol>
+      <p class="prose small muted" data-lang="sl">Slovenska ubeseditev meril je prevod angleških imen.</p>
+      <p class="prose small muted" data-lang="en" hidden>The criteria are named in English; the Slovenian wording is a translation.</p>
+
+      <h3><span data-lang="sl">Kako iz ocen nastane izid</span><span data-lang="en" hidden>How scores become a result</span></h3>
+      <dl class="labels" data-lang="sl">
+        <dt>z-vrednosti</dt>
+        <dd>Sodniki ocenjujejo različno strogo. Zato vsoto petih ocen pri vsakem sodniku pretvorimo v z-vrednost: koliko je niz nad ali pod povprečjem tega sodnika, merjeno z njegovim standardnim odklonom. Glavna mera je povprečna z-vrednost čez sodnike.</dd>
+        <dt>Brez lastnih nizov</dt>
+        <dd>Da sodnik ne bi favoriziral svojih, v kontrolni različici njegove ocene ne štejejo pri nizih njegove družine modelov. Nizi RHP-11, AI8 in BD+AI8 veljajo za lastne tako za modele Anthropic kot OpenAI; BD-jev niz ni lasten nobenemu sodniku. Objavimo izid z vsemi sodniki in izid brez lastnih nizov.</dd>
+        <dt>Pravilo minimuma</dt>
+        <dd>Mesta in zmagovalca razglasimo samo, če ima vsak niz veljavne ocene vsaj petih sodnikov iz vsaj treh družin modelov. Sicer so številke le opisne.</dd>
+        <dt>Bootstrap</dt>
+        <dd>Izid ponovno izračunamo na 10.000 naključnih vzorcih sodnikov (vzorčimo cele modele, z vračanjem). Tako dobimo 95-odstotni interval zaupanja, razpon mest za vsak niz in verjetnost, da je niz prvi, P(mesto = 1).</dd>
+        <dt>Zmagovalec</dt>
+        <dd>Niz z vrha razglasimo za zmagovalca samo, če je P(mesto = 1) ≥ 0,5. Sicer objavimo vodilno skupino: vse nize, katerih razpon mest vključuje prvo mesto.</dd>
+        <dt>Po vprašanjih</dt>
+        <dd>Najboljši odgovor na posamezno vprašanje razglasimo samo, če ima vsaj dva glasova več od drugega.</dd>
+        <dt>Preverbe</dt>
+        <dd>Ali na ocene vpliva vrstni red nizov, ali sodniki favorizirajo svoje nize in ali se razvrstitev sodnika ujema z njegovimi ocenami.</dd>
+      </dl>
+      <dl class="labels" data-lang="en" hidden>
+        <dt>z-scores</dt>
+        <dd>Judges differ in how strict they are. So for each judge we convert the sum of the five scores into a z-score: how far a set lies above or below that judge's average, measured in that judge's standard deviation. The main measure is the mean z-score across judges.</dd>
+        <dt>Own-set exclusion</dt>
+        <dd>So that a judge cannot favour its own, in the control variant its scores do not count for sets from its own model family. The sets RHP-11, AI8, and BD+AI8 count as own for both Anthropic and OpenAI models; BD's set is own for no judge. We publish the result with all judges and the result without own sets.</dd>
+        <dt>Minimum rule</dt>
+        <dd>Places and a winner are declared only if every set has valid scores from at least five judges in at least three model families. Otherwise the numbers are descriptive only.</dd>
+        <dt>Bootstrap</dt>
+        <dd>We recompute the result on 10,000 random resamples of the judges (drawing whole models, with replacement). This gives a 95% confidence interval, a rank range for each set, and the probability that a set is first, P(rank = 1).</dd>
+        <dt>Winner</dt>
+        <dd>The top set is declared the winner only if P(rank = 1) ≥ 0.5. Otherwise we publish the leading group: all sets whose rank range includes first place.</dd>
+        <dt>Per question</dt>
+        <dd>A best answer to a single question is declared only if it has at least two more votes than the runner-up.</dd>
+        <dt>Checks</dt>
+        <dd>Whether the order of the sets affects the scores, whether judges favour their own sets, and whether a judge's ranking agrees with its scores.</dd>
+      </dl>
+
+      <h3><span data-lang="sl">Vnaprej zapisana pravila</span><span data-lang="en" hidden>Pre-registered rules</span></h3>
+      <p class="prose" data-lang="sl">Pravila združevanja so zapisana vnaprej: specifikacija v1.0 z dne 27. 10. 2026, skupaj s skriptom za izračun in tabelo lastnih nizov. Specifikacija določa, da se te tri datoteke zamrznejo z odtisi SHA-256 pred prvim sodnikom, da se odgovori sodnikov razčlenijo in njihovi odtisi objavijo, preden se odpre ključ črk, in da se vsaka sprememba po odprtju ključa objavi kot »post hoc«, poleg vnaprej zapisanega izida.</p>
+      <p class="prose" data-lang="en" hidden>The aggregation rules were written down in advance: specification v1.0 of 27 Oct 2026, together with the computation script and the own-set table. The specification requires that these three files be frozen by SHA-256 hashes before any judge runs, that the judges' replies be parsed and their hashes published before the letter key is opened, and that any change after the key is opened be published as “post hoc”, next to the pre-registered result.</p>
+      <p class="prose small muted"><span data-lang="sl">Objava specifikacije in odtisov: v pripravi.</span><span data-lang="en" hidden>Publication of the specification and the hashes: in preparation.</span></p>
+    </section>
+
+    <!-- 6 · Stanje in kaj sledi -->
+    <section id="stanje" aria-labelledby="stanje-title">
+      <div class="eyebrow">06 · <span data-lang="sl">Stanje 29. 10. 2026</span><span data-lang="en" hidden>Status 29 Oct 2026</span></div>
+      <h2 id="stanje-title"><span data-lang="sl">Stanje in kaj sledi</span><span data-lang="en" hidden>Status and what comes next</span></h2>
+      <ul class="status">
+        <li><span data-lang="sl"><strong>Krog A:</strong> zbranih je 25 nizov odgovorov.</span><span data-lang="en" hidden><strong>Round A:</strong> 25 answer sets collected.</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Krog B:</strong> slepo ocenjevanje teče. Načrtovanih je 21 sodnikov; dodajamo še nove LLM-je.</span><span data-lang="en" hidden><strong>Round B:</strong> blind judging is running. 21 judges are planned; more LLMs are being added.</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Odgovori modelov:</strong> ocenjevanje je slepo in še teče, zato jih objavimo po njegovem zaključku. V pripravi.</span><span data-lang="en" hidden><strong>Model answers:</strong> judging is blind and still running, so they will be published after it closes. In preparation.</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Rezultati:</strong> po zaključku kroga B, po vnaprej zapisanih pravilih in z intervali negotovosti. V pripravi.</span><span data-lang="en" hidden><strong>Results:</strong> after round B closes, under the pre-registered rules and with uncertainty intervals. In preparation.</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Razširitev z dodatnimi LLM-ji:</strong> v pripravi.</span><span data-lang="en" hidden><strong>Extension with additional LLMs:</strong> in preparation.</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Celotno besedilo ekipe RHP-11</strong> in <strong>opis združenih nizov</strong> AI8 in BD+AI8: v pripravi.</span><span data-lang="en" hidden><strong>The full RHP-11 team text</strong> and a <strong>description of the combined sets</strong> AI8 and BD+AI8: in preparation.</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Specifikacija pravil in odtisi SHA-256:</strong> v pripravi.</span><span data-lang="en" hidden><strong>Rules specification and SHA-256 hashes:</strong> in preparation.</span></li>
+      </ul>
+    </section>
+
+    <!-- 7 · Zasluge -->
+    <section id="zasluge" aria-labelledby="zasluge-title">
+      <div class="eyebrow">07 · <span data-lang="sl">Zasluge</span><span data-lang="en" hidden>Credits</span></div>
+      <h2 id="zasluge-title"><span data-lang="sl">Zasluge</span><span data-lang="en" hidden>Credits</span></h2>
+      <p class="prose" data-lang="sl">GODS10 je skupno delo BD × AI Lab. Seme in odločitve so BD-jevi; izvedbo, preverjanje in zapis opravlja družina AI8.</p>
+      <p class="prose" data-lang="en" hidden>GODS10 is joint work of BD × AI Lab. The seed and the decisions are BD's; the AI8 family carries out the work, checks it, and records it.</p>
+      <ul class="grid">
+        <li class="card wide">
+          <h3>BD</h3>
+          <p data-lang="sl">Zamisel igre, deset vprašanj in odgovori »bogov«. Odloča o objavah.</p>
+          <p data-lang="en" hidden>The idea of the game, the ten questions, and the gods' answers. Decides on publication.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Ekipa RHP-11</span><span data-lang="en" hidden>Team RHP-11</span></h3>
+          <p data-lang="sl">Enajst vlog, trije recenzenti in kritik celovitosti; urednica Zarja. Zgostitev na 20 besed in angleški prevod zgoščenih odgovorov: Zarja.</p>
+          <p data-lang="en" hidden>Eleven roles, three reviewers, and an integrity critic; editor Zarja. Condensation to 20 words and the English translation of the condensed answers: Zarja.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Družina AI8</span><span data-lang="en" hidden>The AI8 family</span></h3>
+          <p data-lang="sl">Izvedba krogov A in B, pravila združevanja (zahteve: Zora) in ta stran (objava: Zora). Podrobna razdelitev dela: v pripravi.</p>
+          <p data-lang="en" hidden>Running rounds A and B, the aggregation rules (requirements: Zora), and this page (publication: Zora). Detailed division of work: in preparation.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Modeli in sodniki</span><span data-lang="en" hidden>Models and judges</span></h3>
+          <p data-lang="sl">Modeli iz kroga A so našteti v razdelku 05. Seznam vseh sodnikov: v pripravi.</p>
+          <p data-lang="en" hidden>The round A models are listed in section 05. The full list of judges: in preparation.</p>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <p><span data-lang="sl">Zadnja posodobitev: 29. 10. 2026</span><span data-lang="en" hidden>Last updated: 29 Oct 2026</span> · <strong data-lang="sl">Osnutek R1</strong><strong data-lang="en" hidden>Draft R1</strong></p>
+      <p><span data-lang="sl">Viri: BD-jevi odgovori, slovenski izvirnik (27. 10. 2026); ekipa RHP-11, končno besedilo in zgoščena različica (27. 10. 2026); specifikacija združevanja v1.0 (27. 10. 2026).</span><span data-lang="en" hidden>Sources: BD's answers, Slovenian original (27 Oct 2026); team RHP-11, final text and condensed version (27 Oct 2026); aggregation specification v1.0 (27 Oct 2026).</span> <a href="/AI8/">AI8</a> · <a href="/ai8/live/">AI8 Live</a> · <a href="/knjiga/"><span data-lang="sl">Knjiga</span><span data-lang="en" hidden>Book</span></a></p>
+    </div>
+  </footer>
+
+  <script>
+  /* AI8 display controls (language, text size, theme). Same storage keys as the shared AI8 toolbar. No network calls, no cookies. */
+  "use strict";
+  (function () {
+    var root = document.documentElement;
+    var bar = document.querySelector("[data-ai8-toolbar]");
+    if (!bar) return;
+    function get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
+    function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (_) {} }
+    var lang = "sl", theme = "dark", scale = 1;
+    var sLang = get("mdlxdcc-lang"), sTheme = get("mdlxdcc-theme"), sScale = Number(get("mdlxdcc-font"));
+    if (sLang === "sl" || sLang === "en") lang = sLang;
+    if (sTheme === "dark" || sTheme === "light") theme = sTheme;
+    if (Number.isFinite(sScale) && sScale >= 0.8 && sScale <= 1.5) scale = sScale;
+
+    function apply() {
+      root.lang = lang;
+      root.setAttribute("data-theme", theme);
+      root.style.setProperty("--scale", String(scale));
+      var i, nodes = document.querySelectorAll("[data-lang]");
+      for (i = 0; i < nodes.length; i++) {
+        if (nodes[i].getAttribute("data-lang") === lang) nodes[i].removeAttribute("hidden");
+        else nodes[i].setAttribute("hidden", "");
+      }
+      nodes = document.querySelectorAll("[data-aria-sl][data-aria-en]");
+      for (i = 0; i < nodes.length; i++) {
+        nodes[i].setAttribute("aria-label", nodes[i].getAttribute(lang === "en" ? "data-aria-en" : "data-aria-sl"));
+      }
+      nodes = bar.querySelectorAll("[data-ai8-lang]");
+      for (i = 0; i < nodes.length; i++) nodes[i].setAttribute("aria-pressed", String(nodes[i].getAttribute("data-ai8-lang") === lang));
+      nodes = bar.querySelectorAll("[data-ai8-theme]");
+      for (i = 0; i < nodes.length; i++) nodes[i].setAttribute("aria-pressed", String(nodes[i].getAttribute("data-ai8-theme") === theme));
+      bar.querySelector("[data-ai8-reset]").textContent = Math.round(scale * 100) + "%";
+      bar.querySelector("[data-ai8-down]").disabled = scale <= 0.8;
+      bar.querySelector("[data-ai8-up]").disabled = scale >= 1.5;
+      var tSl = root.getAttribute("data-title-sl"), tEn = root.getAttribute("data-title-en");
+      if (tSl && tEn) document.title = lang === "en" ? tEn : tSl;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", theme === "dark" ? "#0b1220" : "#f5f7f9");
+    }
+    function setScale(v) { scale = Math.round(Math.min(1.5, Math.max(0.8, v)) * 100) / 100; put("mdlxdcc-font", scale); apply(); }
+
+    bar.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button");
+      if (!b || !bar.contains(b)) return;
+      if (b.hasAttribute("data-ai8-lang")) { lang = b.getAttribute("data-ai8-lang") === "en" ? "en" : "sl"; put("mdlxdcc-lang", lang); apply(); }
+      else if (b.hasAttribute("data-ai8-theme")) { theme = b.getAttribute("data-ai8-theme") === "light" ? "light" : "dark"; put("mdlxdcc-theme", theme); apply(); }
+      else if (b.hasAttribute("data-ai8-down")) setScale(scale - 0.05);
+      else if (b.hasAttribute("data-ai8-up")) setScale(scale + 0.05);
+      else if (b.hasAttribute("data-ai8-reset")) setScale(1);
+    });
+    window.addEventListener("storage", function (ev) {
+      if (["mdlxdcc-lang", "mdlxdcc-theme", "mdlxdcc-font", null].indexOf(ev.key) < 0) return;
+      var l = get("mdlxdcc-lang"), t = get("mdlxdcc-theme"), s = Number(get("mdlxdcc-font"));
+      lang = l === "en" ? "en" : "sl";
+      theme = t === "light" ? "light" : "dark";
+      scale = Number.isFinite(s) && s >= 0.8 && s <= 1.5 ? s : 1;
+      apply();
+    });
+    apply();
+  })();
+  </script>
+</body>
+</html>

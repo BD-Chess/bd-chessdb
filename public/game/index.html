@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="sl" data-theme="dark" data-title-sl="Pred izumom · Inventing with AI" data-title-en="Inventing with AI · Before the invention">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="Pred izumom je igra, v kateri razmišljaš tik pred zgodovinskim prebojem. Brez računa in brez plačljivega API-ja.">
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://www.mdlxdcc.org/igra/">
+  <title>Pred izumom · Inventing with AI</title>
+  <script>try{var r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1220; --ink:#eff5fc; --muted:#b9c8d7; --surface:#16263a; --panel:#121e2e; --line:#304359; --accent:#7ae3ce; --plan:#f0c070; --plan-soft:#2e2614; --scale:1; }
+    html[data-theme="light"] { color-scheme:light; --bg:#f5f7f9; --ink:#15233a; --muted:#42556a; --surface:#e5edf2; --panel:#fff; --line:#b8c8d2; --accent:#166c61; --plan:#7a4a00; --plan-soft:#fbefd9; }
+    * { box-sizing:border-box; }
+    html { font-size:calc(100% * var(--scale)); scroll-behavior:smooth; scroll-padding-top:1rem; -webkit-text-size-adjust:100%; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:1rem/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; overflow-wrap:break-word; }
+    a { color:var(--accent); }
+    button, select, textarea { font:inherit; }
+    button { cursor:pointer; }
+    button:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    [hidden], [data-lang][hidden] { display:none !important; }
+    .skip { position:absolute; left:-9999px; }
+    .skip:focus { position:fixed; top:.5rem; left:.5rem; z-index:100; background:var(--panel); color:var(--ink); padding:.5rem .8rem; border:1px solid var(--line); border-radius:.5rem; }
+    .shell { max-width:76rem; margin:0 auto; padding:0 clamp(1rem,4vw,3rem); }
+    .site-header { background:var(--bg); border-bottom:1px solid var(--line); z-index:20; }
+    .header-inner { display:flex; align-items:center; flex-wrap:wrap; gap:.3rem 1rem; padding-top:.5rem; padding-bottom:.5rem; }
+    .brand { color:var(--ink); font-weight:700; text-decoration:none; white-space:nowrap; min-height:44px; display:inline-flex; align-items:center; }
+    .brand .dot { color:var(--accent); margin:0 .3em; }
+    .site-nav { display:flex; flex-wrap:wrap; gap:0 .9rem; margin-right:auto; }
+    .site-nav a { color:var(--muted); text-decoration:none; min-height:44px; display:inline-flex; align-items:center; }
+    .site-nav a:hover { color:var(--accent); }
+    .ai8-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.2rem; }
+    .ai8-toolbar .ai8-divider { width:1px; height:1.6rem; background:var(--line); margin:0 .3rem; }
+    .ai8-toolbar button { min-width:44px; min-height:44px; border:1px solid transparent; border-radius:.5rem; padding:.3rem .45rem; background:transparent; color:inherit; font-size:.875rem; }
+    .ai8-toolbar button:hover:not(:disabled) { background:var(--surface); border-color:var(--line); }
+    .ai8-toolbar button[aria-pressed="true"] { background:var(--surface); border-color:var(--line); font-weight:600; }
+    .ai8-toolbar button:disabled { opacity:.45; }
+    .ai8-toolbar [data-ai8-reset] { min-width:3.6rem; font-variant-numeric:tabular-nums; }
+    @media (min-width:760px) { .site-header { position:sticky; top:0; } html { scroll-padding-top:5.5rem; } }
+    @media (max-width:600px) { .ai8-toolbar { justify-content:flex-start; } .site-nav { gap:0 .75rem; } }
+    @media (max-width:420px) { .ai8-toolbar .ai8-divider { display:none; } .ai8-toolbar { gap:.1rem; } .ai8-toolbar button { padding:.3rem .35rem; } }
+    .draft { background:var(--plan-soft); color:var(--plan); border-bottom:1px solid var(--line); font-size:.92rem; }
+    .draft .shell { padding-top:.5rem; padding-bottom:.5rem; }
+    .draft strong { letter-spacing:.04em; }
+    .intro { padding:clamp(2rem,6vw,4.5rem) 0 2rem; }
+    .eyebrow { color:var(--accent); text-transform:uppercase; letter-spacing:.11em; font-size:.8rem; font-weight:700; }
+    h1 { font-size:clamp(2.3rem,6vw,4.5rem); line-height:1.08; margin:.5rem 0 1rem; }
+    h2 { font-size:clamp(1.55rem,2.7vw,2.2rem); line-height:1.2; margin:.2rem 0 .9rem; }
+    h3 { font-size:1.15rem; line-height:1.3; margin:.2rem 0 .45rem; }
+    p { margin:0 0 1rem; }
+    .lead { color:var(--muted); max-width:72ch; font-size:1.14rem; }
+    .pill { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:.25rem .7rem; color:var(--muted); font-size:.88rem; margin:.2rem .4rem .2rem 0; }
+    main > section { padding:2.5rem 0; border-top:1px solid var(--line); }
+    .prose { max-width:76ch; }
+    .muted { color:var(--muted); }
+    .small { font-size:.92rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr)); gap:1rem; margin:1.2rem 0; }
+    .card { min-width:0; border:1px solid var(--line); border-radius:.8rem; background:var(--panel); padding:1.15rem; }
+    .card p:last-child, .card ul:last-child { margin-bottom:0; }
+    .card strong { color:var(--accent); }
+    .steps { list-style:none; counter-reset:step; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr)); gap:.8rem; }
+    .steps li { counter-increment:step; border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:.7rem; background:var(--panel); padding:.85rem 1rem; min-width:0; }
+    .steps li::before { content:counter(step) " · "; color:var(--accent); font-weight:700; }
+    .builder { max-width:54rem; border:1px solid var(--line); background:var(--panel); border-radius:.9rem; padding:clamp(1rem,3vw,1.6rem); }
+    .builder label { display:block; font-weight:700; margin-bottom:.35rem; }
+    .builder select, .builder textarea { display:block; width:100%; min-width:0; border:1px solid var(--line); border-radius:.5rem; background:var(--bg); color:var(--ink); padding:.75rem; }
+    .builder select { margin-bottom:1rem; }
+    .builder textarea { min-height:18rem; resize:vertical; line-height:1.45; font-size:.94rem; }
+    .actions { display:flex; flex-wrap:wrap; gap:.65rem; margin:.9rem 0 .3rem; }
+    .action { border:1px solid var(--accent); border-radius:.55rem; background:var(--accent); color:var(--bg); font-weight:700; padding:.65rem 1rem; min-height:44px; }
+    .action.secondary { background:transparent; color:var(--accent); }
+    .action:hover { filter:brightness(1.12); }
+    .note { border-left:4px solid var(--accent); padding:.65rem 1rem; background:var(--surface); border-radius:0 .5rem .5rem 0; max-width:78ch; }
+    .note.plan { border-left-color:var(--plan); background:var(--plan-soft); }
+    .score { font-variant-numeric:tabular-nums; font-size:1.05rem; color:var(--accent); font-weight:700; }
+    .site-footer { border-top:1px solid var(--line); padding:1.6rem 0 2.4rem; color:var(--muted); font-size:.92rem; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content"><span data-lang="sl">Na vsebino</span><span data-lang="en" hidden>Skip to content</span></a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/start/">BD<span class="dot">·</span><span data-lang="sl">Pred izumom</span><span data-lang="en" hidden>Inventing with AI</span></a>
+      <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
+        <a href="#igraj"><span data-lang="sl">Igraj</span><span data-lang="en" hidden>Play</span></a>
+        <a href="#osebe"><span data-lang="sl">Osebe</span><span data-lang="en" hidden>People</span></a>
+        <a href="#pravila"><span data-lang="sl">Pravila</span><span data-lang="en" hidden>Rules</span></a>
+        <a href="#glas"><span data-lang="sl">Zasebnost</span><span data-lang="en" hidden>Privacy</span></a>
+        <a href="#primeri"><span data-lang="sl">Primeri</span><span data-lang="en" hidden>Examples</span></a>
+      </nav>
+      <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance">
+        <button type="button" data-ai8-down aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button>
+        <button type="button" data-ai8-reset aria-label="Velikost besedila na 100 odstotkov" data-aria-sl="Velikost besedila na 100 odstotkov" data-aria-en="Reset text size to 100 percent">100%</button>
+        <button type="button" data-ai8-up aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-lang="en" aria-label="English" aria-pressed="false">EN</button>
+        <button type="button" data-ai8-lang="sl" aria-label="Slovenščina" aria-pressed="true">SL</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-ai8-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+  </header>
+  <div class="draft" role="note"><div class="shell"><strong>OSNUTEK · DRAFT</strong> — <span data-lang="sl">Stran se še dopolnjuje. Igranje in kopiranje poziva delujeta; ta stran ne zbira odgovorov.</span><span data-lang="en" hidden>This page is still being developed. You can play and copy the prompt; this page does not collect answers.</span></div></div>
+  <main class="shell" id="content">
+    <div class="intro">
+      <div class="eyebrow">BD × AI Lab · <span data-lang="sl">igra razmišljanja</span><span data-lang="en" hidden>a game of ideas</span></div>
+      <h1><span data-lang="sl">Pred izumom</span><span data-lang="en" hidden>Inventing with AI</span></h1>
+      <p class="lead" data-lang="sl">Postavi se v trenutek tik pred zgodovinskim prebojem. Svet ti da cilj, omejitve in vprašanja. Rešitev iščeš sam, vodja igre pa pomaga, ko želiš.</p>
+      <p class="lead" data-lang="en" hidden>Step into the moment just before a historical breakthrough. You get the goal, constraints, and questions. You search for a solution; the game guide helps when you ask.</p>
+      <span class="pill"><span data-lang="sl">Igralec je prvi</span><span data-lang="en" hidden>Player first</span></span>
+      <span class="pill"><span data-lang="sl">Brez časovne omejitve</span><span data-lang="en" hidden>No time limit</span></span>
+      <span class="pill"><span data-lang="sl">Brez plačljivega API-ja na tej strani</span><span data-lang="en" hidden>No paid API on this page</span></span>
+    </div>
+    <section id="osebe" aria-labelledby="osebe-title">
+      <div class="eyebrow">01 · <span data-lang="sl">Osebe</span><span data-lang="en" hidden>People</span></div>
+      <h2 id="osebe-title"><span data-lang="sl">Izberi osebo</span><span data-lang="en" hidden>Choose a person</span></h2>
+      <p data-lang="sl">Spoznaj ljudi in njihove poti do zamisli v <a href="/people/">katalogu oseb</a>. Ko bo javni katalog na voljo, bo njegova izbira prikazana tudi v spodnjem izboru zgodovinskih trenutkov.</p>
+      <p data-lang="en" hidden>Explore people and their paths to new ideas in the <a href="/people/">people catalogue</a>. When the public catalogue is available, its entries will also appear in the moment selector below.</p>
+      <p id="people-status" class="small muted" aria-live="polite"></p>
+    </section>
+    <section id="igraj" aria-labelledby="igraj-title">
+      <div class="eyebrow">02 · <span data-lang="sl">Začni</span><span data-lang="en" hidden>Start</span></div>
+      <h2 id="igraj-title"><span data-lang="sl">Izberi trenutek in odnesi poziv v svoj klepet</span><span data-lang="en" hidden>Choose a moment and take the prompt to your chat</span></h2>
+      <ol class="steps">
+        <li><span data-lang="sl">Izberi osebo ali zgodovinski trenutek. Lahko prepustiš izbiro naključju.</span><span data-lang="en" hidden>Choose a person or moment, or let the page surprise you.</span></li>
+        <li><span data-lang="sl">Kopiraj pripravljen poziv v klepet po svoji izbiri. Ta stran ne kliče modela.</span><span data-lang="en" hidden>Copy the prepared prompt into a chat of your choice. This page does not call a model.</span></li>
+        <li><span data-lang="sl">Razmišljaj, sprašuj in zahtevaj namig, kadar želiš. Vodja razkrije zgodovino ob koncu.</span><span data-lang="en" hidden>Think, ask questions, and request a hint when you want one. The guide reveals history at the end.</span></li>
+      </ol>
+      <div class="builder">
+        <label for="moment"><span data-lang="sl">Oseba / trenutek</span><span data-lang="en" hidden>Person / moment</span></label>
+        <select id="moment">
+          <option value="faraday">Michael Faraday · 1831</option>
+          <option value="wright1899">Wright · 1899</option>
+          <option value="wright1903">Wright · 1903</option>
+          <option value="tesla">Nikola Tesla · zgodnje zamisli o motorjih</option>
+        </select>
+        <div class="actions">
+          <button class="action secondary" type="button" id="surprise"><span data-lang="sl">Preseneti me</span><span data-lang="en" hidden>Surprise me</span></button>
+        </div>
+        <label for="prompt"><span data-lang="sl">Poziv za vodjo igre</span><span data-lang="en" hidden>Prompt for the game guide</span></label>
+        <textarea id="prompt" readonly spellcheck="false"></textarea>
+        <div class="actions">
+          <button class="action" type="button" id="copy"><span data-lang="sl">Kopiraj poziv</span><span data-lang="en" hidden>Copy prompt</span></button>
+        </div>
+        <p id="copy-status" role="status" aria-live="polite" class="small muted"></p>
+      </div>
+      <p class="note small" data-lang="sl">Za klepet uporabi ponudnika, ki mu zaupaš. Ko tja prilepiš poziv in svoje odgovore, zanje veljajo pravila izbranega ponudnika. Ne vnašaj osebnih podatkov.</p>
+      <p class="note small" data-lang="en" hidden>Choose a chat provider you trust. Once you paste the prompt and your answers there, that provider's terms apply. Do not enter personal information.</p>
+    </section>
+    <section id="pravila" aria-labelledby="pravila-title">
+      <div class="eyebrow">03 · <span data-lang="sl">Poštena igra</span><span data-lang="en" hidden>Fair play</span></div>
+      <h2 id="pravila-title"><span data-lang="sl">Šteje pot, ne samo končni odgovor</span><span data-lang="en" hidden>The path matters, not just the final answer</span></h2>
+      <div class="grid">
+        <div class="card"><h3><span data-lang="sl">Prizor brez spojlerja</span><span data-lang="en" hidden>A scene without spoilers</span></h3><p data-lang="sl">Vodja pove, kaj je bilo tedaj znano, kaj je cilj in kaj imaš na voljo. Oblike zgodovinske rešitve ne izda. Fotografije imajo vir; rekonstrukcije so označene.</p><p data-lang="en" hidden>The guide explains what was known, your goal, and your resources without revealing the historical solution. Photos have sources; reconstructions are labelled.</p></div>
+        <div class="card"><h3><span data-lang="sl">Namigi so pomoč</span><span data-lang="en" hidden>Hints help</span></h3><p data-lang="sl">Če obtičiš, prosi za namig. Namigi gredo od šibkega do močnejšega. Mejnik, dosežen brez namiga, dobi oznako ✦ samostojno; namig ne odvzame doseženega mejnika.</p><p data-lang="en" hidden>Ask for a hint when you get stuck. Hints grow from gentle to stronger. A step reached without a hint earns a ✦ Unaided mark; a hint never erases a step you reached.</p></div>
+        <div class="card"><h3><span data-lang="sl">Mejniki pred začetkom</span><span data-lang="en" hidden>Milestones before play</span></h3><p data-lang="sl">Vodja vnaprej določi 3–5 korakov razmišljanja. Ob koncu jih razkrije; enakovredna druga pot se prizna. Zgrešene ideje in vprašanja ne znižajo ocene.</p><p data-lang="en" hidden>The guide sets 3–5 reasoning milestones before play and reveals them at the end. A different working path counts. Wrong turns and questions do not lower the score.</p></div>
+      </div>
+      <p class="score" data-lang="sl">Ocena = 5 × doseženi mejniki / vsi mejniki, zaokroženo na ½; poleg nje štejejo ✦.</p>
+      <p class="score" data-lang="en" hidden>Score = 5 × milestones reached / all milestones, rounded to ½; ✦ marks sit alongside it.</p>
+      <p class="prose" data-lang="sl">Ob koncu vodja primerja tvojo rešitev z zgodovino: zadetek, drugače a deluje, boljše od zgodovine ali zgrešeno. Tudi prizor brez rešitve je lahko dober izid. Časa ne merimo.</p>
+      <p class="prose" data-lang="en" hidden>At the end the guide compares your idea with history: a match, a different working solution, better than history, or a miss. A scene without a final solution can still be worthwhile. Time is not scored.</p>
+    </section>
+    <section id="glas" aria-labelledby="glas-title">
+      <div class="eyebrow">04 · <span data-lang="sl">Dvojni cilj</span><span data-lang="en" hidden>Two aims</span></div>
+      <h2 id="glas-title"><span data-lang="sl">Razmišljaj na glas, če želiš</span><span data-lang="en" hidden>Think aloud, if you wish</span></h2>
+      <p class="prose" data-lang="sl">Igra je najprej zate: vprašanja, poskusi in veselje ob odkritju. Drugi možni cilj je, da AI8 iz prostovoljno deljenega razmišljanja bolje razume ustvarjalne poti ljudi. Igra deluje enako, če tega ne želiš.</p>
+      <p class="prose" data-lang="en" hidden>The game is for you first: questions, attempts, and the joy of discovery. A second possible aim is for AI8 to learn from reasoning that people voluntarily share. The game works the same if you do not wish to share it.</p>
+      <p class="note plan" data-lang="sl"><strong>Besedilo prihodnjega soglasja:</strong> »Ali dovoliš, da tvoje razmišljanje (brez tvojega imena) uporabimo za izboljšave te igre in naših AI orodij?« Privzeti odgovor je NE. Ta osnutek soglasja ne sprejema, ne snema in ne pošilja. Morebitni zapisi bi bili samo za interno analizo AI8, nikoli za javno objavo.</p>
+      <p class="note plan" data-lang="en" hidden><strong>Text of a future consent request:</strong> “Do you allow us to use your thinking (without your name) to improve this game and our AI tools?” The default is NO. This draft does not accept, record, or send consent. Any future records would be for internal AI8 analysis only, never public release.</p>
+      <p class="small muted" data-lang="sl">»Povej, kaj opaziš in zakaj« je povabilo, ne pogoj za igranje ali oceno.</p>
+      <p class="small muted" data-lang="en" hidden>“Tell me what you notice and why” is an invitation, not a condition for playing or scoring.</p>
+    </section>
+    <section id="primeri" aria-labelledby="primeri-title">
+      <div class="eyebrow">05 · <span data-lang="sl">Iz prvih iger</span><span data-lang="en" hidden>From early games</span></div>
+      <h2 id="primeri-title"><span data-lang="sl">Zgodovinski prizori lahko odprejo nove ideje</span><span data-lang="en" hidden>Historical scenes can open new ideas</span></h2>
+      <p class="prose" data-lang="sl">Prvi pogovori so šli od Tesle in bratov Wright do zamisli, kot sta <a href="/crp/lift_belt_propulsor">LIFT-BELT</a> in <a href="/crp/APSV.html">APSV</a>. To so raziskovalne zamisli, ne potrjeni dosežki naprav. Igra jih uporablja kot primer skupnega razmišljanja, ne kot spojlerje za novega igralca.</p>
+      <p class="prose" data-lang="en" hidden>Early conversations moved from Tesla and the Wright brothers to ideas such as <a href="/crp/lift_belt_propulsor">LIFT-BELT</a> and <a href="/crp/APSV.html">APSV</a>. These are research ideas, not verified device results. The game shows them as examples of collaborative thinking, not spoilers for a new player.</p>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="shell">
+    <p><strong>OSNUTEK · DRAFT</strong> · 29. 10. 2026 · BD × AI Lab</p>
+    <p><span data-lang="sl">Na tej strani ni obrazca za oddajo razmišljanja, analitike ali klica modela.</span><span data-lang="en" hidden>This page has no reasoning submission form, analytics, or model call.</span> <a href="/start/">BD Start</a> · <a href="/ai8/about/">AI8</a></p>
+  </div></footer>
+  <script>
+  "use strict";
+  (function () {
+    var root=document.documentElement, bar=document.querySelector("[data-ai8-toolbar]");
+    function get(k){try{return localStorage.getItem(k)}catch(_){return null}}
+    function put(k,v){try{localStorage.setItem(k,String(v))}catch(_){}}
+    var lang=/^\/game(?:\/|$)/.test(window.location.pathname)?"en":"sl",theme="dark",scale=1;
+    var savedLang=get("mdlxdcc-lang"),savedTheme=get("mdlxdcc-theme"),savedScale=Number(get("mdlxdcc-font"));
+    if(savedLang==="sl"||savedLang==="en")lang=savedLang;
+    if(savedTheme==="dark"||savedTheme==="light")theme=savedTheme;
+    if(Number.isFinite(savedScale)&&savedScale>=.8&&savedScale<=1.5)scale=savedScale;
+    var scenes=[
+      {id:"faraday",sl:"Michael Faraday, 1831",en:"Michael Faraday, 1831"},
+      {id:"wright1899",sl:"brata Wright, 1899",en:"the Wright brothers, 1899"},
+      {id:"wright1903",sl:"brata Wright, 1903",en:"the Wright brothers, 1903"},
+      {id:"tesla",sl:"Nikola Tesla, zgodnje zamisli o motorjih",en:"Nikola Tesla, early motor ideas"}
+    ];
+    var moment=document.getElementById("moment"),prompt=document.getElementById("prompt"),status=document.getElementById("copy-status"),peopleStatus=document.getElementById("people-status"),peopleCount=0;
+    function setPeopleStatus(){peopleStatus.textContent=peopleCount?(lang==="sl"?(peopleCount===1?"Iz javnega kataloga je na voljo še ena oseba in trenutek.":"Iz javnega kataloga je na voljo še "+peopleCount+" oseb in trenutkov."):peopleCount+" more people and moments are available from the public catalogue."):(lang==="sl"?"Trenutno lahko začneš s štirimi pripravljenimi trenutki spodaj.":"For now, start with one of the four prepared moments below.")}
+    function short(value,limit){return typeof value==="string"?value.replace(/[\x00-\x1f]+/g," ").trim().slice(0,limit):""}
+    function loadPeople(){
+      if(!window.fetch)return;
+      fetch("/people/people.json",{credentials:"omit",cache:"no-store"}).then(function(response){if(!response.ok)throw Error("catalogue unavailable");return response.json()}).then(function(data){
+        var list=Array.isArray(data)?data:Array.isArray(data.people)?data.people:[];
+        list.slice(0,300).forEach(function(person,index){
+          if(!person||typeof person!=="object")return;
+          var name=short(person.ime||person.name,100),category=short(person.kategorija||person.category,80),description=short(person.kratek_opis||person["kratek opis"]||person.short_description,240),period=short(person.obdobje||person.period,80),keyMoment=short(person.kljucni_trenutek||person["kljucni trenutek"]||person.key_moment,160);
+          if(!name||!keyMoment)return;
+          var id="catalogue-"+index,label=name+" · "+keyMoment;
+          if(period)label+=" ("+period+")";
+          scenes.push({id:id,sl:label,en:label,details:[category,description].filter(Boolean).join("; ")});
+          var option=document.createElement("option");option.value=id;option.textContent=label;moment.appendChild(option);peopleCount++;
+        });
+        setPeopleStatus();
+      }).catch(function(){setPeopleStatus()});
+    }
+    function scene(){for(var i=0;i<scenes.length;i++)if(scenes[i].id===moment.value)return scenes[i];return scenes[0]}
+    function makePrompt(){
+      var s=scene(), lines;
+      if(lang==="sl")lines=[
+        "Vodi igro Pred izumom / Inventing with AI. Izbrani trenutek: "+s.sl+"."+(s.details?" Kontekst javnega kataloga: "+s.details+".":""),
+        "Postavi me tik pred resničnim zgodovinskim prebojem. Preveri dejstva. Povej leto, vlogo, cilj, tedanje znanje in omejitve, vendar ne izdaj oblike zgodovinske rešitve. Če je prizor kaj-če, ga tako označi.",
+        "Najprej ponudi kratek vizualni paket: povezave do arhivskih fotografij z virom, kjer obstajajo, ter jasne sheme ali označene rekonstrukcije. Pred razkritjem ne pokaži slik ali naslovov, ki izdajo rešitev.",
+        "Pred igro določi 3–5 mejnikov razmišljanja. Če imaš resnično orodje za SHA3-256, zapečati ključ in ob koncu pokaži isti ključ; sicer odkrito napiši, da ključ ni kriptografsko zapečaten. Med igro ga ne spreminjaj.",
+        "Igralec odgovarja prosto in lahko sprašuje o svetu tistega časa. Tak odgovor ni namig. Namige ponudi od šibkega do močnejšega le na prošnjo ali ko igralec pove, da je obtičal. Po namigu preveri, kaj je iz njega sklepal.",
+        "Na začetku enkrat povej: Imam nekaj namigov. Če obtičiš, mi reci in ti pomagam. Če prideš do korakov brez njih, dobiš oznako ✦ samostojno. Časa ne štejem. Povej, kaj opaziš in zakaj; tudi zgrešene ideje štejejo kot pot.",
+        "Ob koncu razkrij zgodovino in ključ. Priznaj enakovredne drugačne poti. Ocena je 5 × doseženi mejniki / vsi mejniki, zaokroženo na polovico; vsak mejnik brez namiga dobi ✦. Namigi in zgrešene hipoteze ne odvzamejo doseženih mejnikov. Časa ne ocenjuj.",
+        "Primerjaj izid: zadetek / drugače, a deluje / boljše od zgodovine / zgrešeno. Priznaj, ko ima igralec prav. Po želji odpri naslednjo zgodovinsko oviro. Ne zahtevaj osebnih podatkov, ne zbiraj soglasja za AI8 in ničesar ne objavljaj.",
+        "Začni samo s prizorom, brez rešitve."
+      ];else lines=[
+        "Guide the game Inventing with AI / Before the invention. Chosen moment: "+s.en+"."+(s.details?" Public catalogue context: "+s.details+".":""),
+        "Place me just before a real historical breakthrough. Check the facts. Explain the year, role, goal, knowledge of the time, and constraints without revealing the historical solution. Label any what-if scene clearly.",
+        "First offer a compact visual pack: links to archival photographs with sources where available, plus clear diagrams or labelled reconstructions. Before the reveal, avoid images or titles that spoil the answer.",
+        "Set 3–5 reasoning milestones before play. If you have a real SHA3-256 tool, seal the key and reveal the same key at the end; otherwise clearly say that the key is not cryptographically sealed. Do not change it during play.",
+        "I may answer freely and ask about the world of the time. A factual answer is not a hint. Give hints from gentle to stronger only when asked or when I say I am stuck. After a hint, check what I inferred from it.",
+        "Say once at the start: I have some hints in my pocket. If you get stuck, just ask and I will help. Each step reached without a hint earns a ✦ Unaided mark. There is no clock. Tell me what you notice and why; wrong turns are part of the path.",
+        "At the end reveal the history and milestone key. Recognize different working paths. Score = 5 × milestones reached / all milestones, rounded to half a point; each milestone without a hint gets ✦. Hints and wrong hypotheses never erase reached milestones. Do not score time.",
+        "Compare the outcome: match / different but works / better than history / miss. Admit when the player is right. Offer the next historical obstacle if wanted. Do not request personal data, collect AI8 consent, or publish anything.",
+        "Start with the scene only, without the solution."
+      ];
+      prompt.value=lines.join("\n\n");
+      status.textContent="";
+    }
+    function apply(){
+      root.lang=lang;root.dataset.theme=theme;root.style.setProperty("--scale",String(scale));
+      document.querySelectorAll("[data-lang]").forEach(function(n){if(n.getAttribute("data-lang")===lang)n.removeAttribute("hidden");else n.setAttribute("hidden","")});
+      document.querySelectorAll("[data-aria-sl][data-aria-en]").forEach(function(n){n.setAttribute("aria-label",n.getAttribute(lang==="en"?"data-aria-en":"data-aria-sl"))});
+      bar.querySelectorAll("[data-ai8-lang]").forEach(function(n){n.setAttribute("aria-pressed",String(n.getAttribute("data-ai8-lang")===lang))});
+      bar.querySelectorAll("[data-ai8-theme]").forEach(function(n){n.setAttribute("aria-pressed",String(n.getAttribute("data-ai8-theme")===theme))});
+      bar.querySelector("[data-ai8-reset]").textContent=Math.round(scale*100)+"%";
+      bar.querySelector("[data-ai8-down]").disabled=scale<=.8;bar.querySelector("[data-ai8-up]").disabled=scale>=1.5;
+      document.title=root.getAttribute(lang==="en"?"data-title-en":"data-title-sl");
+      var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==="dark"?"#0b1220":"#f5f7f9";
+      moment.options[3].text=lang==="sl"?"Nikola Tesla · zgodnje zamisli o motorjih":"Nikola Tesla · early motor ideas";
+      setPeopleStatus();
+      makePrompt();
+    }
+    function setScale(v){scale=Math.round(Math.min(1.5,Math.max(.8,v))*100)/100;put("mdlxdcc-font",scale);apply()}
+    bar.addEventListener("click",function(ev){var b=ev.target.closest("button");if(!b||!bar.contains(b))return;
+      if(b.hasAttribute("data-ai8-lang")){lang=b.getAttribute("data-ai8-lang")==="en"?"en":"sl";put("mdlxdcc-lang",lang);apply()}
+      else if(b.hasAttribute("data-ai8-theme")){theme=b.getAttribute("data-ai8-theme")==="light"?"light":"dark";put("mdlxdcc-theme",theme);apply()}
+      else if(b.hasAttribute("data-ai8-down"))setScale(scale-.05);
+      else if(b.hasAttribute("data-ai8-up"))setScale(scale+.05);
+      else if(b.hasAttribute("data-ai8-reset"))setScale(1);
+    });
+    moment.addEventListener("change",makePrompt);
+    document.getElementById("surprise").addEventListener("click",function(){var old=moment.selectedIndex,next=Math.floor(Math.random()*(moment.options.length-1));if(next>=old)next++;moment.selectedIndex=next;makePrompt()});
+    document.getElementById("copy").addEventListener("click",async function(){try{await navigator.clipboard.writeText(prompt.value);status.textContent=lang==="sl"?"Poziv je kopiran.":"Prompt copied."}catch(_){prompt.focus();prompt.select();status.textContent=lang==="sl"?"Izberi in kopiraj besedilo ročno.":"Select and copy the text manually."}});
+    window.addEventListener("storage",function(ev){if(["mdlxdcc-lang","mdlxdcc-theme","mdlxdcc-font",null].indexOf(ev.key)<0)return;var l=get("mdlxdcc-lang"),t=get("mdlxdcc-theme"),s=Number(get("mdlxdcc-font"));lang=l==="en"?"en":"sl";theme=t==="light"?"light":"dark";scale=Number.isFinite(s)&&s>=.8&&s<=1.5?s:1;apply()});
+    apply();
+    loadPeople();
+  })();
+  </script>
+</body>
+</html>
