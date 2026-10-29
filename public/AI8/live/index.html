@@ -123,7 +123,9 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   'use strict';
   var TZ = 'Europe/Ljubljana';
   var REFRESH_MS = 60000;
-  var STALE_MIN = 30;
+  var STALE_MIN = 30;        // host heartbeats (utrip): unconfirmed after 30 min
+  var TASK_STALE_H = 36;     // now-list items: unconfirmed only without evidence for 36 h (live_projection STALE_RUNNING_H)
+  var DATA_STALE_H = 30;     // page warning: curated daily document (headline_utc, 07:20 daily) older than 30 h
   var doc = root.document;
   var last = null;
 
@@ -151,15 +153,19 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   function str(v) { return v == null ? '' : String(v); }
   function arr(v) { return Array.isArray(v) ? v : []; }
 
-  function fresh(iso, nowMs) {
+  function fresh(iso, nowMs, maxMin) {
     var t = typeof iso === 'string' ? Date.parse(iso) : NaN;
     var age = nowMs - t;
-    return isFinite(t) && age >= -60000 && age <= STALE_MIN * 60000;
+    return isFinite(t) && age >= -60000 && age <= (maxMin || STALE_MIN) * 60000;
   }
 
   function taskState(item, nowMs, legacyStamp) {
     var stamp = Object.prototype.hasOwnProperty.call(item, 'utc') ? item.utc : legacyStamp;
-    return fresh(stamp, nowMs) ? str(item.state) || '—' : 'nepotrjeno';
+    return fresh(stamp, nowMs, TASK_STALE_H * 60) ? str(item.state) || '—' : 'nepotrjeno';
+  }
+
+  function dataStale(d, nowMs) {
+    return !!d && !fresh(d.headline_utc || d.updated_utc, nowMs, DATA_STALE_H * 60);
   }
 
   function evidenceTime(iso) {
@@ -302,7 +308,7 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 
   function tick() {
     if (last) doc.getElementById('upd').textContent = 'Podatki strani: ' + relTime(last.updated_utc, Date.now());
-    var stale = last && (Date.now() - Date.parse(last.updated_utc)) > STALE_MIN * 60000;
+    var stale = dataStale(last, Date.now());
     if (stale && !doc.getElementById('err').textContent) doc.getElementById('err').textContent = 'podatki so morda zastareli';
   }
 
@@ -322,7 +328,7 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
       });
   }
 
-  root.AI8Live = { render: render, relTime: relTime, groupByDay: groupByDay, safeHref: safeHref, load: load, fresh: fresh, taskState: taskState };
+  root.AI8Live = { render: render, relTime: relTime, groupByDay: groupByDay, safeHref: safeHref, load: load, fresh: fresh, taskState: taskState, dataStale: dataStale, tick: tick };
   if (!root.AI8_NO_AUTOSTART) {
     load();
     root.setInterval(load, REFRESH_MS);
