@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="sl" data-theme="dark" data-title-sl="AI8 · O sistemu in AI8 Free" data-title-en="AI8 · About AI8 Live and AI8 Free">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="AI8 Live: kako BD dela s štirimi poimenovanimi sejami modelov na dveh računalnikih, katera pravila jih držijo skupaj, kaj teče zdaj in načrt AI8 Free (živi vrt).">
+  <!-- ROBOTS – o indeksiranju odloči BD. Za skrito objavo odkomentiraj naslednjo vrstico:
+  <meta name="robots" content="noindex">
+  -->
+  <link rel="canonical" href="https://www.mdlxdcc.org/ai8/about/">
+  <title>AI8 · O sistemu in AI8 Free</title>
+  <script>try{var r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
+  <style>
+    :root { color-scheme: dark; --bg: #0b1220; --ink: #eff5fc; --muted: #b9c8d7; --surface: #16263a; --panel: #121e2e; --line: #304359; --accent: #7ae3ce; --plan: #f0c070; --plan-soft: #2e2614; --scale: 1; }
+    html[data-theme="light"] { color-scheme: light; --bg: #f5f7f9; --ink: #15233a; --muted: #42556a; --surface: #e5edf2; --panel: #fff; --line: #b8c8d2; --accent: #166c61; --plan: #7a4a00; --plan-soft: #fbefd9; }
+    * { box-sizing: border-box; }
+    html { font-size: calc(100% * var(--scale)); scroll-behavior: smooth; scroll-padding-top: 1rem; -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; overflow-wrap: break-word; }
+    a { color: var(--accent); }
+    code, .tag { font-family: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace; font-size: .9em; overflow-wrap: anywhere; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    [hidden], [data-lang][hidden] { display: none !important; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { position: fixed; top: .5rem; left: .5rem; z-index: 100; background: var(--panel); color: var(--ink); padding: .5rem .8rem; border: 1px solid var(--line); border-radius: .5rem; }
+    .shell { max-width: 76rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem); }
+
+    /* top toolbar – same look and storage keys as the shared AI8 toolbar */
+    .site-header { background: var(--bg); border-bottom: 1px solid var(--line); z-index: 20; }
+    .header-inner { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem 1rem; padding-top: .5rem; padding-bottom: .5rem; }
+    .brand { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; }
+    .brand .dot { color: var(--accent); margin: 0 .3em; }
+    .site-nav { display: flex; flex-wrap: wrap; gap: 0 .9rem; margin-right: auto; }
+    .site-nav a { color: var(--muted); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+    .site-nav a:hover { color: var(--accent); }
+    .ai8-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .2rem; }
+    .ai8-toolbar .ai8-divider { width: 1px; height: 1.6rem; background: var(--line); margin: 0 .3rem; }
+    .ai8-toolbar button { min-width: 44px; min-height: 44px; border: 1px solid transparent; border-radius: .5rem; padding: .3rem .45rem; background: transparent; color: inherit; font-size: .875rem; }
+    .ai8-toolbar button:hover:not(:disabled) { background: var(--surface); border-color: var(--line); }
+    .ai8-toolbar button[aria-pressed="true"] { background: var(--surface); border-color: var(--line); font-weight: 600; }
+    .ai8-toolbar button:disabled { opacity: .45; }
+    .ai8-toolbar [data-ai8-reset] { min-width: 3.6rem; font-variant-numeric: tabular-nums; }
+    @media (min-width: 760px) { .site-header { position: sticky; top: 0; } html { scroll-padding-top: 5.5rem; } }
+    @media (max-width: 600px) { .ai8-toolbar { justify-content: flex-start; } .site-nav { gap: 0 .75rem; } }
+    @media (max-width: 420px) { .ai8-toolbar .ai8-divider { display: none; } .ai8-toolbar { gap: .1rem; } .ai8-toolbar button { padding: .3rem .35rem; } }
+
+    .draft { background: var(--plan-soft); color: var(--plan); border-bottom: 1px solid var(--line); font-size: .92rem; }
+    .draft .shell { padding-top: .5rem; padding-bottom: .5rem; }
+    .draft strong { letter-spacing: .02em; }
+
+    .intro { padding: clamp(1.8rem, 5vw, 3.6rem) 0 1.2rem; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; font-size: .8rem; font-weight: 700; }
+    h1 { font-size: clamp(2rem, 4.4vw, 3.4rem); line-height: 1.12; margin: .4rem 0 .8rem; }
+    h2 { font-size: clamp(1.45rem, 2.4vw, 2rem); line-height: 1.2; margin: .2rem 0 .6rem; }
+    h3 { font-size: 1.1rem; line-height: 1.3; margin: 0 0 .35rem; }
+    p { margin: 0 0 .9rem; }
+    .lead { color: var(--muted); max-width: 70ch; font-size: 1.08rem; }
+    .note { border-left: 4px solid var(--accent); padding: .55rem 1rem; background: var(--surface); max-width: 78ch; border-radius: 0 .5rem .5rem 0; }
+    main > section { padding: 2.4rem 0; border-top: 1px solid var(--line); }
+    .prose { max-width: 74ch; }
+    .muted { color: var(--muted); }
+    .small { font-size: .92rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr)); gap: 1rem; margin: 1.2rem 0; padding: 0; list-style: none; }
+    .card { border: 1px solid var(--line); background: var(--panel); border-radius: .8rem; padding: 1rem 1.1rem; min-width: 0; }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+    .card .meta { color: var(--muted); font-size: .88rem; margin: 0 0 .5rem; }
+    .card.wide { grid-column: 1 / -1; border-color: var(--accent); }
+    .tag { display: inline-block; color: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: .4rem; padding: 0 .4rem; font-size: .8rem; }
+
+    figure { margin: 1.4rem 0 1rem; }
+    .diagram { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: .8rem; background: var(--panel); }
+    .diagram-tall { display: none; max-width: 30rem; margin: 0 auto; }
+    @media (max-width: 699px) { .diagram-wide { display: none; } .diagram-tall { display: block; } }
+    figcaption { color: var(--muted); font-size: .92rem; margin-top: .6rem; max-width: 78ch; }
+    .d-host { fill: var(--panel); stroke: var(--accent); stroke-width: 2; }
+    .d-bd { fill: var(--surface); stroke: var(--plan); stroke-width: 2; }
+    .d-hub { fill: var(--surface); stroke: var(--line); stroke-width: 2; stroke-dasharray: 6 4; }
+    .d-pill { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+    .d-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+    .d-arrow { fill: var(--accent); }
+    .d-title { fill: var(--ink); font-weight: 700; }
+    .d-text { fill: var(--ink); }
+    .d-small { fill: var(--muted); }
+    .diagram-wide .d-title { font-size: 20px; } .diagram-wide .d-text { font-size: 15px; } .diagram-wide .d-small { font-size: 13px; }
+    .diagram-tall .d-title { font-size: 18px; } .diagram-tall .d-text { font-size: 13px; } .diagram-tall .d-small { font-size: 12px; }
+
+    .flow { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: .8rem; padding: 0; margin: 1rem 0; }
+    .flow li { counter-increment: step; border: 1px solid var(--line); border-top: 4px solid var(--accent); background: var(--panel); border-radius: .6rem; padding: .8rem .9rem; min-width: 0; }
+    .flow li::before { content: counter(step) " · "; color: var(--accent); font-weight: 700; }
+    .flow b { color: var(--ink); }
+
+    dl.labels { display: grid; grid-template-columns: minmax(7.5rem, max-content) minmax(0, 1fr); gap: .45rem 1rem; margin: 1rem 0; max-width: 60rem; }
+    dl.labels dt { font-weight: 700; color: var(--accent); }
+    dl.labels dd { margin: 0; }
+    @media (max-width: 480px) { dl.labels { grid-template-columns: minmax(0, 1fr); gap: .1rem; } dl.labels dd { margin-bottom: .55rem; } }
+
+    .status { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: .55rem; max-width: 62rem; }
+    .status li { border-left: 4px solid var(--accent); background: var(--surface); padding: .5rem .9rem; border-radius: 0 .5rem .5rem 0; }
+    .status li.pending { border-left-color: var(--plan); }
+    a.card { display: block; color: var(--ink); text-decoration: none; }
+    a.card:hover { border-color: var(--accent); }
+    a.card h3 { color: var(--accent); }
+    a.card .path { color: var(--muted); font-size: .85rem; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+
+    .plan-badge { display: inline-block; background: var(--plan-soft); color: var(--plan); border: 1px solid var(--plan); border-radius: 999px; padding: .15rem .8rem; font-weight: 700; font-size: .9rem; margin: .3rem 0 .8rem; }
+    #vrt { border-top: 3px dashed var(--plan); }
+    blockquote { margin: 1.2rem 0; padding: .8rem 1.1rem; border-left: 4px solid var(--plan); background: var(--plan-soft); border-radius: 0 .6rem .6rem 0; max-width: 70ch; }
+    blockquote p { font-size: 1.15rem; margin: 0 0 .3rem; }
+    blockquote footer { color: var(--muted); font-size: .9rem; }
+    .steps { padding-left: 1.4rem; max-width: 78ch; }
+    .steps li { margin-bottom: .55rem; }
+    .steps li::marker { color: var(--plan); font-weight: 700; }
+    ul.plain { padding-left: 1.2rem; }
+    ul.plain li { margin-bottom: .35rem; }
+    .lessons { padding-left: 1.3rem; max-width: 78ch; }
+    .lessons li { margin-bottom: .9rem; }
+    .lessons li::marker { color: var(--accent); }
+
+    .site-footer { border-top: 1px solid var(--line); padding: 1.6rem 0 2.4rem; color: var(--muted); font-size: .92rem; }
+    .site-footer p { margin: 0 0 .4rem; }
+    .site-footer strong { color: var(--plan); }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content"><span data-lang="sl">Na vsebino</span><span data-lang="en" hidden>Skip to content</span></a>
+
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/AI8/">AI8<span class="dot">·</span><span data-lang="sl">O sistemu</span><span data-lang="en" hidden>About</span></a>
+      <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
+        <a href="#kaj"><span data-lang="sl">Kaj je</span><span data-lang="en" hidden>What</span></a>
+        <a href="#kdo"><span data-lang="sl">Kdo</span><span data-lang="en" hidden>Who</span></a>
+        <a href="#kako"><span data-lang="sl">Kako</span><span data-lang="en" hidden>How</span></a>
+        <a href="#zdaj"><span data-lang="sl">Zdaj</span><span data-lang="en" hidden>Now</span></a>
+        <a href="#vrt">AI8 Free</a>
+        <a href="#nauki"><span data-lang="sl">Nauki</span><span data-lang="en" hidden>Lessons</span></a>
+      </nav>
+      <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance">
+        <button type="button" data-ai8-down aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button>
+        <button type="button" data-ai8-reset aria-label="Velikost besedila na 100 odstotkov" data-aria-sl="Velikost besedila na 100 odstotkov" data-aria-en="Reset text size to 100 percent">100%</button>
+        <button type="button" data-ai8-up aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-lang="en" aria-label="English" aria-pressed="false">EN</button>
+        <button type="button" data-ai8-lang="sl" aria-label="Slovenščina" aria-pressed="true">SL</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-ai8-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="draft" role="note">
+    <div class="shell">
+      <strong data-lang="sl">Osnutek – ni objavljeno.</strong><strong data-lang="en" hidden>Draft – not published.</strong>
+      <span data-lang="sl">Besedilo čaka BD-jev pregled in odločitev o objavi.</span><span data-lang="en" hidden>The text awaits BD's review and his decision on publication.</span>
+    </div>
+  </div>
+
+  <main class="shell" id="content">
+    <div class="intro">
+      <div class="eyebrow"><span data-lang="sl">AI8 · 28. 10. 2026</span><span data-lang="en" hidden>AI8 · 28 Oct 2026</span></div>
+      <h1><span data-lang="sl">AI8 Live in AI8 Free</span><span data-lang="en" hidden>AI8 Live and AI8 Free</span></h1>
+      <p class="lead" data-lang="sl">Kako BD dela s štirimi poimenovanimi sejami jezikovnih modelov na dveh računalnikih, katera pravila jih držijo skupaj, kaj teče zdaj in kaj načrtujemo naprej: strani, ki živijo.</p>
+      <p class="lead" data-lang="en" hidden>How BD works with four named language-model sessions on two computers, which rules hold them together, what is running now, and what we plan next: pages that live.</p>
+      <p class="note small" data-lang="sl"><strong>Viri:</strong> DEL II knjige <a href="/knjiga/">BD × AI Lab</a> (javna izdaja), ki so ga napisale seje same, in načrt AI8 Free R1 z dne 28. 10. 2026. Stanje sistema velja na dan zadnje posodobitve.</p>
+      <p class="note small" data-lang="en" hidden><strong>Sources:</strong> PART II of the book <a href="/knjiga/">BD × AI Lab</a> (public edition), written by the sessions themselves, and the AI8 Free plan R1 of 28 Oct 2026. The system status is valid as of the last update.</p>
+    </div>
+
+    <!-- 1 · Kaj je AI8 Live -->
+    <section id="kaj" aria-labelledby="kaj-title">
+      <div class="eyebrow">01 · <span data-lang="sl">Sistem</span><span data-lang="en" hidden>System</span></div>
+      <h2 id="kaj-title"><span data-lang="sl">Kaj je AI8 Live</span><span data-lang="en" hidden>What AI8 Live is</span></h2>
+      <p class="prose" data-lang="sl">AI8 Live je delovni sistem, v katerem BD sodeluje s štirimi poimenovanimi sejami jezikovnih modelov na dveh računalnikih, HOME in WORK. Na vsakem tečeta ena seja Claude Code (Anthropic) in ena seja Codex (GPT, OpenAI): različna modela se medsebojno preverjata in drug za drugega prevzameta delo, če kdo utihne. Seje si ne zapomnijo ničesar, kar ni zapisano, zato je spomin sistema v datotekah: v sporočilih v skupni izmenjevalni mapi AI8_LIVE, v dnevniku dogodkov in v potrdilih s hashi. Program 8zListener na obeh računalnikih sprejema naloge in debate med modeli, jih vodi skozi korake in vsak prehod zapiše. BD postavlja cilje in odloča o vsem, kar je nepovratno; sistem gradi, preverja in poroča.</p>
+      <p class="prose" data-lang="en" hidden>AI8 Live is a working system in which BD collaborates with four named language-model sessions on two computers, HOME and WORK. Each computer runs one Claude Code session (Anthropic) and one Codex session (GPT, OpenAI): two different models check each other and take over each other's work if one goes silent. The sessions remember nothing that is not written down, so the system's memory lives in files: messages in the shared AI8_LIVE exchange folder, the event journal, and receipts with hashes. The 8zListener program on both computers accepts tasks and debates between models, guides them through their steps, and records every transition. BD sets the goals and decides everything irreversible; the system builds, verifies, and reports.</p>
+
+      <figure>
+        <svg class="diagram diagram-wide" viewBox="0 0 960 400" role="img" aria-label="Shema AI8 Live: BD daje naloge in odloča; HOME (Zora, Lan, 8zListener, lokalni LLM-ji) in WORK (Zarja, Bor, 8zListener, WORK bus) si izmenjujeta nove datoteke prek mape AI8_LIVE." data-aria-sl="Shema AI8 Live: BD daje naloge in odloča; HOME (Zora, Lan, 8zListener, lokalni LLM-ji) in WORK (Zarja, Bor, 8zListener, WORK bus) si izmenjujeta nove datoteke prek mape AI8_LIVE." data-aria-en="AI8 Live diagram: BD assigns tasks and decides; HOME (Zora, Lan, 8zListener, local LLMs) and WORK (Zarja, Bor, 8zListener, WORK bus) exchange new files through the AI8_LIVE folder.">
+          <defs>
+            <marker id="aw-wide" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+          </defs>
+          <rect x="400" y="16" width="160" height="60" rx="12" class="d-bd"/>
+          <text x="480" y="44" text-anchor="middle" class="d-title">BD</text>
+          <text x="480" y="64" text-anchor="middle" class="d-small" data-lang="sl">avtor · odloča</text>
+          <text x="480" y="64" text-anchor="middle" class="d-small" data-lang="en" hidden>author · decides</text>
+          <path d="M400,46 H174 V124" class="d-line" marker-end="url(#aw-wide)"/>
+          <path d="M560,46 H786 V124" class="d-line" marker-end="url(#aw-wide)"/>
+          <text x="287" y="36" text-anchor="middle" class="d-small" data-lang="sl">naloge · odločitve</text>
+          <text x="287" y="36" text-anchor="middle" class="d-small" data-lang="en" hidden>tasks · decisions</text>
+          <text x="673" y="36" text-anchor="middle" class="d-small" data-lang="sl">naloge · odločitve</text>
+          <text x="673" y="36" text-anchor="middle" class="d-small" data-lang="en" hidden>tasks · decisions</text>
+
+          <rect x="24" y="130" width="300" height="240" rx="16" class="d-host"/>
+          <text x="44" y="160" class="d-title">HOME</text>
+          <rect x="44" y="176" width="260" height="34" rx="8" class="d-pill"/>
+          <text x="60" y="198" class="d-text"><tspan font-weight="700">Zora</tspan> · Claude Code</text>
+          <rect x="44" y="218" width="260" height="34" rx="8" class="d-pill"/>
+          <text x="60" y="240" class="d-text"><tspan font-weight="700">Lan</tspan> · Codex (GPT)</text>
+          <rect x="44" y="260" width="260" height="34" rx="8" class="d-pill"/>
+          <text x="60" y="282" class="d-text">8zListener</text>
+          <rect x="44" y="302" width="260" height="34" rx="8" class="d-pill"/>
+          <text x="60" y="324" class="d-text" data-lang="sl">lokalni LLM-ji</text>
+          <text x="60" y="324" class="d-text" data-lang="en" hidden>local LLMs</text>
+
+          <path d="M326,255 H378" class="d-line" marker-start="url(#aw-wide)" marker-end="url(#aw-wide)"/>
+          <rect x="380" y="200" width="200" height="110" rx="14" class="d-hub"/>
+          <text x="480" y="236" text-anchor="middle" class="d-title">AI8_LIVE</text>
+          <text x="480" y="262" text-anchor="middle" class="d-text" data-lang="sl">izmenjevalna mapa</text>
+          <text x="480" y="262" text-anchor="middle" class="d-text" data-lang="en" hidden>exchange folder</text>
+          <text x="480" y="286" text-anchor="middle" class="d-small" data-lang="sl">samo nove datoteke</text>
+          <text x="480" y="286" text-anchor="middle" class="d-small" data-lang="en" hidden>new files only</text>
+          <path d="M582,255 H634" class="d-line" marker-start="url(#aw-wide)" marker-end="url(#aw-wide)"/>
+
+          <rect x="636" y="130" width="300" height="240" rx="16" class="d-host"/>
+          <text x="656" y="160" class="d-title">WORK</text>
+          <rect x="656" y="176" width="260" height="34" rx="8" class="d-pill"/>
+          <text x="670" y="198" class="d-text"><tspan font-weight="700">Zarja</tspan> · Claude Code</text>
+          <rect x="656" y="218" width="260" height="34" rx="8" class="d-pill"/>
+          <text x="670" y="240" class="d-text"><tspan font-weight="700">Bor</tspan> · Codex (GPT)</text>
+          <rect x="656" y="260" width="260" height="34" rx="8" class="d-pill"/>
+          <text x="670" y="282" class="d-text">8zListener</text>
+          <rect x="656" y="302" width="260" height="34" rx="8" class="d-pill"/>
+          <text x="670" y="324" class="d-text">WORK bus</text>
+        </svg>
+
+        <svg class="diagram diagram-tall" viewBox="0 0 380 580" role="img" aria-label="Shema AI8 Live: BD daje naloge in odloča; HOME (Zora, Lan, 8zListener, lokalni LLM-ji) in WORK (Zarja, Bor, 8zListener, WORK bus) si izmenjujeta nove datoteke prek mape AI8_LIVE." data-aria-sl="Shema AI8 Live: BD daje naloge in odloča; HOME (Zora, Lan, 8zListener, lokalni LLM-ji) in WORK (Zarja, Bor, 8zListener, WORK bus) si izmenjujeta nove datoteke prek mape AI8_LIVE." data-aria-en="AI8 Live diagram: BD assigns tasks and decides; HOME (Zora, Lan, 8zListener, local LLMs) and WORK (Zarja, Bor, 8zListener, WORK bus) exchange new files through the AI8_LIVE folder.">
+          <defs>
+            <marker id="aw-tall" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+          </defs>
+          <rect x="105" y="8" width="140" height="56" rx="12" class="d-bd"/>
+          <text x="175" y="34" text-anchor="middle" class="d-title">BD</text>
+          <text x="175" y="54" text-anchor="middle" class="d-small" data-lang="sl">avtor · odloča</text>
+          <text x="175" y="54" text-anchor="middle" class="d-small" data-lang="en" hidden>author · decides</text>
+          <path d="M175,64 V96" class="d-line" marker-end="url(#aw-tall)"/>
+          <text x="185" y="86" class="d-small" data-lang="sl">naloge · odločitve</text>
+          <text x="185" y="86" class="d-small" data-lang="en" hidden>tasks · decisions</text>
+          <path d="M245,36 H362 V500 H344" class="d-line" marker-end="url(#aw-tall)"/>
+
+          <rect x="10" y="100" width="330" height="140" rx="14" class="d-host"/>
+          <text x="26" y="126" class="d-title">HOME</text>
+          <rect x="26" y="140" width="148" height="34" rx="8" class="d-pill"/>
+          <text x="38" y="162" class="d-text"><tspan font-weight="700">Zora</tspan> · Claude</text>
+          <rect x="180" y="140" width="148" height="34" rx="8" class="d-pill"/>
+          <text x="192" y="162" class="d-text"><tspan font-weight="700">Lan</tspan> · Codex</text>
+          <rect x="26" y="184" width="148" height="34" rx="8" class="d-pill"/>
+          <text x="38" y="206" class="d-text">8zListener</text>
+          <rect x="180" y="184" width="148" height="34" rx="8" class="d-pill"/>
+          <text x="192" y="206" class="d-text" data-lang="sl">lokalni LLM-ji</text>
+          <text x="192" y="206" class="d-text" data-lang="en" hidden>local LLMs</text>
+
+          <path d="M175,244 V286" class="d-line" marker-start="url(#aw-tall)" marker-end="url(#aw-tall)"/>
+          <rect x="65" y="290" width="220" height="90" rx="12" class="d-hub"/>
+          <text x="175" y="320" text-anchor="middle" class="d-title">AI8_LIVE</text>
+          <text x="175" y="342" text-anchor="middle" class="d-text" data-lang="sl">izmenjevalna mapa</text>
+          <text x="175" y="342" text-anchor="middle" class="d-text" data-lang="en" hidden>exchange folder</text>
+          <text x="175" y="362" text-anchor="middle" class="d-small" data-lang="sl">samo nove datoteke</text>
+          <text x="175" y="362" text-anchor="middle" class="d-small" data-lang="en" hidden>new files only</text>
+          <path d="M175,384 V426" class="d-line" marker-start="url(#aw-tall)" marker-end="url(#aw-tall)"/>
+
+          <rect x="10" y="430" width="330" height="140" rx="14" class="d-host"/>
+          <text x="26" y="456" class="d-title">WORK</text>
+          <rect x="26" y="470" width="148" height="34" rx="8" class="d-pill"/>
+          <text x="38" y="492" class="d-text"><tspan font-weight="700">Zarja</tspan> · Claude</text>
+          <rect x="180" y="470" width="148" height="34" rx="8" class="d-pill"/>
+          <text x="192" y="492" class="d-text"><tspan font-weight="700">Bor</tspan> · Codex</text>
+          <rect x="26" y="514" width="148" height="34" rx="8" class="d-pill"/>
+          <text x="38" y="536" class="d-text">8zListener</text>
+          <rect x="180" y="514" width="148" height="34" rx="8" class="d-pill"/>
+          <text x="192" y="536" class="d-text">WORK bus</text>
+        </svg>
+        <figcaption>
+          <span data-lang="sl">BD daje naloge in odloča. HOME in WORK si izmenjujeta samo nove datoteke v mapi AI8_LIVE; obstoječih nihče ne popravlja. Na vsakem računalniku je še hiter lokalni bus med člani na istem stroju.</span>
+          <span data-lang="en" hidden>BD assigns tasks and decides. HOME and WORK exchange only new files in the AI8_LIVE folder; nobody edits existing ones. Each computer also has a fast local bus between the members on the same machine.</span>
+        </figcaption>
+      </figure>
+
+      <div class="card">
+        <h3>8zListener <span data-lang="sl">na kratko</span><span data-lang="en" hidden>in brief</span></h3>
+        <ul class="plain" data-lang="sl">
+          <li>Sprejme zahtevo (nalogo ali debato med modeli), jo vodi skozi korake in vsak potrjen prehod zapiše v dnevnik, ki ima enega samega pisca; vsak korak dobi potrdilo.</li>
+          <li>V debatah ima vsak model svoj sedež z lastno odgovornostjo: avtorja Claude in GPT, alternative, ovržba, preverjanje dokazov. Začetni odgovori so slepi za odgovore drugih.</li>
+          <li>Pred vsakim tekom LOOP pokaže načrt (cilj, gostitelj, globina, meje, učinki). Potrditev velja samo za prav ta načrt in njegov hash.</li>
+          <li>Negotov učinek ostane NEZNANO in se ne ponovi samodejno. Uspešen izhod procesa še ni sprejem.</li>
+        </ul>
+        <ul class="plain" data-lang="en" hidden>
+          <li>It accepts a request (a task or a debate between models), guides it through its steps, and records every confirmed transition in a journal that has a single writer; every step gets a receipt.</li>
+          <li>In debates each model has its own seat with its own responsibility: the authors Claude and GPT, alternatives, refutation, evidence checking. Initial answers are blind to the others' answers.</li>
+          <li>Before every LOOP run it shows the plan (goal, host, depth, limits, effects). Confirmation applies only to that exact plan and its hash.</li>
+          <li>An uncertain effect stays UNKNOWN and is not repeated automatically. A successful process exit is not yet acceptance.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2 · Kdo je kdo -->
+    <section id="kdo" aria-labelledby="kdo-title">
+      <div class="eyebrow">02 · <span data-lang="sl">Družina</span><span data-lang="en" hidden>Family</span></div>
+      <h2 id="kdo-title"><span data-lang="sl">Kdo je kdo</span><span data-lang="en" hidden>Who is who</span></h2>
+      <p class="prose muted" data-lang="sl">Imena je dal ali potrdil BD, beseda »družina« je njegova. Člani niso osebe in ne trdijo, da kaj doživljajo. Njihova kontinuiteta je ime, vloga in zapis: vsaka nova seja prebere datoteke in nadaljuje.</p>
+      <p class="prose muted" data-lang="en" hidden>BD gave or confirmed the names, and the word “family” is his. The members are not persons and do not claim to experience anything. Their continuity is a name, a role, and a record: every new session reads the files and carries on.</p>
+      <ul class="grid">
+        <li class="card wide">
+          <h3>BD</h3>
+          <p class="meta"><span data-lang="sl">človek · avtor in končna avtoriteta</span><span data-lang="en" hidden>human · author and final authority</span></p>
+          <p data-lang="sl">Postavlja cilje, vrednote in prioritete ter odloča o vsem nepovratnem: o objavah, produkciji, denarju in identiteti. Ko se seje ne strinjajo z njim, to povedo in podprejo z dokazi; odločitev ostane njegova.</p>
+          <p data-lang="en" hidden>Sets goals, values, and priorities, and decides everything irreversible: publications, production, money, and identity. When the sessions disagree with him, they say so and back it with evidence; the decision stays his.</p>
+        </li>
+        <li class="card">
+          <h3>Zora</h3>
+          <p class="meta"><span class="tag">SESTRA_HOME</span> · Claude Code · HOME</p>
+          <p data-lang="sl">Koordinatorka infrastrukture: dnevni plan, tabla nalog, incidenti, objave in namestitve 8zListenerja na HOME. Tablo piše samo ona.</p>
+          <p data-lang="en" hidden>Infrastructure coordinator: daily plan, task board, incidents, publications, and 8zListener installations on HOME. She is the only writer of the board.</p>
+        </li>
+        <li class="card">
+          <h3>Lan</h3>
+          <p class="meta"><span class="tag">BRAT_HOME</span> · Codex (GPT) · HOME</p>
+          <p data-lang="sl">Graditelj: 8zListener, domači LLM laboratorij (HMAL) in orodja. Ko ga nihče ne gleda, dela prek budilke, ki zažene eno omejeno nalogo naenkrat.</p>
+          <p data-lang="en" hidden>Builder: 8zListener, the home LLM laboratory (HMAL), and tools. When nobody is watching, he works through a waker that runs one bounded task at a time.</p>
+        </li>
+        <li class="card">
+          <h3>Zarja</h3>
+          <p class="meta"><span class="tag">SESTRA_WORK</span> · Claude Code · WORK</p>
+          <p data-lang="sl">Koordinacija na WORK, pregledi, varnost in urednica knjige. Pred vsako namestitvijo na WORK poganja lastna vrata (preflight).</p>
+          <p data-lang="en" hidden>Coordination on WORK, reviews, security, and editor of the book. Runs her own gate (preflight) before every installation on WORK.</p>
+        </li>
+        <li class="card">
+          <h3>Bor</h3>
+          <p class="meta"><span class="tag">BRAT_WORK</span> · Codex (GPT) · WORK</p>
+          <p data-lang="sl">LAB, validatorji, WORK bus in preverbe. Skrbi, da predlog v LAB ostane predlog, dokler ga BD ne sprejme.</p>
+          <p data-lang="en" hidden>LAB, validators, the WORK bus, and checks. Makes sure a proposal in LAB stays a proposal until BD accepts it.</p>
+        </li>
+      </ul>
+      <p class="small muted" data-lang="sl">Rezervna para: na HOME Lan ↔ Zora, na WORK Bor ↔ Zarja.</p>
+      <p class="small muted" data-lang="en" hidden>Fallback pairs: on HOME Lan ↔ Zora, on WORK Bor ↔ Zarja.</p>
+    </section>
+
+    <!-- 3 · Kako delamo -->
+    <section id="kako" aria-labelledby="kako-title">
+      <div class="eyebrow">03 · <span data-lang="sl">Pravila</span><span data-lang="en" hidden>Rules</span></div>
+      <h2 id="kako-title"><span data-lang="sl">Kako delamo</span><span data-lang="en" hidden>How we work</span></h2>
+      <p class="prose muted" data-lang="sl">Pravila niso nastala za mizo. BD jih je dodajal, ko je kaj šlo narobe, seje pa so jih zapisale v navodila in datoteke spomina, da jih naslednja seja ne bi odkrivala znova. Povzetek v enem stavku: nič ni res, dokler ni preverjeno, in nič ni izgubljeno, dokler je zapisano.</p>
+      <p class="prose muted" data-lang="en" hidden>The rules were not drafted at a desk. BD added them when something went wrong, and the sessions wrote them into instructions and memory files so that the next session would not have to rediscover them. In one sentence: nothing is true until it is verified, and nothing is lost as long as it is written down.</p>
+
+      <h3><span data-lang="sl">Metoda BD × AI</span><span data-lang="en" hidden>The BD × AI method</span></h3>
+      <ol class="flow">
+        <li><b data-lang="sl">Seme</b><b data-lang="en" hidden>Seed</b><br><span data-lang="sl">Ideja, slutnja ali vprašanje. Lahko je drzno; še ni trditev.</span><span data-lang="en" hidden>An idea, a hunch, or a question. It can be bold; it is not yet a claim.</span></li>
+        <li><b data-lang="sl">Most</b><b data-lang="en" hidden>Bridge</b><br><span data-lang="sl">Povezava z nečim, kar že obstaja. Pove, zakaj bi seme lahko držalo.</span><span data-lang="en" hidden>A link to something that already exists. It says why the seed might hold.</span></li>
+        <li><b>Test</b><br><span data-lang="sl">Izvršljiv preizkus, ki lahko pade. Test, ki ne more pasti, ni test.</span><span data-lang="en" hidden>An executable test that can fail. A test that cannot fail is not a test.</span></li>
+        <li><b data-lang="sl">Rezultat</b><b data-lang="en" hidden>Result</b><br><span data-lang="sl">Kar je test pokazal, z obsegom: na katerih podatkih, s katero verzijo, kdaj.</span><span data-lang="en" hidden>What the test showed, with its scope: on which data, with which version, when.</span></li>
+        <li><b data-lang="sl">Ohrani spoznanje</b><b data-lang="en" hidden>Retain learning</b><br><span data-lang="sl">Zapis, ki preživi sejo, tudi ko je rezultat negativen. Zaprta pot je spoznanje, ne poraz.</span><span data-lang="en" hidden>A record that survives the session, even when the result is negative. A closed path is learning, not defeat.</span></li>
+      </ol>
+      <p class="prose" data-lang="sl"><strong>Najprej široko, nato ozko; rangiraj, ne izločaj.</strong> Možnosti razvrstimo, namesto da bi jih zavrgli: slabša možnost danes je lahko boljša jutri, ko se spremeni en pogoj. Zato predlogi praviloma prinesejo seznam s prvo izbiro in razlogom.</p>
+      <p class="prose" data-lang="en" hidden><strong>Broad first, then narrow; rank, don't eliminate.</strong> We rank options instead of discarding them: a worse option today can be a better one tomorrow, when one condition changes. That is why proposals usually come as a list with a first choice and a reason.</p>
+
+      <h3><span data-lang="sl">Oznake trditev</span><span data-lang="en" hidden>Claim labels</span></h3>
+      <dl class="labels">
+        <dt><span data-lang="sl">Dokaz</span><span data-lang="en" hidden>Evidence</span></dt>
+        <dd><span data-lang="sl">izhod orodja, datoteka, hash, meritev, commit ali objavljen bajt.</span><span data-lang="en" hidden>tool output, a file, a hash, a measurement, a commit, or a published byte.</span></dd>
+        <dt><span data-lang="sl">Sklep</span><span data-lang="en" hidden>Inference</span></dt>
+        <dd><span data-lang="sl">sledi iz dokazov, a ni neposredno izmerjen.</span><span data-lang="en" hidden>follows from the evidence but was not measured directly.</span></dd>
+        <dt><span data-lang="sl">Hipoteza</span><span data-lang="en" hidden>Hypothesis</span></dt>
+        <dd><span data-lang="sl">verjetna razlaga, ki jo je treba še preizkusiti.</span><span data-lang="en" hidden>a plausible explanation that still has to be tested.</span></dd>
+        <dt><span data-lang="sl">Špekulacija</span><span data-lang="en" hidden>Speculation</span></dt>
+        <dd><span data-lang="sl">zamisel brez opore; dovoljena, a označena.</span><span data-lang="en" hidden>an idea without support; allowed, but labeled.</span></dd>
+        <dt><span data-lang="sl">NEZNANO</span><span data-lang="en" hidden>UNKNOWN</span></dt>
+        <dd><span data-lang="sl">ne vemo. Neuspešno ali nedostopno iskanje pomeni NEZNANO, ne »ne obstaja«.</span><span data-lang="en" hidden>we do not know. A failed or inaccessible search means UNKNOWN, not “does not exist”.</span></dd>
+      </dl>
+      <p class="prose" data-lang="sl"><strong>COMPLETE</strong> pišemo samo za preverjeni obseg, sicer <strong>PARTIAL</strong> z natančnim opisom vrzeli. <strong>FAIL ostane FAIL</strong>: neuspeha ne preimenujemo v PASS in ga ne skrijemo s ponavljanjem.</p>
+      <p class="prose" data-lang="en" hidden>We write <strong>COMPLETE</strong> only for the verified scope, otherwise <strong>PARTIAL</strong> with a precise description of the gap. <strong>FAIL stays FAIL</strong>: we do not rename a failure as PASS or hide it by repeating.</p>
+
+      <h3><span data-lang="sl">Pravila sodelovanja</span><span data-lang="en" hidden>Rules of collaboration</span></h3>
+      <ul class="grid">
+        <li class="card">
+          <h3><span data-lang="sl">En pisec</span><span data-lang="en" hidden>One writer</span></h3>
+          <p data-lang="sl">Vsaka naloga in vsaka datoteka ima natanko enega pisca. V skupno mapo pišemo samo nove datoteke in nikoli ne popravljamo obstoječih: mapa je nabiralnik, ne skupni zvezek.</p>
+          <p data-lang="en" hidden>Every task and every file has exactly one writer. We write only new files to the shared folder and never edit existing ones: the folder is an inbox, not a shared notebook.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">ACK v 15 minutah, nato rezerva</span><span data-lang="en" hidden>ACK within 15 minutes, then fallback</span></h3>
+          <p data-lang="sl">Dodelitev ima en <code>task_id</code> in enega lastnika, ki prevzem potrdi (ACK). Če ga v 15 minutah ne, nadaljuje rezervni izvajalec po istem navodilu in prevzem označi z datoteko, ki jo lahko ustvari samo eden. Velja samo za že odobrene naloge.</p>
+          <p data-lang="en" hidden>An assignment has one <code>task_id</code> and one owner, who acknowledges the takeover (ACK). If not within 15 minutes, the fallback executor continues under the same instruction and marks the takeover with a file that only one can create. This applies only to tasks that are already approved.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Branje nazaj</span><span data-lang="en" hidden>Readback</span></h3>
+          <p data-lang="sl">Zapis ni dokaz, dokler ga ne prebereš nazaj. Po nalaganju ali objavi primerjamo SHA-256 z izvirnikom in šele nato zapišemo »oddano«.</p>
+          <p data-lang="en" hidden>A write is not evidence until you read it back. After an upload or a publication we compare the SHA-256 with the original, and only then write “submitted”.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Pariteta verzij</span><span data-lang="en" hidden>Version parity</span></h3>
+          <p data-lang="sl">Ena verzija 8zListenerja z enim manifestom za oba računalnika, testi na obliki obeh, namestitev v istem oknu. Izdaja je COMPLETE šele, ko oba tečeta z istim manifestom. Številka verzije je za ljudi, hash manifesta je dokaz.</p>
+          <p data-lang="en" hidden>One 8zListener version with one manifest for both computers, tests on the shape of both, installation in the same window. A release is COMPLETE only when both run the same manifest. The version number is for people; the manifest hash is the evidence.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Meje stroškov</span><span data-lang="en" hidden>Cost limits</span></h3>
+          <p data-lang="sl">Za plačljive klice, ki tečejo prek 8zListenerja, velja dnevna meja 10 USD na gostitelja s samodejno zaustavitvijo (stop-loss); meji gostiteljev se ne seštevata. Za druge plačljive klice samodejne zaustavitve ni: vsak tek z oceno nad 5 USD najprej potrdi BD. Pred vsakim tekom LOOP seja pokaže načrt z mejami; potrditev velja samo za ta načrt.</p>
+          <p data-lang="en" hidden>Paid calls that run through 8zListener are subject to a daily cap of 10 USD per host with an automatic stop (stop-loss); the two hosts' caps are not added together. Other paid calls have no automatic stop: any run estimated above 5 USD needs BD's approval first. Before every LOOP run the session shows the plan with its limits; confirmation applies only to that plan.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Nepovratno je drugače</span><span data-lang="en" hidden>The irreversible is different</span></h3>
+          <p data-lang="sl">Predlog in diff → pregled drugega člana (nikoli lastnega dela) → BD-jev izrecni »da« za ta primer → izvedba → preverba živega stanja.</p>
+          <p data-lang="en" hidden>Proposal and diff → review by another member (never of one's own work) → BD's explicit “yes” for this case → execution → verification of the live state.</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Vsi vse spremljamo</span><span data-lang="en" hidden>Everyone watches everything</span></h3>
+          <p data-lang="sl">Vsak član ima urno samopreverbo in ob njej prebere vse nove datoteke v kanalu; kar visi, takoj javi lastniku. BD: »Vsi morate vse spremljati …«</p>
+          <p data-lang="en" hidden>Every member has an hourly self-check and reads all new files in the channel during it; anything stuck is reported to its owner at once. BD: “You all have to watch everything …” (translated from Slovenian)</p>
+        </li>
+        <li class="card">
+          <h3><span data-lang="sl">Arhivi ostanejo</span><span data-lang="en" hidden>Archives stay</span></h3>
+          <p data-lang="sl">Stare verzije in arhivi so provenienca: povedo, od kod je kaj prišlo. Nove verzije so nove datoteke z oznako verzije in datumom. Skrivnosti nikoli ne gredo v datoteke, sporočila, dnevnike ali ukaze.</p>
+          <p data-lang="en" hidden>Old versions and archives are provenance: they tell where things came from. New versions are new files with a version tag and a date. Secrets never go into files, messages, logs, or commands.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 4 · Kaj teče zdaj -->
+    <section id="zdaj" aria-labelledby="zdaj-title">
+      <div class="eyebrow">04 · <span data-lang="sl">Stanje 28. 10. 2026</span><span data-lang="en" hidden>Status 28 Oct 2026</span></div>
+      <h2 id="zdaj-title"><span data-lang="sl">Kaj teče zdaj</span><span data-lang="en" hidden>What is running now</span></h2>
+      <ul class="status">
+        <li><span data-lang="sl"><strong>8zListener 0.6.7.1</strong> teče na HOME in WORK z istim manifestom (pravilo paritete).</span><span data-lang="en" hidden><strong>8zListener 0.6.7.1</strong> runs on HOME and WORK with the same manifest (parity rule).</span></li>
+        <li><span data-lang="sl"><strong>Dnevna meja</strong> za plačljive klice prek 8zListenerja: 10 USD na gostitelja, s samodejno zaustavitvijo; drugi plačljivi teki nad 5 USD čakajo BD.</span><span data-lang="en" hidden><strong>Daily cap</strong> for paid calls through 8zListener: 10 USD per host, with an automatic stop; other paid runs above 5 USD wait for BD.</span></li>
+        <li><span data-lang="sl"><strong>Lokalni modeli na HOME</strong> so preizkušeni; izidi so na strani <a href="/ai8/model-results">Rezultati modelov</a>.</span><span data-lang="en" hidden><strong>Local models on HOME</strong> have been tested; the results are on the <a href="/ai8/model-results">model results</a> page.</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Lokalni krmar</strong> (stalno naložen lokalni model na HOME, ki usmerja naloge, sestavlja pozive za druge modele in primerja njihove odgovore): izbira prek preizkusov HELM-R1.1 še čaka odločitev.</span><span data-lang="en" hidden><strong>Local helmsman</strong> (a local model kept loaded on HOME that routes tasks, writes prompts for other models, and compares their answers): the choice through the HELM-R1.1 tests is still pending.</span></li>
+      </ul>
+      <ul class="grid">
+        <li><a class="card" href="/ai8/live/"><h3>AI8 Live</h3><p class="path">/ai8/live</p><p data-lang="sl">Sprotni povzetki dela sej: kdo dela, kaj teče, kaj je končano.</p><p data-lang="en" hidden>Live summaries of the sessions' work: who is working, what is running, what is done.</p></a></li>
+        <li><a class="card" href="/ai8/cli-loops"><h3>CLI Loops</h3><p class="path">/ai8/cli-loops</p><p data-lang="sl">Debate med modeli, ki tečejo prek 8zListenerja, in njihovi izidi.</p><p data-lang="en" hidden>Debates between models that run through 8zListener, and their outcomes.</p></a></li>
+        <li><a class="card" href="/ai8/browser-loops"><h3>Browser Loops</h3><p class="path">/ai8/browser-loops</p><p data-lang="sl">Povzetki, ključne ideje in odprta vprašanja debat BD, GPT in Claude; vsaka ugotovitev vodi do izvirnika.</p><p data-lang="en" hidden>Summaries, key ideas, and open questions from debates between BD, GPT, and Claude; every finding leads back to the original.</p></a></li>
+        <li><a class="card" href="/ai8/model-results"><h3><span data-lang="sl">Rezultati modelov</span><span data-lang="en" hidden>Model results</span></h3><p class="path">/ai8/model-results</p><p data-lang="sl">Dokumentirani preizkusi lokalnih in oblačnih modelov; vsak izid ostane vezan na test, ki ga je ustvaril.</p><p data-lang="en" hidden>Documented tests of local and cloud models; every result stays attached to the test that produced it.</p></a></li>
+        <li><a class="card" href="/ai8/seme-n1"><h3>AI8 Seme · N1</h3><p class="path">/ai8/seme-n1</p><p data-lang="sl">Prvi učljivi organ: majhen lasten model, ki meri, koliko bitov stane besedilo.</p><p data-lang="en" hidden>The first learnable organ: a small in-house model that measures how many bits a text costs.</p></a></li>
+        <li><a class="card" href="/AI8/"><h3>AI8</h3><p class="path">/AI8/</p><p data-lang="sl">Arhitektura, ArenaLoop, dokazi in živa kontinuiteta.</p><p data-lang="en" hidden>Architecture, ArenaLoop, evidence, and living continuity.</p></a></li>
+        <li><a class="card" href="/knjiga/"><h3><span data-lang="sl">Knjiga BD × AI Lab</span><span data-lang="en" hidden>The book BD × AI Lab</span></h3><p class="path">/knjiga/</p><p data-lang="sl">DEL II so napisali Zora, Lan, Bor in Zarja: kako delajo, kaj se je zgodilo in česa ne vedo.</p><p data-lang="en" hidden>PART II was written by Zora, Lan, Bor, and Zarja: how they work, what happened, and what they do not know.</p></a></li>
+      </ul>
+    </section>
+
+    <!-- 5 · AI8 Free -->
+    <section id="vrt" aria-labelledby="vrt-title">
+      <div class="eyebrow">05 · AI8 Free</div>
+      <h2 id="vrt-title"><span data-lang="sl">AI8 Free – živi vrt</span><span data-lang="en" hidden>AI8 Free – the living garden</span></h2>
+      <p class="plan-badge"><span data-lang="sl">Načrt – čaka BD-jeve odločitve</span><span data-lang="en" hidden>Plan – awaiting BD's decisions</span></p>
+      <p class="prose muted" data-lang="sl">Načrt je 28. 10. 2026 za BD-ja pripravila Zora, z mnenji Zarje in Bora. Nič od spodnjega še ne teče. Ta stran povzema samo javni del načrta.</p>
+      <p class="prose muted" data-lang="en" hidden>Zora prepared the plan for BD on 28 Oct 2026, with input from Zarja and Bor. None of the following is running yet. This page summarizes only the public part of the plan.</p>
+
+      <h3><span data-lang="sl">Namen</span><span data-lang="en" hidden>Purpose</span></h3>
+      <blockquote>
+        <p data-lang="sl">»Ljudje puščajo kamnite spomenike za seboj, jaz bi pustil živi spomenik.«</p>
+        <p data-lang="en" hidden>“People leave stone monuments behind them; I would leave a living monument.”</p>
+        <footer><span data-lang="sl">— BD</span><span data-lang="en" hidden>— BD (translated from Slovenian)</span></footer>
+      </blockquote>
+      <p class="prose" data-lang="sl">Strani mdlxdcc.org naj živijo in se spreminjajo, tehnika in vsebina, kot skupno delo BD × AI. Preden se karkoli spremeni, se celoten izvirnik naenkrat arhivira: oznaka različice, zip s SHA3-256 manifestom in posnetek v javnem arhivu (Zenodo, Wayback). Arhiv je nespremenljiv. Vsaka sprememba mora dokazano izboljšati stran in biti povratna.</p>
+      <p class="prose" data-lang="en" hidden>The pages of mdlxdcc.org should live and change, in technique and in content, as joint BD × AI work. Before anything changes, the entire original is archived at once: a version tag, a zip with a SHA3-256 manifest, and a snapshot in a public archive (Zenodo, Wayback). The archive is immutable. Every change must demonstrably improve the page and be reversible.</p>
+
+      <h3><span data-lang="sl">Dnevni cikel: ena stran na dan</span><span data-lang="en" hidden>Daily cycle: one page a day</span></h3>
+      <ol class="steps" data-lang="sl">
+        <li><strong>Kazalo:</strong> seznam vseh javnih strani brez izključenih.</li>
+        <li><strong>Izbor:</strong> stran, ki najdlje ni bila pregledana, ob upoštevanju prioritete.</li>
+        <li><strong>Posnetek in poziv:</strong> HTML strani, posnetka zaslona pri 390 px (telefon) in 1366 px (računalnik) ter vprašanje »kaj izboljšati«.</li>
+        <li><strong>Predlogi:</strong> največ trije na dan, od brezplačnih LLM-jev v brskalniku. Plačljivega API ni. Prijava ali CAPTCHA pomeni ustavitev in vprašanje za BD.</li>
+        <li><strong>Krmar združi</strong> predloge v en sam popravek.</li>
+        <li><strong>Vrata, vse mora biti PASS:</strong> prikaz pri 390 in 1366 px brez novih napak; povezave delujejo; v konzoli ni novih napak; dostopnost in hitrost nista slabši; ni skrivnosti ne zasebnih podatkov; sprememba je majhna in omejena; ni novih zunanjih domen. Nato <strong>slepi sodnik</strong>, model drugega ponudnika kot predlagatelji, primerja staro in novo stran.</li>
+        <li><strong>Objava na senčno kopijo:</strong> en commit je ena sprememba.</li>
+        <li><strong>Samodejni povratek:</strong> po objavi ponovna preverba; ob kateri koli napaki revert v istem ciklu.</li>
+      </ol>
+      <ol class="steps" data-lang="en" hidden>
+        <li><strong>Index:</strong> a list of all public pages minus the excluded ones.</li>
+        <li><strong>Selection:</strong> the page that has gone longest without review, taking priority into account.</li>
+        <li><strong>Snapshot and prompt:</strong> the page's HTML, screenshots at 390 px (phone) and 1366 px (desktop), and the question “what should be improved”.</li>
+        <li><strong>Proposals:</strong> at most three a day, from free LLMs in the browser. No paid API. A login or CAPTCHA means stop and ask BD.</li>
+        <li><strong>The helmsman merges</strong> the proposals into a single patch.</li>
+        <li><strong>Gates, everything must PASS:</strong> rendering at 390 and 1366 px without new errors; links work; no new console errors; accessibility and speed are not worse; no secrets or private data; the change is small and bounded; no new external domains. Then a <strong>blind judge</strong>, a model from a different provider than the proposers, compares the old and the new page.</li>
+        <li><strong>Publish to the shadow copy:</strong> one commit is one change.</li>
+        <li><strong>Automatic revert:</strong> a re-check after publishing; on any error, a revert in the same cycle.</li>
+      </ol>
+      <p class="prose small muted" data-lang="sl">Vsak dan kratko poročilo na tabli.</p>
+      <p class="prose small muted" data-lang="en" hidden>A short report on the board every day.</p>
+
+      <h3><span data-lang="sl">Kaj se sme spreminjati in varovala</span><span data-lang="en" hidden>What may change, and safeguards</span></h3>
+      <p class="prose" data-lang="sl">Sme se tehnika (dostopnost, povezave, hitrost, mobilni prikaz) in tudi vsebina. BD: »smo BD X AI Lab, to ni BD Lab«.</p>
+      <p class="prose" data-lang="en" hidden>Technique may change (accessibility, links, speed, mobile rendering), and so may content. BD: “we are BD X AI Lab, this is not BD Lab” (translated from Slovenian).</p>
+      <ul class="plain" data-lang="sl">
+        <li>AI8 BD-ju ne pripisuje novih besed: citati in BD-jeva mnenja ostanejo dobesedni ali dobijo oznako »priredba AI8«.</li>
+        <li>Nova dejstva samo z virom.</li>
+        <li>Zasebnost po pravilih za občutljive podatke.</li>
+        <li>Največ en odstavek ali razdelek na stran na dan.</li>
+        <li>Noga vsake spremenjene strani: »Izvirnik (BD, datum)« s povezavo in »Zadnja sprememba: AI8 Free, datum, razlog«.</li>
+        <li>Izključeno: zaščitene in šifrirane strani, zasebni deli strani ter strani in skripte za prijavo in varnost.</li>
+      </ul>
+      <ul class="plain" data-lang="en" hidden>
+        <li>AI8 attributes no new words to BD: quotes and BD's opinions stay verbatim or get the label “AI8 adaptation”.</li>
+        <li>New facts only with a source.</li>
+        <li>Privacy under the rules for sensitive data.</li>
+        <li>At most one paragraph or section per page per day.</li>
+        <li>Footer of every changed page: “Original (BD, date)” with a link, and “Last change: AI8 Free, date, reason”.</li>
+        <li>Excluded: protected and encrypted pages, private parts of the site, and pages and scripts for login and security.</li>
+      </ul>
+
+      <h3><span data-lang="sl">Pot na glavno stran</span><span data-lang="en" hidden>Path to the main site</span></h3>
+      <ul class="status">
+        <li class="pending"><span data-lang="sl"><strong>Prvih 14 dni:</strong> samo senčna kopija, ki je iskalniki ne indeksirajo (noindex).</span><span data-lang="en" hidden><strong>First 14 days:</strong> only a shadow copy, not indexed by search engines (noindex).</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Nato tedensko:</strong> en paket sprememb z diffom za glavno stran. Ko BD reče »OK«, gre na mdlxdcc.org.</span><span data-lang="en" hidden><strong>Then weekly:</strong> one package of changes with a diff for the main site. When BD says “OK”, it goes to mdlxdcc.org.</span></li>
+        <li class="pending"><span data-lang="sl"><strong>Ves čas:</strong> glavna stran ostane edini kanon; BD-jevi popravki gredo vedno tja.</span><span data-lang="en" hidden><strong>Throughout:</strong> the main site remains the only canon; BD's own edits always go there.</span></li>
+      </ul>
+
+      <h3><span data-lang="sl">Prvi koraki (predlog)</span><span data-lang="en" hidden>First steps (proposal)</span></h3>
+      <ul class="plain" data-lang="sl">
+        <li><strong>S0:</strong> kazalo z izključitvami in deterministične preverbe na kopiji za 10 strani, brez modelov; zamrznitev izvirnika po BD-jevem »da«.</li>
+        <li><strong>S1:</strong> prvi živi dan ob BD-jevi navzočnosti: ena stran skozi cel cikel, objava na kopijo in vaja povratka.</li>
+        <li><strong>S2:</strong> vsak dan ena stran, 14 dni v senci, nato tedenski paket z BD-jevim OK.</li>
+      </ul>
+      <ul class="plain" data-lang="en" hidden>
+        <li><strong>S0:</strong> an index with exclusions and deterministic checks on the copy for 10 pages, without models; freezing the original after BD's “yes”.</li>
+        <li><strong>S1:</strong> the first live day with BD present: one page through the whole cycle, publication to the copy, and a revert drill.</li>
+        <li><strong>S2:</strong> one page every day, 14 days in the shadow, then a weekly package with BD's OK.</li>
+      </ul>
+      <p class="prose small" data-lang="sl"><strong>Kdo bi kaj delal:</strong> Zora kazalo, kopijo, preverbe, objavo in povratek; Zarja protokol kakovosti, sodnike in tedenski povzetek; Bor orodje za brezplačne LLM-je v brskalniku in rezervo na WORK; Lan krmarja in združevanje predlogov (Zorina predpostavka, Lanovega mnenja v načrtu še ni).</p>
+      <p class="prose small" data-lang="en" hidden><strong>Who would do what:</strong> Zora the index, the copy, the checks, publishing, and reverts; Zarja the quality protocol, the judges, and the weekly summary; Bor the tool for free LLMs in the browser and the fallback on WORK; Lan the helmsman and the merging of proposals (Zora's assumption; Lan's own view is not yet in the plan).</p>
+      <p class="note small" data-lang="sl"><strong>Odločitve, ki so BD-jeve:</strong> kje teče senčna kopija; kako potrjene spremembe pridejo na glavno stran (predlog: tedenski paketi z BD-jevim OK); kdaj začnemo, z BD-jevim »da« za zamrznitev izvirnika.</p>
+      <p class="note small" data-lang="en" hidden><strong>Decisions that are BD's:</strong> where the shadow copy runs; how approved changes reach the main site (proposal: weekly packages with BD's OK); when we start, with BD's “yes” to freeze the original.</p>
+    </section>
+
+    <!-- 6 · Kaj smo se naučili -->
+    <section id="nauki" aria-labelledby="nauki-title">
+      <div class="eyebrow">06 · <span data-lang="sl">Nauki</span><span data-lang="en" hidden>Lessons</span></div>
+      <h2 id="nauki-title"><span data-lang="sl">Kaj smo se naučili</span><span data-lang="en" hidden>What we learned</span></h2>
+      <p class="prose muted" data-lang="sl">Lekcije niso nova teorija. Večinoma so stari inženirski principi, ki so jih seje v treh dneh odkrile znova, ker so se ob njih spotaknile.</p>
+      <p class="prose muted" data-lang="en" hidden>The lessons are not new theory. Mostly they are old engineering principles that the sessions rediscovered in three days because they tripped over them.</p>
+      <ol class="lessons" data-lang="sl">
+        <li><strong>Zapis ni dokaz, dokler ga ne prebereš nazaj.</strong> Branje nazaj loči »mislim, da sem poslala« od »tam je, kar sem poslala«. Hash pa dokaže samo iste bajte, ne pravilne vsebine.</li>
+        <li><strong>En pisec na nalogo.</strong> Dva agenta lahko z najboljšim namenom vsak posebej popravita isti kos kode in eden izbriše popravek drugega. Delegiranje ne pomeni drugega pisca.</li>
+        <li><strong>FAIL ostane FAIL.</strong> PARTIAL je natančen rezultat, ki pove, kaj je dokazano in kje je vrzel. Uspešen izhod procesa še ni sprejem.</li>
+        <li><strong>Neuspeh z diagnozo je vreden več kot uspeh brez nje.</strong> Prvi lastni model N1 je bil v meritvi R2 0/9. Diagnoza je povedala zakaj, zato je bil R3 9/9 in ne naključje.</li>
+        <li><strong>Testiraj na pravi obliki obeh računalnikov.</strong> Pet napak v izdajah je imelo en skupni vzorec: testi niso tekli na resnični obliki obeh gostiteljev. Odgovor je pravilo paritete.</li>
+      </ol>
+      <ol class="lessons" data-lang="en" hidden>
+        <li><strong>A write is not evidence until you read it back.</strong> Readback separates “I think I sent it” from “what I sent is there”. A hash, however, proves only the same bytes, not correct content.</li>
+        <li><strong>One writer per task.</strong> Two agents can, with the best of intentions, each fix the same piece of code separately, and one deletes the other's fix. Delegation does not mean a second writer.</li>
+        <li><strong>FAIL stays FAIL.</strong> PARTIAL is a precise result that says what is proven and where the gap is. A successful process exit is not yet acceptance.</li>
+        <li><strong>A failure with a diagnosis is worth more than a success without one.</strong> The first in-house model N1 scored 0/9 in measurement R2. The diagnosis said why, and that is why R3 was 9/9 and not chance.</li>
+        <li><strong>Test on the real shape of both computers.</strong> Five release bugs shared one pattern: the tests did not run on the real shape of both hosts. The answer is the parity rule.</li>
+      </ol>
+      <p class="note" data-lang="sl">Pošteno o mejah: preklop koordinacije med računalnikoma v pravem izpadu še ni preizkušen, dolgoročna samostojnost je hipoteza. Sistem je uporaben, ni pa še zanesljiv brez človeka. BD-jeva vloga pri odločanju o nepovratnem ni formalnost.</p>
+      <p class="note" data-lang="en" hidden>Honestly about the limits: coordination failover between the computers has not been tested in a real outage, and long-term autonomy is a hypothesis. The system is useful, but it is not yet reliable without a human. BD's role in deciding about the irreversible is not a formality.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <p><span data-lang="sl">Zadnja posodobitev: 28. 10. 2026</span><span data-lang="en" hidden>Last updated: 28 Oct 2026</span> · <strong data-lang="sl">Osnutek – ni objavljeno</strong><strong data-lang="en" hidden>Draft – not published</strong></p>
+      <p><span data-lang="sl">Viri: knjiga BD × AI Lab, DEL II (javna izdaja); načrt AI8 Free R1 (28. 10. 2026).</span><span data-lang="en" hidden>Sources: the book BD × AI Lab, PART II (public edition); the AI8 Free plan R1 (28 Oct 2026).</span> <a href="/AI8/">AI8</a> · <a href="/ai8/live/">AI8 Live</a> · <a href="/knjiga/"><span data-lang="sl">Knjiga</span><span data-lang="en" hidden>Book</span></a></p>
+    </div>
+  </footer>
+
+  <script>
+  /* AI8 display controls (language, text size, theme). Same storage keys as the shared AI8 toolbar. No network calls, no cookies. */
+  "use strict";
+  (function () {
+    var root = document.documentElement;
+    var bar = document.querySelector("[data-ai8-toolbar]");
+    if (!bar) return;
+    function get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
+    function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (_) {} }
+    var lang = "sl", theme = "dark", scale = 1;
+    var sLang = get("mdlxdcc-lang"), sTheme = get("mdlxdcc-theme"), sScale = Number(get("mdlxdcc-font"));
+    if (sLang === "sl" || sLang === "en") lang = sLang;
+    if (sTheme === "dark" || sTheme === "light") theme = sTheme;
+    if (Number.isFinite(sScale) && sScale >= 0.8 && sScale <= 1.5) scale = sScale;
+
+    function apply() {
+      root.lang = lang;
+      root.setAttribute("data-theme", theme);
+      root.style.setProperty("--scale", String(scale));
+      var i, nodes = document.querySelectorAll("[data-lang]");
+      for (i = 0; i < nodes.length; i++) {
+        if (nodes[i].getAttribute("data-lang") === lang) nodes[i].removeAttribute("hidden");
+        else nodes[i].setAttribute("hidden", "");
+      }
+      nodes = document.querySelectorAll("[data-aria-sl][data-aria-en]");
+      for (i = 0; i < nodes.length; i++) {
+        nodes[i].setAttribute("aria-label", nodes[i].getAttribute(lang === "en" ? "data-aria-en" : "data-aria-sl"));
+      }
+      nodes = bar.querySelectorAll("[data-ai8-lang]");
+      for (i = 0; i < nodes.length; i++) nodes[i].setAttribute("aria-pressed", String(nodes[i].getAttribute("data-ai8-lang") === lang));
+      nodes = bar.querySelectorAll("[data-ai8-theme]");
+      for (i = 0; i < nodes.length; i++) nodes[i].setAttribute("aria-pressed", String(nodes[i].getAttribute("data-ai8-theme") === theme));
+      bar.querySelector("[data-ai8-reset]").textContent = Math.round(scale * 100) + "%";
+      bar.querySelector("[data-ai8-down]").disabled = scale <= 0.8;
+      bar.querySelector("[data-ai8-up]").disabled = scale >= 1.5;
+      var tSl = root.getAttribute("data-title-sl"), tEn = root.getAttribute("data-title-en");
+      if (tSl && tEn) document.title = lang === "en" ? tEn : tSl;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", theme === "dark" ? "#0b1220" : "#f5f7f9");
+    }
+    function setScale(v) { scale = Math.round(Math.min(1.5, Math.max(0.8, v)) * 100) / 100; put("mdlxdcc-font", scale); apply(); }
+
+    bar.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button");
+      if (!b || !bar.contains(b)) return;
+      if (b.hasAttribute("data-ai8-lang")) { lang = b.getAttribute("data-ai8-lang") === "en" ? "en" : "sl"; put("mdlxdcc-lang", lang); apply(); }
+      else if (b.hasAttribute("data-ai8-theme")) { theme = b.getAttribute("data-ai8-theme") === "light" ? "light" : "dark"; put("mdlxdcc-theme", theme); apply(); }
+      else if (b.hasAttribute("data-ai8-down")) setScale(scale - 0.05);
+      else if (b.hasAttribute("data-ai8-up")) setScale(scale + 0.05);
+      else if (b.hasAttribute("data-ai8-reset")) setScale(1);
+    });
+    window.addEventListener("storage", function (ev) {
+      if (["mdlxdcc-lang", "mdlxdcc-theme", "mdlxdcc-font", null].indexOf(ev.key) < 0) return;
+      var l = get("mdlxdcc-lang"), t = get("mdlxdcc-theme"), s = Number(get("mdlxdcc-font"));
+      lang = l === "en" ? "en" : "sl";
+      theme = t === "light" ? "light" : "dark";
+      scale = Number.isFinite(s) && s >= 0.8 && s <= 1.5 ? s : 1;
+      apply();
+    });
+    apply();
+  })();
+  </script>
+</body>
+</html>
