@@ -12,7 +12,9 @@ process.env.MDLXDCC_GUIDE_SESSION_SECRET = 'synthetic-test-secret-'.repeat(4);
 process.env.MDLXDCC_GUIDE_OWNER_EMAIL = owner.email;
 const cookie = actor => sessionCookie(actor).split(';')[0];
 const request = (body = {}, headers = {}, method = 'POST') => new Request('https://www.mdlxdcc.org/.netlify/functions/game-guide', { method, headers: { 'Content-Type': 'application/json', cookie: cookie(owner), ...headers }, ...(method === 'POST' ? { body: JSON.stringify({ slug: '_fixture', message: 'Nadaljuj', ...body }) } : {}) });
-const base = { configured: { claude: true, gpt: true }, gameFactory: async () => game, accessFactory: req => authenticate(req, { rpc: async () => ({ active: true }) }) };
+// GAME-LOG-R1: these Guide tests do not exercise logging; inject a store that never logs.
+const noLog = { start: async () => null, append: async () => {} };
+const base = { logStore: noLog, configured: { claude: true, gpt: true }, gameFactory: async () => game, accessFactory: req => authenticate(req, { rpc: async () => ({ active: true }) }) };
 const readEvents = async response => (await response.text()).split('\n\n').filter(Boolean).map(line => JSON.parse(line.slice(6)));
 function fakeClient(provider, frames, capture = []) {
   let i = 0;
