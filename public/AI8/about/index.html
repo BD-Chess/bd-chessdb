@@ -46,9 +46,6 @@
     @media (max-width: 600px) { .ai8-toolbar { justify-content: flex-start; } .site-nav { gap: 0 .75rem; } }
     @media (max-width: 420px) { .ai8-toolbar .ai8-divider { display: none; } .ai8-toolbar { gap: .1rem; } .ai8-toolbar button { padding: .3rem .35rem; } }
 
-    .draft { background: var(--plan-soft); color: var(--plan); border-bottom: 1px solid var(--line); font-size: .92rem; }
-    .draft .shell { padding-top: .5rem; padding-bottom: .5rem; }
-    .draft strong { letter-spacing: .02em; }
 
     .intro { padding: clamp(1.8rem, 5vw, 3.6rem) 0 1.2rem; }
     .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; font-size: .8rem; font-weight: 700; }
@@ -86,8 +83,11 @@
     .d-small { fill: var(--muted); }
     .d-loop { fill: none; stroke: var(--plan); stroke-width: 2; stroke-dasharray: 6 4; }
     .d-arrow-plan { fill: var(--plan); }
+    .d-sub { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 4; stroke-linecap: round; }
+    .d-sub-box { fill: var(--panel); stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 3; }
     .diagram-wide .d-title { font-size: 20px; } .diagram-wide .d-text { font-size: 15px; } .diagram-wide .d-small { font-size: 13px; }
     .diagram-tall .d-title { font-size: 18px; } .diagram-tall .d-text { font-size: 13px; } .diagram-tall .d-small { font-size: 12px; }
+    .d-small.d-sub-title { fill: var(--ink); font-weight: 700; }
 
     .flow { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: .8rem; padding: 0; margin: 1rem 0; }
     .flow li { counter-increment: step; border: 1px solid var(--line); border-top: 4px solid var(--accent); background: var(--panel); border-radius: .6rem; padding: .8rem .9rem; min-width: 0; }
@@ -154,13 +154,6 @@
       </div>
     </div>
   </header>
-
-  <div class="draft" role="note">
-    <div class="shell">
-      <strong data-lang="sl">Osnutek – ni objavljeno.</strong><strong data-lang="en" hidden>Draft – not published.</strong>
-      <span data-lang="sl">Besedilo čaka BD-jev pregled in odločitev o objavi.</span><span data-lang="en" hidden>The text awaits BD's review and his decision on publication.</span>
-    </div>
-  </div>
 
   <main class="shell" id="content">
     <div class="intro">
@@ -447,7 +440,7 @@
       <p class="prose muted" data-lang="en" hidden>This is what BD × AI teamwork looks like in practice: a human brings the idea, the model sessions divide the work, and then together they play, watch, and fix the game live.</p>
 
       <figure>
-        <svg class="diagram diagram-wide" viewBox="0 0 960 330" role="img" aria-label="Potek: BD da idejo; Zora naredi načrt in pogodbo strani; dve seji napišeta igri (Wright 1903, Faraday 1831), Lan zgradi agenta igre; BD igra v živo z agentom, seja gleda dnevnik, popravki R2, R3 …; Zora objavi." data-aria-sl="Potek: BD da idejo; Zora naredi načrt in pogodbo strani; dve seji napišeta igri (Wright 1903, Faraday 1831), Lan zgradi agenta igre; BD igra v živo z agentom, seja gleda dnevnik, popravki R2, R3 …; Zora objavi." data-aria-en="Flow: BD gives the idea; Zora makes the plan and the page contract; two sessions write the games (Wright 1903, Faraday 1831), Lan builds the game agent; BD plays live with the agent, the session watches the log, fixes R2, R3 …; Zora publishes.">
+        <svg class="diagram diagram-wide" viewBox="0 0 960 330" role="img" aria-label="Potek: BD da idejo; Zora naredi načrt in pogodbo strani, kratke naloge (pregled, objava, štetje) preda podagentom; dve seji napišeta igri (Wright 1903, Faraday 1831), Lan zgradi agenta igre; BD igra v živo z agentom, seja gleda dnevnik, popravki R2, R3 …; Zora objavi." data-aria-sl="Potek: BD da idejo; Zora naredi načrt in pogodbo strani, kratke naloge (pregled, objava, štetje) preda podagentom; dve seji napišeta igri (Wright 1903, Faraday 1831), Lan zgradi agenta igre; BD igra v živo z agentom, seja gleda dnevnik, popravki R2, R3 …; Zora objavi." data-aria-en="Flow: BD gives the idea; Zora makes the plan and the page contract and hands short tasks (review, publish, count) to subagents; two sessions write the games (Wright 1903, Faraday 1831), Lan builds the game agent; BD plays live with the agent, the session watches the log, fixes R2, R3 …; Zora publishes.">
           <defs>
             <marker id="aw-game-wide" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
             <marker id="aw-loop-wide" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow-plan"/></marker>
@@ -465,6 +458,12 @@
           <path d="M336,140 H372" class="d-line" marker-end="url(#aw-game-wide)"/>
           <path d="M354,140 V58 H372" class="d-line" marker-end="url(#aw-game-wide)"/>
           <path d="M354,140 V222 H372" class="d-line" marker-end="url(#aw-game-wide)"/>
+          <path d="M241,180 V232" class="d-sub" marker-end="url(#aw-game-wide)"/>
+          <rect x="146" y="236" width="190" height="54" rx="10" class="d-sub-box"/>
+          <text x="241" y="258" text-anchor="middle" class="d-small d-sub-title" data-lang="sl">Podagenti · kratke naloge</text>
+          <text x="241" y="258" text-anchor="middle" class="d-small d-sub-title" data-lang="en" hidden>Subagents · short tasks</text>
+          <text x="241" y="278" text-anchor="middle" class="d-small" data-lang="sl">pregled, objava, štetje</text>
+          <text x="241" y="278" text-anchor="middle" class="d-small" data-lang="en" hidden>review, publish, count</text>
 
           <rect x="376" y="30" width="210" height="56" rx="10" class="d-pill"/>
           <text x="392" y="54" class="d-text" data-lang="sl"><tspan font-weight="700">Igra #1</tspan> · Wright</text>
@@ -503,7 +502,7 @@
           <text x="594" y="314" text-anchor="middle" class="d-small" data-lang="en" hidden>fixes R2, R3 …</text>
         </svg>
 
-        <svg class="diagram diagram-tall" viewBox="0 0 380 584" role="img" aria-label="Potek: BD da idejo; Zora naredi načrt in pogodbo strani; dve seji napišeta igri (Wright 1903, Faraday 1831), Lan zgradi agenta igre; BD igra v živo z agentom, seja gleda dnevnik, popravki R2, R3 …; Zora objavi." data-aria-sl="Potek: BD da idejo; Zora naredi načrt in pogodbo strani; dve seji napišeta igri (Wright 1903, Faraday 1831), Lan zgradi agenta igre; BD igra v živo z agentom, seja gleda dnevnik, popravki R2, R3 …; Zora objavi." data-aria-en="Flow: BD gives the idea; Zora makes the plan and the page contract; two sessions write the games (Wright 1903, Faraday 1831), Lan builds the game agent; BD plays live with the agent, the session watches the log, fixes R2, R3 …; Zora publishes.">
+        <svg class="diagram diagram-tall" viewBox="0 0 380 652" role="img" aria-label="Potek: BD da idejo; Zora naredi načrt in pogodbo strani, kratke naloge (pregled, objava, štetje) preda podagentom; dve seji napišeta igri (Wright 1903, Faraday 1831), Lan zgradi agenta igre; BD igra v živo z agentom, seja gleda dnevnik, popravki R2, R3 …; Zora objavi." data-aria-sl="Potek: BD da idejo; Zora naredi načrt in pogodbo strani, kratke naloge (pregled, objava, štetje) preda podagentom; dve seji napišeta igri (Wright 1903, Faraday 1831), Lan zgradi agenta igre; BD igra v živo z agentom, seja gleda dnevnik, popravki R2, R3 …; Zora objavi." data-aria-en="Flow: BD gives the idea; Zora makes the plan and the page contract and hands short tasks (review, publish, count) to subagents; two sessions write the games (Wright 1903, Faraday 1831), Lan builds the game agent; BD plays live with the agent, the session watches the log, fixes R2, R3 …; Zora publishes.">
           <defs>
             <marker id="aw-game-tall" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
             <marker id="aw-loop-tall" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow-plan"/></marker>
@@ -518,8 +517,15 @@
           <text x="175" y="124" text-anchor="middle" class="d-title">Zora</text>
           <text x="175" y="146" text-anchor="middle" class="d-small" data-lang="sl">načrt · pogodba</text>
           <text x="175" y="146" text-anchor="middle" class="d-small" data-lang="en" hidden>plan · contract</text>
-          <path d="M175,158 V184" class="d-line" marker-end="url(#aw-game-tall)"/>
+          <path d="M175,158 V252" class="d-line" marker-end="url(#aw-game-tall)"/>
+          <path d="M270,128 H284 V172" class="d-sub" marker-end="url(#aw-game-tall)"/>
+          <rect x="196" y="176" width="176" height="54" rx="10" class="d-sub-box"/>
+          <text x="284" y="198" text-anchor="middle" class="d-small d-sub-title" data-lang="sl">Podagenti · kratke naloge</text>
+          <text x="284" y="198" text-anchor="middle" class="d-small d-sub-title" data-lang="en" hidden>Subagents · short tasks</text>
+          <text x="284" y="218" text-anchor="middle" class="d-small" data-lang="sl">pregled, objava, štetje</text>
+          <text x="284" y="218" text-anchor="middle" class="d-small" data-lang="en" hidden>review, publish, count</text>
 
+          <g transform="translate(0 68)">
           <rect x="20" y="188" width="310" height="196" rx="14" class="d-hub"/>
           <rect x="34" y="200" width="282" height="54" rx="8" class="d-pill"/>
           <text x="48" y="222" class="d-text" data-lang="sl"><tspan font-weight="700">Igra #1</tspan> · Wright</text>
@@ -552,6 +558,7 @@
           <text x="175" y="542" text-anchor="middle" class="d-title">Zora</text>
           <text x="175" y="564" text-anchor="middle" class="d-small" data-lang="sl">objavi</text>
           <text x="175" y="564" text-anchor="middle" class="d-small" data-lang="en" hidden>publishes</text>
+          </g>
         </svg>
         <figcaption>
           <span data-lang="sl">BD da idejo in igra, Zora načrtuje in edina objavlja, seje pišejo igri, Lan gradi agenta. Zanka igra → dnevnik → popravek se ponavlja, dokler igra ne teče.</span>
@@ -561,7 +568,7 @@
 
       <ol class="steps" data-lang="sl">
         <li><strong>BD (človek) – ideja in vizija.</strong> Prva zares interaktivna AI igra, ki pripoveduje zgodbo največjih izumiteljev in igralca popelje skozi čas v njihovih čevljih. Igralec lahko izumlja skupaj z izumiteljem ali pa samo bere zgodbo. BD igro igra in jo razvija skupaj z AI.</li>
-        <li><strong>Zora (Claude Code, koordinatorka) – načrt.</strong> Idejo spremeni v načrt in skupno pogodbo strani, razdeli delo, pregleda in združi prispevke ter je edina, ki objavlja.</li>
+        <li><strong>Zora (Claude Code, koordinatorka) – načrt.</strong> Idejo spremeni v načrt in skupno pogodbo strani, razdeli delo, pregleda in združi prispevke ter je edina, ki objavlja. Za ožje, preproste naloge (pregled oddaje, objava, štetje kode, preverjanje v živo) zažene kratkožive podagente, da njen kontekst ostane prost za vodenje.</li>
         <li><strong>Dve seji, dve igri.</strong> Seja »Inventing with AI #1« piše igro o bratih Wright (Dayton in Kitty Hawk, 1903), seja »#2« igro o Michaelu Faradayu (1831). Vsaka napiše celo igro: skrite korake (zgodba, izziv, namig, razkritje) in strojno berljivo kazalo za agenta.</li>
         <li><strong>Lan (Codex, graditelj) – agent v strani.</strong> Zgradi AI agenta igre v levem panelu; desna stran ostane prosta za drugega agenta. Agent ima dva načina, <em>Zgodba</em> in <em>Izumljaj z njim</em>. Znaki poštene igre nikogar ne obtožujejo, le ločijo »izumil sam« od »s pomočjo«. Za BD-ja je tu še razvijalski način, vse pa beleži živi dnevnik igre.</li>
         <li><strong>Zanka v živo.</strong> BD igra od začetka z agentom → seja, ki je igro napisala, z njima spremlja živi dnevnik → popravki pridejo kot R2, R3 … → Zora objavi. Ljudje in AI skupaj gradijo in testirajo v živo.</li>
@@ -569,7 +576,7 @@
       </ol>
       <ol class="steps" data-lang="en" hidden>
         <li><strong>BD (human) – idea and vision.</strong> The first truly interactive AI game that tells the story of the greatest inventors and walks the player through time in their shoes. The player can invent alongside the inventor or simply read the story. BD plays the game and develops it together with AI.</li>
-        <li><strong>Zora (Claude Code, coordinator) – the plan.</strong> Turns the idea into a plan and a shared page contract, assigns the work, reviews and integrates the contributions, and is the only publisher.</li>
+        <li><strong>Zora (Claude Code, coordinator) – the plan.</strong> Turns the idea into a plan and a shared page contract, assigns the work, reviews and integrates the contributions, and is the only publisher. For narrower, simpler tasks (reviewing a delivery, publishing, counting code, live checks) she launches short-lived subagents so her own context stays free for coordination.</li>
         <li><strong>Two sessions, two games.</strong> The session “Inventing with AI #1” writes the game about the Wright brothers (Dayton and Kitty Hawk, 1903), session “#2” the game about Michael Faraday (1831). Each writes one complete game: hidden steps (story, challenge, hint, reveal) and a machine-readable index for the agent.</li>
         <li><strong>Lan (Codex, builder) – the in-page agent.</strong> Builds the AI game agent in the left panel; the right side stays free for another agent. The agent has two modes, <em>Story</em> and <em>Invent with him</em>. Fair-play signals never accuse anyone; they only tell “invented alone” from “with help”. There is also a developer mode for BD, and a live game log records everything.</li>
         <li><strong>The live loop.</strong> BD plays from the start with the agent → the session that wrote the game watches the live log with them → fixes arrive as R2, R3 … → Zora publishes. Humans and AI build and test together, live.</li>
@@ -696,7 +703,7 @@
 
   <footer class="site-footer">
     <div class="shell">
-      <p><span data-lang="sl">Zadnja posodobitev: 29. 10. 2026</span><span data-lang="en" hidden>Last updated: 29 Oct 2026</span> · <strong data-lang="sl">Osnutek – ni objavljeno</strong><strong data-lang="en" hidden>Draft – not published</strong></p>
+      <p><span data-lang="sl">Zadnja posodobitev: 29. 10. 2026</span><span data-lang="en" hidden>Last updated: 29 Oct 2026</span></p>
       <p><span data-lang="sl">Viri: knjiga BD × AI Lab, DEL II (javna izdaja); načrt AI8 Free R1 (28. 10. 2026).</span><span data-lang="en" hidden>Sources: the book BD × AI Lab, PART II (public edition); the AI8 Free plan R1 (28 Oct 2026).</span> <a href="/AI8/">AI8</a> · <a href="/ai8/live/">AI8 Live</a> · <a href="/knjiga/"><span data-lang="sl">Knjiga</span><span data-lang="en" hidden>Book</span></a></p>
     </div>
   </footer>
