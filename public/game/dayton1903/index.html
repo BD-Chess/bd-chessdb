@@ -49,6 +49,13 @@ main a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .g-step[data-kind="reveal"] { border-top: 2px solid var(--accent); }
 .g-step[data-kind="epilogue"] { border-top: 2px solid var(--warn); }
 .prose { max-width: 66ch; display: grid; gap: 12px; }
+/* gumb »Začniva igro«: skrit, dokler ga game-guide.js ne odkrije in poveže z vodnikom */
+.g-start { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 16px 18px; background: var(--paper); border: 1px solid var(--rule); }
+.g-start[hidden] { display: none; }
+.g-start span { font-size: 0.92rem; color: var(--muted); }
+main .g-start button { font: inherit; font-weight: 600; padding: 10px 20px; border: 0; background: var(--accent); color: var(--paper); cursor: pointer; }
+main .g-start button:hover { filter: brightness(1.08); }
+main .g-start button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .eyebrow { font-family: var(--f-mono); font-size: 0.76rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 .g-step[data-kind="hint"] .eyebrow, .g-step[data-kind="epilogue"] .eyebrow { color: var(--warn); }
 .lede { font-size: 1.12rem; }
@@ -116,6 +123,10 @@ main footer ol { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
       <img src="img/wright_brothers_1905.jpg" alt="Portreta Wilburja in Orvilla Wrighta" width="960" height="707" loading="lazy">
       <figcaption><span class="tag arch">arhiv</span><strong>Wilbur (levo) in Orville Wright,</strong> portreta iz leta 1905. Javna last, Wikimedia Commons.</figcaption>
     </figure>
+  </div>
+  <div class="g-start" data-gg-start hidden>
+    <button type="button" data-gg-action="start">Začniva igro</button>
+    <span>Vodnik v panelu odpre prvi izziv ali nadaljuje zgodbo, odvisno od načina.</span>
   </div>
   <p class="src">Viri: [1] [4] [8]</p>
 </section>
@@ -629,7 +640,7 @@ main footer ol { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
 </section>
 
 <footer>
-  <p>Igra »Pred izumom« (Inventing with AI), BD × AI Lab. Osnutek R1, samo slovensko. Rekonstrukcije in ponazoritve so označene. Pri vsaki fotografiji sta navedena vir in licenca.</p>
+  <p>Igra »Pred izumom« (Inventing with AI), BD × AI Lab. Izdaja R3, samo slovensko. Rekonstrukcije in ponazoritve so označene. Pri vsaki fotografiji sta navedena vir in licenca.</p>
   <ol>
     <li value="1"><a href="https://en.wikipedia.org/wiki/Wright_brothers">Wright brothers (Wikipedia, angl.)</a></li>
     <li value="2"><a href="https://en.wikipedia.org/wiki/Wright_Flyer">Wright Flyer (Wikipedia, angl.)</a></li>
