@@ -12,7 +12,9 @@ process.env.MDLXDCC_GUIDE_SESSION_SECRET = 'synthetic-test-secret-'.repeat(4);
 process.env.MDLXDCC_GUIDE_OWNER_EMAIL = owner.email;
 const cookie = actor => sessionCookie(actor).split(';')[0];
 const request = (body = {}, headers = {}, method = 'POST') => new Request('https://www.mdlxdcc.org/.netlify/functions/game-guide', { method, headers: { 'Content-Type': 'application/json', cookie: cookie(owner), ...headers }, ...(method === 'POST' ? { body: JSON.stringify({ slug: '_fixture', message: 'Nadaljuj', ...body }) } : {}) });
-const base = { configured: { claude: true, gpt: true }, gameFactory: async () => game, accessFactory: req => authenticate(req, { rpc: async () => ({ active: true }) }) };
+// GAME-LOG-R1: these Guide tests do not exercise logging; inject a store that never logs.
+const noLog = { start: async () => null, append: async () => {} };
+const base = { logStore: noLog, configured: { claude: true, gpt: true }, gameFactory: async () => game, accessFactory: req => authenticate(req, { rpc: async () => ({ active: true }) }) };
 const readEvents = async response => (await response.text()).split('\n\n').filter(Boolean).map(line => JSON.parse(line.slice(6)));
 function fakeClient(provider, frames, capture = []) {
   let i = 0;
@@ -146,5 +148,15 @@ test('fixture HTML mirrors JSON: 3 acts × 3 steps, first visible, all other ste
   }
   for (const act of game.acts) assert.equal(game.steps.filter(s => s.act === act.act).length, 3);
   assert.match(html, /name="robots" content="noindex"/);
-  assert.equal(/<script\b/i.test(html), false, 'content-only fixture follows the no-JavaScript page-author contract');
+  const injections = [
+    '<link rel="stylesheet" href="/assets/game-guide/game-guide.css">',
+    '<script type="module" src="/assets/game-guide/game-guide.js"></script>'
+  ];
+  let content = html;
+  for (const line of injections) {
+    assert.equal(content.split(line).length - 1, 1, 'exactly one trusted injection: ' + line);
+    content = content.replace(line, '');
+  }
+  assert.equal(/<script\b|\son[a-z]+\s*=|javascript\s*:/i.test(content), false, 'only the two trusted asset lines may inject runtime code');
+  assert.equal(/<link\b/i.test(content), false, 'no additional asset injection');
 });
