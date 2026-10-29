@@ -1,0 +1,27 @@
+/* Scoped left panel; the page and any right-hand assistant remain available. */
+#game-guide{--gg-bg:var(--bg,#faf9f6);--gg-ink:var(--ink,#242521);--gg-muted:var(--muted,#77786e);--gg-line:var(--line,#dedfd6);--gg-surface:var(--surface,#f0f1ea);--gg-accent:var(--accent,#527959);position:fixed;z-index:30;inset:0 auto 0 0;width:370px;display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--gg-line);background:var(--gg-bg);color:var(--gg-ink);font:14px/1.55 system-ui,sans-serif;box-sizing:border-box}
+#game-guide *,#game-guide *::before,#game-guide *::after{box-sizing:border-box}
+#game-guide [hidden]{display:none!important}
+.gg-page{margin-left:370px!important;min-width:0}.g-step{scroll-margin-top:24px}
+#game-guide button,#game-guide select{font:inherit;color:inherit;border:1px solid var(--gg-line);background:var(--gg-bg);border-radius:7px;min-height:34px;padding:5px 8px;cursor:pointer}
+#game-guide button:disabled{opacity:.45;cursor:wait}
+#game-guide :focus-visible{outline:2px solid var(--gg-accent);outline-offset:2px}
+.gg-head{display:flex;align-items:center;gap:10px;padding:20px 18px 16px;margin:0;max-width:none;border-bottom:1px solid var(--gg-line)}
+.gg-head strong,.gg-head small{display:block}.gg-head strong{font-size:18px;font-weight:550;letter-spacing:-.5px}.gg-head small{color:var(--gg-muted);font:10px/1.8 Consolas,monospace;letter-spacing:1px}
+.gg-providers{display:flex;margin-left:auto;gap:3px;background:var(--gg-surface);padding:3px;border-radius:8px}
+#game-guide .gg-providers button{border:0;background:transparent;font-size:12px;padding:4px 7px;min-height:30px}
+#game-guide .gg-providers [aria-pressed=true]{background:var(--gg-ink);color:var(--gg-bg)}
+.gg-controls{padding:10px 16px;display:grid;gap:8px;border-bottom:1px solid var(--gg-line);font-size:12px}.gg-controls label{display:flex;gap:8px;align-items:center}.gg-controls select{flex:1;min-width:0}
+#gg-development{accent-color:var(--gg-accent)}#gg-dev-tools{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid var(--gg-line)}#gg-dev-tools select{min-width:0;flex:1;font-size:12px}#gg-all{flex:none;font-size:12px!important}
+#gg-messages{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:20px 18px;scrollbar-width:thin}
+.gg-welcome{margin:8px 0 24px}.gg-welcome span{font-size:30px;color:var(--gg-accent)}.gg-welcome h2{font-size:31px;font-weight:500;line-height:1.13;letter-spacing:-1.4px;margin:15px 0}.gg-welcome p{color:var(--gg-muted);max-width:29ch}
+.gg-message{white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 18px}.gg-message[data-role=user]{background:var(--gg-surface);border:1px solid var(--gg-line);border-radius:10px 10px 2px 10px;margin-left:20px;padding:10px 12px}
+#gg-status{padding:6px 16px;color:var(--gg-muted);font-size:11px;min-height:29px}
+#gg-compose{border-top:1px solid var(--gg-line);padding:10px 14px max(10px,env(safe-area-inset-bottom));flex:none}.gg-input-wrap{display:flex;gap:6px;align-items:flex-end;border:1px solid var(--gg-line);border-radius:10px;padding:7px;background:var(--gg-surface)}
+#gg-input{width:100%;resize:vertical;min-height:48px;max-height:130px;border:0;background:transparent;color:inherit;font:inherit;line-height:1.5;padding:5px;outline:0}
+#game-guide #gg-send{background:var(--gg-ink);color:var(--gg-bg);border:0;min-width:35px;font-size:20px;line-height:1.2}.gg-fine{font-size:10px;line-height:1.5;color:var(--gg-muted);margin:7px 0 0}
+#gg-login{display:grid;gap:10px;padding:16px;border-bottom:1px solid var(--gg-line)}#gg-login label{display:grid;gap:3px;font-size:12px}#gg-login input{min-width:0;width:100%;border:1px solid var(--gg-line);border-radius:6px;background:var(--gg-surface);color:inherit;padding:8px;font-size:16px}
+.gg-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(prefers-color-scheme:dark){#game-guide{--gg-bg:var(--bg,#171b18);--gg-ink:var(--ink,#e2e6df);--gg-muted:var(--muted,#a0aa9d);--gg-line:var(--line,#374038);--gg-surface:var(--surface,#232b25);--gg-accent:var(--accent,#9abf95)}}
+@media(max-width:899px){#game-guide{inset:auto 0 0;width:100%;height:52dvh;max-height:620px;border-top:1px solid var(--gg-line);border-right:0;border-radius:12px 12px 0 0;box-shadow:0 -5px 24px #0002}.gg-page{margin-left:0!important;padding-bottom:calc(52dvh + 24px)!important}.g-step{scroll-margin-bottom:54dvh}.gg-head{padding:9px 14px}.gg-head small{display:none}.gg-head strong{font-size:16px}.gg-controls{padding:6px 14px;gap:3px}.gg-controls select{min-height:28px!important}#gg-dev-tools{padding:4px 14px}#gg-dev-tools select,#gg-all{min-height:28px!important;padding-block:2px!important}#gg-messages{padding:10px 14px}.gg-welcome{margin:0 0 12px}.gg-welcome span{display:none}.gg-welcome h2{font-size:23px;margin:0 0 8px}.gg-welcome h2 br{display:none}.gg-welcome p{font-size:12px;margin:0}.gg-fine{font-size:9px}#gg-input{font-size:16px;min-height:38px}#gg-compose{padding:6px 10px max(6px,env(safe-area-inset-bottom))}#gg-status{padding-block:2px;min-height:20px}#gg-login{overflow:auto;min-height:100px}}
+@media(prefers-reduced-motion:reduce){#game-guide *{scroll-behavior:auto!important}}
