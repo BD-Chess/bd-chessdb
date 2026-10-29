@@ -33,7 +33,12 @@ header h1 span{color:var(--accent)}
 .status{color:var(--muted);font-size:.9rem;margin:0 0 18px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
 .status .warn{color:var(--wait)}
 .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--run);margin-right:6px;vertical-align:middle}
+.pulse.stale{background:var(--other);animation:none}
 .headline{background:var(--accent-soft);border-radius:14px;padding:16px 18px;font-size:1.06rem;margin:0}
+.evidence-time{color:var(--muted);font-size:.82rem;margin:6px 0 0}
+.host-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.host-card h3{font-size:1rem;margin:0 0 6px}
+.host-card p{margin:6px 0 0;font-size:.9rem}
 section{margin-top:34px}
 h2{font-size:1.1rem;margin:0 0 12px;display:flex;align-items:baseline;gap:8px}
 h2 .count{font-weight:400;color:var(--muted);font-size:.9rem}
@@ -80,9 +85,15 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   <header>
     <h1>AI8 <span>Live</span></h1>
     <p class="sub">Sestra Zora (CLI Code) in brat Lan (CLI Codex) ter njune seje — sprotni povzetki skupnega dela z BD.</p>
-    <p class="status"><span><span class="pulse" aria-hidden="true"></span><span id="upd">Nalagam …</span></span><span id="err" class="warn" role="status" aria-live="polite"></span></p>
+    <p class="status"><span><span class="pulse stale" id="pulse" aria-hidden="true"></span><span id="upd">Nalagam …</span></span><span id="err" class="warn" role="status" aria-live="polite"></span></p>
     <p class="headline" id="headline">Nalagam …</p>
+    <p class="evidence-time" id="headline-time"></p>
   </header>
+
+  <section aria-labelledby="h-hosts">
+    <h2 id="h-hosts">Napravi</h2>
+    <ul class="grid" id="hosts"></ul>
+  </section>
 
   <section aria-labelledby="h-members">
     <h2 id="h-members">Kdo dela</h2>
@@ -140,6 +151,22 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   function str(v) { return v == null ? '' : String(v); }
   function arr(v) { return Array.isArray(v) ? v : []; }
 
+  function fresh(iso, nowMs) {
+    var t = typeof iso === 'string' ? Date.parse(iso) : NaN;
+    var age = nowMs - t;
+    return isFinite(t) && age >= -60000 && age <= STALE_MIN * 60000;
+  }
+
+  function taskState(item, nowMs, legacyStamp) {
+    var stamp = Object.prototype.hasOwnProperty.call(item, 'utc') ? item.utc : legacyStamp;
+    return fresh(stamp, nowMs) ? str(item.state) || '—' : 'nepotrjeno';
+  }
+
+  function evidenceTime(iso) {
+    var t = typeof iso === 'string' ? Date.parse(iso) : NaN;
+    return isFinite(t) ? new Date(t).toLocaleString('sl-SI', { timeZone: TZ }) : 'čas ni znan';
+  }
+
   function relTime(iso, nowMs) {
     var t = Date.parse(iso);
     if (isNaN(t)) return 'čas posodobitve ni znan';
@@ -186,40 +213,69 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 
   function render(d, nowMs) {
     d = d || {};
-    var members = arr(d.members), now = arr(d.now), links = arr(d.links);
-    doc.getElementById('upd').textContent = relTime(d.updated_utc, nowMs);
+    var members = arr(d.members), links = arr(d.links);
+    var now = arr(d.now).map(function (item) {
+      var copy = Object.assign({}, item || {});
+      copy.display_state = taskState(copy, nowMs, d.updated_utc);
+      return copy;
+    });
+    doc.getElementById('upd').textContent = 'Podatki strani: ' + relTime(d.updated_utc, nowMs);
     var t = Date.parse(d.updated_utc);
     doc.getElementById('upd').title = isNaN(t) ? '' : new Date(t).toLocaleString('sl-SI', { timeZone: TZ });
     doc.getElementById('headline').textContent = str(d.headline);
+    doc.getElementById('headline-time').textContent = 'Uredniški povzetek: ' + evidenceTime(d.headline_utc || d.updated_utc);
+
+    var hosts = arr(d.hosts);
+    var anyFreshHost = hosts.some(function (h) {
+      return h && fresh(h.observed_utc, nowMs) && fresh(h.listener_poll_utc, nowMs)
+        && (!h.reported_health || h.reported_health === 'OK');
+    });
+    doc.getElementById('pulse').className = 'pulse' + (fresh(d.updated_utc, nowMs) && anyFreshHost ? '' : ' stale');
+    fill('hosts', hosts.length ? hosts.map(function (h) {
+      h = h || {};
+      var recent = fresh(h.observed_utc, nowMs) && fresh(h.listener_poll_utc, nowMs)
+        && (!h.reported_health || h.reported_health === 'OK');
+      var count = Number.isInteger(h.active_debates) ? h.active_debates + ' aktivnih debat' : 'število debat ni znano';
+      return el('li', { class: 'host-card' },
+        el('h3', { text: h.host }),
+        el('span', { class: 'badge ' + (recent ? 'run' : 'other'), text: recent ? 'svež utrip' : 'nepotrjeno' }),
+        el('p', { text: (h.listener_version ? 'Listener ' + h.listener_version + ' · ' : '') + count }),
+        el('p', { class: 'evidence-time', text: 'Zadnji utrip: ' + evidenceTime(h.observed_utc) }),
+        el('p', { class: 'evidence-time', text: 'Listener: ' + evidenceTime(h.listener_poll_utc) }));
+    }) : [el('li', { class: 'empty', text: 'Stanje naprav še ni objavljeno.' })]);
 
     fill('members', members.map(function (m) {
       m = m || {};
       var name = str(m.name), first = name.split(/[\s(]/)[0];
       var mine = now.filter(function (i) { return i && first && str(i.owner) === first; });
-      var run = mine.filter(function (i) { return i.state === 'teče'; }).length;
+      var run = mine.filter(function (i) { return i.display_state === 'teče'; }).length;
+      var waiting = mine.filter(function (i) { return i.display_state === 'čaka'; }).length;
+      var unknown = mine.length - run - waiting;
       return el('li', { class: 'card' },
         el('span', { class: 'avatar', 'aria-hidden': 'true', text: (first.charAt(0) || '·').toUpperCase() }),
         el('div', null,
           el('h3', { text: name }),
           el('p', { class: 'who', text: m.who }),
           el('p', { class: 'role', text: m.role }),
-          mine.length ? el('p', { class: 'load', text: 'zdaj: ' + run + ' teče · ' + (mine.length - run) + ' čaka' }) : null));
+          mine.length ? el('p', { class: 'load', text: 'zdaj: ' + run + ' teče · ' + waiting + ' čaka' + (unknown ? ' · ' + unknown + ' nepotrjeno' : '') }) : null));
     }));
     if (!members.length) fill('members', [el('li', { class: 'empty', text: 'Trenutno ni zapisanih članov.' })]);
 
     doc.getElementById('now-count').textContent = now.length ? '(' + now.length + ')' : '';
     var order = { 'teče': 0, 'čaka': 1 };
     var sorted = now.map(function (x, i) { return { x: x || {}, i: i }; }).sort(function (a, b) {
-      var oa = order[a.x.state] != null ? order[a.x.state] : 2, ob = order[b.x.state] != null ? order[b.x.state] : 2;
+      var oa = order[a.x.display_state] != null ? order[a.x.display_state] : 2, ob = order[b.x.display_state] != null ? order[b.x.display_state] : 2;
       return oa - ob || a.i - b.i;
     });
     fill('now', sorted.length ? sorted.map(function (o) {
-      var i = o.x, st = str(i.state) || '—';
+      var i = o.x, st = i.display_state;
+      var stamp = Object.prototype.hasOwnProperty.call(i, 'utc') ? i.utc : d.updated_utc;
       return el('li', null,
         el('div', { class: 'row' },
           el('span', { class: 'badge ' + (STATES[st] || 'other'), text: st }),
           i.owner ? el('span', { class: 'owner', text: i.owner }) : null),
-        el('p', { text: i.text }));
+        el('p', { text: i.text }),
+        el('p', { class: 'evidence-time', text: 'Zadnji zapis: ' + evidenceTime(stamp) }));
     }) : [el('li', { class: 'empty', text: 'Trenutno ni odprtih nalog.' })]);
 
     var groups = groupByDay(d.done, nowMs);
@@ -245,7 +301,7 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   }
 
   function tick() {
-    if (last) doc.getElementById('upd').textContent = relTime(last.updated_utc, Date.now());
+    if (last) doc.getElementById('upd').textContent = 'Podatki strani: ' + relTime(last.updated_utc, Date.now());
     var stale = last && (Date.now() - Date.parse(last.updated_utc)) > STALE_MIN * 60000;
     if (stale && !doc.getElementById('err').textContent) doc.getElementById('err').textContent = 'podatki so morda zastareli';
   }
@@ -260,12 +316,13 @@ footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid 
         tick();
       })
       .catch(function () {
+        if (last) render(last, Date.now());
         doc.getElementById('err').textContent = last ? 'osvežitev ni uspela, prikazani so zadnji podatki' : 'podatkov trenutno ni mogoče naložiti';
         if (!last) doc.getElementById('headline').textContent = 'Podatkov trenutno ni mogoče naložiti. Poskusim znova čez minuto.';
       });
   }
 
-  root.AI8Live = { render: render, relTime: relTime, groupByDay: groupByDay, safeHref: safeHref, load: load };
+  root.AI8Live = { render: render, relTime: relTime, groupByDay: groupByDay, safeHref: safeHref, load: load, fresh: fresh, taskState: taskState };
   if (!root.AI8_NO_AUTOSTART) {
     load();
     root.setInterval(load, REFRESH_MS);
