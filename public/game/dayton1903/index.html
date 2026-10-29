@@ -90,7 +90,10 @@ main thead tr { border-bottom: 1px solid var(--rule); }
 .src { font-family: var(--f-mono); font-size: 0.74rem; color: var(--muted); }
 .src a { color: var(--muted); }
 main footer { border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 10px; font-size: 0.86rem; color: var(--muted); }
-main footer ol { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
+main footer ol { margin: 10px 0 0; padding-left: 1.4em; display: grid; gap: 4px; }
+/* viri in slike: ena zaprta vrstica, odpre se s klikom (brez JS) */
+main footer summary { cursor: pointer; width: fit-content; font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+main footer summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
 <link rel="stylesheet" href="/assets/game-guide/game-guide.css">
@@ -640,8 +643,10 @@ main footer ol { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
 </section>
 
 <footer>
-  <p>Igra »Pred izumom« (Inventing with AI), BD × AI Lab. Izdaja R3, samo slovensko. Rekonstrukcije in ponazoritve so označene. Pri vsaki fotografiji sta navedena vir in licenca.</p>
-  <ol>
+  <p>Igra »Pred izumom« (Inventing with AI), BD × AI Lab. Izdaja R4, samo slovensko. Rekonstrukcije in ponazoritve so označene. Pri vsaki fotografiji sta navedena vir in licenca.</p>
+  <details class="srcs">
+    <summary>Viri in slike (22)</summary>
+    <ol>
     <li value="1"><a href="https://en.wikipedia.org/wiki/Wright_brothers">Wright brothers (Wikipedia, angl.)</a></li>
     <li value="2"><a href="https://en.wikipedia.org/wiki/Wright_Flyer">Wright Flyer (Wikipedia, angl.)</a></li>
     <li value="3"><a href="https://en.wikipedia.org/wiki/Wright_Glider">Wright Glider, jadralna letala 1900–1902 (Wikipedia, angl.)</a></li>
@@ -664,7 +669,8 @@ main footer ol { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
     <li>Slika <code>img/firstflight_1903.jpg</code>: <a href="https://commons.wikimedia.org/wiki/File:First_flight2.jpg">Prvi let, 17. 12. 1903 · Library of Congress · javna last</a></li>
     <li>Slika <code>img/catapult1905.jpg</code>: <a href="https://commons.wikimedia.org/wiki/File:CatapultWrightFlyer1905.jpg">Start s katapultom, 23. 6. 1905 · javna last</a></li>
     <li>Slika <code>img/huffman1905_flight41.jpg</code>: <a href="https://commons.wikimedia.org/wiki/File:1905_Wright_Flyer_III_(flight_41).jpg">Letalo 1905, 41. let · javna last</a></li>
-  </ol>
+    </ol>
+  </details>
 </footer>
 
 </main>
