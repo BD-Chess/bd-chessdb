@@ -131,7 +131,19 @@ export async function mountGameGuide() {
     $('gg-collapse').textContent = $('gg-body').hidden ? readText.expand : readText.collapse;
     panel.dataset.collapsed = String($('gg-body').hidden);
   });
-  const render = (item, role, text) => { item.dataset.raw = text; if (role === 'assistant') item.innerHTML = safeMarkdown(text); else item.textContent = text; };
+  const render = (item, role, text) => {
+    item.dataset.raw = text;
+    if (role === 'assistant') item.innerHTML = safeMarkdown(text); else item.textContent = text;
+    item.querySelector('.gg-choice-actions')?.remove();
+    if (role === 'assistant' && /dopolni[šs]|razkrij/i.test(text)) {
+      const actions = document.createElement('div'); actions.className = 'gg-choice-actions';
+      const add = document.createElement('button'); add.type = 'button'; add.textContent = 'Dopolni';
+      add.addEventListener('click', () => { input.focus(); input.select(); });
+      const reveal = document.createElement('button'); reveal.type = 'button'; reveal.textContent = 'Razkrij';
+      reveal.addEventListener('click', () => sendMessage('Razkrij.'));
+      actions.append(add, reveal); item.append(actions);
+    }
+  };
   const say = (role, text) => { const item = document.createElement('div'); item.className = 'gg-message'; item.dataset.role = role; render(item, role, text); $('gg-messages').append(item); $('gg-messages').scrollTop = $('gg-messages').scrollHeight; return item; };
   function compactTranscript(items) {
     const cards = items.filter(m => m.role === 'assistant' && game.steps.some(s => s.id === m.step && s.kind === 'reveal')).slice(-10);
