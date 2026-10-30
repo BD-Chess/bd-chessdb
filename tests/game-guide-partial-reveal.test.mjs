@@ -15,8 +15,10 @@ const body=()=>({slug:'dayton1903',provider:'claude',mode:'IZUMLJAJ',development
  opened:['s1','s2','s3','s6','s7','s8','s9'],learning:{asked:[],cards:{s2:{card:'A',line:'Prejšnja kartica.'}}},
  message:observed.assessment.explanation,history:[],fair_play:{paste_events:0,paste_length:0,typing_ms:0,blur_ms:0}});
 
+// The observed envelope is retained; this structural migration is synthetic.
+const migrated={step:'s8',path:'historical',achieved:[0,1,3].map(i=>game.steps.find(s=>s.id==='s8').key_ideas[i]),why:observed.assessment.why,advantages:[]};
 test('Observed successful partial assessment unlocks reveal and reports truthful transition',()=>{
- const s=createSession(game,body());const result=s.execute('assess_challenge',observed.assessment);
+ const s=createSession(game,body());const result=s.execute('assess_challenge',migrated);
  assert.equal(result.ok,true);assert.ok(result.allowed_open_steps.some(x=>x.id==='s12'));
  assert.equal(result.reveal_after_assessment,null);assert.equal(s.needsReveal(),true);
  assert.equal(s.execute('open_step',{id:'s12'}).action.id,'s12');
@@ -27,7 +29,7 @@ test('Reveal remains closed before assessment',()=>{
  assert.equal(s.transition().reveal_after_assessment.requires,'assess_challenge');
 });
 test('Prepared partial assessment survives next request without requiring the same assessment again',()=>{
- const s=createSession(game,body());s.execute('assess_challenge',observed.assessment);
+ const s=createSession(game,body());s.execute('assess_challenge',migrated);
  const next=createSession(game,{...s.snapshot(),message:'Pokaži naslednji korak.'});
  assert.ok(next.allowedOpenSteps().some(x=>x.id==='s12'));assert.equal(next.transition().reveal_after_assessment,null);
  assert.equal(next.execute('open_step',{id:'s12'}).action.id,'s12');
@@ -35,7 +37,7 @@ test('Prepared partial assessment survives next request without requiring the sa
 test('Native adapter: assessment then observed prose gets one correction and visible s12',async()=>{
  const tool=(name,input,id)=>({role:'assistant',content:[{type:'tool_use',id,name,input}],stop_reason:'tool_use',usage:{input_tokens:1,output_tokens:1}});
  const text=value=>({role:'assistant',content:[{type:'text',text:value}],stop_reason:'end_turn',usage:{input_tokens:1,output_tokens:1}});
- const sequence=[tool('assess_challenge',observed.assessment,'observed-assess'),text(observed.after_assessment_text),
+ const sequence=[tool('assess_challenge',migrated,'observed-assess'),text(observed.after_assessment_text),
    tool('open_step',{id:'s12'},'observed-reveal'),text('Preberi razkritje na desni.')];
  const logs=[];let calls=0;
  const handler=makeHandler({accessFactory:async()=>({role:'owner',id:'offline-partial'}),configured:{claude:true},

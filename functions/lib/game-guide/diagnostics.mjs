@@ -22,7 +22,7 @@ export function diagnosticEvent(phase, fields) {
   const payload = diagnosticValue({ ...fields, phase });
   // Stay below the database's 160000-byte event limit, including UTF-8 expansion.
   if (Buffer.byteLength(JSON.stringify(payload), 'utf8') > 120000) {
-    return { kind: 'guide_trace', payload: { phase, truncated: true, round_count: fields.round_count,
+    return { kind: 'guide_trace', payload: { phase, provider: fields.provider, model: fields.model, effort: fields.effort, truncated: true, round_count: fields.round_count,
       preview: JSON.stringify(payload).slice(0, 12000) } };
   }
   return { kind: 'guide_trace', payload };

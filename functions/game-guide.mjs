@@ -1,16 +1,17 @@
 import { authenticate, env } from './lib/mdlxdcc-guide/access.mjs';
 import { createBudget } from './lib/mdlxdcc-guide/cost.mjs';
-import { createProviderClient, providerModel, providerRound, appendAssistant, appendTool } from './lib/mdlxdcc-guide/provider.mjs';
+import { providerRound, appendAssistant, appendTool } from './lib/mdlxdcc-guide/provider.mjs';
 import { validateBody, loadGame, validateGame, createSession, gameTools, instructions, unsafeReply, invitation } from './lib/game-guide/runtime.mjs';
 import { sealContinuation, openContinuation } from './lib/game-guide/continuation.mjs';
 import { createLogStore, readerAllowed, sessionID, privateText, costRecorder, logReadResponse } from './lib/game-guide/log.mjs';
 import { diagnosticEvent } from './lib/game-guide/diagnostics.mjs';
+import { createGameProviderClient, gameProviderKey, gameProviderModel } from './lib/game-guide/provider.mjs';
 
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
 const json = (value, status = 200) => Response.json(value, { status, headers });
 const fail = (code, status) => json({ ok: false, error: { code } }, status);
 export function makeHandler({ accessFactory = authenticate, budgetFactory = createBudget, gameFactory = loadGame,
-  clientFactory = createProviderClient, round = providerRound, configured, publicEnabled = () => env('GAME_GUIDE_PUBLIC') === '1', timeoutMs = 50000,
+  clientFactory = createGameProviderClient, round = providerRound, configured, publicEnabled = () => env('GAME_GUIDE_PUBLIC') === '1', timeoutMs = 50000,
   logStore = createLogStore(), readToken, continuationSecret = () => env('MDLXDCC_GUIDE_SESSION_SECRET') } = {}) {
   return async (req, context = {}) => {
     if (context.site?.name && context.site.name !== 'mdlxdcc') return fail('SITE_UNAVAILABLE', 404);
@@ -41,7 +42,10 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
       catch { return fail('STORAGE_UNAVAILABLE', 503); }
     }
     if (actor.role !== 'owner' && !publicEnabled()) return fail('GAME_NOT_OPEN', 403);
-    const providers = { claude: { available: Boolean(configured?.claude ?? env('ANTHROPIC_API_KEY')) }, gpt: { available: Boolean(configured?.gpt ?? env('OPENAI_API_KEY')) } };
+    const providers = Object.fromEntries(['claude', 'gpt'].map(provider => {
+      const key = gameProviderKey(provider);
+      return [provider, { available: Boolean(configured?.[provider] ?? key.apiKey), key_source: key.key_source }];
+    }));
     if (req.method === 'GET') return json({ ok: true, owner: actor.role === 'owner', providers, default_provider: 'claude', version: 'game-guide-p0-r3' });
     if (!req.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail('INVALID_JSON', 415);
     if (Number(req.headers.get('content-length') || 0) > 240000) return fail('MESSAGE_TOO_LONG', 413);
@@ -69,7 +73,7 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
     // A stale client cannot acknowledge tools; refuse before provider calls or UI effects.
     if (request.protocol !== 'game-guide-tools-v1') return fail('REFRESH_REQUIRED', 409);
     if (!providers[request.provider].available) return fail('AI_UNAVAILABLE', 503);
-    const model = providerModel(request.provider);
+    const model = gameProviderModel(request.provider);
     if (!(request.provider === 'claude' ? /^claude-[a-z0-9.-]+$/ : /^gpt-[a-z0-9.-]+$/).test(model)) return fail('MODEL_UNAVAILABLE', 503);
     let log;
     try { log = await logStore.start(actor, request); }
@@ -96,7 +100,7 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
         let lastModelText = continuation?.lastModelText ?? '', phase = 'starting';
         const trace = (name, fields = {}) => {
           if (log && (actor.role === 'owner' || request.log_consent === true)) events.push(diagnosticEvent(name,
-            { provider: request.provider, model, round_count: roundCount, tool_count: toolCount, ...fields }));
+            { provider: request.provider, model, effort: 'low', round_count: roundCount, tool_count: toolCount, ...fields }));
         };
         const recover = reason => { throw Object.assign(Error('GUIDE_RECOVERY'), { reason }); };
         const send = (type, data = {}) => { if (!ended && !abort.signal.aborted) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`)); };
