@@ -12,7 +12,8 @@ const read = path => readFile(new URL(path, import.meta.url), 'utf8');
 const game = stepTexts(await read('../public/game/dayton1903/index.html'), JSON.parse(await read('../public/game/dayton1903/game.json')));
 const observed = JSON.parse(await read('./fixtures/game-r35-playtest.observed.json'));
 const step = id => game.steps.find(s => s.id === id), idea = id => step(id.split('.')[0]).key.key_ideas.find(x => x.id === id).text;
-const INVITE = 'Na desni se je odprl nov korak. Preberi in mi povej, ko si pripravljen.';
+const INVITE = 'Na desni se je odprl nov korak. Preberi ga, nato napi\u0161i svojo zamisel.';
+const LEGACY_INVITE = 'Na desni se je odprl nov korak. Preberi in mi povej, ko si pripravljen.';
 // Learning as the client held it before the observed move (asked ideas and cards from the same log).
 function learningAt(move) {
   const learning = { asked: [], asked_ideas: {}, cards: {} };
@@ -156,6 +157,28 @@ test('R3.5 P1 moves 27–30: assessment counts earlier answers; continuing answe
   pruned.recordAnswer(); assert.deepEqual(pruned.learning.answers, { s19: ['p1', observed.move28.player_message] });
 });
 
+test('R3.6 short navigation is a reveal choice, while a new idea keeps the reveal held', () => {
+  for (const message of ['Prebral. Naprej.', 'Kaj pa zdaj?', 'nadaljuj', 'ok', 'gremo']) {
+    const s = session('move28', { message });
+    s.execute('assess_challenge', rounds('move28')[0].tool_uses[0].args);
+    assert.equal(s.execute('assess_challenge', rounds('move28')[0].tool_uses[0].args).already_assessed, true, message);
+    assert.equal(s.execute('open_step', { id: 's23' }).action.id, 's23', message);
+  }
+  const s = session('move28', { message: 'Imam še eno zamisel: dodal bi drugi propeler.' });
+  s.execute('assess_challenge', rounds('move28')[0].tool_uses[0].args);
+  assert.throws(() => s.execute('open_step', { id: 's23' }), e => e.message === 'REVEAL_ON_PLAYER_CHOICE');
+});
+
+test('R3.6 moves 30–36 navigation opens the prepared reveal without a provider request', async () => {
+  for (const message of ['Prebral. Naprej.', 'Kaj pa zdaj?']) {
+    const h = provider('claude', []);
+    const events = await h.run(body('move28', { message, learning: learningAt('move30') }));
+    assert.ok(clean(events), JSON.stringify(events)); assert.equal(h.payloads.length, 0, message);
+    assert.ok(events.some(e => e.type === 'action' && e.name === 'open_step' && e.id === 's23'), message);
+    assert.match(text(events), /napi/);
+  }
+});
+
 for (const kind of ['claude', 'gpt']) test(`R3.5 ${kind}: a held reveal always ends with the continue-or-reveal choice`, async () => {
   const assess = rounds('move28')[0].tool_uses[0].args, h = provider(kind, [{ call: ['assess_challenge', assess] }, { text: 'Zamisel z enim propelerjem spredaj je smiselna.' }]);
   const events = await h.run(body('move28', { provider: kind }));
@@ -189,7 +212,7 @@ test('R3.5 question detector: real questions need an answer; navigation, hint re
 for (const kind of ['claude', 'gpt']) test(`R3.5 ${kind}: moves 7 and 23 — the observed first answers are shown in one round`, async () => {
   for (const move of ['move7', 'move23']) {
     assert.equal(observed[move].events.find(e => e.kind === 'error').payload.code, 'OPEN_STEP_REQUIRED');
-    assert.equal(observed[move].events.findLast(e => e.kind === 'agent_response').text, INVITE);
+    assert.equal(observed[move].events.findLast(e => e.kind === 'agent_response').text, LEGACY_INVITE);
     const answer = rounds(move)[0].last_model_text, logs = [], h = provider(kind, [{ text: answer }], logs);
     const events = await h.run(body(move, { provider: kind }));
     assert.ok(clean(events), move); assert.equal(h.payloads.length, 1); assert.equal(text(events), answer); assert.ok(!logs.some(e => e.kind === 'error'));

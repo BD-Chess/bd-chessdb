@@ -46,7 +46,7 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
       const key = gameProviderKey(provider);
       return [provider, { available: Boolean(configured?.[provider] ?? key.apiKey), key_source: key.key_source }];
     }));
-    if (req.method === 'GET') return json({ ok: true, owner: actor.role === 'owner', providers, default_provider: 'claude', version: 'game-guide-p0-r3' });
+    if (req.method === 'GET') return json({ ok: true, owner: actor.role === 'owner', providers, default_provider: 'claude', version: 'game-guide-p0-r3.6' });
     if (!req.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail('INVALID_JSON', 415);
     if (Number(req.headers.get('content-length') || 0) > 240000) return fail('MESSAGE_TOO_LONG', 413);
     let request, body, continuation;
@@ -130,6 +130,23 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
             }
             send('delta', { text: 'Odpiram vse korake v razvojnem načinu. Rezultati se ne beležijo.' });
             send('done', { provider: request.provider, model: null, development: true });
+            return;
+          }
+          // R3.6: an explicit choice after a held assessment opens its already-unlocked reveal without a model call.
+          const chosenReveal = session.needsReveal() && session.allowedOpenSteps().find(step => step.kind === 'reveal');
+          if (chosenReveal) {
+            const opened = session.execute('open_step', { id: chosenReveal.id }).action;
+            const responseText = invitation(game, session);
+            send('action', opened);
+            send('state', { learning: session.learning });
+            send('delta', { text: responseText });
+            if (log) {
+              events.push({ kind: 'open_step', payload: { ...opened, deterministic: true } },
+                { kind: 'agent_response', payload: { text: privateText(responseText), provider: request.provider, model: null } },
+                { kind: 'cost', payload: { nanos: 0, currency: 'USD', basis: 'deterministic_choice', model: null } });
+              await bounded(logStore.append(log, events.splice(0)));
+            }
+            send('done', { provider: request.provider, model: null });
             return;
           }
           const client = await bounded(clientFactory(request.provider));

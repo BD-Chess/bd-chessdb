@@ -113,7 +113,7 @@ export function hintRequested(message) {
 }
 // The player chooses the reveal (or skips). A stall (»ne vem«) or a finished answer (»pripravljen sem na presojo«,
 // »to je vse«) means the player is no longer actively answering.
-const revealChosen = message => skipRequested(message) || /(?<!\p{L})(?:poka[žz]i|povej|daj|odpri|poglej(?:va|mo)?|[žz]elim(?:\s+videti)?)\s+(?:mi\s+)?(?:\p{L}+\s+)?(?:re[šs]itev|razkritj\p{L}*)|^\s*(?:ja[,.!]?\s*)?(?:razkritje|naprej|nadaljuj(?:va)?|gremo\s+naprej|kar\s+naprej|odpri(?:\s+razkritje)?)(?:,?\s+prosim)?[.!]?\s*$/iu.test(message);
+const revealChosen = message => { if (skipRequested(message)) return true; const plain = String(message).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[.!?,]+/g, ' ').trim().replace(/\s+/g, ' '); if (/^(?:(?:ja|ok|okej|v redu|super|dobro|prebral|prebral sem|gremo|kaj zdaj|kaj pa zdaj|nadaljuj|nadaljujva|lahko naprej|kar naprej|naprej|razkritje|odpri razkritje)\s*)+$/u.test(plain)) return true; return /\b(?:pokazi|povej|daj|odpri|poglej|zelim(?: videti)?)\s+(?:mi\s+)?(?:\p{L}+\s+)?(?:resitev|razkritj\p{L}*)/u.test(plain); };
 const notAnswering = message => /(?<!\p{L})(?:ne\s+vem|ne\s+znam|nimam\s+(?:pojma|(?:ve[čc]\s+)?idej)|obupam|ne\s+gre\s+mi|pripravljen(?:a)?\s+(?:sem\s+)?na\s+(?:presojo|oceno|razkritje|re[šs]itev)|to\s+je\s+(?:vse|moj\s+odgovor)|kon[čc]al(?:a)?\s+sem|oceni(?:\s+me)?[.!]?$|i\s+don'?t\s+know|no\s+idea|give\s+up|that'?s\s+all|i'?m\s+done)(?!\p{L})/iu.test(message);
 // A historical card with no milestone or fewer than half of them is low (A-cards without milestone data are legacy, not low).
 const lowCard = (challenge, card) => card?.card === 'none' || (card?.card === 'A' && card.achieved?.length > 0 && card.achieved.length * 2 < (challenge.key_ideas || []).length);
@@ -187,6 +187,7 @@ export function createSession(game, request) {
     // P0-R3.5: the player's message joins the evidence of the open, unrevealed challenge (once per turn).
     recordAnswer() {
       const c = active(); if (mode !== 'IZUMLJAJ' || !c) return;
+      if (revealChosen(request.message)) return;
       const list = [...(learning.answers?.[c.id] || []), request.message.slice(0, 1500)].slice(-8);
       learning.answers = { [c.id]: list }; // only the active challenge keeps evidence
     },
@@ -236,6 +237,7 @@ export function createSession(game, request) {
       }
       if (name === 'assess_challenge') {
         const c = active(); if (c?.id !== args.step) throw Error('CURRENT_CHALLENGE_ONLY');
+        if (assessedThisTurn === c.id) return { ok: true, already_assessed: true, next: 'offer_continue_or_reveal', ...transition() };
         if (question || openedThisTurn === c.id) throw Object.assign(Error('WAIT_FOR_PLAYER'), {details:{next:'wait_for_player',missing:['player explanation']}});
         if (typeof args.why !== 'string' || !args.why.trim() || args.why.length > 200 || technical(args.why, game)) {
           const error = invalidAssessment(c, 'why');
@@ -325,7 +327,7 @@ export function unsafeReply(text, game, session) {
 export function invitation(game, session) {
   const step = game.steps.find(s => s.id === session.openedThisTurn);
   if (!step) return '';
-  const invite = 'Na desni se je odprl nov korak. Preberi in mi povej, ko si pripravljen.';
+  const invite = 'Na desni se je odprl nov korak. Preberi ga, nato napiši svojo zamisel.';
   const card = step.kind === 'reveal' && session.mode === 'IZUMLJAJ' ? session.learning.cards[step.for]?.line : null;
   if (step.kind === 'epilogue' && session.mode === 'IZUMLJAJ') return invite + '\n\n' + finalSummary(game, session.learning);
   return [invite, card].filter(Boolean).join('\n');
