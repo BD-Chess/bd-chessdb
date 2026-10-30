@@ -196,7 +196,8 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
                 if (!allowedTools.includes(call.name)) throw Error('TOOL_NOT_AVAILABLE');
                 result = session.execute(call.name, request.provider === 'claude' ? call.arguments : JSON.parse(call.arguments));
               }
-              catch (e) { result = { ok: false, error: e instanceof SyntaxError ? 'INVALID_TOOL_ARGUMENTS' : e.message, allowed_tools: allowedTools, ...session.transition() }; }
+              catch (e) { result = { ok: false, error: e instanceof SyntaxError ? 'INVALID_TOOL_ARGUMENTS' : e.message,
+                ...(e.details ? { details: e.details } : {}), allowed_tools: allowedTools, ...session.transition() }; }
               pending.push({ call, result });
             }
             phase = 'tool_results';
