@@ -1,0 +1,1687 @@
+{
+ "schema": "ai8.game.v1",
+ "slug": "navierstokes1845",
+ "title": "Pred izumom: Navier–Stokes 1845",
+ "year": 1845,
+ "release": "R1",
+ "language": "sl",
+ "people_ids": [
+  "leonhard-euler"
+ ],
+ "modes": {
+  "story": "beri s-korake story, reveal in epilogue; challenge in hint preskoči",
+  "invent": "pred vsakim reveal najprej challenge; hint samo na zahtevo igralca"
+ },
+ "acts": [
+  {
+   "act": 1,
+   "title": "Popolna tekočina",
+   "date": "1821",
+   "place": "Pariz"
+  },
+  {
+   "act": 2,
+   "title": "Razprava za Akademijo",
+   "date": "1821–1822",
+   "place": "Pariz, Académie des sciences"
+  },
+  {
+   "act": 3,
+   "title": "Brez molekul",
+   "date": "1822–1843",
+   "place": "Pariz"
+  },
+  {
+   "act": 4,
+   "title": "Ob steni",
+   "date": "april 1845",
+   "place": "Cambridge"
+  },
+  {
+   "act": 5,
+   "title": "Nihalo v zraku",
+   "date": "1850–1851 in bonus 1905",
+   "place": "Cambridge; Anglija"
+  }
+ ],
+ "key_commit": {
+  "alg": "sha3-256",
+  "rules": "PRAVILO20 v0.2",
+  "release": "R1",
+  "sha3": "c6aa826d4d09f685c6e18acbdce61a9506bdc4dee00787dc69319400059a4e27"
+ },
+ "steps": [
+  {
+   "id": "s1",
+   "act": 1,
+   "kind": "story",
+   "title": "Prolog: inženir mostov",
+   "for_agent": "Uvod v igro. Igralec je Claude-Louis Navier leta 1821, inženir mostov, ki je pravkar izpeljal enačbe prožnosti iz sil med molekulami. V načinu Zgodba preberi in nadaljuj; v načinu Izumljaj z njim povej, da bo pozneje igral še Saint-Venanta in Stokesa, in da lahko kadarkoli vpraša o svetu tistega časa.",
+   "sources_ref": [
+    1,
+    2
+   ],
+   "refs": [
+    {
+     "ref": "s1.title",
+     "kind": "title",
+     "label": "Prolog: inženir mostov"
+    },
+    {
+     "ref": "s1.p1",
+     "kind": "p",
+     "label": "Pariz, 1821. Ti si Claude-Louis Navier, star 36 let. Rodil si se 10. februarja 1785 v Dijo"
+    },
+    {
+     "ref": "s1.p2",
+     "kind": "p",
+     "label": "Si inženir državnega korpusa za ceste in mostove, Ponts et Chaussées. Računaš mostove, kan"
+    },
+    {
+     "ref": "s1.p3",
+     "kind": "p",
+     "label": "Maja 1821 si na Akademiji prebral razpravo o prožnih telesih. Trdno telo si predstavljaš k"
+    },
+    {
+     "ref": "s1.start",
+     "kind": "start",
+     "label": "Začniva igro"
+    }
+   ]
+  },
+  {
+   "id": "s2",
+   "act": 1,
+   "kind": "story",
+   "title": "Enačbe, ki ne poznajo upora",
+   "for_agent": "Ozadje: Bernoulli 1738, Euler 1755/1757 (popolna tekočina brez trenja), d'Alembert 1752 in izrecno 1768 (paradoks). Ne razlagaj, zakaj račun da nič upora; to je jedro naslednjega izziva.",
+   "sources_ref": [
+    3,
+    4,
+    5
+   ],
+   "refs": [
+    {
+     "ref": "s2.title",
+     "kind": "title",
+     "label": "Enačbe, ki ne poznajo upora"
+    },
+    {
+     "ref": "s2.p1",
+     "kind": "p",
+     "label": "Leta 1738 je Daniel Bernoulli v knjigi Hydrodynamica razložil tok vode z ohranjanjem »žive"
+    },
+    {
+     "ref": "s2.p2",
+     "kind": "p",
+     "label": "Eulerjeve enačbe so lepe in splošne. Opisujejo pa »popolno tekočino«, ki nima nobenega not"
+    },
+    {
+     "ref": "s2.p3",
+     "kind": "p",
+     "label": "Jean le Rond d'Alembert je že leta 1752 v eseju o uporu tekočin izračunal, da tekočina tel"
+    },
+    {
+     "ref": "s2.fig1",
+     "kind": "fig",
+     "label": "Leonhard Euler (1707–1783). Portret: Jakob Emanuel Handmann, 1753 (Kunstmuseum Basel). Jav"
+    }
+   ]
+  },
+  {
+   "id": "s3",
+   "act": 1,
+   "kind": "challenge",
+   "title": "Izziv: upor, ki ga ni",
+   "for_agent": "Prvi izziv: d'Alembertov paradoks in manjkajoče notranje trenje. Štej vsak korak razmišljanja iz ključa, tudi z vsakdanjimi besedami (med, žlica, plasti). Če igralec omeni sled za telesom, je to priznana druga pot; vprašaj ga, zakaj bi se tok za telesom sploh odtrgal.",
+   "sources_ref": [
+    5,
+    4,
+    6
+   ],
+   "question": "Po Eulerjevih enačbah krogla, ki se enakomerno giblje skozi mirno vodo, ne čuti nobenega upora. Vsak čolnar ve, da to ni res. Zakaj račun da nič in kaj v enačbah manjka?",
+   "key_ideas": [
+    "v popolni tekočini sosednja delčka drug na drugega delujeta samo s tlakom, pravokotno na stik; sile vzdolž stika (trenja med plastmi) ni",
+    "pri gladkem obtekanju je tok spredaj in zadaj zrcalen, zato se tlak spredaj in zadaj izniči (d'Alembertov paradoks)",
+    "v resnični tekočini plasti, ki drsijo druga ob drugi, druga drugo vlečejo (notranje trenje, viskoznost)",
+    "trenje je odvisno od razlike hitrosti sosednjih plasti, ne od hitrosti same: tekočina, ki se giblje kot celota, nima trenja"
+   ],
+   "alternatives_ok": [
+    "upor razloži nesimetričen tok za telesom: za telesom se tok odtrga in pusti mirujočo sled, zato je tlak zadaj nižji (kot pozneje Helmholtz in Kirchhoff 1868–1869)"
+   ],
+   "anachronisms": [
+    "Prandtlova mejna plast (1904)",
+    "Reynoldsovo število (1883)",
+    "kinetična teorija plinov in molekularni trki (Maxwell 1860, Boltzmann 1872)",
+    "računalniška simulacija toka (CFD)"
+   ],
+   "key": {
+    "key_ideas": [
+     {
+      "id": "s3.k1",
+      "text": "v popolni tekočini sosednja delčka drug na drugega delujeta samo s tlakom, pravokotno na stik; sile vzdolž stika (trenja med plastmi) ni"
+     },
+     {
+      "id": "s3.k2",
+      "text": "pri gladkem obtekanju je tok spredaj in zadaj zrcalen, zato se tlak spredaj in zadaj izniči (d'Alembertov paradoks)"
+     },
+     {
+      "id": "s3.k3",
+      "text": "v resnični tekočini plasti, ki drsijo druga ob drugi, druga drugo vlečejo (notranje trenje, viskoznost)"
+     },
+     {
+      "id": "s3.k4",
+      "text": "trenje je odvisno od razlike hitrosti sosednjih plasti, ne od hitrosti same: tekočina, ki se giblje kot celota, nima trenja"
+     }
+    ],
+    "hints": [
+     {
+      "step_id": "s4",
+      "covers": [
+       "s3.k3"
+      ]
+     },
+     {
+      "step_id": "s5",
+      "covers": [
+       "s3.k2"
+      ]
+     },
+     {
+      "step_id": "s6",
+      "covers": [
+       "s3.k1",
+       "s3.k4"
+      ]
+     }
+    ],
+    "alternatives": [
+     {
+      "id": "s3.a1",
+      "opis": "upor razloži nesimetričen tok za telesom: za telesom se tok odtrga in pusti mirujočo sled, zato je tlak zadaj nižji (kot pozneje Helmholtz in Kirchhoff 1868–1869)",
+      "izid": "B"
+     }
+    ],
+    "anachronisms": [
+     {
+      "id": "s3.x1",
+      "sredstvo": "Prandtlova mejna plast (1904)"
+     },
+     {
+      "id": "s3.x2",
+      "sredstvo": "Reynoldsovo število (1883)"
+     },
+     {
+      "id": "s3.x3",
+      "sredstvo": "kinetična teorija plinov in molekularni trki (Maxwell 1860, Boltzmann 1872)"
+     },
+     {
+      "id": "s3.x4",
+      "sredstvo": "računalniška simulacija toka (CFD)"
+     }
+    ]
+   },
+   "refs": [
+    {
+     "ref": "s3.title",
+     "kind": "title",
+     "label": "Upor, ki ga ni"
+    },
+    {
+     "ref": "s3.p1",
+     "kind": "p",
+     "label": "Ob Seni gledaš čoln, ki ga konj vleče po kanalu. Ko konj obstane, čoln upočasni in obstane"
+    },
+    {
+     "ref": "s3.q",
+     "kind": "q",
+     "label": "Kaj bi naredil ti, zdaj, s tem, kar imaš? Po Eulerjevih enačbah krogla, ki se enakomerno g"
+    },
+    {
+     "ref": "s3.p2",
+     "kind": "p",
+     "label": "Odgovor je lahko z besedami. Formule niso potrebne."
+    },
+    {
+     "ref": "s3.answer",
+     "kind": "answer",
+     "label": "kam napisati odgovor"
+    }
+   ]
+  },
+  {
+   "id": "s4",
+   "act": 1,
+   "kind": "hint",
+   "title": "Namig 1",
+   "for_agent": "Šibek namig: notranje trenje v vsakdanji izkušnji. Po namigu vprašaj, kaj se dogaja med plastmi medu ob žlici.",
+   "sources_ref": [
+    5,
+    4,
+    6
+   ],
+   "for": "s3",
+   "tier": 1,
+   "refs": [
+    {
+     "ref": "s4.p1",
+     "kind": "p",
+     "label": "Primerjaj med in vodo. Kaj čutiš, ko z žlico počasi vlečeš skozi enega in drugo?"
+    }
+   ]
+  },
+  {
+   "id": "s5",
+   "act": 1,
+   "kind": "hint",
+   "title": "Namig 2",
+   "for_agent": "Srednji namig: zrcalni tok in izničenje tlaka. Po namigu preveri, ali igralec vidi, zakaj je vsota sil tlaka nič.",
+   "sources_ref": [
+    5,
+    4,
+    6
+   ],
+   "for": "s3",
+   "tier": 2,
+   "refs": [
+    {
+     "ref": "s5.p1",
+     "kind": "p",
+     "label": "Nariši tokovnice okoli krogle, spredaj in zadaj. Kje je tlak večji, če so slike spredaj in"
+    }
+   ]
+  },
+  {
+   "id": "s6",
+   "act": 1,
+   "kind": "hint",
+   "title": "Namig 3",
+   "for_agent": "Močan namig: samo tlak, pravokotno na stik; trenje mora biti odvisno od razlike hitrosti. Po namigu vprašaj, od česa bi bila odvisna sila med plastmi.",
+   "sources_ref": [
+    5,
+    4,
+    6
+   ],
+   "for": "s3",
+   "tier": 3,
+   "refs": [
+    {
+     "ref": "s6.p1",
+     "kind": "p",
+     "label": "Kakšno silo lahko po Eulerju en delček vode da sosednjemu, in v katero smer? Ali ima voda "
+    }
+   ]
+  },
+  {
+   "id": "s7",
+   "act": 1,
+   "kind": "reveal",
+   "title": "Razkritje: kar Euler izpusti",
+   "for_agent": "Razkritje 1. dejanja: samo tlak v popolni tekočini, zrcalni tok, Newtonova domneva o trenju med plastmi (1687), odtrganje toka pojasni Prandtl (1904). Primerjaj z igralčevim odgovorom po mejnikih ključa; sled za telesom priznaj kot drugo pot.",
+   "sources_ref": [
+    5,
+    4,
+    6
+   ],
+   "for": "s3",
+   "refs": [
+    {
+     "ref": "s7.title",
+     "kind": "title",
+     "label": "Kar Euler izpusti"
+    },
+    {
+     "ref": "s7.p1",
+     "kind": "p",
+     "label": "V popolni tekočini sosednja delčka drug na drugega delujeta samo s tlakom, ki je vedno pra"
+    },
+    {
+     "ref": "s7.p2",
+     "kind": "p",
+     "label": "V resnični vodi plasti, ki drsijo druga ob drugi, druga drugo vlečejo. Isaac Newton je to "
+    },
+    {
+     "ref": "s7.p3",
+     "kind": "p",
+     "label": "Za telesom se tok v resnici odtrga in pusti vrtinčasto sled. Kako trenje povzroči odtrganj"
+    },
+    {
+     "ref": "s7.fig1",
+     "kind": "fig",
+     "label": "Popolna tekočina (Euler): tok je spredaj in zadaj zrcalno enak, tlaka sta enaka, upor je n"
+    },
+    {
+     "ref": "s7.fig2",
+     "kind": "fig",
+     "label": "Strig med ploščama: hitrost plasti enakomerno raste od 0 do V. Newton (1687): upor je sora"
+    }
+   ]
+  },
+  {
+   "id": "s8",
+   "act": 2,
+   "kind": "story",
+   "title": "Molekule v vodi",
+   "for_agent": "Navier pred razpravo leta 1822. Ne povej, kakšne oblike je člen za trenje (drugi odvodi, Laplaceov člen); to je izziv.",
+   "sources_ref": [
+    1,
+    2
+   ],
+   "refs": [
+    {
+     "ref": "s8.title",
+     "kind": "title",
+     "label": "Molekule v vodi"
+    },
+    {
+     "ref": "s8.p1",
+     "kind": "p",
+     "label": "Pri prožnih telesih si molekulam dovolil, da se privlačijo in odbijajo, kadar se razdalje "
+    },
+    {
+     "ref": "s8.p2",
+     "kind": "p",
+     "label": "Imaš Eulerjeve enačbe za majhen delček vode in Newtonovo domnevo o uporu med plastmi. Manj"
+    }
+   ]
+  },
+  {
+   "id": "s9",
+   "act": 2,
+   "kind": "challenge",
+   "title": "Izziv: trenje v enačbi",
+   "for_agent": "Glavni izziv: oblika člena za trenje. Molekularna pot (Navier), pot s plastmi in kocko ter pot »povprečje okolice« so vse priznane. Če igralec vpraša, kako se to zapiše, mu pokaži zapis tistega časa s komponentami; vprašanje o zapisu ni namig.",
+   "sources_ref": [
+    7,
+    2,
+    8,
+    1
+   ],
+   "question": "Imaš Eulerjevo enačbo za majhen delček vode: masa krat pospešek je enako sili tlaka in teži. Kako bi dodal silo notranjega trenja? Od česa je odvisna in kakšno obliko ima v enačbi?",
+   "key_ideas": [
+    "strižna sila med plastmi je sorazmerna s tem, kako hitro se hitrost spreminja čez plasti (razlika hitrosti na razdaljo), s konstanto snovi",
+    "na delček deluje razlika sil na nasprotnih ploskvah, zato v enačbo pride sprememba te spremembe (drugi odvodi hitrosti)",
+    "voda nima prednostne smeri, zato se prispevki vseh treh smeri seštejejo (vsota drugih odvodov, Laplaceov člen) z isto konstanto",
+    "konstanto je treba izmeriti; za vsako tekočino je drugačna (voda, olje, zrak)"
+   ],
+   "alternatives_ok": [
+    "trenje vleče delček proti povprečni hitrosti okolice: sila je sorazmerna z razliko med povprečjem okolice in delčkom (to je isti Laplaceov člen)",
+    "izpeljava iz sil med sosednjimi molekulami, sorazmernih z razliko njihovih hitrosti"
+   ],
+   "anachronisms": [
+    "vektorski zapis z operatorjem nabla (druga polovica 19. stoletja)",
+    "tenzorski račun z indeksi (Ricci, Levi-Civita, okoli 1900)",
+    "statistična mehanika (Boltzmann 1872)",
+    "numerično reševanje na računalniku"
+   ],
+   "key": {
+    "key_ideas": [
+     {
+      "id": "s9.k1",
+      "text": "strižna sila med plastmi je sorazmerna s tem, kako hitro se hitrost spreminja čez plasti (razlika hitrosti na razdaljo), s konstanto snovi"
+     },
+     {
+      "id": "s9.k2",
+      "text": "na delček deluje razlika sil na nasprotnih ploskvah, zato v enačbo pride sprememba te spremembe (drugi odvodi hitrosti)"
+     },
+     {
+      "id": "s9.k3",
+      "text": "voda nima prednostne smeri, zato se prispevki vseh treh smeri seštejejo (vsota drugih odvodov, Laplaceov člen) z isto konstanto"
+     },
+     {
+      "id": "s9.k4",
+      "text": "konstanto je treba izmeriti; za vsako tekočino je drugačna (voda, olje, zrak)"
+     }
+    ],
+    "hints": [
+     {
+      "step_id": "s10",
+      "covers": [
+       "s9.k1"
+      ]
+     },
+     {
+      "step_id": "s11",
+      "covers": [
+       "s9.k2"
+      ]
+     },
+     {
+      "step_id": "s12",
+      "covers": [
+       "s9.k3"
+      ]
+     }
+    ],
+    "alternatives": [
+     {
+      "id": "s9.a1",
+      "opis": "trenje vleče delček proti povprečni hitrosti okolice: sila je sorazmerna z razliko med povprečjem okolice in delčkom (to je isti Laplaceov člen)",
+      "izid": "B"
+     },
+     {
+      "id": "s9.a2",
+      "opis": "izpeljava iz sil med sosednjimi molekulami, sorazmernih z razliko njihovih hitrosti",
+      "izid": "B"
+     }
+    ],
+    "anachronisms": [
+     {
+      "id": "s9.x1",
+      "sredstvo": "vektorski zapis z operatorjem nabla (druga polovica 19. stoletja)"
+     },
+     {
+      "id": "s9.x2",
+      "sredstvo": "tenzorski račun z indeksi (Ricci, Levi-Civita, okoli 1900)"
+     },
+     {
+      "id": "s9.x3",
+      "sredstvo": "statistična mehanika (Boltzmann 1872)"
+     },
+     {
+      "id": "s9.x4",
+      "sredstvo": "numerično reševanje na računalniku"
+     }
+    ]
+   },
+   "refs": [
+    {
+     "ref": "s9.title",
+     "kind": "title",
+     "label": "Trenje v enačbi"
+    },
+    {
+     "ref": "s9.q",
+     "kind": "q",
+     "label": "Kaj bi naredil ti, zdaj, s tem, kar imaš? Imaš Eulerjevo enačbo za majhen delček vode: mas"
+    },
+    {
+     "ref": "s9.p1",
+     "kind": "p",
+     "label": "Lahko razmišljaš o tankih plasteh, o majhni kocki vode ali o molekulah. Vse poti so dovolj"
+    },
+    {
+     "ref": "s9.answer",
+     "kind": "answer",
+     "label": "kam napisati odgovor"
+    }
+   ]
+  },
+  {
+   "id": "s10",
+   "act": 2,
+   "kind": "hint",
+   "title": "Namig 1",
+   "for_agent": "Šibek namig: strižna sila na razdaljo med plastmi. Po namigu vprašaj, kaj se zgodi s silo, če plasti razmakneš.",
+   "sources_ref": [
+    7,
+    2,
+    8,
+    1
+   ],
+   "for": "s9",
+   "tier": 1,
+   "refs": [
+    {
+     "ref": "s10.p1",
+     "kind": "p",
+     "label": "Newton je leta 1687 domneval, da je upor med plastmi sorazmeren z razliko njihovih hitrost"
+    }
+   ]
+  },
+  {
+   "id": "s11",
+   "act": 2,
+   "kind": "hint",
+   "title": "Namig 2",
+   "for_agent": "Srednji namig: razlika sil na nasprotnih ploskvah. Po namigu preveri, ali igralec vidi, da šteje sprememba spremembe hitrosti.",
+   "sources_ref": [
+    7,
+    2,
+    8,
+    1
+   ],
+   "for": "s9",
+   "tier": 2,
+   "refs": [
+    {
+     "ref": "s11.p1",
+     "kind": "p",
+     "label": "Na majhno kocko vode deluje strižna sila na zgornji in na spodnji ploskvi. Kaj ostane kock"
+    }
+   ]
+  },
+  {
+   "id": "s12",
+   "act": 2,
+   "kind": "hint",
+   "title": "Namig 3",
+   "for_agent": "Močan namig: vsota po treh smereh z isto konstanto. Po namigu vprašaj, kako bi konstanto izmeril.",
+   "sources_ref": [
+    7,
+    2,
+    8,
+    1
+   ],
+   "for": "s9",
+   "tier": 3,
+   "refs": [
+    {
+     "ref": "s12.p1",
+     "kind": "p",
+     "label": "Isto velja za levo in desno ter za spredaj in zadaj. Kako združiš vse tri smeri, če nobena"
+    }
+   ]
+  },
+  {
+   "id": "s13",
+   "act": 2,
+   "kind": "reveal",
+   "title": "Razkritje: 18. marec 1822",
+   "for_agent": "Razkritje 2. dejanja: Navier 18. 3. 1822, molekularni model, Laplaceov člen s konstanto ε, delni zdrs ob steni, natis 1827. Primerjaj z igralčevo potjo; pot s plastmi in kocko je enakovredna Navierovi molekularni.",
+   "sources_ref": [
+    7,
+    2,
+    8,
+    1
+   ],
+   "for": "s9",
+   "refs": [
+    {
+     "ref": "s13.title",
+     "kind": "title",
+     "label": "18. marec 1822"
+    },
+    {
+     "ref": "s13.p1",
+     "kind": "p",
+     "label": "18. marca 1822 je Navier na Akademiji prebral razpravo Mémoire sur les lois du mouvement d"
+    },
+    {
+     "ref": "s13.p2",
+     "kind": "p",
+     "label": "To je enačba, ki jo danes imenujemo Navier–Stokesova, za nestisljivo tekočino. Konstanto j"
+    },
+    {
+     "ref": "s13.p3",
+     "kind": "p",
+     "label": "Drugo konstanto je ocenil iz meritev, ki jih je Pierre-Simon Girard v letih 1814–1817 opra"
+    },
+    {
+     "ref": "s13.fig1",
+     "kind": "fig",
+     "label": "Kocka vode med plastmi: na zgornjo in spodnjo ploskev delujeta različno veliki strižni sil"
+    },
+    {
+     "ref": "s13.fig2",
+     "kind": "fig",
+     "label": "Navier: »Mémoire sur les lois du mouvement des fluides«, prva stran. Prebrano na Akademiji"
+    }
+   ]
+  },
+  {
+   "id": "s14",
+   "act": 3,
+   "kind": "story",
+   "title": "Spor o konstantah",
+   "for_agent": "Igralec je Saint-Venant. Cauchy 1822 (napetost) in 1828, Poisson 1829 (dve konstanti), Navier umrl 1836. Ne povej, kako se znebiti molekul (razstavitev gibanja delčka, linearnost, izotropija); to je izziv.",
+   "sources_ref": [
+    9,
+    10,
+    11,
+    1
+   ],
+   "refs": [
+    {
+     "ref": "s14.title",
+     "kind": "title",
+     "label": "Spor o konstantah"
+    },
+    {
+     "ref": "s14.p1",
+     "kind": "p",
+     "label": "Pariz, 1843. Zdaj si Adhémar Barré de Saint-Venant, rojen 23. avgusta 1797. Tako kot Navie"
+    },
+    {
+     "ref": "s14.p2",
+     "kind": "p",
+     "label": "Navierova enačba ni ostala sama. Augustin Cauchy je 30. septembra 1822 na Akademiji predst"
+    },
+    {
+     "ref": "s14.p3",
+     "kind": "p",
+     "label": "Navier je umrl 21. avgusta 1836. Kdo ima prav? Koliko konstant ima voda? In ali so molekul"
+    },
+    {
+     "ref": "s14.fig1",
+     "kind": "fig",
+     "label": "Adhémar Barré de Saint-Venant (1797–1886). Gravura iz knjige A. Debauve o inženirjih Ponts"
+    }
+   ]
+  },
+  {
+   "id": "s15",
+   "act": 3,
+   "kind": "challenge",
+   "title": "Izziv: enačba brez molekul",
+   "for_agent": "Izziv o domnevah: razstavitev gibanja delčka, linearnost v hitrosti deformacije, izotropija, nestisljivost. Bolj splošen molekularni model z dvema konstantama je priznana druga pot.",
+   "sources_ref": [
+    9,
+    10,
+    12,
+    11
+   ],
+   "question": "Navierova konstanta izhaja iz sil med molekulami, ki jih nihče ni videl. Poisson je z drugačnimi domnevami o molekulah dobil enačbo z dvema konstantama. Ali lahko enačbo za trenje dobiš brez domnev o molekulah? Katere domneve so nujne?",
+   "key_ideas": [
+    "gibanje majhnega delčka razstaviš na premik, vrtenje kot celota in deformacijo (raztezanje, strig); trenje povzroča samo deformacija",
+    "napetost je sorazmerna s hitrostjo deformacije (pri počasnih spremembah), podobno kot je pri trdnini napetost sorazmerna z deformacijo",
+    "tekočina je enaka v vseh smereh, zato ostaneta največ dve konstanti: ena za strig in ena za hitro stiskanje",
+    "pri nestisljivi tekočini druga konstanta ne vpliva; ostane Navierova enačba, njena konstanta pa je zdaj merljiva viskoznost"
+   ],
+   "alternatives_ok": [
+    "bolj splošen molekularni model z dvema konstantama (kot Poisson 1829), ki da isto enačbo za nestisljivo tekočino"
+   ],
+   "anachronisms": [
+    "kinetična teorija viskoznosti iz proste poti molekul (Maxwell 1860)",
+    "pojem nenewtonske tekočine (20. stoletje)",
+    "tenzorski račun z indeksi (okoli 1900)"
+   ],
+   "key": {
+    "key_ideas": [
+     {
+      "id": "s15.k1",
+      "text": "gibanje majhnega delčka razstaviš na premik, vrtenje kot celota in deformacijo (raztezanje, strig); trenje povzroča samo deformacija"
+     },
+     {
+      "id": "s15.k2",
+      "text": "napetost je sorazmerna s hitrostjo deformacije (pri počasnih spremembah), podobno kot je pri trdnini napetost sorazmerna z deformacijo"
+     },
+     {
+      "id": "s15.k3",
+      "text": "tekočina je enaka v vseh smereh, zato ostaneta največ dve konstanti: ena za strig in ena za hitro stiskanje"
+     },
+     {
+      "id": "s15.k4",
+      "text": "pri nestisljivi tekočini druga konstanta ne vpliva; ostane Navierova enačba, njena konstanta pa je zdaj merljiva viskoznost"
+     }
+    ],
+    "hints": [
+     {
+      "step_id": "s16",
+      "covers": [
+       "s15.k1"
+      ]
+     },
+     {
+      "step_id": "s17",
+      "covers": [
+       "s15.k2",
+       "s15.k3"
+      ]
+     }
+    ],
+    "alternatives": [
+     {
+      "id": "s15.a1",
+      "opis": "bolj splošen molekularni model z dvema konstantama (kot Poisson 1829), ki da isto enačbo za nestisljivo tekočino",
+      "izid": "B"
+     }
+    ],
+    "anachronisms": [
+     {
+      "id": "s15.x1",
+      "sredstvo": "kinetična teorija viskoznosti iz proste poti molekul (Maxwell 1860)"
+     },
+     {
+      "id": "s15.x2",
+      "sredstvo": "pojem nenewtonske tekočine (20. stoletje)"
+     },
+     {
+      "id": "s15.x3",
+      "sredstvo": "tenzorski račun z indeksi (okoli 1900)"
+     }
+    ]
+   },
+   "refs": [
+    {
+     "ref": "s15.title",
+     "kind": "title",
+     "label": "Enačba brez molekul"
+    },
+    {
+     "ref": "s15.q",
+     "kind": "q",
+     "label": "Kaj bi naredil ti, zdaj, s tem, kar imaš? Navierova konstanta izhaja iz sil med molekulami"
+    },
+    {
+     "ref": "s15.answer",
+     "kind": "answer",
+     "label": "kam napisati odgovor"
+    }
+   ]
+  },
+  {
+   "id": "s16",
+   "act": 3,
+   "kind": "hint",
+   "title": "Namig 1",
+   "for_agent": "Šibek namig: premik, vrtenje, deformacija. Po namigu vprašaj, kateri od teh načinov bi lahko povzročil trenje.",
+   "sources_ref": [
+    9,
+    10,
+    12,
+    11
+   ],
+   "for": "s15",
+   "tier": 1,
+   "refs": [
+    {
+     "ref": "s16.p1",
+     "kind": "p",
+     "label": "Kaj vse lahko počne majhna kocka vode v toku? Naštej načine, kako se giblje in spreminja."
+    }
+   ]
+  },
+  {
+   "id": "s17",
+   "act": 3,
+   "kind": "hint",
+   "title": "Namig 2",
+   "for_agent": "Močnejši namig: linearnost in izotropija. Po namigu vprašaj, kaj se zgodi z drugo konstanto pri nestisljivi tekočini.",
+   "sources_ref": [
+    9,
+    10,
+    12,
+    11
+   ],
+   "for": "s15",
+   "tier": 2,
+   "refs": [
+    {
+     "ref": "s17.p1",
+     "kind": "p",
+     "label": "Cauchy je pri trdninah vzel napetost sorazmerno z raztezkom. Kaj, če je pri tekočini napet"
+    }
+   ]
+  },
+  {
+   "id": "s18",
+   "act": 3,
+   "kind": "reveal",
+   "title": "Razkritje: Saint-Venant 1843 in Stokes 1845",
+   "for_agent": "Razkritje 3. dejanja: Saint-Venant 1843 (brez molekul), Stokes 14. 4. 1845 (razstavitev, linearnost, izotropija, brez volumskega trenja), pet neodvisnih izpeljav. Primerjaj z igralčevimi domnevami po mejnikih.",
+   "sources_ref": [
+    9,
+    10,
+    12,
+    11
+   ],
+   "for": "s15",
+   "refs": [
+    {
+     "ref": "s18.title",
+     "kind": "title",
+     "label": "Saint-Venant 1843 in Stokes 1845"
+    },
+    {
+     "ref": "s18.p1",
+     "kind": "p",
+     "label": "Leta 1843 je Saint-Venant v zapisku za Comptes Rendus izpeljal enačbe brez molekul. Strižn"
+    },
+    {
+     "ref": "s18.p2",
+     "kind": "p",
+     "label": "Dve leti pozneje, 14. aprila 1845, je v Cambridgeu 25-letni George Gabriel Stokes prebral "
+    },
+    {
+     "ref": "s18.p3",
+     "kind": "p",
+     "label": "Stokes je pozneje zapisal, da je šele potem našel Poissonovo delo, ki je prišlo do istih e"
+    },
+    {
+     "ref": "s18.fig1",
+     "kind": "fig",
+     "label": "Gibanje majhnega kvadratka tekočine: premik + vrtenje + deformacija (raztezanje in strig)."
+    }
+   ]
+  },
+  {
+   "id": "s19",
+   "act": 4,
+   "kind": "story",
+   "title": "Cambridge, 1845",
+   "for_agent": "Igralec je Stokes aprila 1845. Ne povej pogoja brez zdrsa in ne profila v cevi; to je izziv. Na vprašanje o meritvah povej, da obstajajo meritve v velikih ceveh in kanalih (Bossut, Du Buat) in v ozkih ceveh (Girard); Poiseuillovih Stokes takrat ni uporabil.",
+   "sources_ref": [
+    13,
+    12,
+    14
+   ],
+   "refs": [
+    {
+     "ref": "s19.title",
+     "kind": "title",
+     "label": "Cambridge, 1845"
+    },
+    {
+     "ref": "s19.p1",
+     "kind": "p",
+     "label": "Zdaj si George Gabriel Stokes. Rodil si se 13. avgusta 1819 v Skreenu na Irskem. Leta 1841"
+    },
+    {
+     "ref": "s19.p2",
+     "kind": "p",
+     "label": "Opaziš, da običajna teorija tekočin ne pozna drsenja plasti druga ob drugi. Zato ne razlož"
+    },
+    {
+     "ref": "s19.p3",
+     "kind": "p",
+     "label": "Enačbo imaš. Da bi jo rešil za kakšen resničen tok, potrebuješ še pogoj ob steni: kaj teko"
+    },
+    {
+     "ref": "s19.fig1",
+     "kind": "fig",
+     "label": "George Gabriel Stokes (1819–1903) leta 1857. Fotografija, objavljena 1907 v Larmorjevem Me"
+    }
+   ]
+  },
+  {
+   "id": "s20",
+   "act": 4,
+   "kind": "challenge",
+   "title": "Izziv: ob steni",
+   "for_agent": "Izziv o robnem pogoju in preizkusu. Delni zdrs z dodatno konstanto (Navier) je priznana druga pot. Če igralec predlaga pogoj brez zdrsa, povej, da je bil na tem mestu negotov tudi Stokes, in vprašaj, kako bi to preveril.",
+   "sources_ref": [
+    12,
+    11,
+    15,
+    14,
+    16
+   ],
+   "question": "Enačba je, a da jo rešiš, potrebuješ še pogoj ob steni cevi ali telesa. Kaj se dogaja s tekočino tik ob steni? In s katerim poskusom bi preveril, ali imaš prav?",
+   "key_ideas": [
+    "ob trdni steni tekočina miruje glede na steno in ne drsi (pogoj brez zdrsa)",
+    "v ravni ozki cevi je hitrost zato največja v sredini in nič ob steni (parabolični profil)",
+    "pretok skozi ozko cev je sorazmeren s padcem tlaka in s četrto potenco polmera; to lahko izmeriš in primerjaš",
+    "v širokih ceveh pri večjih hitrostih se napoved ne ujema, ker tok postane nemiren in vrtinčast; to je drug način toka"
+   ],
+   "alternatives_ok": [
+    "delni zdrs ob steni z dodatno konstanto (Navierov predlog); pri redkih plinih res drži (Maxwell 1879)"
+   ],
+   "anachronisms": [
+    "Reynoldsovo število in poskus z barvilom (1883)",
+    "laserska merjenja hitrosti toka",
+    "mikrofluidika"
+   ],
+   "key": {
+    "key_ideas": [
+     {
+      "id": "s20.k1",
+      "text": "ob trdni steni tekočina miruje glede na steno in ne drsi (pogoj brez zdrsa)"
+     },
+     {
+      "id": "s20.k2",
+      "text": "v ravni ozki cevi je hitrost zato največja v sredini in nič ob steni (parabolični profil)"
+     },
+     {
+      "id": "s20.k3",
+      "text": "pretok skozi ozko cev je sorazmeren s padcem tlaka in s četrto potenco polmera; to lahko izmeriš in primerjaš"
+     },
+     {
+      "id": "s20.k4",
+      "text": "v širokih ceveh pri večjih hitrostih se napoved ne ujema, ker tok postane nemiren in vrtinčast; to je drug način toka"
+     }
+    ],
+    "hints": [
+     {
+      "step_id": "s21",
+      "covers": [
+       "s20.k1"
+      ]
+     },
+     {
+      "step_id": "s22",
+      "covers": [
+       "s20.k2",
+       "s20.k3"
+      ]
+     }
+    ],
+    "alternatives": [
+     {
+      "id": "s20.a1",
+      "opis": "delni zdrs ob steni z dodatno konstanto (Navierov predlog); pri redkih plinih res drži (Maxwell 1879)",
+      "izid": "B"
+     }
+    ],
+    "anachronisms": [
+     {
+      "id": "s20.x1",
+      "sredstvo": "Reynoldsovo število in poskus z barvilom (1883)"
+     },
+     {
+      "id": "s20.x2",
+      "sredstvo": "laserska merjenja hitrosti toka"
+     },
+     {
+      "id": "s20.x3",
+      "sredstvo": "mikrofluidika"
+     }
+    ]
+   },
+   "refs": [
+    {
+     "ref": "s20.title",
+     "kind": "title",
+     "label": "Ob steni"
+    },
+    {
+     "ref": "s20.q",
+     "kind": "q",
+     "label": "Kaj bi naredil ti, zdaj, s tem, kar imaš? Enačba je, a da jo rešiš, potrebuješ še pogoj ob"
+    },
+    {
+     "ref": "s20.answer",
+     "kind": "answer",
+     "label": "kam napisati odgovor"
+    }
+   ]
+  },
+  {
+   "id": "s21",
+   "act": 4,
+   "kind": "hint",
+   "title": "Namig 1",
+   "for_agent": "Šibek namig: tekočina ob steni miruje glede na steno. Po namigu vprašaj, kakšna je potem hitrost v sredini cevi.",
+   "sources_ref": [
+    12,
+    11,
+    15,
+    14,
+    16
+   ],
+   "for": "s20",
+   "tier": 1,
+   "refs": [
+    {
+     "ref": "s21.p1",
+     "kind": "p",
+     "label": "Prah na krilih mlina na veter ostane, čeprav krila režejo zrak. Kaj to pove o zraku tik ob"
+    }
+   ]
+  },
+  {
+   "id": "s22",
+   "act": 4,
+   "kind": "hint",
+   "title": "Namig 2",
+   "for_agent": "Močnejši namig: profil in četrta potenca polmera kot preizkus. Po namigu vprašaj, kje bi se napoved lahko zalomila.",
+   "sources_ref": [
+    12,
+    11,
+    15,
+    14,
+    16
+   ],
+   "for": "s20",
+   "tier": 2,
+   "refs": [
+    {
+     "ref": "s22.p1",
+     "kind": "p",
+     "label": "Če cev zožiš na polovico, kolikokrat manj vode steče pri istem tlaku? Kaj bi pomenil odgov"
+    }
+   ]
+  },
+  {
+   "id": "s23",
+   "act": 4,
+   "kind": "reveal",
+   "title": "Razkritje: pogoj, ki ga Stokes odloži",
+   "for_agent": "Razkritje 4. dejanja: Stokes 1845 preizkusi in odloži pogoj brez zdrsa, Hagen in Poiseuille (meritve), Wiedemann 1856 in Hagenbach 1860 (izpeljava), Stokes sprejme 1851, Reynolds 1883. Primerjaj z igralčevim predlogom; delni zdrs priznaj kot drugo pot.",
+   "sources_ref": [
+    12,
+    11,
+    15,
+    14,
+    16
+   ],
+   "for": "s20",
+   "refs": [
+    {
+     "ref": "s23.title",
+     "kind": "title",
+     "label": "Pogoj, ki ga Stokes odloži"
+    },
+    {
+     "ref": "s23.p1",
+     "kind": "p",
+     "label": "Stokes je leta 1845 preizkusil pogoj, da tekočina ob steni miruje. V ravni cevi da hitrost"
+    },
+    {
+     "ref": "s23.p2",
+     "kind": "p",
+     "label": "Prav takrat sta v ozkih ceveh merila Gotthilf Hagen (1839) in Jean Léonard Marie Poiseuill"
+    },
+    {
+     "ref": "s23.p3",
+     "kind": "p",
+     "label": "Stokes je pogoj brez zdrsa sprejel leta 1851. Fiziki so o njem razpravljali do konca stole"
+    },
+    {
+     "ref": "s23.fig1",
+     "kind": "fig",
+     "label": "Tok po ozki cevi: ob steni hitrost 0, v sredini največja (parabola). Pretok ∝ Δp · r⁴ (Hag"
+    }
+   ]
+  },
+  {
+   "id": "s24",
+   "act": 5,
+   "kind": "story",
+   "title": "Nihala, ki prehitro obstanejo",
+   "for_agent": "Ozadje: meritve nihal (Bessel 1828, Sabine 1829, Baily 1832) kažejo večji vpliv zraka, kot ga napove popolna tekočina. Ne povej, da je upor sorazmeren s hitrostjo in polmerom; to je izziv.",
+   "sources_ref": [
+    17,
+    18,
+    13
+   ],
+   "refs": [
+    {
+     "ref": "s24.title",
+     "kind": "title",
+     "label": "Nihala, ki prehitro obstanejo"
+    },
+    {
+     "ref": "s24.p1",
+     "kind": "p",
+     "label": "Cambridge, 1850. Od leta 1849 si Lucasov profesor matematike, na Newtonovi katedri."
+    },
+    {
+     "ref": "s24.p2",
+     "kind": "p",
+     "label": "Natančne ure in merjenje težnosti slonijo na nihalih. Nihalo v zraku niha nekoliko drugače"
+    }
+   ]
+  },
+  {
+   "id": "s25",
+   "act": 5,
+   "kind": "challenge",
+   "title": "Izziv: počasna krogla",
+   "for_agent": "Izziv: upor počasne krogle. Dimenzijska ocena (viskoznost, polmer, hitrost) šteje kot mejnik; natančen faktor 6π ni pogoj za dober izid. Če igralec omeni kapljice ali oblake, je na poti do zadnjega mejnika.",
+   "sources_ref": [
+    17,
+    18,
+    19
+   ],
+   "question": "Natančna merjenja nihal kažejo, da zrak nihalo zavira bolj, kot napove račun s popolno tekočino. Kako bi z novo enačbo ocenil upor majhne krogle, ki se počasi giblje skozi zrak ali vodo? Od česa je odvisen?",
+   "key_ideas": [
+    "pri zelo počasnem gibanju lahko vztrajnost tekočine zanemariš; ostane ravnovesje tlaka in trenja, enačba postane linearna",
+    "upor je sorazmeren z viskoznostjo, polmerom in hitrostjo, ne s kvadratom hitrosti",
+    "natančen račun da upor 6π × viskoznost × polmer × hitrost",
+    "majhne kapljice zato padajo zelo počasi (končna hitrost raste s kvadratom polmera); zato oblaki lebdijo"
+   ],
+   "alternatives_ok": [],
+   "anachronisms": [
+    "Millikanov poskus z oljnimi kapljicami (1909)",
+    "Oseenov popravek (1910)",
+    "numerična simulacija"
+   ],
+   "key": {
+    "key_ideas": [
+     {
+      "id": "s25.k1",
+      "text": "pri zelo počasnem gibanju lahko vztrajnost tekočine zanemariš; ostane ravnovesje tlaka in trenja, enačba postane linearna"
+     },
+     {
+      "id": "s25.k2",
+      "text": "upor je sorazmeren z viskoznostjo, polmerom in hitrostjo, ne s kvadratom hitrosti"
+     },
+     {
+      "id": "s25.k3",
+      "text": "natančen račun da upor 6π × viskoznost × polmer × hitrost"
+     },
+     {
+      "id": "s25.k4",
+      "text": "majhne kapljice zato padajo zelo počasi (končna hitrost raste s kvadratom polmera); zato oblaki lebdijo"
+     }
+    ],
+    "hints": [
+     {
+      "step_id": "s26",
+      "covers": [
+       "s25.k1",
+       "s25.k2"
+      ]
+     }
+    ],
+    "alternatives": [],
+    "anachronisms": [
+     {
+      "id": "s25.x1",
+      "sredstvo": "Millikanov poskus z oljnimi kapljicami (1909)"
+     },
+     {
+      "id": "s25.x2",
+      "sredstvo": "Oseenov popravek (1910)"
+     },
+     {
+      "id": "s25.x3",
+      "sredstvo": "numerična simulacija"
+     }
+    ]
+   },
+   "refs": [
+    {
+     "ref": "s25.title",
+     "kind": "title",
+     "label": "Počasna krogla"
+    },
+    {
+     "ref": "s25.q",
+     "kind": "q",
+     "label": "Kaj bi naredil ti, zdaj, s tem, kar imaš? Natančna merjenja nihal kažejo, da zrak nihalo z"
+    },
+    {
+     "ref": "s25.answer",
+     "kind": "answer",
+     "label": "kam napisati odgovor"
+    }
+   ]
+  },
+  {
+   "id": "s26",
+   "act": 5,
+   "kind": "hint",
+   "title": "Namig 1",
+   "for_agent": "Namig: zanemari vztrajnost, sestavi silo iz viskoznosti, polmera in hitrosti. Po namigu vprašaj, kaj to pomeni za drobne kapljice.",
+   "sources_ref": [
+    17,
+    18,
+    19
+   ],
+   "for": "s25",
+   "tier": 1,
+   "refs": [
+    {
+     "ref": "s26.p1",
+     "kind": "p",
+     "label": "Pri zelo počasnem gibanju krogla vode ne meče pred sabo. Kateri del enačbe je tedaj majhen"
+    }
+   ]
+  },
+  {
+   "id": "s27",
+   "act": 5,
+   "kind": "reveal",
+   "title": "Razkritje: 6π · μ · a · V",
+   "for_agent": "Razkritje 5. dejanja: Stokesov zakon upora počasne krogle (1851) in posledica za kapljice. Primerjaj z igralčevo oceno po mejnikih.",
+   "sources_ref": [
+    17,
+    18,
+    19
+   ],
+   "for": "s25",
+   "refs": [
+    {
+     "ref": "s27.title",
+     "kind": "title",
+     "label": "6π · μ · a · V"
+    },
+    {
+     "ref": "s27.p1",
+     "kind": "p",
+     "label": "Stokes je razpravo o vplivu notranjega trenja na nihala prebral 9. decembra 1850, natisnje"
+    },
+    {
+     "ref": "s27.p2",
+     "kind": "p",
+     "label": "V istem delu je izračunal, da kapljica vode s premerom tisočinke palca pada s hitrostjo pr"
+    },
+    {
+     "ref": "s27.p3",
+     "kind": "p",
+     "label": "Zakon je ostal: v letih 1909–1913 je Robert Millikan po Stokesovem zakonu iz hitrosti pada"
+    },
+    {
+     "ref": "s27.fig1",
+     "kind": "fig",
+     "label": "Kroglica nihala v zraku: počasen, simetričen tok. Stokes (1851): upor = 6π · μ · a · V."
+    }
+   ]
+  },
+  {
+   "id": "s28",
+   "act": 5,
+   "kind": "challenge",
+   "title": "Bonus: žogica za golf",
+   "for_agent": "Bonusni izziv iz poznejšega časa: zakaj jamice zmanjšajo upor. Vrtenje nazaj in Magnusov vzgon sta priznana druga pot. Bonus je neobvezen; v načinu Zgodba ga preskoči.",
+   "sources_ref": [
+    6,
+    20,
+    21,
+    22,
+    23,
+    24
+   ],
+   "question": "Zakaj hrapava žogica leti dlje kot gladka? Kaj se spremeni v toku okoli nje?",
+   "key_ideas": [
+    "pri hitrem toku je trenje pomembno samo v tanki plasti ob površini (mejna plast)",
+    "upor večinoma ne izvira iz trenja ob površini, ampak iz široke sledi za žogico, kjer je tlak nizek (odtrganje toka)",
+    "hrapavost oziroma jamice naredijo tok v mejni plasti nemiren; nemirna plast se drži površine dlje in se odtrga pozneje",
+    "ožja sled pomeni manjši upor, zato žogica leti dlje"
+   ],
+   "alternatives_ok": [
+    "jamice povečajo tudi vzgon pri vrtenju nazaj (Magnusov učinek), zato žogica leti dlje"
+   ],
+   "anachronisms": [
+    "računalniška simulacija toka (CFD)",
+    "vetrovnik z laserskim merjenjem hitrosti",
+    "merjenje upora krogel v vetrovniku (Eiffel 1912)"
+   ],
+   "key": {
+    "key_ideas": [
+     {
+      "id": "s28.k1",
+      "text": "pri hitrem toku je trenje pomembno samo v tanki plasti ob površini (mejna plast)"
+     },
+     {
+      "id": "s28.k2",
+      "text": "upor večinoma ne izvira iz trenja ob površini, ampak iz široke sledi za žogico, kjer je tlak nizek (odtrganje toka)"
+     },
+     {
+      "id": "s28.k3",
+      "text": "hrapavost oziroma jamice naredijo tok v mejni plasti nemiren; nemirna plast se drži površine dlje in se odtrga pozneje"
+     },
+     {
+      "id": "s28.k4",
+      "text": "ožja sled pomeni manjši upor, zato žogica leti dlje"
+     }
+    ],
+    "hints": [
+     {
+      "step_id": "s29",
+      "covers": [
+       "s28.k2"
+      ]
+     }
+    ],
+    "alternatives": [
+     {
+      "id": "s28.a1",
+      "opis": "jamice povečajo tudi vzgon pri vrtenju nazaj (Magnusov učinek), zato žogica leti dlje",
+      "izid": "B"
+     }
+    ],
+    "anachronisms": [
+     {
+      "id": "s28.x1",
+      "sredstvo": "računalniška simulacija toka (CFD)"
+     },
+     {
+      "id": "s28.x2",
+      "sredstvo": "vetrovnik z laserskim merjenjem hitrosti"
+     },
+     {
+      "id": "s28.x3",
+      "sredstvo": "merjenje upora krogel v vetrovniku (Eiffel 1912)"
+     }
+    ]
+   },
+   "refs": [
+    {
+     "ref": "s28.title",
+     "kind": "title",
+     "label": "Bonus: žogica za golf"
+    },
+    {
+     "ref": "s28.p1",
+     "kind": "p",
+     "label": "Anglija, 1905. Golfske žogice iz gutaperče so v rabi od okoli leta 1848. Igralci so kmalu "
+    },
+    {
+     "ref": "s28.q",
+     "kind": "q",
+     "label": "Bonus, neobvezno: Zakaj hrapava žogica leti dlje kot gladka? Kaj se spremeni v toku okoli "
+    },
+    {
+     "ref": "s28.answer",
+     "kind": "answer",
+     "label": "kam napisati odgovor"
+    }
+   ]
+  },
+  {
+   "id": "s29",
+   "act": 5,
+   "kind": "hint",
+   "title": "Namig 1",
+   "for_agent": "Namig: upor je večinoma iz široke sledi z nizkim tlakom. Po namigu vprašaj, kako bi sled zožil.",
+   "sources_ref": [
+    6,
+    20,
+    21,
+    22,
+    23,
+    24
+   ],
+   "for": "s28",
+   "tier": 1,
+   "refs": [
+    {
+     "ref": "s29.p1",
+     "kind": "p",
+     "label": "Nariši sled za žogico. Je široka ali ozka? Kje za žogico je tlak nizek in kaj to pomeni za"
+    }
+   ]
+  },
+  {
+   "id": "s30",
+   "act": 5,
+   "kind": "reveal",
+   "title": "Razkritje: jamice",
+   "for_agent": "Razkritje bonusa: mejna plast, odtrganje, nemirna mejna plast z jamicami, ožja sled. Primerjaj z igralčevo razlago po mejnikih.",
+   "sources_ref": [
+    6,
+    20,
+    21,
+    22,
+    23,
+    24
+   ],
+   "for": "s28",
+   "refs": [
+    {
+     "ref": "s30.title",
+     "kind": "title",
+     "label": "Jamice"
+    },
+    {
+     "ref": "s30.p1",
+     "kind": "p",
+     "label": "Ludwig Prandtl je 12. avgusta 1904 v Heidelbergu pokazal, da je pri hitrem toku trenje pom"
+    },
+    {
+     "ref": "s30.p2",
+     "kind": "p",
+     "label": "Gustave Eiffel je leta 1912 izmeril, da upor krogle nad neko hitrostjo nenadoma pade. Pran"
+    },
+    {
+     "ref": "s30.p3",
+     "kind": "p",
+     "label": "Vdolbinice na golfski žogici naredijo isto pri hitrostih, s katerimi žogica leti. Gladka ž"
+    },
+    {
+     "ref": "s30.fig1",
+     "kind": "fig",
+     "label": "Gladka žogica: zgodnja odlepitev, široka sled, velik upor. Z jamicami: kasnejša odlepitev,"
+    }
+   ]
+  },
+  {
+   "id": "s31",
+   "act": 5,
+   "kind": "epilogue",
+   "title": "Epilog: enačba, ki še ni povedala vsega",
+   "for_agent": "Konec igre. Povzemi igralčevo pot po dejanjih in jo primerjaj s potjo petih izpeljav v 23 letih; igra brez rešitve je dober izid. O letu 2026 govori natančno: Buckmaster in Alpöge Euler s silo (Lean), OpenAI Navier–Stokes s silo (v presoji, spor o Leanu); nič ni recenzirano in nagrada ni podeljena.",
+   "sources_ref": [
+    16,
+    6,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34
+   ],
+   "refs": [
+    {
+     "ref": "s31.title",
+     "kind": "title",
+     "label": "Enačba, ki še ni povedala vsega"
+    },
+    {
+     "ref": "s31.p1",
+     "kind": "p",
+     "label": "Leta 1883 je Osborne Reynolds v stekleni cevi pokazal, kdaj tok s tankim curkom barvila os"
+    },
+    {
+     "ref": "s31.p2",
+     "kind": "p",
+     "label": "Navier–Stokesove enačbe danes rabijo pri načrtovanju letal in ladij, pri napovedi vremena,"
+    },
+    {
+     "ref": "s31.p3",
+     "kind": "p",
+     "label": "Eno vprašanje je ostalo odprto. Ali gladek začetni tok vedno ostane gladek, ali pa se lahk"
+    },
+    {
+     "ref": "s31.p4",
+     "kind": "p",
+     "label": "Septembra 2026 sta Tristan Buckmaster (NYU) in Levent Alpöge (Anthropic) s pomočjo več mod"
+    },
+    {
+     "ref": "s31.p5",
+     "kind": "p",
+     "label": "V pogovoru z Brianom Greenom na World Science Festivalu je Buckmaster opisal, kako delo po"
+    },
+    {
+     "ref": "s31.p6",
+     "kind": "p",
+     "label": "Več o Eulerju: Leonhard Euler na seznamu Top ljudje."
+    },
+    {
+     "ref": "s31.fig1",
+     "kind": "fig",
+     "label": "Reynolds 1883 (Phil. Trans. 174, str. 942): pri majhni hitrosti barvilo v ravni črti (sl. "
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "id": 1,
+   "title": "MacTutor: Claude-Louis Navier",
+   "url": "https://mathshistory.st-andrews.ac.uk/Biographies/Navier/"
+  },
+  {
+   "id": 2,
+   "title": "On the development of the Navier–Stokes equation by Navier (Revista Brasileira de Ensino de Física)",
+   "url": "https://www.scielo.br/j/rbef/a/nNpqpRmKN8J3zPhV4WN4vFF/"
+  },
+  {
+   "id": 3,
+   "title": "MacTutor: Daniel Bernoulli",
+   "url": "https://mathshistory.st-andrews.ac.uk/Biographies/Bernoulli_Daniel/"
+  },
+  {
+   "id": 4,
+   "title": "L. Euler, Principes généraux du mouvement des fluides (E226, 1757)",
+   "url": "https://scholarlycommons.pacific.edu/euler-works/226"
+  },
+  {
+   "id": 5,
+   "title": "Genesis of d'Alembert's paradox and analytical elaboration of the drag problem (arXiv:0801.3014)",
+   "url": "https://arxiv.org/abs/0801.3014"
+  },
+  {
+   "id": 6,
+   "title": "L. Prandtl, Über Flüssigkeitsbewegung bei sehr kleiner Reibung (1904), German History Intersections",
+   "url": "https://germanhistory-intersections.org/en/knowledge-and-education/ghis:document-202"
+  },
+  {
+   "id": 7,
+   "title": "C.-L. Navier, Mémoire sur les lois du mouvement des fluides, Mém. Acad. Sci. 6 (1827), Wikisource",
+   "url": "https://fr.wikisource.org/wiki/Page:M%C3%A9moires_de_l%E2%80%99Acad%C3%A9mie_des_sciences,_Tome_6.djvu/577"
+  },
+  {
+   "id": 8,
+   "title": "P.-S. Girard, Mémoire sur l'écoulement linéaire… par des tubes capillaires de verre (1817), Wikisource",
+   "url": "https://fr.wikisource.org/wiki/M%C3%A9moire_sur_l%E2%80%99%C3%A9coulement_lin%C3%A9aire_de_diverses_substances_liquides_par_des_tubes_capillaires_de_verre"
+  },
+  {
+   "id": 9,
+   "title": "MacTutor: Adhémar Jean Claude Barré de Saint-Venant",
+   "url": "https://mathshistory.st-andrews.ac.uk/Biographies/Saint-Venant/"
+  },
+  {
+   "id": 10,
+   "title": "Joseph Boussinesq's legacy in fluid mechanics (Comptes Rendus Mécanique, 2017; tudi o Saint-Venantu)",
+   "url": "https://comptes-rendus.academie-sciences.fr/mecanique/articles/10.1016/j.crme.2017.05.008/"
+  },
+  {
+   "id": 11,
+   "title": "G. G. Stokes, Mathematical and Physical Papers, zv. 1 (1880)",
+   "url": "https://archive.org/details/mathematicalphys01stokuoft"
+  },
+  {
+   "id": 12,
+   "title": "Transactions of the Cambridge Philosophical Society 8 (Stokes 1845, natisnjeno 1847)",
+   "url": "https://archive.org/details/transactionsofca08camb"
+  },
+  {
+   "id": 13,
+   "title": "MacTutor: George Gabriel Stokes",
+   "url": "https://mathshistory.st-andrews.ac.uk/Biographies/Stokes/"
+  },
+  {
+   "id": 14,
+   "title": "Lauga, Brenner, Stone: Microfluidics, the no-slip boundary condition (arXiv:cond-mat/0501557)",
+   "url": "https://arxiv.org/abs/cond-mat/0501557"
+  },
+  {
+   "id": 15,
+   "title": "Hagen–Poiseuillova enačba (Wikipedia, angl.)",
+   "url": "https://en.wikipedia.org/wiki/Hagen%E2%80%93Poiseuille_equation"
+  },
+  {
+   "id": 16,
+   "title": "O. Reynolds, Phil. Trans. R. Soc. 174 (1883)",
+   "url": "https://doi.org/10.1098/rstl.1883.0029"
+  },
+  {
+   "id": 17,
+   "title": "G. G. Stokes, On the effect of the internal friction of fluids on the motion of pendulums (1851)",
+   "url": "https://www3.nd.edu/~powers/ame.60635/stokes1851.pdf"
+  },
+  {
+   "id": 18,
+   "title": "F. Baily, On the correction of a pendulum for the reduction to a vacuum, Phil. Trans. 122 (1832)",
+   "url": "https://doi.org/10.1098/rstl.1832.0020"
+  },
+  {
+   "id": 19,
+   "title": "Caltech: Millikanovi zapiski o poskusu z oljnimi kapljicami",
+   "url": "https://caltechln.library.caltech.edu/7"
+  },
+  {
+   "id": 20,
+   "title": "L. Prandtl, Der Luftwiderstand von Kugeln (1914), prevod NACA",
+   "url": "https://ntrs.nasa.gov/api/citations/19930094763/downloads/19930094763.pdf"
+  },
+  {
+   "id": 21,
+   "title": "Choi, Jeon, Choi: Mechanism of drag reduction by dimples on a sphere (2006)",
+   "url": "https://research.engineering.ucdavis.edu/biosport/wp-content/uploads/sites/24/2014/06/Choi-et-al-2006-Mechanism-of-drag-reduction-by-dimples-on-a-sphere.pdf"
+  },
+  {
+   "id": 22,
+   "title": "Patent GB 18,668/1905 (W. Taylor)",
+   "url": "https://patents.google.com/patent/GB190518668A/en"
+  },
+  {
+   "id": 23,
+   "title": "Patent US 622,834 (Haskell in Work, 1899)",
+   "url": "https://patents.google.com/patent/US622834A/en"
+  },
+  {
+   "id": 24,
+   "title": "NPR: Feathers And Rubber Bands, The Story Of The Golf Ball (2012)",
+   "url": "https://www.npr.org/2012/08/11/158579819/feathers-and-rubber-bands-the-story-of-the-golf-ball"
+  },
+  {
+   "id": 25,
+   "title": "Clay Mathematics Institute: Millennium Prize Problems",
+   "url": "https://www.claymath.org/millennium-problems/"
+  },
+  {
+   "id": 26,
+   "title": "C. Fefferman, Existence and smoothness of the Navier–Stokes equation (uradna naloga, Clay)",
+   "url": "https://www.claymath.org/wp-content/uploads/2022/06/navierstokes.pdf"
+  },
+  {
+   "id": 27,
+   "title": "Clay Mathematics Institute: Navier–Stokes announcement (2026)",
+   "url": "https://www.claymath.org/news/navier-stokes-announcement"
+  },
+  {
+   "id": 28,
+   "title": "T. Buckmaster: izjava (2026)",
+   "url": "https://cims.nyu.edu/~tristanb/statement.pdf"
+  },
+  {
+   "id": 29,
+   "title": "T. Tao: Finite time blowup with smooth forcing term… (blog, 7. 9. 2026)",
+   "url": "https://terrytao.wordpress.com/2026/09/07/finite-time-blowup-with-smooth-forcing-term-for-the-incompressible-porous-medium-boussinesq-and-incompressible-euler-equations"
+  },
+  {
+   "id": 30,
+   "title": "NYU News, september 2026",
+   "url": "https://www.nyu.edu/about/news-publications/news/2026/september/nyu-mathematician-answers-long-standing-questions-about-fundamen.html"
+  },
+  {
+   "id": 31,
+   "title": "Quanta Magazine, 8. 9. 2026",
+   "url": "https://www.quantamagazine.org/ai-has-solved-one-of-maths-1-million-millennium-prize-problems-20260908/"
+  },
+  {
+   "id": 32,
+   "title": "arXiv:2610.08144 (oktober 2026)",
+   "url": "https://arxiv.org/abs/2610.08144"
+  },
+  {
+   "id": 33,
+   "title": "Scientific American: OpenAI's blockbuster Navier–Stokes proof isn't what we thought it was",
+   "url": "https://www.scientificamerican.com/article/openais-blockbuster-navier-stokes-proof-isnt-what-we-thought-it-was/"
+  },
+  {
+   "id": 34,
+   "title": "Prepis pogovora »The Moment AI Changed Mathematics Forever« (World Science Festival, B. Greene in T. Buckmaster)",
+   "url": "https://singjupost.com/?p=64441"
+  },
+  {
+   "id": 35,
+   "title": "P. Lynch: poglavje o Navier–Stokesovih enačbah (UCD)",
+   "url": "https://maths.ucd.ie/~plynch/Publications/Preprint-Chapter6.pdf"
+  },
+  {
+   "id": "img:euler.jpg",
+   "title": "Leonhard Euler (1707–1783). Portret: Jakob Emanuel Handmann, 1753 (Kunstmuseum Basel). Javna last, Wikimedia Commons.",
+   "url": "https://commons.wikimedia.org/wiki/File:Leonhard_Euler.jpg"
+  },
+  {
+   "id": "img:saint-venant.jpg",
+   "title": "Adhémar Barré de Saint-Venant (1797–1886). Gravura iz knjige A. Debauve o inženirjih Ponts et Chaussées, Pariz 1893. Javna last, Wikimedia Commons.",
+   "url": "https://commons.wikimedia.org/wiki/File:Adh%C3%A9mar_Jean_Claude_Barr%C3%A9_de_Saint-Venant.jpg"
+  },
+  {
+   "id": "img:stokes.jpg",
+   "title": "George Gabriel Stokes (1819–1903) leta 1857. Fotografija, objavljena 1907 v Larmorjevem Memoir. Javna last, Internet Archive.",
+   "url": "https://archive.org/details/memoirscientific01stokuoft/page/n7/mode/1up"
+  },
+  {
+   "id": "img:spomin-1827.jpg",
+   "title": "Navier: »Mémoire sur les lois du mouvement des fluides«, prva stran. Prebrano na Akademiji 18. marca 1822, natisnjeno 1827 (Mém. Acad. Sci. t. VI, str. 389). Javna last.",
+   "url": "https://commons.wikimedia.org/w/index.php?title=File:M%C3%A9moires_de_l%E2%80%99Acad%C3%A9mie_des_sciences,_Tome_6.djvu&page=577"
+  },
+  {
+   "id": "img:reynolds-1883.jpg",
+   "title": "Reynolds 1883 (Phil. Trans. 174, str. 942): pri majhni hitrosti barvilo v ravni črti (sl. 3), pri večji se razmeša (sl. 4), v soju iskre se vidijo vrtinci (sl. 5). Javna last, Internet Archive.",
+   "url": "https://archive.org/details/philtrans06508925/page/n7/mode/1up"
+  }
+ ]
+}
