@@ -102,7 +102,7 @@ export function createSession(game, request) {
       if (active()?.id !== step.for) return 'CURRENT_CHALLENGE_ONLY';
       if (game.steps.find(s => s.kind === 'hint' && s.for === step.for && !opened.has(s.id))?.id !== step.id) return 'HINT_ORDER';
     } else if (next()?.id !== step.id) return 'STEP_ORDER';
-    if (mode === 'IZUMLJAJ' && step.kind === 'reveal' && !skipRequested(request.message) && (!learning.cards[step.for] || learning.cards[step.for].card === 'partial')) return 'UNDERSTANDING_BEFORE_REVEAL';
+    if (mode === 'IZUMLJAJ' && step.kind === 'reveal' && !skipRequested(request.message) && !learning.cards[step.for]) return 'UNDERSTANDING_BEFORE_REVEAL';
     return null;
   };
   const allowedOpenSteps = () => game.steps.filter(s => !opened.has(s.id) && !openingError(s)).map(s => ({ id: s.id, kind: s.kind }));
@@ -116,7 +116,7 @@ export function createSession(game, request) {
     snapshot() { return { ...request, opened: [...opened], mode, learning }; },
     restoreTurn(id) { openedThisTurn = id; },
     next,
-    needsReveal() { const c = active(); return Boolean(c && learning.cards[c.id] && learning.cards[c.id].card !== 'partial'); },
+    needsReveal() { const c = active(); return Boolean(c && learning.cards[c.id]); },
     needsAdvance() { return !active() && Boolean(this.next()) && /^(?:ja[ ,]*)?(?:za[čc]niva(?: igro)?|pripravljen(?:a)?(?: sem)?|prebral(?:a)?(?: sem)?|naprej|nadaljuj(?:va)?|lahko naprej|ready|continue)[.!]?$/i.test(request.message.trim()); },
     execute(name, args) {
       if (!args || typeof args !== 'object') throw Error('INVALID_TOOL');
