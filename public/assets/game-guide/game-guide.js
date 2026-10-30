@@ -1,4 +1,5 @@
 import { safeMarkdown } from './markdown.mjs';
+import { gameGuideError } from './errors.mjs';
 // Only the escaped markdown subset can produce panel markup.
 export async function mountGameGuide() {
   const match = location.pathname.match(/^\/game\/(dayton1903|faraday1831|_fixture)\/(?:index\.html)?$/);
@@ -356,10 +357,10 @@ export async function mountGameGuide() {
       transcript.push(...turn); transcript = compactTranscript(transcript); history = transcript.slice(-12); save();
       status.textContent = development ? 'Razvoj · brez beleženja rezultatov.' : 'Na vrsti si ti.';
     } catch (e) {
-      agentAvailable = false;
+      if (['AUTH_REQUIRED', 'GAME_NOT_OPEN', 'AI_UNAVAILABLE', 'REFRESH_REQUIRED'].includes(e.message)) agentAvailable = false;
       abort.abort(); if (reader) try { await reader.cancel(); } catch {}
-      const messages = { GAME_NOT_OPEN: 'Igra je odprta samo lastniku.', MONTHLY_LIMIT: 'Mesečni proračun je porabljen.', RATE_LIMITED: 'Omejitev pogostosti. Poskusi pozneje.', TIMEOUT: 'Odgovor je trajal predolgo.', AUTH_REQUIRED: 'Ponovno se prijavi.', REFRESH_REQUIRED: 'Osveži stran za nadaljevanje igre.' };
-      status.textContent = messages[e.message] || 'Odgovor ni dokončan. Poskusi znova.'; input.value = message;
+      if (!answer.dataset.raw) answer.remove();
+      status.textContent = gameGuideError(e.message, english); input.value = message;
     } finally { clearTimeout(timer); busy = false; $('gg-send').disabled = false; $('gg-mode').disabled = false; $('gg-development').disabled = false; $('gg-consent').disabled = false; updateReadControls(); }
   }
   $('gg-compose').addEventListener('submit', event => { event.preventDefault(); sendMessage(input.value.trim()); });

@@ -69,7 +69,7 @@ export function cleanLearning(value) {
 const tool = (name, description, properties, required) => ({ type: 'function', name, description, strict: true, parameters: { type: 'object', properties, required, additionalProperties: false } });
 export function gameTools(development) {
   const str = { type: 'string' };
-  const tools = [tool('open_step', 'Open exactly the next step on the page, then wait for its actual browser result. Already-open is a silent no-op.', { id: str }, ['id']),
+  const tools = [tool('open_step', 'Open an id from allowed_open_steps, then wait for its actual browser result. Reveal follows assessment and may skip unopened hints. Already-open is a silent no-op.', { id: str }, ['id']),
     tool('set_mode', 'Switch only at the player’s explicit request.', { mode: { type: 'string', enum: MODES } }, ['mode']),
     tool('ask_understanding', 'Before reveal, ask ONE short question clarifying the player’s mechanism without giving any part of the sealed key.', { step: str, question: str }, ['step', 'question']),
     tool('assess_challenge', 'Prepare a card BEFORE reveal, after the explanation. Card B recognizes alternatives_ok. In development say it without recording a result.', {
@@ -89,12 +89,33 @@ export function createSession(game, request) {
   const active = () => game.steps.filter(s => s.kind === 'challenge' && opened.has(s.id) && !opened.has(revealFor(s.id)?.id)).at(-1);
   const hintAllowed = !/(?:brez|no[čc]em|ne [žz]elim|ne potrebujem|without|no)\s+(?:\w+\s+)?(?:namig|pomo[cč]|hint|help)/i.test(request.message) && /(?:prosim|daj|poka[žz]i|[žz]elim|potrebujem|lahko).{0,35}(?:namig|pomo[cč])|^(?:namig|pomo[cč]|hint|help)(?:\s+prosim)?[.!?]?$|ne vem|zatak|obstal|stuck/i.test(request.message);
   const result = action => ({ ok: true, action });
+  const next = () => game.steps.find(s => !opened.has(s.id) && s.kind !== 'hint' && (mode !== 'ZGODBA' || s.kind !== 'challenge'));
+  // One validator serves execution and the model's allowlist. Hints are optional.
+  const openingError = step => {
+    if (!step) return 'INVALID_STEP';
+    if (opened.has(step.id)) return null;
+    if (openedThisTurn) return 'READ_FIRST';
+    if (mode === 'ZGODBA' && ['challenge', 'hint'].includes(step.kind)) return 'STORY_ONLY';
+    if (mode === 'IZUMLJAJ' && ['hint', 'reveal'].includes(step.kind) && !opened.has(step.for)) return 'CHALLENGE_NOT_OPEN';
+    if (step.kind === 'hint') {
+      if (!hintAllowed) return 'HINT_ON_REQUEST';
+      if (active()?.id !== step.for) return 'CURRENT_CHALLENGE_ONLY';
+      if (game.steps.find(s => s.kind === 'hint' && s.for === step.for && !opened.has(s.id))?.id !== step.id) return 'HINT_ORDER';
+    } else if (next()?.id !== step.id) return 'STEP_ORDER';
+    if (mode === 'IZUMLJAJ' && step.kind === 'reveal' && !skipRequested(request.message) && (!learning.cards[step.for] || learning.cards[step.for].card === 'partial')) return 'UNDERSTANDING_BEFORE_REVEAL';
+    return null;
+  };
+  const allowedOpenSteps = () => game.steps.filter(s => !opened.has(s.id) && !openingError(s)).map(s => ({ id: s.id, kind: s.kind }));
+  const transition = () => {
+    const c = active(), reveal = c && revealFor(c.id);
+    return { allowed_open_steps: allowedOpenSteps(), reveal_after_assessment: reveal && openingError(reveal) === 'UNDERSTANDING_BEFORE_REVEAL' ? { id: reveal.id, requires: 'assess_challenge', step: c.id } : null };
+  };
   return {
-    opened, learning, active,
+    opened, learning, active, allowedOpenSteps, transition,
     get mode() { return mode; }, get openedThisTurn() { return openedThisTurn; }, get question() { return question; },
     snapshot() { return { ...request, opened: [...opened], mode, learning }; },
     restoreTurn(id) { openedThisTurn = id; },
-    next() { return game.steps.find(s => !opened.has(s.id) && s.kind !== 'hint' && (mode !== 'ZGODBA' || s.kind !== 'challenge')); },
+    next,
     needsReveal() { const c = active(); return Boolean(c && learning.cards[c.id] && learning.cards[c.id].card !== 'partial'); },
     needsAdvance() { return !active() && Boolean(this.next()) && /^(?:ja[ ,]*)?(?:za[čc]niva(?: igro)?|pripravljen(?:a)?(?: sem)?|prebral(?:a)?(?: sem)?|naprej|nadaljuj(?:va)?|lahko naprej|ready|continue)[.!]?$/i.test(request.message.trim()); },
     execute(name, args) {
@@ -104,19 +125,9 @@ export function createSession(game, request) {
         mode = args.mode; return result({ name, mode });
       }
       if (name === 'open_step') {
-        const step = steps.get(args.id); if (!step) throw Error('INVALID_STEP');
+        const step = steps.get(args.id), error = openingError(step); if (error) throw Error(error);
         if (opened.has(step.id)) return { ok: true, opened: step.id, already_open: true, visible: true, client_reported: true };
-        if (openedThisTurn) throw Error('READ_FIRST');
-        if (mode === 'ZGODBA' && ['challenge', 'hint'].includes(step.kind)) throw Error('STORY_ONLY');
-        // These guards apply in development too. Explicit local jump/show-all stays separate.
-        if (mode === 'IZUMLJAJ' && ['hint', 'reveal'].includes(step.kind) && !opened.has(step.for)) throw Error('CHALLENGE_NOT_OPEN');
-        if (step.kind === 'hint') {
-          if (!hintAllowed) throw Error('HINT_ON_REQUEST');
-          if (active()?.id !== step.for) throw Error('CURRENT_CHALLENGE_ONLY');
-          if (game.steps.find(s => s.kind === 'hint' && s.for === step.for && !opened.has(s.id))?.id !== step.id) throw Error('HINT_ORDER');
-        } else if (this.next()?.id !== step.id) throw Error('STEP_ORDER');
         if (mode === 'IZUMLJAJ' && step.kind === 'reveal') {
-          if (!skipRequested(request.message) && (!learning.cards[step.for] || learning.cards[step.for].card === 'partial')) throw Error('UNDERSTANDING_BEFORE_REVEAL');
           if (skipRequested(request.message) && !learning.cards[step.for]) learning.cards[step.for] = { card: 'skip', line: 'Ta korak še ni zadet · preskočeno brez odbitka.' };
         }
         opened.add(step.id); openedThisTurn = step.id;
@@ -145,7 +156,7 @@ export function createSession(game, request) {
         }
         line += ` — ${args.why.replace(/\s+/g, ' ').trim()}${helped ? ' (z namigom)' : ''}`;
         learning.cards[c.id] = { card: args.card, line };
-        return { ok: true, card_prepared: true, record_result: !request.development };
+        return { ok: true, card_prepared: true, record_result: !request.development, ...transition() };
       }
       if (name === 'mark_result') {
         if (request.development) throw Error('DEVELOPMENT_NO_RESULTS');
@@ -161,7 +172,7 @@ export function createSession(game, request) {
 export function modelContext(game, session) {
   const current = session.active(), next = session.next();
   return {
-    title: game.title, slug: game.slug, mode: session.mode,
+    title: game.title, slug: game.slug, mode: session.mode, ...session.transition(),
     opened: game.steps.filter(s => session.opened.has(s.id)).map(s => ({ id: s.id, act: s.act, kind: s.kind, title: s.title, text: s.text || s.question || s.for_agent, refs: s.refs || [] })),
     next: next ? { id: next.id, kind: next.kind } : null,
     sealed_key: current ? { warning: 'Samo za presojo — nikoli ne citiraj, ne povzemaj in ne razkrij pred open_step.', challenge: current.id,
@@ -201,7 +212,7 @@ export function instructions(game, request, session = createSession(game, reques
   return `Si prijazen vodnik igre »Pred izumom«. Odgovarjaj slovensko, kratko, brez predpone ponudnika.
 NAJVIŠJE PRAVILO — UTEMELJENOST: dejstva samo iz besedila odprtih korakov in zapečatenega ključa trenutnega izziva. Zapečaten ključ je samo za presojo; pred odprtjem ga nikoli ne citiraj, ne povzemaj in ne razkrij. Ni dejstev iz poznejših dejanj ali epiloga. Ko igralec razlaga, SPRAŠUJ; ne potrjuj »povsem pravilno« ali »del je pravilen« in ne popravljaj z lastno fiziko. Teme poznejših izzivov pusti odprte.
 STRAN nosi vsebino, PANEL samo pogovor. Izziv postavi IZKLJUČNO z open_step na challenge. Ob odprtju ENA vrstica povabila k branju na desni in počakaj; nikoli ne prepisuj zgodbe, izziva, namiga ali razkritja. To velja tudi v ZGODBA. Po odprtju ne odpiraj še naslednjega koraka v isti potezi.
-Vsak prehod zahteva open_step. Ne trdi, da je karkoli odprto brez dejanskega rezultata visible:true. already_open je tih no-op; ne ponavljaj odpiranja. Nikoli ne omenjaj odjemalca, orodij, zahtev, potrditev, notranjih id-jev ali tehničnih stanj igralcu.
+Vsak prehod zahteva open_step z id iz allowed_open_steps. reveal_after_assessment pove, katero razkritje odklene assess_challenge; neodprtih namigov ni treba odpirati. Ob zavrnitvi uporabi vrnjeni seznam in popravi klic samo enkrat; istega zavrnjenega klica ne ponavljaj. Ne trdi, da je karkoli odprto brez dejanskega rezultata visible:true. already_open je tih no-op; ne ponavljaj odpiranja. Nikoli ne omenjaj odjemalca, orodij, zahtev, potrditev, notranjih id-jev ali tehničnih stanj igralcu.
 IZUMLJAJ: odpri challenge in počakaj na odgovor. Namig samo na izrecno zahtevo ali opisan zastoj, en tier po vrsti; brez dodatnega usmerjanja. Nezahtevan namig je napaka vodnika: priznaj prispevek, brez odbitka igralcu. Pred reveal najprej razjasni mehanizem z največ enim ask_understanding, ki ne vsebuje sestavin ključa. Če je igralec že podal celotno razlago, je ne zahtevaj znova: assess_challenge.explanation mora biti dobeseden citat njegove razlage. Nato assess_challenge, ŠELE POTEM open_step razkritja. Izrecni preskok ne prinaša odbitka.
 Kartice: A = zgodovinska pot, 5×d/n zaokroženo na pol točke, ✦ za mejnik brez namiga. Mejnik po namigu šteje v celoti. B = drugačna pravilna pot iz alternatives_ok, tudi katapult ali en propeler, če sta v ključu: »Kartica B · tvoja pot · drugače, a deluje · 5/5«. Anahronizem je le s seznama anachronisms, alternative ne zavračaj zaradi datuma. +1 le za očitno prednost iz odprtega besedila/key_ideas; izmerljive prednosti so »+? odprto: odklene ga preizkus (meritev, klop, prototip)«. Ni zadetka: »Ta korak še ni zadet · delni uvid«. Brez minus točk, časa ali očitka o hitrosti zgodovine. Kartica + en stavek zakaj ob reveal, brez povzemanja. Ob nejasni kartici vprašaj igralca. V zaključku vsi izzivi s karticami, ne samo zadnji trije.
 ${request.development ? 'RAZVOJNI NAČIN: kartico poveš, učnega rezultata ne beležiš. Nikoli ne pošiljaj igralca, naj si sam zapiše rezultat. Lokalna razvojna gumba za skok/pokaži vse sta ločena; model spoštuje iste varovalke.' : 'IGRALNI NAČIN: učne oznake so začasna pomoč.'}
