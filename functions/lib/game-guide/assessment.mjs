@@ -1,8 +1,18 @@
 // The model identifies evidence; only the server chooses the card and score.
 export const assessmentRule = 'achieved: unique exact key_ideas; path: historical|own; why: 1..200 characters. A: round(10*d/n)/2; stars: achieved ideas not covered by opened hints. B: 5/5, +1 per grounded evident advantage; needs_test never scores. No free card/stars/bonus.';
+// R7 key ids (e.g. s14.k2) and exact milestone text name the same key_idea.
+export function ideaEntries(challenge) {
+  const ids = new Map((challenge?.key?.key_ideas || []).map(x => [x?.text, x?.id]));
+  return (challenge?.key_ideas || []).map(text => ({ id: typeof ids.get(text) === 'string' ? ids.get(text) : null, text }));
+}
+export function resolveIdea(challenge, value) {
+  if (typeof value !== 'string') return null;
+  return ideaEntries(challenge).find(x => x.text === value || (x.id && x.id === value.trim())) || null;
+}
+export const ideaIDs = (challenge, texts) => texts.map(text => resolveIdea(challenge, text)?.id).filter(Boolean);
 export function invalidAssessment(challenge, field) {
   return Object.assign(Error('INVALID_ASSESSMENT'), { details: {
-    field, allowed: { path: ['historical', 'own'], achieved: challenge.key_ideas || [],
+    field, allowed: { path: ['historical', 'own'], achieved: challenge.key_ideas || [], achieved_ids: ideaIDs(challenge, challenge.key_ideas || []),
       advantage_kind: ['evident', 'needs_test'], why_maxLength: 200 }, rule: assessmentRule,
     next: 'assess_challenge', missing: [field]
   } });

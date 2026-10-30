@@ -41,9 +41,27 @@ export function createLogStore({ rpc = database } = {}) {
     remove: (actor, id) => rpc('game_log_delete', { id, actor_key: actorKey(actor) })
   };
 }
+// Per-call provider usage (P0-R3.4): token counts and stop reason only, never text.
+const tokens = value => Number.isSafeInteger(value) && value >= 0 ? value : null;
+export function usageSummary(provider, usage) {
+  if (!usage || typeof usage !== 'object') return null;
+  // Claude Messages usage counts thinking inside output_tokens; a split is kept only if reported.
+  if (provider === 'claude') return { input_tokens: tokens(usage.input_tokens), output_tokens: tokens(usage.output_tokens),
+    cache_read: tokens(usage.cache_read_input_tokens), cache_write: tokens(usage.cache_creation_input_tokens),
+    cache_write_5m: tokens(usage.cache_creation?.ephemeral_5m_input_tokens), cache_write_1h: tokens(usage.cache_creation?.ephemeral_1h_input_tokens),
+    thinking_tokens: tokens(usage.output_tokens_details?.thinking_tokens) };
+  return { input_tokens: tokens(usage.input_tokens), output_tokens: tokens(usage.output_tokens),
+    cache_read: tokens(usage.input_tokens_details?.cached_tokens), cache_write: tokens(usage.input_tokens_details?.cache_write_tokens),
+    reasoning_tokens: tokens(usage.output_tokens_details?.reasoning_tokens) };
+}
+export function stopReason(provider, response) {
+  const value = provider === 'claude' ? response?.stop_reason
+    : response?.status === 'incomplete' ? `incomplete:${response.incomplete_details?.reason || 'unknown'}` : response?.status;
+  return typeof value === 'string' && /^[a-z_:]{1,64}$/.test(value) ? value : null;
+}
 // Reuse Guide pricing without changing owner exemption or the visitor budget.
 export function costRecorder(budget, provider, model, events) {
-  const estimates = new WeakMap(); let ownerEstimate, effort;
+  const estimates = new WeakMap(); let ownerEstimate, effort, settled = null;
   return {
     async reserve(payload) {
       effort = payload.output_config?.effort ?? payload.reasoning?.effort ?? null;
@@ -58,8 +76,12 @@ export function costRecorder(budget, provider, model, events) {
       await budget.settle(held, usage, rejected);
       const maximum = held ? estimates.get(held) ?? held.amount ?? null : ownerEstimate;
       const amount = rejected ? 0 : maximum === null ? null : charge(provider, usage, maximum, model);
-      events.push({ kind: 'cost', payload: { provider, model, effort, currency: 'USD', nanos: amount, phase: 'settled', basis: rejected ? 'rejected' : !usage ? 'reserved_unknown' : maximum === null ? 'unpriced' : 'guide_usage_estimate' } });
-    }
+      settled = { provider, model, effort, currency: 'USD', nanos: amount, phase: 'settled', basis: rejected ? 'rejected' : !usage ? 'reserved_unknown' : maximum === null ? 'unpriced' : 'guide_usage_estimate',
+        usage: usageSummary(provider, usage), stop_reason: null };
+      events.push({ kind: 'cost', payload: settled });
+    },
+    // The shared transport settles before returning the response; attach its stop reason afterwards.
+    noteResponse(response) { if (settled) settled.stop_reason = stopReason(provider, response); settled = null; }
   };
 }
 export function logReadResponse(result) {

@@ -3,7 +3,7 @@ import { createBudget } from './lib/mdlxdcc-guide/cost.mjs';
 import { providerRound, appendAssistant, appendTool } from './lib/mdlxdcc-guide/provider.mjs';
 import { validateBody, loadGame, validateGame, createSession, gameTools, instructions, unsafeReply, invitation } from './lib/game-guide/runtime.mjs';
 import { sealContinuation, openContinuation } from './lib/game-guide/continuation.mjs';
-import { createLogStore, readerAllowed, sessionID, privateText, costRecorder, logReadResponse } from './lib/game-guide/log.mjs';
+import { createLogStore, readerAllowed, sessionID, privateText, costRecorder, logReadResponse, usageSummary, stopReason } from './lib/game-guide/log.mjs';
 import { diagnosticEvent } from './lib/game-guide/diagnostics.mjs';
 import { createGameProviderClient, gameProviderKey, gameProviderModel } from './lib/game-guide/provider.mjs';
 
@@ -117,6 +117,7 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
           const game = validateGame(await bounded(gameFactory(request.slug, { signal: abort.signal })), request.slug);
           const session = createSession(game, request);
           if (continuation?.openedThisTurn) session.restoreTurn(continuation.openedThisTurn);
+          if (continuation?.closedQuestions) session.restoreClosed(continuation.closedQuestions);
           if (request.development && /^(?:prosim[ ,]*)?(?:pokaži vse|show all)(?: korake)?[.!]?$/iu.test(request.message)) {
             // Explicit owner-only local navigation; never routed through the model.
             for (const step of game.steps) { const action = { name: 'open_step', id: step.id, owner_navigation: true }; if (log) events.push({ kind: 'open_step', payload: action }); send('action', action); }
@@ -135,6 +136,8 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
           const tools = gameTools(request.development);
           const allowedTools = tools.map(t => t.name);
           let finished = false, count = continuation?.count ?? 0, noOpOnly = continuation?.noOpOnly ?? false, repairs = continuation?.repairs ?? 0;
+          // P0-R3.4: one decisive question_closed round per turn does not burn the four-round bound.
+          let roundLimit = continuation?.roundGrace === true ? 5 : 4;
           const repair = code => { if (repairs >= 1) recover(code); repairs++; };
           const appendResults = entries => {
             const claudeResults = [];
@@ -166,16 +169,18 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
             if (continuation.pending.some(p => p.result.client_reported === true && p.result.error)) repair('TOOL_LIMIT');
             appendResults(continuation.pending);
           }
-          for (let n = continuation?.rounds ?? 0; n < 4; n++) {
+          for (let n = continuation?.rounds ?? 0; n < roundLimit; n++) {
             partialText = '';
             roundCount = n + 1; phase = 'provider_round';
             // Buffer provider prose until its transitions and disclosure are checked.
             const { response, text, calls } = await bounded(round({ provider: request.provider, model, client, system: instructions(game, request, session), input, tools, budget, signal: abort.signal, onText: text => { partialText = (partialText + text).slice(0, 32000); } }));
             if (!response) throw Error('PROVIDER_ERROR');
+            budget.noteResponse?.(response);
+            const callUsage = { usage: usageSummary(request.provider, response.usage), stop_reason: stopReason(request.provider, response) };
             lastModelText = text || partialText;
             partialText = '';
             if (!calls.length) {
-              trace('model_round', { last_model_text: lastModelText, tool_uses: [], repairs });
+              trace('model_round', { last_model_text: lastModelText, tool_uses: [], repairs, ...callUsage });
               let output = session.openedThisTurn ? invitation(game, session) : session.question || (noOpOnly ? '' : text?.trim());
               const violation = !session.openedThisTurn && !session.question && !noOpOnly && (unsafeReply(output || '', game, session) || (session.needsReveal() || session.needsAdvance() ? 'OPEN_STEP_REQUIRED' : null));
               if (violation) {
@@ -205,15 +210,16 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
               pending.push({ call, result });
             }
             phase = 'tool_results';
-            trace('model_round', { last_model_text: lastModelText, repairs,
+            trace('model_round', { last_model_text: lastModelText, repairs, ...callUsage,
               tool_uses: pending.map(p => ({ name: p.call.name, call_id: p.call.call_id, args: p.call.arguments, result: p.result })) });
             noOpOnly = pending.every(p => p.result.already_open === true);
             if (pending.some(p => p.result.error)) repair('TOOL_LIMIT');
+            if (roundLimit === 4 && pending.every(p => p.result.question_closed === true)) roundLimit = 5;
             if (pending.some(p => p.result.action)) {
-              if (n >= 3) recover('ROUND_LIMIT');
+              if (n >= roundLimit - 1) recover('ROUND_LIMIT');
               const nextRequest = { ...session.snapshot(), game_session_id: log?.id ?? request.game_session_id };
               phase = 'seal_continuation';
-              const token = sealContinuation({ request: nextRequest, input, pending, rounds: n + 1, count, noOpOnly, repairs, deadline, lastModelText, openedThisTurn: session.openedThisTurn }, actor, continuationSecret());
+              const token = sealContinuation({ request: nextRequest, input, pending, rounds: n + 1, count, noOpOnly, repairs, deadline, lastModelText, openedThisTurn: session.openedThisTurn, closedQuestions: session.closedQuestions, roundGrace: roundLimit > 4 }, actor, continuationSecret());
               if (log && events.length) await bounded(logStore.append(log, events.splice(0)));
               for (const p of pending) if (p.result.action) send('action', { ...p.result.action, call_id: p.call.call_id });
               send('continue', { token });
