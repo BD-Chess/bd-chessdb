@@ -3,7 +3,7 @@
   "slug": "dayton1903",
   "title": "Dayton 1903",
   "year": 1903,
-  "release": "R6",
+  "release": "R7",
   "language": "sl",
   "people_ids": [
     "wright-brothers"
@@ -44,6 +44,12 @@
       "place": "Kill Devil Hills, Severna Karolina"
     }
   ],
+  "key_commit": {
+    "alg": "sha3-256",
+    "rules": "PRAVILO20 v0.2",
+    "release": "R7",
+    "sha3": "77700306354aa31c4bc196b211b510d25c07469ab413c1af443ae08b70f1866e"
+  },
   "steps": [
     {
       "id": "s1",
@@ -104,7 +110,7 @@
       "act": 1,
       "kind": "challenge",
       "title": "Kako pilot nadzoruje nagib?",
-      "for_agent": "Izziv brez oblike rešitve. Igralec naj pove, kako bi spremenil vzgon na levi in desni strani. Namig daj samo, če ga igralec zahteva ali reče, da je obtičal.",
+      "for_agent": "Izziv brez oblike rešitve. Postavi ga samo z vprašanjem s strani in ne dodajaj sestavin rešitve (leva in desna stran, vzgon, kot, vrvice). Namig daj samo, če ga igralec zahteva ali reče, da je obtičal.",
       "sources_ref": [
         1,
         5
@@ -146,7 +152,75 @@
           "kind": "answer",
           "label": "kam napisati odgovor"
         }
-      ]
+      ],
+      "key": {
+        "key_ideas": [
+          {
+            "id": "s2.k1",
+            "text": "nagib popravljaš z različnim vzgonom na levi in desni strani"
+          },
+          {
+            "id": "s2.k2",
+            "text": "vzgon spremeniš s kotom, pod katerim konec krila zadene zrak (kot pri pticah)"
+          },
+          {
+            "id": "s2.k3",
+            "text": "na obeh straneh nasprotno: ena več, druga manj"
+          },
+          {
+            "id": "s2.k4",
+            "text": "pilot to upravlja mehansko, z vrvicami ali žicami, krilo pa ostane trdno"
+          }
+        ],
+        "hints": [
+          {
+            "step_id": "s3",
+            "covers": [
+              "s2.k2"
+            ]
+          },
+          {
+            "step_id": "s4",
+            "covers": [
+              "s2.k2",
+              "s2.k3"
+            ]
+          },
+          {
+            "step_id": "s5",
+            "covers": [
+              "s2.k2",
+              "s2.k3",
+              "s2.k4"
+            ]
+          }
+        ],
+        "alternatives": [
+          {
+            "id": "s2.a1",
+            "opis": "gibljive ploskve na koncih kril (krilca) so pravilna drugačna pot; britanski patent iz leta 1868 je bil pozabljen, prevladala so po letu 1915",
+            "izid": "B"
+          }
+        ],
+        "anachronisms": [
+          {
+            "id": "s2.x1",
+            "sredstvo": "krilca kot uveljavljena rešitev pred letom 1904"
+          },
+          {
+            "id": "s2.x2",
+            "sredstvo": "žiroskopski stabilizator (Sperry, 1914)"
+          },
+          {
+            "id": "s2.x3",
+            "sredstvo": "hidravlika, servomotorji, elektronika"
+          },
+          {
+            "id": "s2.x4",
+            "sredstvo": "izraz »aileron«"
+          }
+        ]
+      }
     },
     {
       "id": "s3",
@@ -339,7 +413,75 @@
           "kind": "answer",
           "label": "kam napisati odgovor"
         }
-      ]
+      ],
+      "key": {
+        "key_ideas": [
+          {
+            "id": "s8.k1",
+            "text": "primerjava v enakem in enakomernem vetru (nadzorovan poskus)"
+          },
+          {
+            "id": "s8.k2",
+            "text": "majhni modeli in umeten veter v zaprtem kanalu (vetrovnik)"
+          },
+          {
+            "id": "s8.k3",
+            "text": "merjenje razmerja sil proti referenčni ploščici, da se hitrost vetra okrajša"
+          },
+          {
+            "id": "s8.k4",
+            "text": "sistematično preizkusiti veliko oblik (ukrivljenost, razmerje dolžine in globine krila)"
+          },
+          {
+            "id": "s8.k5",
+            "text": "preveriti samo konstanto v enačbi za vzgon"
+          }
+        ],
+        "hints": [
+          {
+            "step_id": "s9",
+            "covers": [
+              "s8.k1"
+            ]
+          },
+          {
+            "step_id": "s10",
+            "covers": [
+              "s8.k1",
+              "s8.k2"
+            ]
+          },
+          {
+            "step_id": "s11",
+            "covers": [
+              "s8.k3"
+            ]
+          }
+        ],
+        "alternatives": [],
+        "anachronisms": [
+          {
+            "id": "s8.x1",
+            "sredstvo": "elektronski senzorji sile, merilni lističi"
+          },
+          {
+            "id": "s8.x2",
+            "sredstvo": "računalniška simulacija ali CFD"
+          },
+          {
+            "id": "s8.x3",
+            "sredstvo": "Prandtlova teorija krila (1918)"
+          },
+          {
+            "id": "s8.x4",
+            "sredstvo": "profili NACA (1930-a)"
+          },
+          {
+            "id": "s8.x5",
+            "sredstvo": "merilnik z vročo žico"
+          }
+        ]
+      }
     },
     {
       "id": "s9",
@@ -546,7 +688,57 @@
           "kind": "answer",
           "label": "kam napisati odgovor"
         }
-      ]
+      ],
+      "key": {
+        "key_ideas": [
+          {
+            "id": "s14.k1",
+            "text": "krilo z več vzgona ima tudi več upora, zato se nos zasuka proti njemu (neželeni zasuk)"
+          },
+          {
+            "id": "s14.k2",
+            "text": "nepremična plavut v drsenju vstran zasuk še poveča"
+          },
+          {
+            "id": "s14.k3",
+            "text": "smerno krmilo mora biti gibljivo"
+          },
+          {
+            "id": "s14.k4",
+            "text": "krmilo je povezano z zvijanjem kril ali ga pilot upravlja hkrati z njim (nadzor v treh oseh)"
+          }
+        ],
+        "hints": [
+          {
+            "step_id": "s15",
+            "covers": [
+              "s14.k1"
+            ]
+          },
+          {
+            "step_id": "s16",
+            "covers": [
+              "s14.k2",
+              "s14.k3"
+            ]
+          }
+        ],
+        "alternatives": [],
+        "anachronisms": [
+          {
+            "id": "s14.x1",
+            "sredstvo": "diferencialna ali Frisejeva krilca (1930-a)"
+          },
+          {
+            "id": "s14.x2",
+            "sredstvo": "dušilnik zasuka, avtopilot"
+          },
+          {
+            "id": "s14.x3",
+            "sredstvo": "izraz »koordinirani zavoj« kot naučeno pravilo"
+          }
+        ]
+      }
     },
     {
       "id": "s15",
@@ -686,9 +878,12 @@
         "propeler je vrteče se krilo, njegov vzgon kaže naprej",
         "vsak košček lopatice izračunaš iz tabel vetrovnika (hitrost leta in hitrost vrtenja dasta smer zraka)",
         "lopatica je zvita, ker konica teče hitreje kot del ob osi",
-        "velik in počasen propeler, upočasnjen z verigo in zobniki",
-        "dva propelerja v nasprotnih smereh izničita zasuk",
-        "en motor, prenos z verigama (tehnika koles)"
+        "en motor poganja velik in počasen propeler prek verige in zobnikov (tehnika koles)",
+        "dva propelerja v nasprotnih smereh izničita zasuk"
+      ],
+      "alternatives_ok": [
+        "en propeler deluje, če zasuk motorja izravnaš drugače (npr. s krmilom ali nesimetrijo krila)",
+        "trak z lopaticami, ki delajo z vzgonom (kot LIFT-BELT): drugače, a deluje; primerjaj s propelerjem s številkami"
       ],
       "anachronisms": [
         "Betz-Prandtlova teorija propelerja (okoli 1920)",
@@ -718,7 +913,86 @@
           "kind": "answer",
           "label": "kam napisati odgovor"
         }
-      ]
+      ],
+      "key": {
+        "key_ideas": [
+          {
+            "id": "s19.k1",
+            "text": "propeler je vrteče se krilo, njegov vzgon kaže naprej"
+          },
+          {
+            "id": "s19.k2",
+            "text": "vsak košček lopatice izračunaš iz tabel vetrovnika (hitrost leta in hitrost vrtenja dasta smer zraka)"
+          },
+          {
+            "id": "s19.k3",
+            "text": "lopatica je zvita, ker konica teče hitreje kot del ob osi"
+          },
+          {
+            "id": "s19.k4",
+            "text": "en motor poganja velik in počasen propeler prek verige in zobnikov (tehnika koles)"
+          },
+          {
+            "id": "s19.k5",
+            "text": "dva propelerja v nasprotnih smereh izničita zasuk"
+          }
+        ],
+        "hints": [
+          {
+            "step_id": "s20",
+            "covers": [
+              "s19.k2"
+            ]
+          },
+          {
+            "step_id": "s21",
+            "covers": [
+              "s19.k1"
+            ]
+          },
+          {
+            "step_id": "s22",
+            "covers": [
+              "s19.k3",
+              "s19.k5"
+            ]
+          }
+        ],
+        "alternatives": [
+          {
+            "id": "s19.a1",
+            "opis": "en propeler deluje, če zasuk motorja izravnaš drugače (npr. s krmilom ali nesimetrijo krila)",
+            "izid": "B"
+          },
+          {
+            "id": "s19.a2",
+            "opis": "trak z lopaticami, ki delajo z vzgonom (kot LIFT-BELT): drugače, a deluje; primerjaj s propelerjem s številkami",
+            "izid": "B"
+          }
+        ],
+        "anachronisms": [
+          {
+            "id": "s19.x1",
+            "sredstvo": "Betz-Prandtlova teorija propelerja (okoli 1920)"
+          },
+          {
+            "id": "s19.x2",
+            "sredstvo": "propeler s spremenljivim korakom (1920-a in 1930-a)"
+          },
+          {
+            "id": "s19.x3",
+            "sredstvo": "turbinski ali reaktivni motor"
+          },
+          {
+            "id": "s19.x4",
+            "sredstvo": "ogljikova vlakna, kompoziti"
+          },
+          {
+            "id": "s19.x5",
+            "sredstvo": "litij-ionske baterije"
+          }
+        ]
+      }
     },
     {
       "id": "s20",
@@ -922,7 +1196,58 @@
           "kind": "answer",
           "label": "kam napisati odgovor"
         }
-      ]
+      ],
+      "key": {
+        "key_ideas": [
+          {
+            "id": "s25.k1",
+            "text": "gladka podlaga, ki jo prineseš s seboj (tirnica z vozičkom)"
+          },
+          {
+            "id": "s25.k2",
+            "text": "vzlet proti močnemu vetru, ker krilo nosi glede na hitrost zraka"
+          },
+          {
+            "id": "s25.k3",
+            "text": "pobočje ni nujno; ravna tla proti vetru so varnejša"
+          }
+        ],
+        "hints": [
+          {
+            "step_id": "s26",
+            "covers": [
+              "s25.k1"
+            ]
+          },
+          {
+            "step_id": "s27",
+            "covers": [
+              "s25.k2"
+            ]
+          }
+        ],
+        "alternatives": [
+          {
+            "id": "s25.a1",
+            "opis": "katapult z utežjo (brata sta ga uvedla leta 1904)",
+            "izid": "B"
+          }
+        ],
+        "anachronisms": [
+          {
+            "id": "s25.x1",
+            "sredstvo": "asfaltirana vzletna steza"
+          },
+          {
+            "id": "s25.x2",
+            "sredstvo": "rakete za pomoč pri vzletu (1940-a)"
+          },
+          {
+            "id": "s25.x3",
+            "sredstvo": "pristajalno podvozje s tremi kolesi"
+          }
+        ]
+      }
     },
     {
       "id": "s26",
