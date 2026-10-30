@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pred izumom: Navier–Stokes 1845</title>
+<meta name="description" content="Igra Pred izumom: v čevljih Naviera, Saint-Venanta in Stokesa od Eulerjeve popolne tekočine do enačbe, ki opiše trenje v vodi in zraku.">
+<style>:root{--bg:#F1EEE6;--surface:#E7E2D6;--ink:#1F2A28;--muted:#5B6663;--line:#C9C2B2;--copper:#A24A1A;--verdigris:#2A766C;--link:#1F5F8B;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121917;--surface:#1B2422;--ink:#E3EBE9;--muted:#9AABA7;--line:#33433F;--copper:#E58C57;--verdigris:#62C2B4;--link:#8CC4EE;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121917;--surface:#1B2422;--ink:#E3EBE9;--muted:#9AABA7;--line:#33433F;--copper:#E58C57;--verdigris:#62C2B4;--link:#8CC4EE;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 Georgia,"Iowan Old Style","Times New Roman",serif;padding:32px 16px 56px}
+main{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+main>header{border-bottom:1px solid var(--line);padding-bottom:20px;display:flex;flex-direction:column;gap:8px}
+.g-eyebrow,.g-act,.g-kind,.g-badge{font:600 12px/1.4 ui-monospace,Consolas,"Courier New",monospace;letter-spacing:.12em;text-transform:uppercase}
+.g-eyebrow{color:var(--copper);margin:0}
+main h1{font-weight:400;font-size:clamp(36px,8vw,60px);line-height:1.05;margin:0}
+main h1 em{color:var(--copper)}
+.g-sub{color:var(--muted);margin:0}
+.g-badge{display:inline-block;align-self:flex-start;color:var(--verdigris);border:1px solid var(--verdigris);border-radius:3px;padding:2px 8px}
+.g-step{min-width:0}
+.g-act{color:var(--muted);margin:8px 0 0}
+.g-act-title{font-weight:400;font-size:clamp(28px,6vw,40px);line-height:1.1;margin:4px 0 18px}
+.g-kind{color:var(--verdigris);margin:0 0 4px}
+main h3{font-weight:400;font-size:24px;line-height:1.25;margin:0 0 12px}
+main p{margin:0 0 14px}
+main ul{margin:0 0 14px;padding-left:22px}
+main li{margin:0 0 6px}
+main a{color:var(--link)}
+.g-challenge{border:1px solid var(--copper);border-radius:8px;padding:18px 18px 6px}
+.g-challenge .g-kind{color:var(--copper)}
+.g-q{font-size:19px}
+.g-hint{border:1px dashed var(--line);border-radius:8px;padding:14px 16px 2px;background:var(--surface)}
+.g-hint .g-kind{color:var(--muted)}
+.g-reveal{border-left:3px solid var(--verdigris);padding-left:16px}
+.g-epilogue{border-top:1px solid var(--line);padding-top:18px}
+.g-fig{margin:4px 0 16px;display:flex;flex-direction:column;gap:6px}
+.g-fig img{width:100%;height:auto;display:block;border-radius:10px}
+.g-fig figcaption{font-size:15px;line-height:1.45;color:var(--muted)}
+.g-tag{font:600 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--verdigris);border:1px solid var(--verdigris);border-radius:3px;padding:2px 6px;white-space:nowrap}
+.g-src{font-size:14px;line-height:1.5;color:var(--muted);margin:0 0 14px}
+.g-src a{color:var(--muted)}
+.g-src summary{cursor:pointer;width:fit-content;font:600 12px/1.4 ui-monospace,Consolas,"Courier New",monospace;letter-spacing:.1em;text-transform:uppercase}
+.g-src[open] summary{margin-bottom:4px}
+.g-src summary:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.g-answer{padding:12px 16px;background:var(--surface);border-left:3px solid var(--copper);font-size:17px}
+.g-answer b{color:var(--copper)}
+.g-start{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:16px 18px;margin:8px 0 16px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.g-start span{font-size:15px;line-height:1.45;color:var(--muted)}
+.g-start button{font:600 17px/1.2 Georgia,"Iowan Old Style","Times New Roman",serif;padding:10px 20px;border:0;border-radius:6px;background:var(--copper);color:var(--bg);cursor:pointer}
+.g-start button:hover{filter:brightness(1.08)}
+.g-start button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+main>footer{border-top:1px solid var(--line);padding-top:14px;font:13px/1.6 ui-monospace,Consolas,monospace;color:var(--muted)}</style>
+<link rel="stylesheet" href="/assets/game-guide/game-guide.css">
+</head>
+<body>
+<main>
+<header>
+<p class="g-eyebrow">Pred izumom · igra</p>
+<h1>Navier–Stokes, <em>1845</em></h1>
+<p class="g-sub">Tekočina, ki se upira: 23 let v čevljih treh inženirjev in matematikov</p>
+<span class="g-badge">Osnutek R1 · 30. 10. 2026</span>
+</header>
+<section class="g-step g-story" id="s1" data-step="1" data-act="1" data-kind="story">
+<p class="g-act">1. dejanje · 1821 · Pariz</p><h2 class="g-act-title">Popolna tekočina</h2>
+<p class="g-kind">Zgodba</p>
+<h3 data-ref="s1.title">Prolog: inženir mostov</h3>
+<p data-ref="s1.p1">Pariz, 1821. Ti si Claude-Louis Navier, star 36 let. Rodil si se 10. februarja 1785 v Dijonu. Ko ti je leta 1793 umrl oče, te je k sebi vzel prastric Emiland Gauthey, inženir mostov in kanalov. Pozneje si uredil in izdal njegova dela. Od leta 1819 predavaš mehaniko na šoli za ceste in mostove v Parizu.</p>
+<p data-ref="s1.p2">Si inženir državnega korpusa za ceste in mostove, Ponts et Chaussées. Računaš mostove, kanale in cevi za vodo. Inženirji pretok vode po ceveh in kanalih računajo z obrazci, ki so jih iz meritev sestavili tvoji predhodniki. Obrazci delujejo, a nihče ne zna povedati, zakaj imajo takšno obliko.</p>
+<p data-ref="s1.p3">Maja 1821 si na Akademiji prebral razpravo o prožnih telesih. Trdno telo si predstavljaš kot množico molekul, ki se privlačijo in odbijajo, ko se razdalje med njimi spremenijo. Iz tega si izpeljal enačbe za upogib in raztezanje. Zdaj te zanima voda.</p>
+<div data-ref="s1.start" class="g-start" data-gg-start hidden>
+<button type="button" data-gg-action="start">Začniva igro</button>
+<span>Vodnik v panelu odpre prvi izziv ali nadaljuje zgodbo, odvisno od načina.</span>
+</div>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Navier/">MacTutor: Claude-Louis Navier</a> · <a href="https://www.scielo.br/j/rbef/a/nNpqpRmKN8J3zPhV4WN4vFF/">On the development of the Navier–Stokes equation by Navier (Revista Brasileira de Ensino de Física)</a></details>
+</section>
+<section class="g-step g-story" id="s2" data-step="2" data-act="1" data-kind="story" hidden>
+<p class="g-kind">Zgodba</p>
+<h3 data-ref="s2.title">Enačbe, ki ne poznajo upora</h3>
+<p data-ref="s2.p1">Leta 1738 je Daniel Bernoulli v knjigi <i>Hydrodynamica</i> razložil tok vode z ohranjanjem »žive sile«. Leonhard Euler je leta 1755 v Berlinu predstavil, leta 1757 pa objavil splošne enačbe gibanja tekočine. Za vsak majhen delček tekočine velja: masa krat pospešek je enako sili tlaka okolice in teži. Dodal je še enačbo, ki pove, da se tekočina nikjer ne izgubi in ne nastane.</p>
+<p data-ref="s2.p2">Eulerjeve enačbe so lepe in splošne. Opisujejo pa »popolno tekočino«, ki nima nobenega notranjega trenja.</p>
+<p data-ref="s2.p3">Jean le Rond d'Alembert je že leta 1752 v eseju o uporu tekočin izračunal, da tekočina telesu, ki se giblje skozi njo, ne nudi nobenega upora. Rezultat je zavrnil kot »v nasprotju s poskusi«. Leta 1768 je zagonetko izrecno zastavil vsem geometrom: telo, ki je spredaj in zadaj enako, v takšni tekočini ne čuti upora. Odgovora ni nihče našel.</p>
+<figure data-ref="s2.fig1" class="g-fig"><img src="img/euler.jpg" alt="Portret Leonharda Eulerja v modro črtasti halji in s svetlim turbanom." loading="lazy"><figcaption>Leonhard Euler (1707–1783). Portret: Jakob Emanuel Handmann, 1753 (Kunstmuseum Basel). Javna last, Wikimedia Commons. <span class="g-tag">arhiv</span></figcaption></figure>
+<details class="g-src"><summary>Viri (3)</summary><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Bernoulli_Daniel/">MacTutor: Daniel Bernoulli</a> · <a href="https://scholarlycommons.pacific.edu/euler-works/226">L. Euler, Principes généraux du mouvement des fluides (E226, 1757)</a> · <a href="https://arxiv.org/abs/0801.3014">Genesis of d&#x27;Alembert&#x27;s paradox and analytical elaboration of the drag problem (arXiv:0801.3014)</a></details>
+</section>
+<section class="g-step g-challenge" id="s3" data-step="3" data-act="1" data-kind="challenge" hidden>
+<p class="g-kind">Izziv</p>
+<h3 data-ref="s3.title">Upor, ki ga ni</h3>
+<p data-ref="s3.p1">Ob Seni gledaš čoln, ki ga konj vleče po kanalu. Ko konj obstane, čoln upočasni in obstane. Voda ga zavira.</p>
+<p data-ref="s3.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Po Eulerjevih enačbah krogla, ki se enakomerno giblje skozi mirno vodo, ne čuti nobenega upora. Vsak čolnar ve, da to ni res. Zakaj račun da nič in kaj v enačbah manjka?</p>
+<p data-ref="s3.p2">Odgovor je lahko z besedami. Formule niso potrebne.</p>
+<p data-ref="s3.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
+</section>
+<section class="g-step g-hint" id="s4" data-step="4" data-act="1" data-kind="hint" data-for="s3" data-tier="1" hidden>
+<p class="g-kind">Namig 1</p>
+<p data-ref="s4.p1">Primerjaj med in vodo. Kaj čutiš, ko z žlico počasi vlečeš skozi enega in drugo?</p>
+</section>
+<section class="g-step g-hint" id="s5" data-step="5" data-act="1" data-kind="hint" data-for="s3" data-tier="2" hidden>
+<p class="g-kind">Namig 2</p>
+<p data-ref="s5.p1">Nariši tokovnice okoli krogle, spredaj in zadaj. Kje je tlak večji, če so slike spredaj in zadaj zrcalne?</p>
+</section>
+<section class="g-step g-hint" id="s6" data-step="6" data-act="1" data-kind="hint" data-for="s3" data-tier="3" hidden>
+<p class="g-kind">Namig 3</p>
+<p data-ref="s6.p1">Kakšno silo lahko po Eulerju en delček vode da sosednjemu, in v katero smer? Ali ima voda v kozarcu na enakomerno vozečem vozu kakšno trenje?</p>
+</section>
+<section class="g-step g-reveal" id="s7" data-step="7" data-act="1" data-kind="reveal" data-for="s3" hidden>
+<p class="g-kind">Razkritje</p>
+<h3 data-ref="s7.title">Kar Euler izpusti</h3>
+<p data-ref="s7.p1">V popolni tekočini sosednja delčka drug na drugega delujeta samo s tlakom, ki je vedno pravokoten na stik. Sile vzdolž stika, s katero bi hitrejša plast vlekla počasnejšo, ni. Okoli telesa, ki je spredaj in zadaj enako, je zato tudi tok spredaj in zadaj zrcalen. Tlak, ki telo potiska nazaj, se natančno izniči s tlakom, ki ga potiska naprej. To je d'Alembertov paradoks.</p>
+<p data-ref="s7.p2">V resnični vodi plasti, ki drsijo druga ob drugi, druga drugo vlečejo. Isaac Newton je to domneval že leta 1687 v drugi knjigi <i>Principia</i>: upor, ki nastane, ker tekočina ni popolnoma »spolzka«, je sorazmeren s hitrostjo, s katero se njeni deli ločujejo. Trenje ni odvisno od hitrosti same, ampak od razlike hitrosti sosednjih plasti. Voda, ki se giblje kot celota, ga nima.</p>
+<p data-ref="s7.p3">Za telesom se tok v resnici odtrga in pusti vrtinčasto sled. Kako trenje povzroči odtrganje, je pojasnil šele Ludwig Prandtl leta 1904. Ti se odločiš za prvi korak: notranje trenje boš dodal v Eulerjeve enačbe.</p>
+<figure data-ref="s7.fig1" class="g-fig"><img src="img/01-popolna-tekocina.svg" alt="Tokovnice popolne tekočine okoli okroglega telesa so pred njim in za njim zrcalno enake; puščici tlaka spredaj in zadaj sta enako dolgi, upor je nič. Desno manjša slika resnične vode: za telesom nastane sled z vrtinci." loading="lazy"><figcaption>Popolna tekočina (Euler): tok je spredaj in zadaj zrcalno enak, tlaka sta enaka, upor je nič. Resnična voda pusti za telesom sled. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<figure data-ref="s7.fig2" class="g-fig"><img src="img/02-plasti-strig.svg" alt="Tekočina med mirujočo spodnjo ploščo in zgornjo ploščo, ki se giblje s hitrostjo V. Puščice hitrosti enakomerno rastejo od nič ob spodnji plošči do V ob zgornji; plasti drsijo druga ob drugi." loading="lazy"><figcaption>Strig med ploščama: hitrost plasti enakomerno raste od 0 do V. Newton (1687): upor je sorazmeren razliki hitrosti. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (3)</summary><a href="https://arxiv.org/abs/0801.3014">Genesis of d&#x27;Alembert&#x27;s paradox and analytical elaboration of the drag problem (arXiv:0801.3014)</a> · <a href="https://scholarlycommons.pacific.edu/euler-works/226">L. Euler, Principes généraux du mouvement des fluides (E226, 1757)</a> · <a href="https://germanhistory-intersections.org/en/knowledge-and-education/ghis:document-202">L. Prandtl, Über Flüssigkeitsbewegung bei sehr kleiner Reibung (1904), German History Intersections</a></details>
+</section>
+<section class="g-step g-story" id="s8" data-step="8" data-act="2" data-kind="story" hidden>
+<p class="g-act">2. dejanje · 1821–1822 · Pariz, Académie des sciences</p><h2 class="g-act-title">Razprava za Akademijo</h2>
+<p class="g-kind">Zgodba</p>
+<h3 data-ref="s8.title">Molekule v vodi</h3>
+<p data-ref="s8.p1">Pri prožnih telesih si molekulam dovolil, da se privlačijo in odbijajo, kadar se razdalje med njimi spremenijo. V vodi pa se molekule premikajo druga mimo druge in razdalje se ves čas spreminjajo. Voda nima oblike, ki bi si jo zapomnila.</p>
+<p data-ref="s8.p2">Imaš Eulerjeve enačbe za majhen delček vode in Newtonovo domnevo o uporu med plastmi. Manjka ti člen, ki bi trenje zapisal za vsak delček, kjerkoli v tekočini in v vseh smereh. Marca 1822 boš rezultat predstavil Akademiji.</p>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Navier/">MacTutor: Claude-Louis Navier</a> · <a href="https://www.scielo.br/j/rbef/a/nNpqpRmKN8J3zPhV4WN4vFF/">On the development of the Navier–Stokes equation by Navier (Revista Brasileira de Ensino de Física)</a></details>
+</section>
+<section class="g-step g-challenge" id="s9" data-step="9" data-act="2" data-kind="challenge" hidden>
+<p class="g-kind">Izziv</p>
+<h3 data-ref="s9.title">Trenje v enačbi</h3>
+<p data-ref="s9.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Imaš Eulerjevo enačbo za majhen delček vode: masa krat pospešek je enako sili tlaka in teži. Kako bi dodal silo notranjega trenja? Od česa je odvisna in kakšno obliko ima v enačbi?</p>
+<p data-ref="s9.p1">Lahko razmišljaš o tankih plasteh, o majhni kocki vode ali o molekulah. Vse poti so dovoljene.</p>
+<p data-ref="s9.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
+</section>
+<section class="g-step g-hint" id="s10" data-step="10" data-act="2" data-kind="hint" data-for="s9" data-tier="1" hidden>
+<p class="g-kind">Namig 1</p>
+<p data-ref="s10.p1">Newton je leta 1687 domneval, da je upor med plastmi sorazmeren z razliko njihovih hitrosti. Kako bi to zapisal za dve tanki plasti, ki sta blizu skupaj?</p>
+</section>
+<section class="g-step g-hint" id="s11" data-step="11" data-act="2" data-kind="hint" data-for="s9" data-tier="2" hidden>
+<p class="g-kind">Namig 2</p>
+<p data-ref="s11.p1">Na majhno kocko vode deluje strižna sila na zgornji in na spodnji ploskvi. Kaj ostane kocki, če sta sili enaki? Kaj, če nista?</p>
+</section>
+<section class="g-step g-hint" id="s12" data-step="12" data-act="2" data-kind="hint" data-for="s9" data-tier="3" hidden>
+<p class="g-kind">Namig 3</p>
+<p data-ref="s12.p1">Isto velja za levo in desno ter za spredaj in zadaj. Kako združiš vse tri smeri, če nobena ni posebna?</p>
+</section>
+<section class="g-step g-reveal" id="s13" data-step="13" data-act="2" data-kind="reveal" data-for="s9" hidden>
+<p class="g-kind">Razkritje</p>
+<h3 data-ref="s13.title">18. marec 1822</h3>
+<p data-ref="s13.p1">18. marca 1822 je Navier na Akademiji prebral razpravo <i>Mémoire sur les lois du mouvement des fluides</i>. Molekulam v gibajoči se tekočini je dodal silo, ki je sorazmerna z razliko njihovih hitrosti in pada z razdaljo. Ko je seštel prispevke vseh sosed okoli delčka, je v Eulerjevi enačbi dobil nov člen: konstanto, pomnoženo z vsoto drugih odvodov hitrosti v vseh treh smereh.</p>
+<p data-ref="s13.p2">To je enačba, ki jo danes imenujemo Navier–Stokesova, za nestisljivo tekočino. Konstanto je Navier označil z ε. Ni ji določil vrednosti in je ni razumel kot strižno napetost; zanj je bila lastnost molekul. Za steno je dodal še drugo konstanto, ki je dovoljevala delni zdrs tekočine ob steni.</p>
+<p data-ref="s13.p3">Drugo konstanto je ocenil iz meritev, ki jih je Pierre-Simon Girard v letih 1814–1817 opravil s tokom vode skozi tanke cevi. Razprava je bila natisnjena šele leta 1827, v šestem zvezku spominov Akademije. Navier je leta 1824 postal član Akademije. Septembra 1826 je njegov viseči most čez Seno pri Invalidih, še pred odprtjem, poškodovala počena cev pod enim od opornikov. Mestni svet je ukazal most podreti.</p>
+<figure data-ref="s13.fig1" class="g-fig"><img src="img/03-kocka-sile.svg" alt="Levo plasti tekočine, katerih hitrost z višino narašča vse hitreje. Desno povečana kocka vode: zgoraj jo hitrejša plast vleče naprej z daljšo puščico, spodaj jo počasnejša plast zadržuje s krajšo puščico; v kocki puščica razlike." loading="lazy"><figcaption>Kocka vode med plastmi: na zgornjo in spodnjo ploskev delujeta različno veliki strižni sili. Razlika sil premakne kocko. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<figure data-ref="s13.fig2" class="g-fig"><img src="img/spomin-1827.jpg" alt="Prva stran tiskanega spisa v francoščini z naslovom Mémoire sur les lois du mouvement des fluides, avtor M. Navier, in začetkom poglavja I. Notions préliminaires." loading="lazy"><figcaption>Navier: »Mémoire sur les lois du mouvement des fluides«, prva stran. Prebrano na Akademiji 18. marca 1822, natisnjeno 1827 (Mém. Acad. Sci. t. VI, str. 389). Javna last. <span class="g-tag">arhiv</span></figcaption></figure>
+<details class="g-src"><summary>Viri (4)</summary><a href="https://fr.wikisource.org/wiki/Page:M%C3%A9moires_de_l%E2%80%99Acad%C3%A9mie_des_sciences,_Tome_6.djvu/577">C.-L. Navier, Mémoire sur les lois du mouvement des fluides, Mém. Acad. Sci. 6 (1827), Wikisource</a> · <a href="https://www.scielo.br/j/rbef/a/nNpqpRmKN8J3zPhV4WN4vFF/">On the development of the Navier–Stokes equation by Navier (Revista Brasileira de Ensino de Física)</a> · <a href="https://fr.wikisource.org/wiki/M%C3%A9moire_sur_l%E2%80%99%C3%A9coulement_lin%C3%A9aire_de_diverses_substances_liquides_par_des_tubes_capillaires_de_verre">P.-S. Girard, Mémoire sur l&#x27;écoulement linéaire… par des tubes capillaires de verre (1817), Wikisource</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Navier/">MacTutor: Claude-Louis Navier</a></details>
+</section>
+<section class="g-step g-story" id="s14" data-step="14" data-act="3" data-kind="story" hidden>
+<p class="g-act">3. dejanje · 1822–1843 · Pariz</p><h2 class="g-act-title">Brez molekul</h2>
+<p class="g-kind">Zgodba</p>
+<h3 data-ref="s14.title">Spor o konstantah</h3>
+<p data-ref="s14.p1">Pariz, 1843. Zdaj si Adhémar Barré de Saint-Venant, rojen 23. avgusta 1797. Tako kot Navier si inženir korpusa za ceste in mostove. Že 14. aprila 1834 si Akademiji predstavil razpravo o dinamiki tekočin. Navierovo delo dobro poznaš.</p>
+<p data-ref="s14.p2">Navierova enačba ni ostala sama. Augustin Cauchy je 30. septembra 1822 na Akademiji predstavil pojem napetosti: sile na majhno ploskev znotraj telesa, ki ni nujno pravokotna nanjo. Leta 1828 je zapisal enačbe za »trdnino brez prožnosti«, ki imajo enako obliko kot Navierove, a jih ni ponudil kot teorijo tekočin. Siméon Denis Poisson je leta 1829 iz drugačnih domnev o molekulah dobil enačbo z dvema konstantama. Naviera ni omenil.</p>
+<p data-ref="s14.p3">Navier je umrl 21. avgusta 1836. Kdo ima prav? Koliko konstant ima voda? In ali so molekule, ki jih nihče ni videl, sploh potrebne?</p>
+<figure data-ref="s14.fig1" class="g-fig"><img src="img/saint-venant.jpg" alt="Gravura: starejši moški z belo brado v ovalnem okvirju, v uniformi z vezenino; spodaj napis Barré de Saint-Venant." loading="lazy"><figcaption>Adhémar Barré de Saint-Venant (1797–1886). Gravura iz knjige A. Debauve o inženirjih Ponts et Chaussées, Pariz 1893. Javna last, Wikimedia Commons. <span class="g-tag">arhiv</span></figcaption></figure>
+<details class="g-src"><summary>Viri (4)</summary><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Saint-Venant/">MacTutor: Adhémar Jean Claude Barré de Saint-Venant</a> · <a href="https://comptes-rendus.academie-sciences.fr/mecanique/articles/10.1016/j.crme.2017.05.008/">Joseph Boussinesq&#x27;s legacy in fluid mechanics (Comptes Rendus Mécanique, 2017; tudi o Saint-Venantu)</a> · <a href="https://archive.org/details/mathematicalphys01stokuoft">G. G. Stokes, Mathematical and Physical Papers, zv. 1 (1880)</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Navier/">MacTutor: Claude-Louis Navier</a></details>
+</section>
+<section class="g-step g-challenge" id="s15" data-step="15" data-act="3" data-kind="challenge" hidden>
+<p class="g-kind">Izziv</p>
+<h3 data-ref="s15.title">Enačba brez molekul</h3>
+<p data-ref="s15.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Navierova konstanta izhaja iz sil med molekulami, ki jih nihče ni videl. Poisson je z drugačnimi domnevami o molekulah dobil enačbo z dvema konstantama. Ali lahko enačbo za trenje dobiš brez domnev o molekulah? Katere domneve so nujne?</p>
+<p data-ref="s15.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
+</section>
+<section class="g-step g-hint" id="s16" data-step="16" data-act="3" data-kind="hint" data-for="s15" data-tier="1" hidden>
+<p class="g-kind">Namig 1</p>
+<p data-ref="s16.p1">Kaj vse lahko počne majhna kocka vode v toku? Naštej načine, kako se giblje in spreminja.</p>
+</section>
+<section class="g-step g-hint" id="s17" data-step="17" data-act="3" data-kind="hint" data-for="s15" data-tier="2" hidden>
+<p class="g-kind">Namig 2</p>
+<p data-ref="s17.p1">Cauchy je pri trdninah vzel napetost sorazmerno z raztezkom. Kaj, če je pri tekočini napetost sorazmerna s hitrostjo raztezanja? In koliko konstant ostane, če je tekočina v vseh smereh enaka?</p>
+</section>
+<section class="g-step g-reveal" id="s18" data-step="18" data-act="3" data-kind="reveal" data-for="s15" hidden>
+<p class="g-kind">Razkritje</p>
+<h3 data-ref="s18.title">Saint-Venant 1843 in Stokes 1845</h3>
+<p data-ref="s18.p1">Leta 1843 je Saint-Venant v zapisku za Comptes Rendus izpeljal enačbe brez molekul. Strižna napetost je sorazmerna s hitrostjo drsenja plasti, s konstanto, ki jo lahko izmeriš. Dobil je Navierove enačbe in Navierju priznal prednost.</p>
+<p data-ref="s18.p2">Dve leti pozneje, 14. aprila 1845, je v Cambridgeu 25-letni George Gabriel Stokes prebral razpravo o notranjem trenju tekočin. Gibanje majhnega delčka je razstavil na premik, vrtenje kot celota in deformacijo. Trenje povzroča samo deformacija; delček, ki se samo vrti kot togo telo, se ne drgne. Vzel je napetost, ki je linearna v hitrosti deformacije, in tekočino, ki je v vseh smereh enaka. Ostali sta dve konstanti. Za enakomerno raztezanje je privzel, da ne povzroča trenja, zato je ostala ena. Pri nestisljivi tekočini druga tako ali tako ne vpliva.</p>
+<p data-ref="s18.p3">Stokes je pozneje zapisal, da je šele potem našel Poissonovo delo, ki je prišlo do istih enačb, in v opombi omenil tudi Naviera. V 23 letih je bila ista enačba izpeljana petkrat, neodvisno: Navier 1822, Cauchy 1828, Poisson 1829, Saint-Venant 1843 in Stokes 1845. Danes nosi imeni prvega in zadnjega.</p>
+<figure data-ref="s18.fig1" class="g-fig"><img src="img/04-gibanje-delcka.svg" alt="Trije prikazi majhnega kvadratka tekočine, črtkano prej, polno potem: premik brez spremembe oblike, vrtenje okoli središča in deformacija, pri kateri se kvadratek v eni diagonali raztegne, v drugi stisne." loading="lazy"><figcaption>Gibanje majhnega kvadratka tekočine: premik + vrtenje + deformacija (raztezanje in strig). <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (4)</summary><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Saint-Venant/">MacTutor: Adhémar Jean Claude Barré de Saint-Venant</a> · <a href="https://comptes-rendus.academie-sciences.fr/mecanique/articles/10.1016/j.crme.2017.05.008/">Joseph Boussinesq&#x27;s legacy in fluid mechanics (Comptes Rendus Mécanique, 2017; tudi o Saint-Venantu)</a> · <a href="https://archive.org/details/transactionsofca08camb">Transactions of the Cambridge Philosophical Society 8 (Stokes 1845, natisnjeno 1847)</a> · <a href="https://archive.org/details/mathematicalphys01stokuoft">G. G. Stokes, Mathematical and Physical Papers, zv. 1 (1880)</a></details>
+</section>
+<section class="g-step g-story" id="s19" data-step="19" data-act="4" data-kind="story" hidden>
+<p class="g-act">4. dejanje · april 1845 · Cambridge</p><h2 class="g-act-title">Ob steni</h2>
+<p class="g-kind">Zgodba</p>
+<h3 data-ref="s19.title">Cambridge, 1845</h3>
+<p data-ref="s19.p1">Zdaj si George Gabriel Stokes. Rodil si se 13. avgusta 1819 v Skreenu na Irskem. Leta 1841 si bil najboljši na zaključnem izpitu iz matematike v Cambridgeu (Senior Wrangler) in dobil prvo Smithovo nagrado. Postal si štipendist kolidža Pembroke. Star si 25 let.</p>
+<p data-ref="s19.p2">Opaziš, da običajna teorija tekočin ne pozna drsenja plasti druga ob drugi. Zato ne razloži, zakaj krogla na nihalu niha vse manj na široko, in ne, koliko vode steče po akvaduktu.</p>
+<p data-ref="s19.p3">Enačbo imaš. Da bi jo rešil za kakšen resničen tok, potrebuješ še pogoj ob steni: kaj tekočina počne tik ob cevi, ob dnu kanala ali ob površini telesa. Navier je dovolil delni zdrs in svojo drugo konstanto prilagodil meritvam toka skozi ozke cevi. Za cevi in kanale imaš na voljo stare meritve francoskih inženirjev.</p>
+<figure data-ref="s19.fig1" class="g-fig"><img src="img/stokes.jpg" alt="Fotografija Georgea Gabriela Stokesa v temni halji, naslonjenega na mizo; spodaj njegov podpis." loading="lazy"><figcaption>George Gabriel Stokes (1819–1903) leta 1857. Fotografija, objavljena 1907 v Larmorjevem Memoir. Javna last, Internet Archive. <span class="g-tag">arhiv</span></figcaption></figure>
+<details class="g-src"><summary>Viri (3)</summary><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Stokes/">MacTutor: George Gabriel Stokes</a> · <a href="https://archive.org/details/transactionsofca08camb">Transactions of the Cambridge Philosophical Society 8 (Stokes 1845, natisnjeno 1847)</a> · <a href="https://arxiv.org/abs/cond-mat/0501557">Lauga, Brenner, Stone: Microfluidics, the no-slip boundary condition (arXiv:cond-mat/0501557)</a></details>
+</section>
+<section class="g-step g-challenge" id="s20" data-step="20" data-act="4" data-kind="challenge" hidden>
+<p class="g-kind">Izziv</p>
+<h3 data-ref="s20.title">Ob steni</h3>
+<p data-ref="s20.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Enačba je, a da jo rešiš, potrebuješ še pogoj ob steni cevi ali telesa. Kaj se dogaja s tekočino tik ob steni? In s katerim poskusom bi preveril, ali imaš prav?</p>
+<p data-ref="s20.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
+</section>
+<section class="g-step g-hint" id="s21" data-step="21" data-act="4" data-kind="hint" data-for="s20" data-tier="1" hidden>
+<p class="g-kind">Namig 1</p>
+<p data-ref="s21.p1">Prah na krilih mlina na veter ostane, čeprav krila režejo zrak. Kaj to pove o zraku tik ob krilu?</p>
+</section>
+<section class="g-step g-hint" id="s22" data-step="22" data-act="4" data-kind="hint" data-for="s20" data-tier="2" hidden>
+<p class="g-kind">Namig 2</p>
+<p data-ref="s22.p1">Če cev zožiš na polovico, kolikokrat manj vode steče pri istem tlaku? Kaj bi pomenil odgovor 16?</p>
+</section>
+<section class="g-step g-reveal" id="s23" data-step="23" data-act="4" data-kind="reveal" data-for="s20" hidden>
+<p class="g-kind">Razkritje</p>
+<h3 data-ref="s23.title">Pogoj, ki ga Stokes odloži</h3>
+<p data-ref="s23.p1">Stokes je leta 1845 preizkusil pogoj, da tekočina ob steni miruje. V ravni cevi da hitrost, ki je največja v sredini in nič ob steni, ter pretok, sorazmeren s padcem tlaka in s četrto potenco polmera. Ko je rezultat primerjal s starimi meritvami v velikih ceveh in kanalih, se ni ujemal. Pogoj je zato odložil. Razlog je danes jasen: v velikih ceveh je bil tok nemiren, vrtinčast, in enačba za gladek tok zanj ne velja.</p>
+<p data-ref="s23.p2">Prav takrat sta v ozkih ceveh merila Gotthilf Hagen (1839) in Jean Léonard Marie Poiseuille (1838–1846). Poiseuille, zdravnik, ki ga je zanimal tok krvi, je meril pretok vode skozi steklene kapilare in iz meritev našel prav ta zakon: pretok je sorazmeren s padcem tlaka in s četrto potenco polmera. Izpeljavo iz enačbe sta prva objavila Wiedemann leta 1856 in Hagenbach leta 1860.</p>
+<p data-ref="s23.p3">Stokes je pogoj brez zdrsa sprejel leta 1851. Fiziki so o njem razpravljali do konca stoletja. Kdaj gladek tok preide v vrtinčastega, je leta 1883 pokazal Osborne Reynolds.</p>
+<figure data-ref="s23.fig1" class="g-fig"><img src="img/05-profil-cev.svg" alt="Vzdolžni prerez cevi s puščicami hitrosti: ob stenah je hitrost nič, v sredini največja, konice puščic ležijo na paraboli. Levo višji, desno nižji tlak. Spodaj: pretok je sorazmeren razliki tlakov in četrti potenci polmera." loading="lazy"><figcaption>Tok po ozki cevi: ob steni hitrost 0, v sredini največja (parabola). Pretok ∝ Δp · r⁴ (Hagen 1839, Poiseuille 1838–1846). <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (5)</summary><a href="https://archive.org/details/transactionsofca08camb">Transactions of the Cambridge Philosophical Society 8 (Stokes 1845, natisnjeno 1847)</a> · <a href="https://archive.org/details/mathematicalphys01stokuoft">G. G. Stokes, Mathematical and Physical Papers, zv. 1 (1880)</a> · <a href="https://en.wikipedia.org/wiki/Hagen%E2%80%93Poiseuille_equation">Hagen–Poiseuillova enačba (Wikipedia, angl.)</a> · <a href="https://arxiv.org/abs/cond-mat/0501557">Lauga, Brenner, Stone: Microfluidics, the no-slip boundary condition (arXiv:cond-mat/0501557)</a> · <a href="https://doi.org/10.1098/rstl.1883.0029">O. Reynolds, Phil. Trans. R. Soc. 174 (1883)</a></details>
+</section>
+<section class="g-step g-story" id="s24" data-step="24" data-act="5" data-kind="story" hidden>
+<p class="g-act">5. dejanje · 1850–1851 in bonus 1905 · Cambridge; Anglija</p><h2 class="g-act-title">Nihalo v zraku</h2>
+<p class="g-kind">Zgodba</p>
+<h3 data-ref="s24.title">Nihala, ki prehitro obstanejo</h3>
+<p data-ref="s24.p1">Cambridge, 1850. Od leta 1849 si Lucasov profesor matematike, na Newtonovi katedri.</p>
+<p data-ref="s24.p2">Natančne ure in merjenje težnosti slonijo na nihalih. Nihalo v zraku niha nekoliko drugače kot v praznem prostoru, zato meritve popravljajo za vpliv zraka. Friedrich Bessel (1828), Edward Sabine (1829) in Francis Baily (1832) so ta popravek izmerili. Teorija popolne tekočine napove faktor 1,5. Baily je izmeril 1,864 za kroglo s premerom poldrugega palca, 1,748 za kroglo s premerom dveh palcev in kar 7,53 za tanko žico. Manjše ko je telo, bolj se meritev razlikuje od teorije.</p>
+<details class="g-src"><summary>Viri (3)</summary><a href="https://www3.nd.edu/~powers/ame.60635/stokes1851.pdf">G. G. Stokes, On the effect of the internal friction of fluids on the motion of pendulums (1851)</a> · <a href="https://doi.org/10.1098/rstl.1832.0020">F. Baily, On the correction of a pendulum for the reduction to a vacuum, Phil. Trans. 122 (1832)</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Stokes/">MacTutor: George Gabriel Stokes</a></details>
+</section>
+<section class="g-step g-challenge" id="s25" data-step="25" data-act="5" data-kind="challenge" hidden>
+<p class="g-kind">Izziv</p>
+<h3 data-ref="s25.title">Počasna krogla</h3>
+<p data-ref="s25.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Natančna merjenja nihal kažejo, da zrak nihalo zavira bolj, kot napove račun s popolno tekočino. Kako bi z novo enačbo ocenil upor majhne krogle, ki se počasi giblje skozi zrak ali vodo? Od česa je odvisen?</p>
+<p data-ref="s25.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
+</section>
+<section class="g-step g-hint" id="s26" data-step="26" data-act="5" data-kind="hint" data-for="s25" data-tier="1" hidden>
+<p class="g-kind">Namig 1</p>
+<p data-ref="s26.p1">Pri zelo počasnem gibanju krogla vode ne meče pred sabo. Kateri del enačbe je tedaj majhen? Iz katerih količin potem sestaviš silo, če ima viskoznost enoto sila krat čas na ploščino?</p>
+</section>
+<section class="g-step g-reveal" id="s27" data-step="27" data-act="5" data-kind="reveal" data-for="s25" hidden>
+<p class="g-kind">Razkritje</p>
+<h3 data-ref="s27.title">6π · μ · a · V</h3>
+<p data-ref="s27.p1">Stokes je razpravo o vplivu notranjega trenja na nihala prebral 9. decembra 1850, natisnjena je bila leta 1851. Pri počasnem gibanju je vztrajnost zraka zanemarljiva in enačba postane linearna. Za kroglo s polmerom a, ki se giblje s hitrostjo V skozi tekočino z viskoznostjo μ, je izračunal upor 6π · μ · a · V. Upor je sorazmeren s hitrostjo in s polmerom, ne s kvadratom hitrosti. S tem je razložil Bailyjeve številke.</p>
+<p data-ref="s27.p2">V istem delu je izračunal, da kapljica vode s premerom tisočinke palca pada s hitrostjo približno 1,6 palca na sekundo, kar je okoli 4 cm/s. Zapisal je, da navidezno lebdenje oblakov povzroča predvsem notranje trenje zraka. Ob tem je sprejel tudi pogoj, da tekočina ob steni miruje.</p>
+<p data-ref="s27.p3">Zakon je ostal: v letih 1909–1913 je Robert Millikan po Stokesovem zakonu iz hitrosti padanja oljnih kapljic določil njihov polmer in izmeril naboj elektrona.</p>
+<figure data-ref="s27.fig1" class="g-fig"><img src="img/06-nihalo-zrak.svg" alt="Nihalo z majhno kroglico, ki niha v zraku, in povečava: tokovnice zraka okoli kroglice pri počasnem gibanju so spredaj in zadaj zrcalno enake. Spodaj Stokesov zakon: upor je 6 pi krat viskoznost krat polmer krat hitrost." loading="lazy"><figcaption>Kroglica nihala v zraku: počasen, simetričen tok. Stokes (1851): upor = 6π · μ · a · V. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (3)</summary><a href="https://www3.nd.edu/~powers/ame.60635/stokes1851.pdf">G. G. Stokes, On the effect of the internal friction of fluids on the motion of pendulums (1851)</a> · <a href="https://doi.org/10.1098/rstl.1832.0020">F. Baily, On the correction of a pendulum for the reduction to a vacuum, Phil. Trans. 122 (1832)</a> · <a href="https://caltechln.library.caltech.edu/7">Caltech: Millikanovi zapiski o poskusu z oljnimi kapljicami</a></details>
+</section>
+<section class="g-step g-challenge" id="s28" data-step="28" data-act="5" data-kind="challenge" hidden>
+<p class="g-kind">Izziv</p>
+<h3 data-ref="s28.title">Bonus: žogica za golf</h3>
+<p data-ref="s28.p1">Anglija, 1905. Golfske žogice iz gutaperče so v rabi od okoli leta 1848. Igralci so kmalu opazili, da stare, zarezane in opraskane žogice letijo dlje in bolj naravnost kot nove, gladke. Izdelovalci so jih zato začeli obdelovati s kladivom, nato pa odlivati z vzorcem. Leta 1905 ima večina žogic gumijasto jedro (patent Haskell, 1899) in površino z izboklinami. 15. septembra 1905 William Taylor prijavi patent za žogico z vdolbinicami.</p>
+<p data-ref="s28.q" class="g-q"><b>Bonus, neobvezno:</b> Zakaj hrapava žogica leti dlje kot gladka? Kaj se spremeni v toku okoli nje?</p>
+<p data-ref="s28.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
+</section>
+<section class="g-step g-hint" id="s29" data-step="29" data-act="5" data-kind="hint" data-for="s28" data-tier="1" hidden>
+<p class="g-kind">Namig 1</p>
+<p data-ref="s29.p1">Nariši sled za žogico. Je široka ali ozka? Kje za žogico je tlak nizek in kaj to pomeni za upor?</p>
+</section>
+<section class="g-step g-reveal" id="s30" data-step="30" data-act="5" data-kind="reveal" data-for="s28" hidden>
+<p class="g-kind">Razkritje</p>
+<h3 data-ref="s30.title">Jamice</h3>
+<p data-ref="s30.p1">Ludwig Prandtl je 12. avgusta 1904 v Heidelbergu pokazal, da je pri hitrem toku trenje pomembno samo v tanki plasti ob površini, v mejni plasti. Mejna plast ob zadnji strani telesa izgubi zagon, se odlepi in za telesom pusti široko sled z nizkim tlakom. Upor krogle večinoma ne izvira iz trenja ob površini, ampak iz te sledi.</p>
+<p data-ref="s30.p2">Gustave Eiffel je leta 1912 izmeril, da upor krogle nad neko hitrostjo nenadoma pade. Prandtl je leta 1914 na kroglo s premerom 28 cm namestil žični obroček debeline 1 mm in upor se je zmanjšal. Žica je mejno plast naredila nemirno. Nemirna mejna plast ima ob površini več zagona, odlepi se pozneje in sled je ožja.</p>
+<p data-ref="s30.p3">Vdolbinice na golfski žogici naredijo isto pri hitrostih, s katerimi žogica leti. Gladka žogica ima koeficient upora okoli 0,45–0,5, žogica z vdolbinicami okoli 0,25, torej do polovico manjši upor. Vdolbinice pri vrtenju nazaj vplivajo tudi na vzgon. Taylorjev britanski patent je bil leta 1915 razveljavljen, ker je podobna žogica obstajala že prej.</p>
+<figure data-ref="s30.fig1" class="g-fig"><img src="img/07-zogica-sled.svg" alt="Tok z leve okoli dveh žogic. Zgoraj gladka: tok se odlepi pred najširšo točko, sled za njo je široka. Spodaj žogica z jamicami: tok se odlepi šele za najširšo točko, sled je ožja." loading="lazy"><figcaption>Gladka žogica: zgodnja odlepitev, široka sled, velik upor. Z jamicami: kasnejša odlepitev, ožja sled, manjši upor. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (6)</summary><a href="https://germanhistory-intersections.org/en/knowledge-and-education/ghis:document-202">L. Prandtl, Über Flüssigkeitsbewegung bei sehr kleiner Reibung (1904), German History Intersections</a> · <a href="https://ntrs.nasa.gov/api/citations/19930094763/downloads/19930094763.pdf">L. Prandtl, Der Luftwiderstand von Kugeln (1914), prevod NACA</a> · <a href="https://research.engineering.ucdavis.edu/biosport/wp-content/uploads/sites/24/2014/06/Choi-et-al-2006-Mechanism-of-drag-reduction-by-dimples-on-a-sphere.pdf">Choi, Jeon, Choi: Mechanism of drag reduction by dimples on a sphere (2006)</a> · <a href="https://patents.google.com/patent/GB190518668A/en">Patent GB 18,668/1905 (W. Taylor)</a> · <a href="https://patents.google.com/patent/US622834A/en">Patent US 622,834 (Haskell in Work, 1899)</a> · <a href="https://www.npr.org/2012/08/11/158579819/feathers-and-rubber-bands-the-story-of-the-golf-ball">NPR: Feathers And Rubber Bands, The Story Of The Golf Ball (2012)</a></details>
+</section>
+<section class="g-step g-epilogue" id="s31" data-step="31" data-act="5" data-kind="epilogue" hidden>
+<p class="g-kind">Epilog</p>
+<h3 data-ref="s31.title">Enačba, ki še ni povedala vsega</h3>
+<p data-ref="s31.p1">Leta 1883 je Osborne Reynolds v stekleni cevi pokazal, kdaj tok s tankim curkom barvila ostane gladek in kdaj se razbije v vrtince. Recenzent njegovega članka je bil Stokes. Prandtlova mejna plast (1904) je razložila, kako lahko majhno trenje povzroči velik upor. D'Alembertov paradoks je bil s tem rešen v praksi.</p>
+<p data-ref="s31.p2">Navier–Stokesove enačbe danes rabijo pri načrtovanju letal in ladij, pri napovedi vremena, pri toku krvi in v vsaki cevi. Rešujejo jih računalniki, ker jih na roke skoraj nikoli ne moreš.</p>
+<p data-ref="s31.p3">Eno vprašanje je ostalo odprto. Ali gladek začetni tok vedno ostane gladek, ali pa se lahko v končnem času »zlomi«, tako da hitrost nekje postane neskončna? 24. maja 2000 ga je Clayev matematični inštitut uvrstil med sedem problemov tisočletja, z nagrado milijon dolarjev. Uradna naloga ima štiri različice; dve dovoljujeta gladko zunanjo silo.</p>
+<p data-ref="s31.p4">Septembra 2026 sta Tristan Buckmaster (NYU) in Levent Alpöge (Anthropic) s pomočjo več modelov umetne inteligence, med njimi Claude, objavila v Leanu preverjene dokaze, da se 3D Eulerjev tok ob gladki zunanji sili v končnem času zlomi. Buckmaster je zapisal: »This is a Deep Blue–Kasparov moment.« Dan pozneje je OpenAI objavil dokaz za Navier–Stokesove enačbe z gladko silo, torej za različici, ki silo dovoljujeta. Sledil je spor o zaslugah; trditve obeh strani niso neodvisno preverjene. Clayev inštitut je 11. septembra zapisal, da je problem po vsem sodeč rešen, presoja pa bo namenoma neprenagljena. Članek arXiv:2610.08144 trdi, da OpenAI-jev dokaz v Leanu ne ustreza zapisanemu. Recenzirane objave še ni, nagrada ni podeljena. Stanje: oktober 2026.</p>
+<p data-ref="s31.p5">V pogovoru z Brianom Greenom na World Science Festivalu je Buckmaster opisal, kako delo poteka: ideje in smer dajo ljudje, modeli napišejo dolg dokaz, Lean pa preveri vsak korak. Odprto ostaja, kdo preveri, ali izrek v Leanu res pove isto kot članek. Tudi pri Navierju in Stokesu je bila enačba prva, njeno razumevanje pa je prišlo desetletja pozneje.</p>
+<p data-ref="s31.p6">Več o Eulerju: <a href="/people/#leonhard-euler">Leonhard Euler na seznamu Top ljudje</a>.</p>
+<figure data-ref="s31.fig1" class="g-fig"><img src="img/reynolds-1883.jpg" alt="Stran iz Reynoldsovega članka z angleškim besedilom in tremi risbami steklene cevi z lijakastim vstopom: barvilo v ravni črti, barvilo, ki se naenkrat razmeša, in razmešano barvilo, razpadlo v vrtince." loading="lazy"><figcaption>Reynolds 1883 (Phil. Trans. 174, str. 942): pri majhni hitrosti barvilo v ravni črti (sl. 3), pri večji se razmeša (sl. 4), v soju iskre se vidijo vrtinci (sl. 5). Javna last, Internet Archive. <span class="g-tag">arhiv</span></figcaption></figure>
+<details class="g-src"><summary>Viri (12)</summary><a href="https://doi.org/10.1098/rstl.1883.0029">O. Reynolds, Phil. Trans. R. Soc. 174 (1883)</a> · <a href="https://germanhistory-intersections.org/en/knowledge-and-education/ghis:document-202">L. Prandtl, Über Flüssigkeitsbewegung bei sehr kleiner Reibung (1904), German History Intersections</a> · <a href="https://www.claymath.org/millennium-problems/">Clay Mathematics Institute: Millennium Prize Problems</a> · <a href="https://www.claymath.org/wp-content/uploads/2022/06/navierstokes.pdf">C. Fefferman, Existence and smoothness of the Navier–Stokes equation (uradna naloga, Clay)</a> · <a href="https://www.claymath.org/news/navier-stokes-announcement">Clay Mathematics Institute: Navier–Stokes announcement (2026)</a> · <a href="https://cims.nyu.edu/~tristanb/statement.pdf">T. Buckmaster: izjava (2026)</a> · <a href="https://terrytao.wordpress.com/2026/09/07/finite-time-blowup-with-smooth-forcing-term-for-the-incompressible-porous-medium-boussinesq-and-incompressible-euler-equations">T. Tao: Finite time blowup with smooth forcing term… (blog, 7. 9. 2026)</a> · <a href="https://www.nyu.edu/about/news-publications/news/2026/september/nyu-mathematician-answers-long-standing-questions-about-fundamen.html">NYU News, september 2026</a> · <a href="https://www.quantamagazine.org/ai-has-solved-one-of-maths-1-million-millennium-prize-problems-20260908/">Quanta Magazine, 8. 9. 2026</a> · <a href="https://arxiv.org/abs/2610.08144">arXiv:2610.08144 (oktober 2026)</a> · <a href="https://www.scientificamerican.com/article/openais-blockbuster-navier-stokes-proof-isnt-what-we-thought-it-was/">Scientific American: OpenAI&#x27;s blockbuster Navier–Stokes proof isn&#x27;t what we thought it was</a> · <a href="https://singjupost.com/?p=64441">Prepis pogovora »The Moment AI Changed Mathematics Forever« (World Science Festival, B. Greene in T. Buckmaster)</a></details>
+</section>
+<footer>Slike z oznako »rekonstrukcija« so narisane za to igro; slike z oznako »arhiv« so javna last, vir je v napisu. Pred izumom · BD × AI Lab · osnutek R1</footer>
+</main>
+<script type="module" src="/assets/game-guide/game-guide.js"></script>
+</body>
+</html>
