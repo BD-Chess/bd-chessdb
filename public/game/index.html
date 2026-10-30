@@ -207,17 +207,20 @@
     function short(value,limit){return typeof value==="string"?value.replace(/[\x00-\x1f]+/g," ").trim().slice(0,limit):""}
     function loadPeople(){
       if(!window.fetch)return;
-      fetch("/people/people.json",{credentials:"omit",cache:"no-store"}).then(function(response){if(!response.ok)throw Error("catalogue unavailable");return response.json()}).then(function(data){
+      fetch("/people/people.json",{credentials:"omit",cache:"no-cache"}).then(function(response){if(!response.ok)throw Error("catalogue unavailable");return response.json()}).then(function(data){
         var list=Array.isArray(data)?data:Array.isArray(data.people)?data.people:[];
-        list.slice(0,300).forEach(function(person,index){
+        // All catalogue entries (R4: 852 interleaved popularity + contribution ranks); a 300 cap dropped e.g. michael-faraday.
+        var fragment=document.createDocumentFragment();
+        list.forEach(function(person,index){
           if(!person||typeof person!=="object")return;
           var name=short(person.ime||person.name,100),category=short(person.kategorija||person.category,80),description=short(person.kratek_opis||person["kratek opis"]||person.short_description,240),period=short(person.obdobje||person.period,80),keyMoment=short(person.kljucni_trenutek||person["kljucni trenutek"]||person.key_moment,160);
           if(!name||!keyMoment)return;
           var id="catalogue-"+index,label=name+" · "+keyMoment;
           if(period)label+=" ("+period+")";
           scenes.push({id:id,sl:label,en:label,details:[category,description].filter(Boolean).join("; ")});
-          var option=document.createElement("option");option.value=id;option.textContent=label;moment.appendChild(option);peopleCount++;
+          var option=document.createElement("option");option.value=id;option.textContent=label;option.setAttribute("data-person-id",short(person.id,120));fragment.appendChild(option);peopleCount++;
         });
+        moment.appendChild(fragment);
         setPeopleStatus();
       }).catch(function(){setPeopleStatus()});
     }
