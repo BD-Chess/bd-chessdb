@@ -1,0 +1,3209 @@
+{
+ "schema": "ai8-llm-meta-sources-v1",
+ "fetched": "2026-10-30",
+ "accepted": [
+  {
+   "source_id": "aider",
+   "name": "Aider LLM Leaderboards (Polyglot)",
+   "url": "https://aider.chat/docs/leaderboards/",
+   "owner": "Aider open-source project (Paul Gauthier; community contributors)",
+   "owner_type": "individual",
+   "measures": "How well an LLM edits code to solve 225 hard Exercism exercises in 6 languages using aider edit formats (2 attempts, with test feedback).",
+   "categories": [
+    "coding"
+   ],
+   "method_url": "https://aider.chat/2024/12/21/polyglot.html",
+   "last_update_seen": "2025-10-04 (data commit); page says last updated November 20, 2025",
+   "update_frequency": "stale (no new rows for ~13 months)",
+   "reproducibility": "Open benchmark code and exercises (aider repo + polyglot-benchmark), run commands and per-run stats published; contributors may submit runs.",
+   "independence": "Vendor-independent open-source project; some rows contributed by community, none run by model vendors.",
+   "contamination_handling": "None stated; Exercism exercises are public (hardest subset chosen).",
+   "respectability_score": 3,
+   "respectability_rationale": "Well-known, transparent and reproducible coding benchmark from an independent OSS project, but run by one maintainer/community and stale since Oct 2025 with no current frontier models.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Transparent and widely cited, but stale (Oct 2025); historical reference only.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://aider.chat/docs/leaderboards/",
+    "https://raw.githubusercontent.com/Aider-AI/aider/main/aider/website/_data/polyglot_leaderboard.yml",
+    "https://api.github.com/repos/Aider-AI/aider/commits?path=aider/website/_data/polyglot_leaderboard.yml"
+   ],
+   "raw_file": "raw/aider.json",
+   "n_boards": 1,
+   "n_entries": 69,
+   "boards": [
+    {
+     "board_id": "aider_polyglot",
+     "category": "coding",
+     "weight": 0.15,
+     "n_models": 54,
+     "data_date": "data file last commit 2025-10-04; newest run 2025-10-03; page \"last updated November 20, 2025\""
+    }
+   ]
+  },
+  {
+   "source_id": "arc_prize",
+   "name": "ARC Prize Leaderboard (ARC-AGI-1/2/3)",
+   "url": "https://arcprize.org/leaderboard",
+   "owner": "ARC Prize Foundation (nonprofit; Francois Chollet, Mike Knoop)",
+   "owner_type": "nonprofit",
+   "measures": "Fluid intelligence / novel abstract-reasoning puzzles (ARC-AGI-1/2) and interactive agentic environments (ARC-AGI-3), with cost per task.",
+   "categories": [
+    "reasoning"
+   ],
+   "method_url": "https://arcprize.org/policy",
+   "last_update_seen": "2026-10-28 (leaderboard JSON generatedAt)",
+   "update_frequency": "per model release (frequent)",
+   "reproducibility": "Public eval sets and testing harness open-source; scores on Semi-Private set run by ARC Prize; costs reported; per-task results not on the page.",
+   "independence": "Nonprofit, vendor-independent testing; labs get early access/verification but scores are run by ARC Prize on held-out data.",
+   "contamination_handling": "Semi-private held-out task set (not public); private set for competition.",
+   "respectability_score": 5,
+   "respectability_rationale": "Nonprofit with published methodology, held-out semi-private sets, cost reporting and frequent verified testing; the reference benchmark for abstract reasoning.",
+   "verdict": "accept",
+   "verdict_reason": "Gold-standard held-out reasoning benchmark with cost-efficiency data and current frontier coverage.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://arcprize.org/leaderboard",
+    "https://arcprize.org/scripts/leaderboard/data.js",
+    "https://arcprize.org/scripts/leaderboard/leaderboard-table.js",
+    "https://arcprize.org/scripts/leaderboard/leaderboard-init.js",
+    "https://arcprize.org/media/data/leaderboard/v1.json",
+    "https://arcprize.org/media/data/leaderboard/v2.json",
+    "https://arcprize.org/media/data/leaderboard/v3.json",
+    "https://arcprize.org/media/data/models.json",
+    "https://arcprize.org/media/data/evaluations.json",
+    "https://arcprize.org/media/data/datasets.json",
+    "https://arcprize.org/media/data/providers.json"
+   ],
+   "raw_file": "raw/arc_prize.json",
+   "n_boards": 4,
+   "n_entries": 416,
+   "boards": [
+    {
+     "board_id": "arc_agi_2",
+     "category": "reasoning",
+     "weight": 0.25,
+     "n_models": 39,
+     "data_date": "2026-10-28 (leaderboard JSON generatedAt 2026-10-28T16:04:23.366Z)"
+    },
+    {
+     "board_id": "arc_agi_3_standard",
+     "category": "reasoning",
+     "weight": 0.25,
+     "n_models": 21,
+     "data_date": "2026-10-28 (leaderboard JSON generatedAt 2026-10-28T16:04:23.366Z)"
+    },
+    {
+     "board_id": "arc_agi_3_provider_adapter",
+     "category": "reasoning",
+     "weight": 0.125,
+     "n_models": 11,
+     "data_date": "2026-10-28 (leaderboard JSON generatedAt 2026-10-28T16:04:23.366Z)"
+    },
+    {
+     "board_id": "arc_agi_1",
+     "category": "reasoning",
+     "weight": 0.125,
+     "n_models": 40,
+     "data_date": "2026-10-28 (leaderboard JSON generatedAt 2026-10-28T16:04:23.366Z)"
+    }
+   ]
+  },
+  {
+   "source_id": "artificial_analysis",
+   "name": "Artificial Analysis",
+   "url": "https://artificialanalysis.ai",
+   "owner": "Artificial Analysis, Inc. (independent AI benchmarking company)",
+   "owner_type": "company-independent",
+   "measures": "Independently run LLM intelligence benchmarks (composite Intelligence Index v5.0 of 9 agentic/knowledge/science/coding evals) plus API price, output speed and latency.",
+   "categories": [
+    "reasoning",
+    "coding",
+    "agentic",
+    "knowledge",
+    "long_context",
+    "speed",
+    "price",
+    "other"
+   ],
+   "method_url": "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+   "last_update_seen": "2026-10-29 (newest model on board: Mistral Large 4, released 2026-10-29; Gemini 4 Carbon 2026-10-28; Intelligence Index v5.0 rolled out late Oct 2026)",
+   "update_frequency": "continuous (new models evaluated within days of release; speed/latency are rolling live measurements; index re-versioned periodically)",
+   "reproducibility": "Detailed public methodology (harnesses, repeats, pass@1, judge models, prompts); per-model scores shown; most eval sets private/held-out; no open per-item results; bulk data via keyed API, site payload partly encrypted.",
+   "independence": "Vendor-independent: AA runs all evaluations itself on its own harness; some evals co-developed with partners (Cognition FrontierCode, Harvey, Zapier AutomationBench, HeyGen) and graded by vendor LLM judges (e.g. GPT-5.6 Luna). Business model/funding not stated on pages read.",
+   "contamination_handling": "Private held-out sets (AA-Briefcase private set, AutomationBench private 657-task split, CritPt v2 hard private list, Harvey private tasks, Omniscience v1.1 dropped its public questions); saturated evals rotated out with each index version.",
+   "respectability_score": 4,
+   "respectability_rationale": "Most widely cited independent LLM benchmarker with a detailed published method, frequent updates and private held-out sets; data and harness not fully open and some evals partner-built/LLM-judged.",
+   "verdict": "accept",
+   "verdict_reason": "Independent, current (v5.0, models to 2026-10-29), broad coverage incl. all requested Anthropic/OpenAI variants with effort settings.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://artificialanalysis.ai/leaderboards/models",
+    "https://artificialanalysis.ai/models",
+    "https://artificialanalysis.ai/",
+    "https://artificialanalysis.ai/methodology",
+    "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+    "https://artificialanalysis.ai/methodology/performance-benchmarking",
+    "https://artificialanalysis.ai/evaluations",
+    "https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index",
+    "https://artificialanalysis.ai/evaluations/artificial-analysis-cyber-index",
+    "https://artificialanalysis.ai/evaluations/terminalbench-4-0",
+    "https://artificialanalysis.ai/evaluations/frontiercode-2-0",
+    "https://artificialanalysis.ai/evaluations/aa-briefcase",
+    "https://artificialanalysis.ai/evaluations/automationbench-aa",
+    "https://artificialanalysis.ai/evaluations/omniscience",
+    "https://artificialanalysis.ai/evaluations/hle-diamond",
+    "https://artificialanalysis.ai/evaluations/artificial-analysis-long-context-reasoning",
+    "https://artificialanalysis.ai/models/multilingual"
+   ],
+   "raw_file": "raw/artificial_analysis.json",
+   "n_boards": 19,
+   "n_entries": 1607,
+   "boards": [
+    {
+     "board_id": "aa_intelligence_index",
+     "category": "reasoning",
+     "weight": 0.0,
+     "n_models": 41,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_frontiercode_2",
+     "category": "coding",
+     "weight": 0.8,
+     "n_models": 41,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_terminalbench_4",
+     "category": "agentic",
+     "weight": 0.2667,
+     "n_models": 41,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_briefcase",
+     "category": "agentic",
+     "weight": 0.2667,
+     "n_models": 42,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_automationbench",
+     "category": "agentic",
+     "weight": 0.2667,
+     "n_models": 41,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_hle_diamond",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 42,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_critpt_v2_hard",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 41,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_terminal_bench_science",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 41,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_omniscience_index",
+     "category": "knowledge",
+     "weight": 0.4,
+     "n_models": 41,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_omniscience_non_hallucination",
+     "category": "knowledge",
+     "weight": 0.4,
+     "n_models": 45,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_lcr",
+     "category": "long_context",
+     "weight": 0.4,
+     "n_models": 46,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_mlcr",
+     "category": "long_context",
+     "weight": 0.4,
+     "n_models": 39,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_gdp_pdf",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 41,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_cyber_index",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 22,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_output_speed",
+     "category": "speed",
+     "weight": 0.0,
+     "n_models": 53,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_ttft",
+     "category": "speed",
+     "weight": 0.0,
+     "n_models": 61,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_ttfat",
+     "category": "speed",
+     "weight": 0.0,
+     "n_models": 67,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_price_blended",
+     "category": "price",
+     "weight": 0.0,
+     "n_models": 59,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    },
+    {
+     "board_id": "aa_cost_per_task",
+     "category": "price",
+     "weight": 0.0,
+     "n_models": 39,
+     "data_date": "2026-10-30 (live site; newest model on board released 2026-10-29)"
+    }
+   ]
+  },
+  {
+   "source_id": "bfcl",
+   "name": "Berkeley Function Calling Leaderboard (BFCL) v4",
+   "url": "https://gorilla.cs.berkeley.edu/leaderboard.html",
+   "owner": "UC Berkeley Sky Computing Lab / Gorilla project (Shishir Patil et al.)",
+   "owner_type": "academic",
+   "measures": "Function/tool-calling accuracy: single-turn AST (live + non-live), multi-turn, agentic web search and memory, hallucination/relevance detection.",
+   "categories": [
+    "agentic"
+   ],
+   "method_url": "https://gorilla.cs.berkeley.edu/blog.html",
+   "last_update_seen": "2026-04-12 (site label; newest model on board dated 2025-12-11)",
+   "update_frequency": "irregular; effectively stale for 2026 frontier models",
+   "reproducibility": "Open code and data (github.com/ShishirPatil/gorilla, Apache-2.0), per-category scores; per-item results reproducible locally.",
+   "independence": "Vendor-independent academic project; evaluations run by the BFCL team (some community-contributed model handlers).",
+   "contamination_handling": "Public dataset; \"live\" split uses user-contributed real-world functions; no held-out private set stated.",
+   "respectability_score": 4,
+   "respectability_rationale": "Academic, fully open code/data, widely cited, clear weighted methodology; but updates have stalled and 2026 frontier models are absent.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Strong method but stale: no 2026 frontier models on the board.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://gorilla.cs.berkeley.edu/leaderboard.html",
+    "https://gorilla.cs.berkeley.edu/data_overall.csv",
+    "https://gorilla.cs.berkeley.edu/index_main.js",
+    "https://gorilla.cs.berkeley.edu/data/forms/formHeaders.json",
+    "https://raw.githubusercontent.com/ShishirPatil/gorilla/main/berkeley-function-call-leaderboard/CHANGELOG.md"
+   ],
+   "raw_file": "raw/bfcl.json",
+   "n_boards": 4,
+   "n_entries": 312,
+   "boards": [
+    {
+     "board_id": "bfcl_v4_overall",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 51,
+     "data_date": "2026-04-12 (site \"Last Updated\")"
+    },
+    {
+     "board_id": "bfcl_v4_multi_turn",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 54,
+     "data_date": "2026-04-12 (site \"Last Updated\")"
+    },
+    {
+     "board_id": "bfcl_v4_agentic_web_search",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 46,
+     "data_date": "2026-04-12 (site \"Last Updated\")"
+    },
+    {
+     "board_id": "bfcl_v4_agentic_memory",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 47,
+     "data_date": "2026-04-12 (site \"Last Updated\")"
+    }
+   ]
+  },
+  {
+   "source_id": "design_arena",
+   "name": "Design Arena",
+   "url": "https://www.designarena.ai/",
+   "owner": "Arcada Labs (Y Combinator S25 startup)",
+   "owner_type": "company-independent",
+   "measures": "Crowdsourced blind pairwise human votes on AI-generated designs (websites, apps, UI components, games, 3D, SVG, slides, plus image/video/audio arenas), aggregated into Bradley-Terry/Elo ratings.",
+   "categories": [
+    "preference"
+   ],
+   "method_url": "https://www.designarena.ai/leaderboard",
+   "last_update_seen": "2026-10-30",
+   "update_frequency": "continuous (ratings refreshed several times a day; ~1.9M votes)",
+   "reproducibility": "Vote counts/win rates per model exposed via public JSON; prompts/system prompts published; raw votes not open; methodology page currently 404.",
+   "independence": "Vendor-independent startup; vendors can test anonymous codename models before launch (like LMArena).",
+   "contamination_handling": "Live crowdsourced prompts (no fixed test set); anonymous battles.",
+   "respectability_score": 3,
+   "respectability_rationale": "Large, current crowdsourced design arena with own data, but young company, limited method transparency (methodology page 404) and preference-only signal.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Own large-scale crowdsourced votes, updated 2026-10-30; design-preference niche, limited method transparency.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://www.designarena.ai/leaderboard",
+    "https://www.designarena.ai/api/leaderboard (POST {arenaType:models, category:allcategories|website})",
+    "https://www.designarena.ai/api/registry",
+    "https://www.ycombinator.com/companies/design-arena"
+   ],
+   "raw_file": "raw/design_arena.json",
+   "n_boards": 2,
+   "n_entries": 94,
+   "boards": [
+    {
+     "board_id": "design_arena_overall",
+     "category": "preference",
+     "weight": 0.3,
+     "n_models": 41,
+     "data_date": "2026-10-30"
+    },
+    {
+     "board_id": "design_arena_website",
+     "category": "preference",
+     "weight": 0.3,
+     "n_models": 43,
+     "data_date": "2026-10-30"
+    }
+   ]
+  },
+  {
+   "source_id": "epoch_ai",
+   "name": "Epoch AI Benchmarking Hub + Epoch Capabilities Index",
+   "url": "https://epoch.ai/benchmarks",
+   "owner": "Epoch AI (independent nonprofit research institute)",
+   "owner_type": "nonprofit",
+   "measures": "Runs its own evaluations (GPQA Diamond, FrontierMath, OTIS Mock AIME, SWE-bench Verified, SimpleQA Verified, games/puzzles) on frontier models and combines them with external results into the Epoch Capabilities Index.",
+   "categories": [
+    "reasoning",
+    "coding",
+    "knowledge",
+    "agentic",
+    "other"
+   ],
+   "method_url": "https://epoch.ai/benchmarks/eci",
+   "last_update_seen": "2026-10-30",
+   "update_frequency": "continuous (new runs within days of model releases; data zip regenerated daily)",
+   "reproducibility": "Open data (CC-BY CSV zip), Inspect-based harness, public per-run eval logs for many runs (logs.epoch.ai); ECI bootstrap samples published.",
+   "independence": "Vendor-independent nonprofit; FrontierMath was commissioned/funded by OpenAI, which has access to much of the problem set except a held-out portion (known caveat). Otherwise Epoch runs evals itself via public APIs.",
+   "contamination_handling": "FrontierMath private/held-out problems, new novel sets (Chess/Mystery puzzles generated programmatically, undisclosed game variant); public sets (GPQA, SWE-bench Verified, SimpleQA) not controlled.",
+   "respectability_score": 5,
+   "respectability_rationale": "Independent nonprofit research org, published methodology, open data and logs, frequent updates, held-out sets for its flagship math benchmark.",
+   "verdict": "accept",
+   "verdict_reason": "Top independent evaluator with open data; only caveat is OpenAI funding/access for FrontierMath.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://epoch.ai/benchmarks",
+    "https://epoch.ai/data",
+    "https://epoch.ai/data/benchmark_data.zip",
+    "https://epoch.ai/benchmarks/eci",
+    "https://epoch.ai/benchmarks/gpqa-diamond",
+    "https://epoch.ai/benchmarks/frontiermath-tiers-1-3-v2",
+    "https://epoch.ai/benchmarks/frontiermath-tier-4-v2",
+    "https://epoch.ai/benchmarks/frontiermath-erdos",
+    "https://epoch.ai/benchmarks/otis-mock-aime-2024-2025",
+    "https://epoch.ai/benchmarks/swe-bench-verified",
+    "https://epoch.ai/benchmarks/mirrorcode",
+    "https://epoch.ai/benchmarks/simpleqa-verified",
+    "https://epoch.ai/benchmarks/chess-puzzles",
+    "https://epoch.ai/benchmarks/mystery-game-puzzles",
+    "https://epoch.ai/benchmarks/ebr-bench",
+    "https://epoch.ai/benchmarks/furniture-assembly",
+    "https://epoch.ai/benchmarks/spireclimb"
+   ],
+   "raw_file": "raw/epoch_ai.json",
+   "n_boards": 14,
+   "n_entries": 663,
+   "boards": [
+    {
+     "board_id": "epoch_eci",
+     "category": "reasoning",
+     "weight": 0.1667,
+     "n_models": 56,
+     "data_date": "2026-10-30"
+    },
+    {
+     "board_id": "epoch_gpqa_diamond",
+     "category": "reasoning",
+     "weight": 0.1667,
+     "n_models": 49,
+     "data_date": "2026-10-26"
+    },
+    {
+     "board_id": "epoch_frontiermath_t1_3",
+     "category": "reasoning",
+     "weight": 0.1667,
+     "n_models": 50,
+     "data_date": "2026-10-26"
+    },
+    {
+     "board_id": "epoch_frontiermath_t4",
+     "category": "reasoning",
+     "weight": 0.1667,
+     "n_models": 47,
+     "data_date": "2026-10-26"
+    },
+    {
+     "board_id": "epoch_frontiermath_erdos",
+     "category": "reasoning",
+     "weight": 0.1667,
+     "n_models": 14,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "epoch_otis_mock_aime",
+     "category": "reasoning",
+     "weight": 0.1667,
+     "n_models": 47,
+     "data_date": "2026-10-26"
+    },
+    {
+     "board_id": "epoch_swe_bench_verified",
+     "category": "coding",
+     "weight": 0.5,
+     "n_models": 32,
+     "data_date": "2026-06-25"
+    },
+    {
+     "board_id": "epoch_mirrorcode",
+     "category": "coding",
+     "weight": 0.5,
+     "n_models": 15,
+     "data_date": "2026-10-21"
+    },
+    {
+     "board_id": "epoch_simpleqa_verified",
+     "category": "knowledge",
+     "weight": 1.0,
+     "n_models": 50,
+     "data_date": "2026-10-26"
+    },
+    {
+     "board_id": "epoch_chess_puzzles",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 50,
+     "data_date": "2026-10-19"
+    },
+    {
+     "board_id": "epoch_mystery_game_puzzles",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 46,
+     "data_date": "2026-10-26"
+    },
+    {
+     "board_id": "epoch_ebr_bench",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 28,
+     "data_date": "2026-10-26"
+    },
+    {
+     "board_id": "epoch_furniture_assembly",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 35,
+     "data_date": "2026-10-26"
+    },
+    {
+     "board_id": "epoch_spireclimb",
+     "category": "agentic",
+     "weight": 1.0,
+     "n_models": 7,
+     "data_date": "2026-09-30"
+    }
+   ]
+  },
+  {
+   "source_id": "eqbench",
+   "name": "EQ-Bench (EQ-Bench 4/3, Creative Writing v3, Longform Writing)",
+   "url": "https://eqbench.com",
+   "owner": "Sam Paech (independent researcher)",
+   "owner_type": "individual",
+   "measures": "LLM-judged emotional intelligence in multi-turn roleplay scenarios and creative / longform writing quality.",
+   "categories": [
+    "other"
+   ],
+   "method_url": "https://eqbench.com/about.html",
+   "last_update_seen": "2026-10-24 (EQ-Bench 4 data generated_at)",
+   "update_frequency": "per notable model release (weeks)",
+   "reproducibility": "Open-source code on GitHub (EQ-bench org), sample transcripts/outputs published per model; judged by LLMs (Claude/Gemini/GPT judges).",
+   "independence": "Vendor-independent individual project; relies on frontier LLMs as judges (judge-bias analysis published for EQ-Bench 4).",
+   "contamination_handling": "Novel scenarios/prompts; pairwise judging; no explicit held-out refresh stated.",
+   "respectability_score": 3,
+   "respectability_rationale": "Widely followed, open code and published transcripts with judge-bias analysis, but single-maintainer project and entirely LLM-judged (subjective constructs).",
+   "verdict": "accept_limited",
+   "verdict_reason": "Best available EQ/creative-writing signal with frontier coverage; LLM-judged by one maintainer, so low weight and category other.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://eqbench.com/",
+    "https://eqbench.com/eqbench4/eqbench4_data.js",
+    "https://eqbench.com/eqbench4/eqbench4.js",
+    "https://eqbench.com/eqbench3.html",
+    "https://eqbench.com/eqbench3.js",
+    "https://eqbench.com/creative_writing.html",
+    "https://eqbench.com/creative_writing.js",
+    "https://eqbench.com/creative_writing_longform.html",
+    "https://eqbench.com/creative_writing_longform.js",
+    "https://eqbench.com/about.html"
+   ],
+   "raw_file": "raw/eqbench.json",
+   "n_boards": 4,
+   "n_entries": 218,
+   "boards": [
+    {
+     "board_id": "eqbench4_elo",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 32,
+     "data_date": "2026-10-24 (eqbench4_data.js generated_at 2026-10-24T00:56:35+00:00)"
+    },
+    {
+     "board_id": "eqbench3_elo",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 44,
+     "data_date": "not stated on page (newest entries ~mid-2026; no Claude 5.5 / GPT-6 models)"
+    },
+    {
+     "board_id": "eqbench_creative_writing_v3",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 68,
+     "data_date": "not stated on page (includes gpt-6-astra, claude-opus-5-5, gemini-4-argon, kimi-k3.1-pro)"
+    },
+    {
+     "board_id": "eqbench_longform_writing",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 69,
+     "data_date": "not stated on page (includes claude-opus-5-5, gpt-6-astra, gemini-4-argon)"
+    }
+   ]
+  },
+  {
+   "source_id": "euroeval",
+   "name": "EuroEval (formerly ScandEval)",
+   "url": "https://euroeval.com",
+   "owner": "Alexandra Institute (Denmark, non-profit research & technology org), EuroEval open-source project led by Dan Saattrup Smart; EU-project collaborators",
+   "owner_type": "nonprofit",
+   "measures": "Language-model performance across 30+ European languages (sentiment, NER, linguistic acceptability, reading comprehension, knowledge, common-sense; per-language and aggregate mean rank score).",
+   "categories": [
+    "multilingual"
+   ],
+   "method_url": "https://euroeval.com/methodology",
+   "last_update_seen": "2026-10-27",
+   "update_frequency": "continuous (several updates per week; new models added as released)",
+   "reproducibility": "Open-source Python package (EuroEval/EuroEval on GitHub), open datasets and splits, bootstrap CIs, per-dataset scores published; anyone can reproduce with the package.",
+   "independence": "Vendor-independent non-profit; evaluations run by the EuroEval team/community with the same harness for all models.",
+   "contamination_handling": "Re-sampled fixed splits of public datasets; no private held-out set stated; public benchmarks (e.g. MMLU translations) may be contaminated.",
+   "respectability_score": 5,
+   "respectability_rationale": "Non-profit, published rigorous aggregation method with bootstrap CIs and significance-based tie ranks, open code/data, frequent updates and a dedicated Slovene board with current frontier models; contamination control is limited (public datasets, val splits for API models).",
+   "verdict": "accept",
+   "verdict_reason": "Best current Slovene-specific and EU-multilingual leaderboard with frontier models (gpt-6.1-sol, gpt-6-*, Gemini 3.x, GLM-5.3), though Claude 5.x is missing.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://euroeval.com/leaderboards/",
+    "https://euroeval.com/leaderboards/slovene",
+    "https://euroeval.com/leaderboards/european",
+    "https://euroeval.com/llms.txt",
+    "https://euroeval.com/sitemap.xml",
+    "https://euroeval.com/assets/index-DnX6oKti.js",
+    "https://euroeval.com/assets/slovene_generative-iCGXllgL.js",
+    "https://euroeval.com/assets/slovene_generative-DmQ209j3.js",
+    "https://euroeval.com/assets/european_generative-CRGjToG8.js",
+    "https://euroeval.com/assets/european_generative-BmB-5nWA.js",
+    "https://euroeval.com/assets/methodology-BPLMG-7o.js"
+   ],
+   "raw_file": "raw/euroeval.json",
+   "n_boards": 2,
+   "n_entries": 97,
+   "boards": [
+    {
+     "board_id": "euroeval_slovene_generative",
+     "category": "multilingual",
+     "weight": 0.5,
+     "n_models": 39,
+     "data_date": "2026-10-27 (Last updated: 2026-10-27 10:31:40 CET)"
+    },
+    {
+     "board_id": "euroeval_european_generative",
+     "category": "multilingual",
+     "weight": 0.35,
+     "n_models": 36,
+     "data_date": "2026-10-27 (Last updated: 2026-10-27 10:35:11 CET)"
+    }
+   ]
+  },
+  {
+   "source_id": "helm",
+   "name": "Stanford HELM (Holistic Evaluation of Language Models)",
+   "url": "https://crfm.stanford.edu/helm/",
+   "owner": "Stanford Center for Research on Foundation Models (CRFM)",
+   "owner_type": "academic",
+   "measures": "Standardized, reproducible multi-scenario evaluations of language models (capabilities, safety, multilingual, domain).",
+   "categories": [
+    "reasoning",
+    "knowledge",
+    "multilingual",
+    "other"
+   ],
+   "method_url": "https://crfm.stanford.edu/2025/03/20/helm-capabilities.html",
+   "last_update_seen": "2026-06-25 (HELM Arabic v2.2.0); Capabilities 2025-11-24 (v1.15.0)",
+   "update_frequency": "periodic releases; Capabilities stale since 2025-11",
+   "reproducibility": "Fully open: open-source framework, all prompts, per-instance predictions and metrics published in the GCS bucket.",
+   "independence": "Academic, vendor-independent; runs models itself via APIs (some compute/credits donated by providers).",
+   "contamination_handling": "None specific; uses public benchmarks (MMLU-Pro, GPQA, IFEval, WildBench, Omni-MATH) with standardized prompting.",
+   "respectability_score": 4,
+   "respectability_rationale": "Top academic method with fully open per-instance data, but the main Capabilities leaderboard is ~11 months stale and uses public, potentially contaminated benchmarks.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Highly transparent academic source, but lags the frontier badly (no 2026-Q3/Q4 models); use for historical/open-model context.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://crfm.stanford.edu/helm/",
+    "https://crfm.stanford.edu/helm/config.js",
+    "https://crfm.stanford.edu/helm/project_metadata.json",
+    "https://storage.googleapis.com/crfm-helm-public/capabilities/benchmark_output/releases/v1.15.0/summary.json",
+    "https://storage.googleapis.com/crfm-helm-public/capabilities/benchmark_output/releases/v1.15.0/schema.json",
+    "https://storage.googleapis.com/crfm-helm-public/capabilities/benchmark_output/releases/v1.15.0/groups.json",
+    "https://storage.googleapis.com/crfm-helm-public/capabilities/benchmark_output/releases/v1.15.0/groups/core_scenarios.json",
+    "https://storage.googleapis.com/crfm-helm-public/safety/benchmark_output/releases/v1.17.0/summary.json",
+    "https://storage.googleapis.com/crfm-helm-public/safety/benchmark_output/releases/v1.17.0/schema.json",
+    "https://storage.googleapis.com/crfm-helm-public/safety/benchmark_output/releases/v1.17.0/groups/safety_scenarios.json",
+    "https://storage.googleapis.com/crfm-helm-public/arabic/benchmark_output/releases/v2.2.0/summary.json",
+    "https://storage.googleapis.com/crfm-helm-public/arabic/benchmark_output/releases/v2.2.0/schema.json",
+    "https://storage.googleapis.com/crfm-helm-public/arabic/benchmark_output/releases/v2.2.0/groups/arabic_scenarios.json",
+    "https://storage.googleapis.com/crfm-helm-public/air-bench/benchmark_output/releases/v1.19.0/groups/safety_scenarios.json",
+    "https://storage.googleapis.com/crfm-helm-public/arabic-enterprise/benchmark_output/releases/v1.1.0/groups/arabic_scenarios.json",
+    "https://storage.googleapis.com/crfm-helm-public/medhelm/benchmark_output/releases/v4.0.0/groups/medhelm_scenarios.json",
+    "https://storage.googleapis.com/crfm-helm-public/long-context/benchmark_output/releases/v1.0.0/groups/long_context_scenarios.json"
+   ],
+   "raw_file": "raw/helm.json",
+   "n_boards": 8,
+   "n_entries": 320,
+   "boards": [
+    {
+     "board_id": "helm_capabilities_mean",
+     "category": "reasoning",
+     "weight": 0.0,
+     "n_models": 37,
+     "data_date": "2025-11-24 (HELM Capabilities release v1.15.0)"
+    },
+    {
+     "board_id": "helm_capabilities_mmlu_pro",
+     "category": "knowledge",
+     "weight": 0.4,
+     "n_models": 37,
+     "data_date": "2025-11-24 (HELM Capabilities release v1.15.0)"
+    },
+    {
+     "board_id": "helm_capabilities_gpqa",
+     "category": "reasoning",
+     "weight": 0.1333,
+     "n_models": 37,
+     "data_date": "2025-11-24 (HELM Capabilities release v1.15.0)"
+    },
+    {
+     "board_id": "helm_capabilities_ifeval",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 37,
+     "data_date": "2025-11-24 (HELM Capabilities release v1.15.0)"
+    },
+    {
+     "board_id": "helm_capabilities_wildbench",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 37,
+     "data_date": "2025-11-24 (HELM Capabilities release v1.15.0)"
+    },
+    {
+     "board_id": "helm_capabilities_omni_math",
+     "category": "reasoning",
+     "weight": 0.1333,
+     "n_models": 37,
+     "data_date": "2025-11-24 (HELM Capabilities release v1.15.0)"
+    },
+    {
+     "board_id": "helm_safety_mean",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 38,
+     "data_date": "2025-11-24 (HELM Safety release v1.17.0)"
+    },
+    {
+     "board_id": "helm_arabic_mean",
+     "category": "multilingual",
+     "weight": 0.56,
+     "n_models": 39,
+     "data_date": "2026-06-25 (HELM Arabic release v2.2.0)"
+    }
+   ]
+  },
+  {
+   "source_id": "hle",
+   "name": "Humanity's Last Exam (official, lastexam.ai)",
+   "url": "https://lastexam.ai",
+   "owner": "Center for AI Safety (nonprofit) + Scale AI (data vendor), with HLE Contributors Consortium",
+   "owner_type": "nonprofit",
+   "measures": "Expert-written closed-ended academic questions at the frontier of human knowledge; HLE-Diamond is a cleaned 1,000-question subset (500 reasoning, 500 knowledge).",
+   "categories": [
+    "reasoning",
+    "agentic"
+   ],
+   "method_url": "https://arxiv.org/abs/2501.14249",
+   "last_update_seen": "2026-09-22 (HLE-Diamond release post); home-page table dataset date 2025-04-03",
+   "update_frequency": "sporadic snapshots (release posts); continuous numbers on Scale SEAL board",
+   "reproducibility": "Open dataset (HF cais/hle, cais/hle-diamond), open eval code (github.com/centerforaisafety/hle), published in Nature (2026); private held-out set exists for original HLE.",
+   "independence": "Co-run by CAIS (nonprofit) and Scale AI (vendor to labs; Meta stake). Results produced by the organisers, not self-reported by labs.",
+   "contamination_handling": "Original HLE had a private held-out split; public questions widely available (Scale flags models evaluated after public release). HLE-Diamond is public on HF, so contamination risk grows over time; HLE-Rolling fork for corrections.",
+   "respectability_score": 4,
+   "respectability_rationale": "Peer-reviewed (Nature) benchmark with open data/code from a respected nonprofit, but official results are infrequent snapshots, co-run with a data vendor, and the dataset is public.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Authoritative HLE-Diamond snapshot (2026-09-22) with high/max/tools splits; static, overlaps Scale board, public-set contamination risk.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://lastexam.ai",
+    "https://lastexam.ai/blog/hle-diamond",
+    "https://lastexam.ai/_next/static/chunks/app/blog/hle-diamond/page-d22af9ec2f61a81c.js",
+    "https://labs.scale.com/leaderboard/hle-diamond",
+    "https://labs.scale.com/leaderboard/humanitys_last_exam"
+   ],
+   "raw_file": "raw/hle.json",
+   "n_boards": 3,
+   "n_entries": 44,
+   "boards": [
+    {
+     "board_id": "hle_diamond_official_high",
+     "category": "reasoning",
+     "weight": 0.4,
+     "n_models": 18,
+     "data_date": "2026-09-22"
+    },
+    {
+     "board_id": "hle_diamond_official_max",
+     "category": "reasoning",
+     "weight": 0.4,
+     "n_models": 18,
+     "data_date": "2026-09-22"
+    },
+    {
+     "board_id": "hle_diamond_official_tools",
+     "category": "agentic",
+     "weight": 0.8,
+     "n_models": 8,
+     "data_date": "2026-09-22"
+    }
+   ]
+  },
+  {
+   "source_id": "kagi",
+   "name": "Kagi LLM Benchmarking Project (Kagi Offline Benchmark)",
+   "url": "https://help.kagi.com/kagi/ai/llm-benchmark.html",
+   "owner": "Kagi Inc. (search engine company; offers these LLMs in its paid Kagi Assistant)",
+   "owner_type": "company-independent",
+   "measures": "Accuracy on an unpublished, periodically revised set of 116 tool-free reasoning/coding/instruction-following/multilingual trick tasks.",
+   "categories": [
+    "reasoning"
+   ],
+   "method_url": "https://help.kagi.com/kagi/ai/llm-benchmark.html",
+   "last_update_seen": "2026-07-09 (GitHub commit of the page); task list revision 2026-02-13",
+   "update_frequency": "per model release (irregular); no update since 2026-07-09 (~3.5 months stale)",
+   "reproducibility": "Closed: tasks unpublished (only example questions shown), no per-item results, no code; aggregate table only.",
+   "independence": "Not a model vendor; run by Kagi, which resells these models in its Assistant. Some runs via third-party inference providers (openrouter, together, nebius, fireworks, cerebras).",
+   "contamination_handling": "Private/held-out unpublished tasks, revised over time (mostly harder); claims tasks are not in training data.",
+   "respectability_score": 3,
+   "respectability_rationale": "Credible independent private held-out set with good contamination resistance, but small (116 tasks), opaque scoring, provider-mixed runs, and stale since July 2026.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Useful contamination-resistant signal but small, closed and stale; lacks current frontier models (Opus 5.5, GPT-6.x).",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://help.kagi.com/kagi/ai/llm-benchmark.html",
+    "https://api.github.com/repos/kagisearch/kagi-docs/commits?path=docs/kagi/ai/llm-benchmark.md&per_page=8"
+   ],
+   "raw_file": "raw/kagi.json",
+   "n_boards": 1,
+   "n_entries": 145,
+   "boards": [
+    {
+     "board_id": "kagi_offline_reasoning",
+     "category": "reasoning",
+     "weight": 0.6,
+     "n_models": 121,
+     "data_date": "2026-07-09 (page commit); task list rev. 2026-02-13"
+    }
+   ]
+  },
+  {
+   "source_id": "lech_mazur",
+   "name": "Lech Mazur LLM benchmarks",
+   "url": "https://github.com/lechmazur",
+   "owner": "Lech Mazur (independent researcher)",
+   "owner_type": "individual",
+   "measures": "Independent niche benchmarks: Extended NYT Connections (verbal associative reasoning), creative story writing (LLM-judged pairwise), adversarial multi-turn debate (LLM-judged BT ratings), plus older multi-agent/hallucination tests.",
+   "categories": [
+    "reasoning",
+    "other"
+   ],
+   "method_url": "https://github.com/lechmazur/nyt-connections#readme",
+   "last_update_seen": "2026-10-26",
+   "update_frequency": "per model release (new frontier models added within days)",
+   "reproducibility": "Method, prompts and many per-item outputs/judgments published on GitHub; full harness partly open; NYT puzzles public.",
+   "independence": "Vendor-independent individual; writing and debate rely on LLM judges from vendor models (panels avoid own family where feasible).",
+   "contamination_handling": "NYT: extra trick words + newest-100-puzzles check; writing/debate: generated content judged pairwise (no fixed answer key).",
+   "respectability_score": 3,
+   "respectability_rationale": "Widely cited, frequently updated independent benchmarks with documented method and open outputs; single-person project, narrow tasks and LLM-as-judge for writing/debate.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Credible, transparent, current (Oct 2026) independent evals, but individual-run and niche/LLM-judged; weight lower in composite.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://github.com/lechmazur",
+    "https://api.github.com/users/lechmazur/repos?per_page=100&sort=pushed",
+    "https://raw.githubusercontent.com/lechmazur/nyt-connections/master/README.md",
+    "https://raw.githubusercontent.com/lechmazur/writing/main/README.md",
+    "https://raw.githubusercontent.com/lechmazur/debate/main/README.md",
+    "https://raw.githubusercontent.com/lechmazur/sycophancy/main/README.md"
+   ],
+   "raw_file": "raw/lech_mazur.json",
+   "n_boards": 3,
+   "n_entries": 134,
+   "boards": [
+    {
+     "board_id": "lech_mazur_nyt_connections_extended",
+     "category": "reasoning",
+     "weight": 0.6,
+     "n_models": 40,
+     "data_date": "2026-10-23"
+    },
+    {
+     "board_id": "lech_mazur_creative_writing",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 36,
+     "data_date": "2026-10-24"
+    },
+    {
+     "board_id": "lech_mazur_debate",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 38,
+     "data_date": "2026-10-26"
+    }
+   ]
+  },
+  {
+   "source_id": "livebench",
+   "name": "LiveBench",
+   "url": "https://livebench.ai",
+   "owner": "LiveBench team (Abacus.AI with NYU, NVIDIA, UMD, USC and other academic co-authors)",
+   "owner_type": "company-independent",
+   "measures": "Contamination-limited LLM benchmark with objective ground-truth or deterministic grading; 2.0 adds long agentic, browser, research and design suites.",
+   "categories": [
+    "reasoning",
+    "coding",
+    "agentic",
+    "other"
+   ],
+   "method_url": "https://arxiv.org/abs/2406.19314",
+   "last_update_seen": "2026-10-25 (LiveBench 2.0 release 20261025)",
+   "update_frequency": "new question releases every few weeks/months; models added continuously",
+   "reproducibility": "Open code (github.com/LiveBench/LiveBench) and per-release questions published with delay; 2.0 suites partly rubric-graded; single run per model.",
+   "independence": "Run by Abacus.AI (which also lists its own Smaug models) with academic co-authors; vendor-independent of the frontier labs.",
+   "contamination_handling": "Regularly refreshed questions from recent sources; newest questions held out until later release; frozen codebases for coding.",
+   "respectability_score": 4,
+   "respectability_rationale": "Peer-reviewed (ICLR 2025) method, open code, objective grading and question refresh; run by a company that also ranks its own models, and 2.0 includes single-run rubric-graded suites.",
+   "verdict": "accept",
+   "verdict_reason": "Widely cited contamination-aware benchmark with open method and current frontier coverage.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://livebench.ai/",
+    "https://livebench.ai/static/js/main.f5a35fba.js",
+    "https://livebench.ai/data/20261025/table.csv",
+    "https://livebench.ai/data/20261025/categories.json",
+    "https://livebench.ai/data/20261025/cost.csv",
+    "https://livebench.ai/data/20261025/breakdown.json",
+    "https://livebench.ai/data/20261025/notes.json",
+    "https://livebench.ai/data/20261014/table.csv",
+    "https://livebench.ai/v1/table_2026_06_25.csv",
+    "https://livebench.ai/v1/categories_2026_06_25.json",
+    "https://livebench.ai/v1/cost_2026_06_25.csv"
+   ],
+   "raw_file": "raw/livebench.json",
+   "n_boards": 16,
+   "n_entries": 824,
+   "boards": [
+    {
+     "board_id": "livebench2_overall",
+     "category": "reasoning",
+     "weight": 0.0,
+     "n_models": 30,
+     "data_date": "2026-10-25 (LiveBench 2.0 release 20261025)"
+    },
+    {
+     "board_id": "livebench2_long_agentic",
+     "category": "agentic",
+     "weight": 0.2667,
+     "n_models": 30,
+     "data_date": "2026-10-25 (LiveBench 2.0 release 20261025)"
+    },
+    {
+     "board_id": "livebench2_reasoning",
+     "category": "reasoning",
+     "weight": 0.1143,
+     "n_models": 30,
+     "data_date": "2026-10-25 (LiveBench 2.0 release 20261025)"
+    },
+    {
+     "board_id": "livebench2_coding",
+     "category": "coding",
+     "weight": 0.2667,
+     "n_models": 30,
+     "data_date": "2026-10-25 (LiveBench 2.0 release 20261025)"
+    },
+    {
+     "board_id": "livebench2_browser",
+     "category": "agentic",
+     "weight": 0.2667,
+     "n_models": 30,
+     "data_date": "2026-10-25 (LiveBench 2.0 release 20261025)"
+    },
+    {
+     "board_id": "livebench2_data_analysis",
+     "category": "reasoning",
+     "weight": 0.1143,
+     "n_models": 30,
+     "data_date": "2026-10-25 (LiveBench 2.0 release 20261025)"
+    },
+    {
+     "board_id": "livebench2_research",
+     "category": "agentic",
+     "weight": 0.2667,
+     "n_models": 30,
+     "data_date": "2026-10-25 (LiveBench 2.0 release 20261025)"
+    },
+    {
+     "board_id": "livebench2_design",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 30,
+     "data_date": "2026-10-25 (LiveBench 2.0 release 20261025)"
+    },
+    {
+     "board_id": "livebench1_overall",
+     "category": "reasoning",
+     "weight": 0.0,
+     "n_models": 65,
+     "data_date": "2026-06-25 question release (LiveBench 1.0 final release; models added to it until ~2026-10)"
+    },
+    {
+     "board_id": "livebench1_reasoning",
+     "category": "reasoning",
+     "weight": 0.0571,
+     "n_models": 65,
+     "data_date": "2026-06-25 question release (LiveBench 1.0 final release; models added to it until ~2026-10)"
+    },
+    {
+     "board_id": "livebench1_coding",
+     "category": "coding",
+     "weight": 0.1333,
+     "n_models": 65,
+     "data_date": "2026-06-25 question release (LiveBench 1.0 final release; models added to it until ~2026-10)"
+    },
+    {
+     "board_id": "livebench1_agentic_coding",
+     "category": "coding",
+     "weight": 0.1333,
+     "n_models": 65,
+     "data_date": "2026-06-25 question release (LiveBench 1.0 final release; models added to it until ~2026-10)"
+    },
+    {
+     "board_id": "livebench1_math",
+     "category": "reasoning",
+     "weight": 0.0571,
+     "n_models": 65,
+     "data_date": "2026-06-25 question release (LiveBench 1.0 final release; models added to it until ~2026-10)"
+    },
+    {
+     "board_id": "livebench1_data_analysis",
+     "category": "reasoning",
+     "weight": 0.0571,
+     "n_models": 65,
+     "data_date": "2026-06-25 question release (LiveBench 1.0 final release; models added to it until ~2026-10)"
+    },
+    {
+     "board_id": "livebench1_language",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 65,
+     "data_date": "2026-06-25 question release (LiveBench 1.0 final release; models added to it until ~2026-10)"
+    },
+    {
+     "board_id": "livebench1_instruction_following",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 65,
+     "data_date": "2026-06-25 question release (LiveBench 1.0 final release; models added to it until ~2026-10)"
+    }
+   ]
+  },
+  {
+   "source_id": "livecodebench",
+   "name": "LiveCodeBench",
+   "url": "https://livecodebench.github.io",
+   "owner": "UC Berkeley / MIT / Cornell researchers (Jain et al.)",
+   "owner_type": "academic",
+   "measures": "Code generation Pass@1 on competitive-programming problems collected continuously from LeetCode, AtCoder and Codeforces, filterable by problem release date.",
+   "categories": [
+    "coding"
+   ],
+   "method_url": "https://arxiv.org/abs/2403.07974",
+   "last_update_seen": "2025-08-01",
+   "update_frequency": "stale (no updates since Aug 2025)",
+   "reproducibility": "Open code (GitHub LiveCodeBench), open dataset on Hugging Face, per-problem results in the leaderboard JSON.",
+   "independence": "Academic, vendor-independent; runs done by the authors.",
+   "contamination_handling": "Problems tagged with release date; time-window slider and model release dates flag likely-contaminated models (rolling fresh problems).",
+   "respectability_score": 4,
+   "respectability_rationale": "Academic, open, contamination-aware design with per-problem data, but abandoned since Aug 2025 so it has no current frontier models.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Strong method, but stale (mid-2025 models only); historical reference.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://livecodebench.github.io/leaderboard.html",
+    "https://livecodebench.github.io/performances_generation.json",
+    "https://api.github.com/repos/LiveCodeBench/livecodebench.github.io/commits"
+   ],
+   "raw_file": "raw/livecodebench.json",
+   "n_boards": 1,
+   "n_entries": 28,
+   "boards": [
+    {
+     "board_id": "livecodebench_v6_default_window",
+     "category": "coding",
+     "weight": 0.2,
+     "n_models": 22,
+     "data_date": "data file last-modified 2025-08-01; problems up to 2025-04-07"
+    }
+   ]
+  },
+  {
+   "source_id": "lmarena",
+   "name": "LMArena (Arena, formerly Chatbot Arena / LMSYS)",
+   "url": "https://arena.ai/leaderboard",
+   "owner": "Arena Intelligence Inc. (LMArena; spun out of UC Berkeley LMSYS)",
+   "owner_type": "company-independent",
+   "measures": "Crowd-sourced blind pairwise human preference votes between anonymous models (Bradley-Terry ratings); plus WebDev/Code and Agent arenas.",
+   "categories": [
+    "preference",
+    "coding",
+    "agentic",
+    "multilingual"
+   ],
+   "method_url": "https://arena.ai/blog/leaderboard-changelog/",
+   "last_update_seen": "2026-10-28 (dataset publish date); site header \"Oct 27, 2026\"; HF dataset modified 2026-10-30",
+   "update_frequency": "continuous (leaderboard re-published several times per week)",
+   "reproducibility": "Historical leaderboard snapshots open (CC BY 4.0); periodic open releases of vote samples; rating code (FastChat) open; full live vote data not public.",
+   "independence": "Independent company but venture-funded and works closely with labs (pre-release anonymous testing of vendor models; past critique of private-variant testing, \"Leaderboard Illusion\" 2025).",
+   "contamination_handling": "Live fresh user prompts (no fixed test set), so contamination is not an issue; style control and frequency re-weighting adjust for biases; human preference may reward style/verbosity.",
+   "respectability_score": 4,
+   "respectability_rationale": "Most widely cited human-preference leaderboard, huge vote counts, published method and open snapshot data; but measures preference (style-sensitive) and has vendor-gaming concerns.",
+   "verdict": "accept",
+   "verdict_reason": "Canonical human-preference signal with CIs and votes; keep in preference/coding/agentic categories, not as a pure capability measure.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://lmarena.ai/leaderboard",
+    "https://arena.ai/leaderboard/text",
+    "https://arena.ai/leaderboard/webdev",
+    "https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset",
+    "https://huggingface.co/api/datasets/lmarena-ai/leaderboard-dataset",
+    "https://datasets-server.huggingface.co/rows?dataset=lmarena-ai/leaderboard-dataset&config={text_style_control,webdev,agent}&split=latest",
+    "https://datasets-server.huggingface.co/statistics?dataset=lmarena-ai/leaderboard-dataset&config=text_style_control&split=latest"
+   ],
+   "raw_file": "raw/lmarena.json",
+   "n_boards": 9,
+   "n_entries": 494,
+   "boards": [
+    {
+     "board_id": "lmarena_text_overall",
+     "category": "preference",
+     "weight": 0.8,
+     "n_models": 49,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    },
+    {
+     "board_id": "lmarena_text_non_english",
+     "category": "multilingual",
+     "weight": 0.0933,
+     "n_models": 50,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    },
+    {
+     "board_id": "lmarena_text_german",
+     "category": "multilingual",
+     "weight": 0.0933,
+     "n_models": 50,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    },
+    {
+     "board_id": "lmarena_text_french",
+     "category": "multilingual",
+     "weight": 0.0933,
+     "n_models": 51,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    },
+    {
+     "board_id": "lmarena_text_spanish",
+     "category": "multilingual",
+     "weight": 0.0933,
+     "n_models": 53,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    },
+    {
+     "board_id": "lmarena_text_polish",
+     "category": "multilingual",
+     "weight": 0.0933,
+     "n_models": 49,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    },
+    {
+     "board_id": "lmarena_text_russian",
+     "category": "multilingual",
+     "weight": 0.0933,
+     "n_models": 49,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    },
+    {
+     "board_id": "lmarena_webdev",
+     "category": "coding",
+     "weight": 0.8,
+     "n_models": 43,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    },
+    {
+     "board_id": "lmarena_agent",
+     "category": "agentic",
+     "weight": 0.8,
+     "n_models": 42,
+     "data_date": "2026-10-28 (HF leaderboard_publish_date)"
+    }
+   ]
+  },
+  {
+   "source_id": "matharena",
+   "name": "MathArena",
+   "url": "https://matharena.ai/",
+   "owner": "SRI Lab, ETH Zurich and INSAIT (academic); supported by an Epoch AI grant",
+   "owner_type": "academic",
+   "measures": "LLM math reasoning on new, post-training-cutoff problems: research-level questions and false-statement detection built monthly from recent arXiv papers, Lean formalization, plus (deprecated) 2025-26 competitions.",
+   "categories": [
+    "reasoning"
+   ],
+   "method_url": "https://matharena.ai/blogs",
+   "last_update_seen": "2026-10-27",
+   "update_frequency": "continuous (monthly new problem batches; new models added within days)",
+   "reproducibility": "Open evaluation code (github.com/eth-sri/matharena), datasets on Hugging Face (MathArena), per-problem raw model outputs viewable on site; peer-reviewed papers.",
+   "independence": "Academic, vendor-independent; funded partly by Epoch AI grant.",
+   "contamination_handling": "Uses newly released problems (monthly arXiv-derived batches, fresh competitions); flags models released after the competition (possible contamination).",
+   "respectability_score": 5,
+   "respectability_rationale": "Academic group with peer-reviewed method, open code/data and per-item outputs, frequent updates and explicit contamination controls.",
+   "verdict": "accept",
+   "verdict_reason": "Academic, open, contamination-aware math evals with current frontier models (updated 2026-10-27).",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://matharena.ai/",
+    "https://matharena.ai/blogs",
+    "https://matharena.ai/competition_tables/arxiv--september",
+    "https://matharena.ai/competition_tables/arxiv--august",
+    "https://matharena.ai/competition_tables/arxiv_false--september",
+    "https://matharena.ai/competition_tables/arxiv_false--august",
+    "https://matharena.ai/competition_tables/arxivlean--september"
+   ],
+   "raw_file": "raw/matharena.json",
+   "n_boards": 5,
+   "n_entries": 66,
+   "boards": [
+    {
+     "board_id": "matharena_arxivmath_202609",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 10,
+     "data_date": "2026-10-27 (site update log)"
+    },
+    {
+     "board_id": "matharena_arxivmath_202608",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 16,
+     "data_date": "2026-10-27 (site update log)"
+    },
+    {
+     "board_id": "matharena_brokenarxiv_202609",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 10,
+     "data_date": "2026-10-27 (site update log)"
+    },
+    {
+     "board_id": "matharena_brokenarxiv_202608",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 15,
+     "data_date": "2026-10-27 (site update log)"
+    },
+    {
+     "board_id": "matharena_arxivlean_202609",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 7,
+     "data_date": "2026-10-27 (site update log)"
+    }
+   ]
+  },
+  {
+   "source_id": "metr",
+   "name": "METR Task-Completion Time Horizons",
+   "url": "https://metr.org/time-horizons/",
+   "owner": "METR (Model Evaluation & Threat Research), independent nonprofit",
+   "owner_type": "nonprofit",
+   "measures": "Length of software/research tasks (in human-expert minutes) that AI agents complete with 50% / 80% reliability.",
+   "categories": [
+    "agentic"
+   ],
+   "method_url": "https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/",
+   "last_update_seen": "2026-09-08 (page); last model added 2026-05-08",
+   "update_frequency": "stale - page no longer actively updated (was per major model release)",
+   "reproducibility": "Open analysis code (github.com/METR/eval-analysis-public), published per-model and per-task results (task_results_1_1.yaml); most task contents private.",
+   "independence": "Independent nonprofit; runs evaluations itself, often with pre-deployment access arranged with labs (OpenAI, Anthropic). No vendor self-reported numbers.",
+   "contamination_handling": "Mostly private, held-out task suite (HCAST/RE-Bench) not published to avoid training contamination.",
+   "respectability_score": 4,
+   "respectability_rationale": "Top-tier nonprofit methodology with open code and per-task data and private tasks, but the board is no longer maintained and saturates above ~16 h.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Highly respected method but stale: newest model April 2026, no current frontier models.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://metr.org/time-horizons/",
+    "https://metr.org/assets/benchmark_results_1_1.yaml",
+    "https://github.com/METR/eval-analysis-public",
+    "https://api.github.com/repos/METR/eval-analysis-public/commits",
+    "https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/"
+   ],
+   "raw_file": "raw/metr.json",
+   "n_boards": 2,
+   "n_entries": 52,
+   "boards": [
+    {
+     "board_id": "metr_time_horizon_50",
+     "category": "agentic",
+     "weight": 0.4,
+     "n_models": 23,
+     "data_date": "2026-09-08 (page last updated; newest measurement added 2026-05-08)"
+    },
+    {
+     "board_id": "metr_time_horizon_80",
+     "category": "agentic",
+     "weight": 0.4,
+     "n_models": 23,
+     "data_date": "2026-09-08 (page last updated; newest measurement added 2026-05-08)"
+    }
+   ]
+  },
+  {
+   "source_id": "opencompass",
+   "name": "OpenCompass CompassRank (CompassBench / CompassAcademic)",
+   "url": "https://rank.opencompass.org.cn",
+   "owner": "Shanghai AI Laboratory (OpenCompass team; state-funded research lab that also develops InternLM/Intern models)",
+   "owner_type": "academic",
+   "measures": "CompassBench: private Chinese/English question set covering knowledge, reasoning, math and (agentic) coding; CompassAcademic: average of public benchmarks (MMLU-Pro, GPQA, HLE, AIME2025, LiveCodeBench, IFEval).",
+   "categories": [
+    "reasoning",
+    "coding",
+    "knowledge"
+   ],
+   "method_url": "https://doc.opencompass.org.cn/",
+   "last_update_seen": "2026-08-24 (CompassBench 26-07); academic REALTIME 2026-03-09",
+   "update_frequency": "quarterly editions (CompassBench); academic board irregular, stale since 2026-03",
+   "reproducibility": "OpenCompass evaluation toolkit is open source (academic board reproducible via configs); CompassBench questions private, no per-item results.",
+   "independence": "Run by Shanghai AI Lab (not a frontier-API vendor, but develops its own InternLM models; InternLM not on current CompassBench). Model selection curated, China-heavy.",
+   "contamination_handling": "CompassBench uses a private self-built set refreshed per edition; academic board uses public sets (contamination-prone).",
+   "respectability_score": 3,
+   "respectability_rationale": "Credible established academic lab with open toolkit and private held-out CompassBench, but sparse coverage (15 models), quarterly lag (data 2 months old), opaque question set and some vendor affiliation via InternLM.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Useful independent-ish China-side cross-check with frontier models (Claude Opus 5, GPT-5.6-Sol, Kimi-K3), but small, quarterly and already missing Claude 5.5 / GPT-6.x.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://rank.opencompass.org.cn/",
+    "https://rank.opencompass.org.cn/assets/index-4aab7205.js",
+    "https://rank.opencompass.org.cn/assets/home-4f5b2c7b.js",
+    "https://rank.opencompass.org.cn/gw/opencompass-be/api/v1/rank/listRankTableAvailableMonths",
+    "https://cdn.opencompass.org.cn/assets/llm-rank/llm-data-v2.26-07.20260824.json",
+    "https://cdn.opencompass.org.cn/assets/llm-rank/llm-column-v2.26-07.20260824.json",
+    "https://cdn.opencompass.org.cn/assets/research-rank/research-data.REALTIME.20260309.json",
+    "https://cdn.opencompass.org.cn/assets/research-rank/research-column.REALTIME.20260309.json"
+   ],
+   "raw_file": "raw/opencompass.json",
+   "n_boards": 4,
+   "n_entries": 93,
+   "boards": [
+    {
+     "board_id": "opencompass_compassbench_overall",
+     "category": "reasoning",
+     "weight": 0.3,
+     "n_models": 15,
+     "data_date": "2026-08-24 (CompassBench 26-07 edition)"
+    },
+    {
+     "board_id": "opencompass_compassbench_code",
+     "category": "coding",
+     "weight": 0.6,
+     "n_models": 15,
+     "data_date": "2026-08-24"
+    },
+    {
+     "board_id": "opencompass_compassbench_knowledge",
+     "category": "knowledge",
+     "weight": 0.6,
+     "n_models": 15,
+     "data_date": "2026-08-24"
+    },
+    {
+     "board_id": "opencompass_academic_realtime",
+     "category": "reasoning",
+     "weight": 0.075,
+     "n_models": 43,
+     "data_date": "2026-03-09 (REALTIME file)"
+    }
+   ]
+  },
+  {
+   "source_id": "openrouter",
+   "name": "OpenRouter Rankings (LLM Leaderboard by token usage)",
+   "url": "https://openrouter.ai/rankings",
+   "owner": "OpenRouter, Inc. (model routing marketplace; not a model vendor)",
+   "owner_type": "company-independent",
+   "measures": "Real-world usage: tokens processed per model variant through the OpenRouter API (daily/weekly/monthly windows).",
+   "categories": [
+    "other",
+    "price"
+   ],
+   "method_url": "https://openrouter.ai/rankings",
+   "last_update_seen": "2026-10-29 (usage bucket)",
+   "update_frequency": "daily",
+   "reproducibility": "Aggregate data open (CC BY 4.0, JSON); raw traffic private; methodology described on page.",
+   "independence": "Vendor-independent router, but sees only OpenRouter traffic (skewed to developers/agents, cheap & free models, apps opting in); marketplace has commercial ties to providers.",
+   "contamination_handling": "n/a (usage measure, not a test)",
+   "respectability_score": 4,
+   "respectability_rationale": "Transparent, daily, open-licensed real usage data from a large independent router; but it measures popularity/cost-driven traffic on one platform, not quality.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Good adoption/price signal; must not be mixed into quality scores (usage, platform-biased).",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://openrouter.ai/rankings",
+    "https://openrouter.ai/api/frontend/v1/rankings/models?view=week",
+    "https://openrouter.ai/api/frontend/v1/rankings/models?view=month",
+    "https://openrouter.ai/api/v1/models"
+   ],
+   "raw_file": "raw/openrouter.json",
+   "n_boards": 2,
+   "n_entries": 133,
+   "boards": [
+    {
+     "board_id": "openrouter_tokens_week",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 54,
+     "data_date": "2026-10-29 (newest daily usage bucket shown: \"Usage data through Oct 29, 2026\")"
+    },
+    {
+     "board_id": "openrouter_tokens_month",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 56,
+     "data_date": "2026-10-29 (newest daily usage bucket shown: \"Usage data through Oct 29, 2026\")"
+    }
+   ]
+  },
+  {
+   "source_id": "osworld",
+   "name": "OSWorld-Verified",
+   "url": "https://os-world.github.io/",
+   "owner": "XLANG Lab, The University of Hong Kong (with collaborators)",
+   "owner_type": "academic",
+   "measures": "Success rate of multimodal agents completing 361 real computer tasks (Ubuntu desktop apps, browser, office, multi-app) in VMs.",
+   "categories": [
+    "agentic"
+   ],
+   "method_url": "https://xlang.ai/blog/osworld-verified",
+   "last_update_seen": "2026-08-01 (newest verified run in data file; repo pushed 2026-08-07)",
+   "update_frequency": "continuous, on verified submissions",
+   "reproducibility": "Open benchmark code (github.com/xlang-ai/OSWorld), public tasks/evaluators, verified trajectories on Hugging Face (xlangai/ubuntu_osworld_verified_trajs), per-app breakdown.",
+   "independence": "Academic; submissions are verified/re-checked by the OSWorld team; many submissions originate from model/agent developers.",
+   "contamination_handling": "Public test set; fixed community-reported examples (Verified revision 2025-07-28); no held-out set.",
+   "respectability_score": 4,
+   "respectability_rationale": "Leading academic computer-use benchmark with open code, verified runs and published trajectories; public tasks and patchy coverage of OpenAI/Google models limit it.",
+   "verdict": "accept",
+   "verdict_reason": "Academic, verified, current to Aug 2026 for Anthropic/Meta/Chinese frontier models.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://github.com/OS-World/OS-World.github.io (site source; CNAME osworld-v1.xlang.ai)",
+    "https://raw.githubusercontent.com/OS-World/OS-World.github.io/HEAD/static/data/osworld_verified_results.xlsx",
+    "https://raw.githubusercontent.com/OS-World/OS-World.github.io/HEAD/static/data/self_reported_results.xlsx",
+    "https://raw.githubusercontent.com/OS-World/OS-World.github.io/HEAD/index.html",
+    "https://api.github.com/repos/xlang-ai/OSWorld"
+   ],
+   "raw_file": "raw/osworld.json",
+   "n_boards": 1,
+   "n_entries": 68,
+   "boards": [
+    {
+     "board_id": "osworld_verified_foundation_e2e",
+     "category": "agentic",
+     "weight": 0.8,
+     "n_models": 37,
+     "data_date": "2026-08-01"
+    }
+   ]
+  },
+  {
+   "source_id": "scale_seal",
+   "name": "Scale AI SEAL / Scale Labs Leaderboards",
+   "url": "https://labs.scale.com/leaderboard",
+   "owner": "Scale AI (Scale Labs research team; Scale is a data/RLHF vendor to frontier labs, Meta holds a large stake)",
+   "owner_type": "company-vendor",
+   "measures": "Expert-built, mostly private benchmarks across frontier reasoning (HLE-Diamond), agentic coding/tool use (SWE-Bench Pro, SWE Atlas, MCP Atlas, RLI, HiL-Bench), professional reasoning, multimodal/audio and safety.",
+   "categories": [
+    "reasoning",
+    "coding",
+    "agentic",
+    "knowledge",
+    "other"
+   ],
+   "method_url": "https://labs.scale.com/leaderboard",
+   "last_update_seen": "2026-10-28 (board metadata updatedAt; newest entry added 2026-10-29)",
+   "update_frequency": "continuous (per model release)",
+   "reproducibility": "Methods/papers published per benchmark; many sets private or partially public (e.g. SWE-Bench Pro public split, FORTRESS public split, DistressBench 50/50 split); no per-item results for private sets.",
+   "independence": "NOT vendor-independent: Scale sells training data/evaluation services to the labs it ranks (incl. OpenAI, Google, Anthropic historically) and Meta owns a large minority stake; Meta (Muse) models top several boards. Scale runs evals itself; models must be evaluated the first time an org sees the prompts.",
+   "contamination_handling": "Private held-out prompt sets on most boards; explicit contamination warnings for models evaluated after public release (HLE, MASK); public/private splits to detect overfitting.",
+   "respectability_score": 3,
+   "respectability_rationale": "Strong expert-built private benchmarks with published methods and frequent updates, but run by a data vendor with commercial ties to (and Meta ownership stake from) ranked labs; limited data openness.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Valuable private expert benchmarks, but vendor conflict of interest (Scale/Meta) and closed data; weight accordingly.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://scale.com/leaderboard",
+    "https://labs.scale.com/leaderboard",
+    "https://labs.scale.com/leaderboard/audiomc",
+    "https://labs.scale.com/leaderboard/audiomc-audio",
+    "https://labs.scale.com/leaderboard/audiomc-text",
+    "https://labs.scale.com/leaderboard/distressbench",
+    "https://labs.scale.com/leaderboard/drugdiscoverybench",
+    "https://labs.scale.com/leaderboard/fortress",
+    "https://labs.scale.com/leaderboard/hil",
+    "https://labs.scale.com/leaderboard/hle-diamond",
+    "https://labs.scale.com/leaderboard/hss",
+    "https://labs.scale.com/leaderboard/humanitys_last_exam",
+    "https://labs.scale.com/leaderboard/humanitys_last_exam_text_only",
+    "https://labs.scale.com/leaderboard/mcp_atlas",
+    "https://labs.scale.com/leaderboard/multichallenge",
+    "https://labs.scale.com/leaderboard/prbench-finance",
+    "https://labs.scale.com/leaderboard/prbench-legal",
+    "https://labs.scale.com/leaderboard/rli",
+    "https://labs.scale.com/leaderboard/swe_bench_pro_public_v2",
+    "https://labs.scale.com/leaderboard/sweatlas-qna",
+    "https://labs.scale.com/leaderboard/sweatlas-refactoring",
+    "https://labs.scale.com/leaderboard/sweatlas-tw",
+    "https://labs.scale.com/leaderboard/multichallenge?tab=large",
+    "https://labs.scale.com/leaderboard/swe_bench_pro_public_v2?tab=full",
+    "https://labs.scale.com/leaderboard/swe_bench_pro",
+    "https://labs.scale.com/leaderboard/mask",
+    "https://labs.scale.com/leaderboard/visual_language_understanding"
+   ],
+   "raw_file": "raw/scale_seal.json",
+   "n_boards": 22,
+   "n_entries": 628,
+   "boards": [
+    {
+     "board_id": "scale_hle_diamond",
+     "category": "reasoning",
+     "weight": 0.2,
+     "n_models": 19,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_multichallenge_large",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 34,
+     "data_date": "2026-10-27"
+    },
+    {
+     "board_id": "scale_multichallenge_small",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 9,
+     "data_date": "2026-10-23"
+    },
+    {
+     "board_id": "scale_swe_bench_pro_v2_full",
+     "category": "coding",
+     "weight": 0.12,
+     "n_models": 16,
+     "data_date": "2026-10-16"
+    },
+    {
+     "board_id": "scale_swe_bench_pro_v2_hard",
+     "category": "coding",
+     "weight": 0.12,
+     "n_models": 16,
+     "data_date": "2026-10-16"
+    },
+    {
+     "board_id": "scale_sweatlas_qna",
+     "category": "coding",
+     "weight": 0.12,
+     "n_models": 22,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_sweatlas_refactoring",
+     "category": "coding",
+     "weight": 0.12,
+     "n_models": 17,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_sweatlas_test_writing",
+     "category": "coding",
+     "weight": 0.12,
+     "n_models": 22,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_mcp_atlas",
+     "category": "agentic",
+     "weight": 0.15,
+     "n_models": 34,
+     "data_date": "2026-09-17"
+    },
+    {
+     "board_id": "scale_remote_labor_index",
+     "category": "agentic",
+     "weight": 0.15,
+     "n_models": 20,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_hil_bench",
+     "category": "agentic",
+     "weight": 0.15,
+     "n_models": 30,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_drugdiscoverybench",
+     "category": "agentic",
+     "weight": 0.15,
+     "n_models": 19,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_prbench_finance",
+     "category": "knowledge",
+     "weight": 0.3,
+     "n_models": 38,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_prbench_legal",
+     "category": "knowledge",
+     "weight": 0.3,
+     "n_models": 43,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_humanitys_sixth_sense",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 29,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_distressbench",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 47,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_fortress",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 39,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "scale_audio_multichallenge",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 25,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_audio_multichallenge_text",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 19,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_audio_multichallenge_audio",
+     "category": "other",
+     "weight": 0.0,
+     "n_models": 12,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_hle_deprecated",
+     "category": "reasoning",
+     "weight": 0.06,
+     "n_models": 34,
+     "data_date": "2026-10-28"
+    },
+    {
+     "board_id": "scale_hle_text_only_deprecated",
+     "category": "reasoning",
+     "weight": 0.06,
+     "n_models": 33,
+     "data_date": "2026-10-28"
+    }
+   ]
+  },
+  {
+   "source_id": "simplebench",
+   "name": "SimpleBench",
+   "url": "https://simple-bench.com",
+   "owner": "SimpleBench Team (Philip of AI Explained YouTube channel and collaborators); tied to LM Council app",
+   "owner_type": "individual",
+   "measures": "Multiple-choice trick/common-sense questions (spatio-temporal, social, linguistic adversarial) where non-expert humans beat models.",
+   "categories": [
+    "reasoning"
+   ],
+   "method_url": "https://drive.google.com/file/d/1mddNFK5UbBFVr3oDftd2Kyc6D8TFctfe/view",
+   "last_update_seen": "2026-10-01 (latest dateAdded in leaderboard data)",
+   "update_frequency": "per notable model release (irregular, weeks)",
+   "reproducibility": "Code and 10-question public sample open; ~200-question main set private; AVG@5 at temperature 0.7; no per-item results.",
+   "independence": "Vendor-independent individual-run project; the team also runs the LM Council app (commercial).",
+   "contamination_handling": "Private held-out question set (only a small public sample).",
+   "respectability_score": 3,
+   "respectability_rationale": "Private held-out set and simple transparent scoring, widely cited, but small (~200 items, 9-person human baseline), run by an individual team with limited methodology documentation and irregular updates.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Useful contamination-resistant common-sense reasoning signal, but small private set from an individual project; weight lightly.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://simple-bench.com/",
+    "https://simple-bench.com/static/js/leaderboard-data.js",
+    "https://simple-bench.com/static/js/index.js",
+    "https://lmcouncil.ai/benchmarks",
+    "https://github.com/simple-bench/SimpleBench"
+   ],
+   "raw_file": "raw/simplebench.json",
+   "n_boards": 2,
+   "n_entries": 55,
+   "boards": [
+    {
+     "board_id": "simplebench_mcq",
+     "category": "reasoning",
+     "weight": 0.3,
+     "n_models": 51,
+     "data_date": "2026-10-01 (latest dateAdded)"
+    },
+    {
+     "board_id": "simplebench_open_ended",
+     "category": "reasoning",
+     "weight": 0.15,
+     "n_models": 3,
+     "data_date": "2026-04-22"
+    }
+   ]
+  },
+  {
+   "source_id": "slobench",
+   "name": "SloBench (Slovenian NLP Benchmark)",
+   "url": "https://slobench.cjvt.si",
+   "owner": "CJVT / University of Ljubljana (FRI) with CLARIN.SI; proposed by S. Zitnik, M. Robnik-Sikonja, S. Krek; supported 2025-2028 by LLMs4EU WP5",
+   "owner_type": "academic",
+   "measures": "Slovene-language NLP tasks (translated SuperGLUE, NLI, dialect COPA, pragmatics, MT, NER) scored by the platform on hidden-label test sets from user-submitted predictions.",
+   "categories": [
+    "multilingual"
+   ],
+   "method_url": "https://github.com/clarinsi/slobench-eval-docker",
+   "last_update_seen": "2026-10-29 (latest submission on SuperGLUE / SloPragEval / SloPragMega)",
+   "update_frequency": "continuous open submissions; frontier-model coverage sporadic and stale",
+   "reproducibility": "Open evaluation scripts (docker); test inputs public, labels withheld; submitted systems optionally open (Verified tag only for reproducible open code); per-task sub-metrics shown.",
+   "independence": "Academic, vendor-independent platform; results are self-submitted by researchers/community (mostly unverified), not run by SloBench itself.",
+   "contamination_handling": "Hidden test labels plus submission rate limits; translated public benchmarks (e.g. SuperGLUE) may be contaminated via the English originals.",
+   "respectability_score": 4,
+   "respectability_rationale": "Authoritative academic Slovenian benchmark with open eval code and hidden labels, but results are self-submitted/unverified and frontier coverage is stale (newest closed models GPT-5 / Gemini 2.5 / Claude Haiku 4.5 on one board only).",
+   "verdict": "accept_limited",
+   "verdict_reason": "Best Slovene-specific signal, but no current frontier models (Claude 5.x, GPT-6.x, Gemini 3+); use for Slovene open/local models and historical context.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://slobench.cjvt.si/",
+    "https://slobench.cjvt.si/static/frontend/main.js",
+    "https://slobench.cjvt.si/api/leaderboardList/",
+    "https://slobench.cjvt.si/api/about_paragraphs/",
+    "https://slobench.cjvt.si/api/faq/",
+    "https://slobench.cjvt.si/api/leaderboard/12/",
+    "https://slobench.cjvt.si/api/leaderboard/14/",
+    "https://slobench.cjvt.si/api/leaderboard/15/",
+    "https://slobench.cjvt.si/api/leaderboard/16/",
+    "https://slobench.cjvt.si/api/leaderboard/17/",
+    "https://slobench.cjvt.si/api/leaderboard/3/",
+    "https://slobench.cjvt.si/api/leaderboard/7/",
+    "https://slobench.cjvt.si/api/leaderboard/8/",
+    "https://slobench.cjvt.si/api/leaderboard/9/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/12/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/14/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/15/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/16/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/17/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/3/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/7/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/8/",
+    "https://slobench.cjvt.si/api/leaderboardSubmissions/9/"
+   ],
+   "raw_file": "raw/slobench.json",
+   "n_boards": 10,
+   "n_entries": 150,
+   "boards": [
+    {
+     "board_id": "slobench_superglue",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 15,
+     "data_date": "last submission 29 October 2026"
+    },
+    {
+     "board_id": "slobench_si_nli",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 23,
+     "data_date": "last submission 17 October 2026"
+    },
+    {
+     "board_id": "slobench_dialect_copa_std",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 14,
+     "data_date": "last submission 17 October 2026"
+    },
+    {
+     "board_id": "slobench_dialect_copa_cerkno",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 14,
+     "data_date": "last submission 17 October 2026"
+    },
+    {
+     "board_id": "slobench_mt_en_sl",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 33,
+     "data_date": "last submission 08 July 2026"
+    },
+    {
+     "board_id": "slobench_mt_sl_en",
+     "category": "multilingual",
+     "weight": 0.04,
+     "n_models": 23,
+     "data_date": "last submission 22 January 2026"
+    },
+    {
+     "board_id": "slobench_sloprageval",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 3,
+     "data_date": "last submission 29 October 2026"
+    },
+    {
+     "board_id": "slobench_slopragmega",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 2,
+     "data_date": "last submission 29 October 2026"
+    },
+    {
+     "board_id": "slobench_ke_wsc",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 2,
+     "data_date": "last submission 17 October 2026"
+    },
+    {
+     "board_id": "slobench_ner",
+     "category": "multilingual",
+     "weight": 0.08,
+     "n_models": 12,
+     "data_date": "last submission 22 September 2026"
+    }
+   ]
+  },
+  {
+   "source_id": "slovenian_chat_arena",
+   "name": "Slovenska pogovorna arena / Slovenian Chat Arena",
+   "url": "https://arena.cjvt.si",
+   "owner": "CJVT (Centre for Language Resources and Technologies) and Faculty of Computer and Information Science, University of Ljubljana; funded by Slovenian Ministry of Higher Education, Science and Innovation + EU NextGenerationEU (PoVeJMo programme)",
+   "owner_type": "academic",
+   "measures": "Blind pairwise human preference of chatbot answers to Slovene prompts by Slovene users, aggregated with a Bradley-Terry model.",
+   "categories": [
+    "multilingual",
+    "preference"
+   ],
+   "method_url": "https://arena.cjvt.si/o-projektu",
+   "last_update_seen": "live (fetched 2026-10-30; no timestamp shown)",
+   "update_frequency": "continuous (live votes); model roster changes irregularly",
+   "reproducibility": "Method described (Bradley-Terry, 1,000 bootstrap resamples, ties = half win); vote data not published as a download; preference data used to build GaMS datasets; cited thesis Petric (2025).",
+   "independence": "Academic; the same group (CJVT / UL FRI) develops the GaMS models that compete on the arena (potential conflict of interest, though votes are blind).",
+   "contamination_handling": "Not applicable (live user prompts, blind votes).",
+   "respectability_score": 3,
+   "respectability_rationale": "Credible academic Slovene-specific human-preference arena with sound BT/bootstrap method, but tiny vote counts (only 6 models with >=30 votes, wide CIs), no Claude models, and run by the GaMS developers.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Only live Slovene human-preference signal with some current frontier models, but statistically thin and missing Claude/GPT-6; use as a weak Slovene-quality indicator.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://arena.cjvt.si/",
+    "https://arena.cjvt.si/en/leaderboard",
+    "https://arena.cjvt.si/lestvica",
+    "https://arena.cjvt.si/o-projektu"
+   ],
+   "raw_file": "raw/slovenian_chat_arena.json",
+   "n_boards": 1,
+   "n_entries": 46,
+   "boards": [
+    {
+     "board_id": "slovenian_chat_arena_elo",
+     "category": "multilingual",
+     "weight": 0.6,
+     "n_models": 45,
+     "data_date": "2026-10-30 (live, no timestamp on page)"
+    }
+   ]
+  },
+  {
+   "source_id": "snorkel_ai",
+   "name": "Snorkel AI Leaderboards",
+   "url": "https://snorkel.ai/leaderboard/",
+   "owner": "Snorkel AI, Inc. (AI data-development company; supplies expert data to frontier labs)",
+   "owner_type": "company-independent",
+   "measures": "Own expert-built agentic benchmarks in enterprise environments (finance, insurance underwriting, manufacturing, RevOps, legal, workplace deliverables) and agentic coding, plus an economically weighted Digital Work Index.",
+   "categories": [
+    "reasoning",
+    "coding",
+    "agentic"
+   ],
+   "method_url": "https://snorkel.ai/leaderboard/snorkel-legal/",
+   "last_update_seen": "2026-10-20",
+   "update_frequency": "per model release (frontier models added within ~2 weeks; exports dated 2026-10-20)",
+   "reproducibility": "Proprietary/private datasets; per-benchmark methodology descriptions, Pass@1/Pass@5 and cost published; no open per-item data for enterprise sets.",
+   "independence": "Not a model vendor, but sells training data/environments to frontier labs (potential conflict of interest); runs evaluations itself.",
+   "contamination_handling": "Private held-out expert-built environments (not publicly released).",
+   "respectability_score": 3,
+   "respectability_rationale": "Own, current, documented agentic evaluations with costs, but proprietary data, small model set (16) and a commercial data vendor to the labs being ranked.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Own current private enterprise/agentic evals (as_of 2026-10-20), but commercial data-vendor owner, closed data, only 16 models.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://snorkel.ai/leaderboard/",
+    "https://snorkel.ai/benchmark-data/models/models-master-corrected-v2.json?v14",
+    "https://snorkel.ai/leaderboard/agentic-coding-2/",
+    "https://snorkel.ai/benchmark-data/tb_ed4_leaderboard.json",
+    "https://snorkel.ai/leaderboard/swe-bench-cli/",
+    "https://snorkel.ai/benchmark-data/swe_ed2_leaderboard.json",
+    "https://snorkel.ai/leaderboard/workplace-agents/",
+    "https://snorkel.ai/benchmark-data/gdpval_leaderboard.json",
+    "https://snorkel.ai/leaderboard/snorkel-finance-2-0/",
+    "https://snorkel.ai/benchmark-data/ee_finance_leaderboard.json",
+    "https://snorkel.ai/leaderboard/snorkel-underwrite-2-0/",
+    "https://snorkel.ai/benchmark-data/ee_insurance_leaderboard.json",
+    "https://snorkel.ai/leaderboard/snorkel-manufacturing/",
+    "https://snorkel.ai/benchmark-data/ee_manufacturing_leaderboard.json",
+    "https://snorkel.ai/leaderboard/snorkel-revops/",
+    "https://snorkel.ai/benchmark-data/ee_revops_leaderboard.json",
+    "https://snorkel.ai/leaderboard/snorkel-legal/",
+    "https://snorkel.ai/benchmark-data/ee_legal_leaderboard.json"
+   ],
+   "raw_file": "raw/snorkel_ai.json",
+   "n_boards": 10,
+   "n_entries": 158,
+   "boards": [
+    {
+     "board_id": "snorkel_digital_work_index",
+     "category": "reasoning",
+     "weight": 0.0,
+     "n_models": 16,
+     "data_date": "2026-10-20 (underlying benchmark exports as_of)"
+    },
+    {
+     "board_id": "snorkel_digital_work_index_coding",
+     "category": "coding",
+     "weight": 0.0,
+     "n_models": 16,
+     "data_date": "2026-10-20 (underlying benchmark exports as_of)"
+    },
+    {
+     "board_id": "snorkel_agentic_coding_2",
+     "category": "coding",
+     "weight": 0.2,
+     "n_models": 16,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "snorkel_swe_bench_cli",
+     "category": "coding",
+     "weight": 0.2,
+     "n_models": 16,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "snorkel_workplace_agents",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 14,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "snorkel_finance_2",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 16,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "snorkel_underwrite_2",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 16,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "snorkel_manufacturing",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 16,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "snorkel_revops",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 16,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "snorkel_legal",
+     "category": "agentic",
+     "weight": 0.1,
+     "n_models": 16,
+     "data_date": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "source_id": "swe_bench",
+   "name": "SWE-bench (official leaderboards)",
+   "url": "https://www.swebench.com",
+   "owner": "SWE-bench team (Princeton / Stanford; John Yang, Carlos Jimenez, Ofir Press et al.)",
+   "owner_type": "academic",
+   "measures": "Resolution rate of real GitHub issues in Python (Verified, 500 human-validated) and 9 other programming languages (Multilingual), judged by repo unit tests.",
+   "categories": [
+    "coding"
+   ],
+   "method_url": "https://www.swebench.com/verified.html",
+   "last_update_seen": "2026-09-02 (repo); site build 2026-09-01",
+   "update_frequency": "per submission; effectively stale since Feb 2026 (only Gemini 3.5 Flash added Sep 2026)",
+   "reproducibility": "Open dataset, open harness, open mini-SWE-agent scaffold; per-instance results, logs and trajectories public in SWE-bench/experiments.",
+   "independence": "Academic, vendor-independent; bash-only runs executed by the SWE-bench team, other rows are self-submitted by agent vendors (checked flag marks verified ones).",
+   "contamination_handling": "None beyond human validation; tasks from public pre-2024 GitHub repos, so training-data contamination is plausible.",
+   "respectability_score": 4,
+   "respectability_rationale": "Gold-standard academic coding-agent benchmark with fully open data/code and an apples-to-apples bash-only board, but stale for Oct 2026 frontier models, saturating, and with known contamination risk.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Highly reputable and open, but no 2026-H2 frontier models; use mainly as historical/second-tier reference.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://www.swebench.com/",
+    "https://www.swebench.com/js/mainResults.js",
+    "https://www.swebench.com/js/leaderboardFilters.js",
+    "https://www.swebench.com/verified.html",
+    "https://www.swebench.com/blog.html",
+    "https://api.github.com/repos/SWE-bench/swe-bench.github.io/commits",
+    "https://api.github.com/repos/SWE-bench/experiments/commits",
+    "https://api.github.com/repos/SWE-bench/experiments/contents/evaluation/verified",
+    "https://raw.githubusercontent.com/SWE-bench/experiments/main/evaluation/verified/20260901_mini-v2.4.2_gemini-3-5-flash/metadata.yaml",
+    "https://raw.githubusercontent.com/SWE-bench/experiments/main/evaluation/verified/20260901_mini-v2.4.2_gemini-3-5-flash/results/results.json",
+    "https://raw.githubusercontent.com/SWE-bench/experiments/main/evaluation/multilingual/20260902_mini-v2.4.6_gemini-3-5-flash/metadata.yaml",
+    "https://raw.githubusercontent.com/SWE-bench/experiments/main/evaluation/multilingual/20260902_mini-v2.4.6_gemini-3-5-flash/results/results.json",
+    "https://raw.githubusercontent.com/SWE-bench/experiments/main/analysis/get_leaderboard.py"
+   ],
+   "raw_file": "raw/swe_bench.json",
+   "n_boards": 3,
+   "n_entries": 102,
+   "boards": [
+    {
+     "board_id": "swebench_verified_bash_only",
+     "category": "coding",
+     "weight": 0.2667,
+     "n_models": 41,
+     "data_date": "site build 2026-09-01; newest entry 2026-09-01 (repo-only)"
+    },
+    {
+     "board_id": "swebench_verified_all",
+     "category": "coding",
+     "weight": 0.1333,
+     "n_models": 24,
+     "data_date": "site build 2026-09-01; newest entry 2026-02-26"
+    },
+    {
+     "board_id": "swebench_multilingual",
+     "category": "coding",
+     "weight": 0.2667,
+     "n_models": 14,
+     "data_date": "site build 2026-09-01; newest entry 2026-09-02 (repo-only)"
+    }
+   ]
+  },
+  {
+   "source_id": "swe_rebench",
+   "name": "SWE-rebench",
+   "url": "https://swe-rebench.com",
+   "owner": "Nebius (AI R&D team)",
+   "owner_type": "company-independent",
+   "measures": "Resolved rate of LLMs on continuously refreshed, decontaminated real-world GitHub issue tasks with one fixed minimal ReAct scaffold, 5 runs per task.",
+   "categories": [
+    "coding"
+   ],
+   "method_url": "https://swe-rebench.com/about",
+   "last_update_seen": "2026-07-28 (HF data lastModified); newest model Opus 5 released 2026-07-24; news log last entry 2026-07-01",
+   "update_frequency": "monthly-ish task refresh and model additions (last ~3 months quiet)",
+   "reproducibility": "Open tasks on Hugging Face (nebius/SWE-rebench-leaderboard), Docker images public, paper arXiv 2505.20411; fixed scaffold and prompts documented; trajectories inspectable.",
+   "independence": "Run centrally by Nebius (a cloud/inference provider, not a frontier-model vendor); same scaffold for all models; agent rows are reference evaluations.",
+   "contamination_handling": "Rolling fresh tasks with creation dates; time-window selection; models released after window start flagged as potential contamination.",
+   "respectability_score": 4,
+   "respectability_rationale": "Rigorous model-focused method (fixed scaffold, multi-run averages with SEM, rolling decontaminated tasks, open data), run by an industry lab rather than academia; currently lags the newest Sep-Oct 2026 releases.",
+   "verdict": "accept",
+   "verdict_reason": "Contamination-aware, apples-to-apples coding benchmark with open data; covers models up to July 2026.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://swe-rebench.com/",
+    "https://swe-rebench.com/about",
+    "https://swe-rebench.com/_next/static/chunks/app/page-943ec679adc8bf34.js",
+    "https://huggingface.co/api/datasets/nebius/SWE-rebench-leaderboard"
+   ],
+   "raw_file": "raw/swe_rebench.json",
+   "n_boards": 2,
+   "n_entries": 41,
+   "boards": [
+    {
+     "board_id": "swe_rebench_default_window",
+     "category": "coding",
+     "weight": 0.4,
+     "n_models": 17,
+     "data_date": "tasks 2026-05-15..2026-07-01; newest model Opus 5 (released 2026-07-24)"
+    },
+    {
+     "board_id": "swe_rebench_window_2026_03_01_05_15",
+     "category": "coding",
+     "weight": 0.1,
+     "n_models": 23,
+     "data_date": "tasks 2026-03-01..2026-05-15"
+    }
+   ]
+  },
+  {
+   "source_id": "tau_bench",
+   "name": "tau-bench / tau2-bench / tau3 (Sierra)",
+   "url": "https://taubench.com",
+   "owner": "Sierra Research (Sierra Technologies, agent-platform company; not an LLM vendor)",
+   "owner_type": "company-independent",
+   "measures": "Customer-service agent reliability: tool use + policy following in dialogue with a simulated user (retail, airline, telecom, banking knowledge; pass^k).",
+   "categories": [
+    "agentic"
+   ],
+   "method_url": "https://arxiv.org/abs/2506.07982",
+   "last_update_seen": "2026-08-04 (newest text submissions); voice to 2026-10-29",
+   "update_frequency": "per model release batches (Sierra-run) + external submissions",
+   "reproducibility": "Open code (github.com/sierra-research/tau2-bench), public tasks, trajectories published on S3 for most current submissions.",
+   "independence": "Current boards run by Sierra itself; legacy entries include vendor self-reported numbers (Anthropic, OpenAI, Moonshot, Qwen, DeepSeek) flagged unverified.",
+   "contamination_handling": "Public tasks; tau3 task fixes; no private held-out split stated.",
+   "respectability_score": 4,
+   "respectability_rationale": "Established, widely used agent benchmark with open code, published papers and trajectories; verification flags; but core tau2 board covers few current models and user simulator is an OpenAI model.",
+   "verdict": "accept",
+   "verdict_reason": "Open, verified Sierra-run results; use tau3-Banking for current frontier, tau2 domains for early-2026 models.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://taubench.com",
+    "https://taubench.com/assets/index-DHHai565.js",
+    "https://sierra-tau-bench-public.s3.us-west-2.amazonaws.com/submissions/manifest.json",
+    "https://sierra-tau-bench-public.s3.us-west-2.amazonaws.com/submissions/<submission>/submission.json (45 text submissions)",
+    "https://taubench.com/blog/tau3-task-fixes.html",
+    "https://github.com/sierra-research/tau2-bench"
+   ],
+   "raw_file": "raw/tau_bench.json",
+   "n_boards": 8,
+   "n_entries": 100,
+   "boards": [
+    {
+     "board_id": "tau2_overall",
+     "category": "agentic",
+     "weight": 0.05,
+     "n_models": 7,
+     "data_date": "submissions 2026-02-26..2026-03-02"
+    },
+    {
+     "board_id": "tau2_retail",
+     "category": "agentic",
+     "weight": 0.05,
+     "n_models": 7,
+     "data_date": "submissions 2026-02-26..2026-03-02"
+    },
+    {
+     "board_id": "tau2_airline",
+     "category": "agentic",
+     "weight": 0.05,
+     "n_models": 7,
+     "data_date": "submissions 2026-02-26..2026-03-02"
+    },
+    {
+     "board_id": "tau2_telecom",
+     "category": "agentic",
+     "weight": 0.05,
+     "n_models": 7,
+     "data_date": "submissions 2026-02-26..2026-03-02"
+    },
+    {
+     "board_id": "tau3_banking_knowledge",
+     "category": "agentic",
+     "weight": 0.05,
+     "n_models": 26,
+     "data_date": "submissions 2026-02-26..2026-08-04"
+    },
+    {
+     "board_id": "tau_legacy_retail",
+     "category": "agentic",
+     "weight": 0.015,
+     "n_models": 14,
+     "data_date": "submissions 2024..2026-01"
+    },
+    {
+     "board_id": "tau_legacy_airline",
+     "category": "agentic",
+     "weight": 0.015,
+     "n_models": 14,
+     "data_date": "submissions 2024..2026-01"
+    },
+    {
+     "board_id": "tau_legacy_telecom",
+     "category": "agentic",
+     "weight": 0.015,
+     "n_models": 10,
+     "data_date": "submissions 2024..2026-01"
+    }
+   ]
+  },
+  {
+   "source_id": "terminal_bench",
+   "name": "Terminal-Bench",
+   "url": "https://www.tbench.ai",
+   "owner": "Stanford University + Laude Institute (Harbor framework)",
+   "owner_type": "academic",
+   "measures": "Ability of AI agents to complete hard, realistic tasks end-to-end in a sandboxed terminal environment, verified by task tests.",
+   "categories": [
+    "agentic"
+   ],
+   "method_url": "https://www.tbench.ai/news/terminal-bench-4-0",
+   "last_update_seen": "2026-10-23",
+   "update_frequency": "continuous (new rows per model release; versioned task set)",
+   "reproducibility": "Open tasks on GitHub/Harbor Hub (harbor run -d terminal-bench/terminal-bench@4.0.0), open task triage; leaderboard trial data stored on Harbor Hub; CI95 and pass@k reported.",
+   "independence": "Academic/nonprofit-run; leaderboard compute partly funded by vendor grants (OpenAI, Anthropic, Z.ai, SpaceX AI); most rows use vendor-built agent harnesses (Claude Code, Codex, Grok Build).",
+   "contamination_handling": "Canary GUID, saturated/public-solution tasks removed, task set refreshed per version; tasks themselves are public.",
+   "respectability_score": 5,
+   "respectability_rationale": "Academic/nonprofit benchmark with open tasks and methodology, current Oct 2026 frontier coverage, CIs, continuous maintenance; caveat: scores mix model with vendor scaffold.",
+   "verdict": "accept",
+   "verdict_reason": "Current, open, well-maintained agentic benchmark with frontier models and confidence intervals.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://www.tbench.ai/leaderboard",
+    "https://www.tbench.ai/benchmarks",
+    "https://www.tbench.ai/news/terminal-bench-4-0"
+   ],
+   "raw_file": "raw/terminal_bench.json",
+   "n_boards": 1,
+   "n_entries": 35,
+   "boards": [
+    {
+     "board_id": "terminal_bench_4_0",
+     "category": "agentic",
+     "weight": 1.0,
+     "n_models": 23,
+     "data_date": "leaderboard updated 2026-10-23 (created 2026-08-27)"
+    }
+   ]
+  },
+  {
+   "source_id": "toolathlon",
+   "name": "Toolathlon (Tool Decathlon) - Toolathlon-Verified",
+   "url": "https://toolathlon.xyz",
+   "owner": "HKUST NLP group (Hong Kong University of Science and Technology) and collaborators",
+   "owner_type": "academic",
+   "measures": "Pass rate of language agents on 108 long-horizon, multi-app tasks using 32 real MCP servers (604 tools) plus local toolkits, with execution-based evaluation.",
+   "categories": [
+    "agentic"
+   ],
+   "method_url": "https://arxiv.org/abs/2510.25726v2",
+   "last_update_seen": "2026-08-30 (newest entry date)",
+   "update_frequency": "per model release (team-evaluated), roughly monthly",
+   "reproducibility": "Open code (github.com/hkust-nlp/Toolathlon), trajectories on Hugging Face (hkust-nlp/Toolathlon-Verified_Trajectories), 3-run pass@1 with spread.",
+   "independence": "Academic; current board entries all independently evaluated by the team with the default agent scaffold.",
+   "contamination_handling": "Public tasks with execution-based checkers and realistic initial states; no private split stated.",
+   "respectability_score": 4,
+   "respectability_rationale": "Academic, open code and trajectories, uniform team-run harness with multiple runs; new (Verified series since 2026-06) and missing several frontier models.",
+   "verdict": "accept",
+   "verdict_reason": "Independent, uniform tool-use/MCP agent benchmark current to Aug 2026.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://toolathlon.xyz/",
+    "https://toolathlon.xyz/docs/leaderboard",
+    "https://github.com/hkust-nlp/Toolathlon",
+    "https://arxiv.org/abs/2510.25726v2"
+   ],
+   "raw_file": "raw/toolathlon.json",
+   "n_boards": 1,
+   "n_entries": 25,
+   "boards": [
+    {
+     "board_id": "toolathlon_verified_pass1",
+     "category": "agentic",
+     "weight": 0.8,
+     "n_models": 23,
+     "data_date": "2026-08-30 (newest entry)"
+    }
+   ]
+  },
+  {
+   "source_id": "vals_ai",
+   "name": "Vals AI",
+   "url": "https://www.vals.ai/benchmarks",
+   "owner": "Vals AI, Inc. (independent evaluation company, US)",
+   "owner_type": "company-independent",
+   "measures": "Independent evaluations of LLMs/agents on ~40-55 industry benchmarks (finance, legal, tax, healthcare, coding, science, math), mostly private datasets, plus composite Vals Index.",
+   "categories": [
+    "agentic",
+    "coding",
+    "knowledge",
+    "reasoning"
+   ],
+   "method_url": "https://www.vals.ai/methodology",
+   "last_update_seen": "2026-10-29",
+   "update_frequency": "continuous (new models evaluated within days of release; Vals Index updated 2026-10-29)",
+   "reproducibility": "Private test sets for most industry benchmarks (not reproducible externally); some public benchmarks and public trajectories; per-model cost/latency/tokens published; partial per-task breakdowns.",
+   "independence": "Independent company running its own evaluations; some benchmarks built with industry partners; some rubric grading uses vendor LLM judges (e.g. EMB v1.1 judged by GPT-6 Luna).",
+   "contamination_handling": "Mostly private/held-out datasets (dataset_type=private) to prevent training contamination.",
+   "respectability_score": 4,
+   "respectability_rationale": "Established independent evaluator with published methodology, own runs on private domain datasets, frequent updates and stderr reported; data/code mostly closed and LLM-judge grading on some tasks.",
+   "verdict": "accept",
+   "verdict_reason": "Own independent evaluations on private professional-domain benchmarks, current frontier models, updated 2026-10-29.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://www.vals.ai/benchmarks",
+    "https://www.vals.ai/methodology",
+    "https://www.vals.ai/models/anthropic_claude-opus-5-5",
+    "https://www.vals.ai/benchmarks/vals_index",
+    "https://www.vals.ai/_astro/benchmark_view_vals_index.DF1sDxTc.json",
+    "https://www.vals.ai/benchmarks/finance_index",
+    "https://www.vals.ai/_astro/benchmark_view_finance_index.CUa7GAOb.json",
+    "https://www.vals.ai/benchmarks/legal_index",
+    "https://www.vals.ai/_astro/benchmark_view_legal_index.Ds65WC7f.json",
+    "https://www.vals.ai/benchmarks/science_index",
+    "https://www.vals.ai/_astro/benchmark_view_science_index.BsLL57Hh.json",
+    "https://www.vals.ai/benchmarks/fabv2-1",
+    "https://www.vals.ai/_astro/benchmark_view_finance_agent_v2_1.BZVaEuSl.json",
+    "https://www.vals.ai/benchmarks/emb-v1-1",
+    "https://www.vals.ai/_astro/benchmark_view_emb_v1_1.CJRl_g2K.json",
+    "https://www.vals.ai/benchmarks/tax_agent_bench",
+    "https://www.vals.ai/_astro/benchmark_view_tax_agent_bench.Bpg6Dq1-.json",
+    "https://www.vals.ai/benchmarks/legal_research",
+    "https://www.vals.ai/_astro/benchmark_view_legal_research.AFZ5CBK-.json",
+    "https://www.vals.ai/benchmarks/cyber",
+    "https://www.vals.ai/_astro/benchmark_view_cyberbench.FBHvC1JO.json",
+    "https://www.vals.ai/benchmarks/vibe-code",
+    "https://www.vals.ai/_astro/benchmark_view_vibe_code_bench.Ceah1U1U.json",
+    "https://www.vals.ai/benchmarks/code-migration-v1-1",
+    "https://www.vals.ai/_astro/benchmark_view_code_migration_v1_1.C5fGWyEv.json",
+    "https://www.vals.ai/benchmarks/proof_bench",
+    "https://www.vals.ai/_astro/benchmark_view_proof_bench.SQdK0VGh.json",
+    "https://www.vals.ai/benchmarks/legal_bench",
+    "https://www.vals.ai/_astro/benchmark_view_legal_bench.CpdWpKOK.json"
+   ],
+   "raw_file": "raw/vals_ai.json",
+   "n_boards": 13,
+   "n_entries": 493,
+   "boards": [
+    {
+     "board_id": "vals_index",
+     "category": "reasoning",
+     "weight": 0.0,
+     "n_models": 30,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_finance_index",
+     "category": "agentic",
+     "weight": 0.0571,
+     "n_models": 33,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_legal_index",
+     "category": "agentic",
+     "weight": 0.0571,
+     "n_models": 31,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_science_index",
+     "category": "reasoning",
+     "weight": 0.2667,
+     "n_models": 23,
+     "data_date": "2026-10-25"
+    },
+    {
+     "board_id": "vals_finance_agent_v2_1",
+     "category": "agentic",
+     "weight": 0.1143,
+     "n_models": 33,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_emb_v1_1",
+     "category": "agentic",
+     "weight": 0.1143,
+     "n_models": 34,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_tax_agent_bench",
+     "category": "agentic",
+     "weight": 0.1143,
+     "n_models": 46,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_legal_research",
+     "category": "agentic",
+     "weight": 0.1143,
+     "n_models": 47,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_cyberbench_v1_1",
+     "category": "agentic",
+     "weight": 0.1143,
+     "n_models": 40,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "vals_vibe_code_bench_v1_1",
+     "category": "coding",
+     "weight": 0.4,
+     "n_models": 43,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_code_migration_v1_1",
+     "category": "coding",
+     "weight": 0.4,
+     "n_models": 27,
+     "data_date": "2026-10-20"
+    },
+    {
+     "board_id": "vals_proofbench_v1_1",
+     "category": "reasoning",
+     "weight": 0.2667,
+     "n_models": 43,
+     "data_date": "2026-10-29"
+    },
+    {
+     "board_id": "vals_legalbench",
+     "category": "knowledge",
+     "weight": 0.8,
+     "n_models": 45,
+     "data_date": "2026-10-13"
+    }
+   ]
+  },
+  {
+   "source_id": "vectara_hallucination",
+   "name": "Vectara Hallucination Leaderboard (HHEM-2.3)",
+   "url": "https://github.com/vectara/hallucination-leaderboard",
+   "owner": "Vectara Inc. (RAG platform company, not an LLM vendor)",
+   "owner_type": "company-independent",
+   "measures": "Hallucination rate of LLMs when summarizing ~7,700 documents, judged by Vectara's HHEM-2.3 factual-consistency model.",
+   "categories": [
+    "knowledge"
+   ],
+   "method_url": "https://github.com/vectara/hallucination-leaderboard#methodology",
+   "last_update_seen": "2026-10-22 (README: \"Last updated on October 22, 2026\")",
+   "update_frequency": "frequent (roughly per new model releases)",
+   "reproducibility": "Prompt published; dataset private; judge HHEM-2.3 is commercial (open variant HHEM-2.1-Open differs); no per-item outputs.",
+   "independence": "Independent of LLM vendors; single commercial judge model owned by Vectara.",
+   "contamination_handling": "Private (non-public) document set to avoid overfitting.",
+   "respectability_score": 3,
+   "respectability_rationale": "Long-running, frequently updated and widely cited, private test set; but narrow task (summarization faithfulness), closed proprietary judge, no per-item data.",
+   "verdict": "accept_limited",
+   "verdict_reason": "Current and useful grounded-hallucination signal, but single closed judge and narrow summarization task.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://github.com/vectara/hallucination-leaderboard",
+    "https://raw.githubusercontent.com/vectara/hallucination-leaderboard/main/README.md"
+   ],
+   "raw_file": "raw/vectara_hallucination.json",
+   "n_boards": 1,
+   "n_entries": 111,
+   "boards": [
+    {
+     "board_id": "vectara_hhem_hallucination_rate",
+     "category": "knowledge",
+     "weight": 0.6,
+     "n_models": 104,
+     "data_date": "2026-10-22"
+    }
+   ]
+  },
+  {
+   "source_id": "vending_bench",
+   "name": "Vending-Bench 2 (Andon Labs)",
+   "url": "https://andonlabs.com/evals/vending-bench-2",
+   "owner": "Andon Labs (independent AI-safety/evals company)",
+   "owner_type": "company-independent",
+   "measures": "Long-horizon agent coherence: running a simulated vending-machine business for a year via tools; score = final bank balance (start $500).",
+   "categories": [
+    "agentic"
+   ],
+   "method_url": "https://arxiv.org/abs/2502.15840",
+   "last_update_seen": "not dated on page; includes Gemini 4 Carbon/Argon, Claude Opus 5.5/Sonnet 5.5/Haiku 5.5, GPT-6 Sol/Astra, GPT-6.1 Terra (fetched 2026-10-30)",
+   "update_frequency": "per frontier model release",
+   "reproducibility": "Method described (VB1 paper + VB2 page); environment/code not public; per-run time series published on page.",
+   "independence": "Vendor-independent evaluator; runs all models itself; has research collaborations with labs (e.g. Anthropic Project Vend) - minor caveat.",
+   "contamination_handling": "Simulation-based, not a static Q&A set; not applicable/none stated.",
+   "respectability_score": 4,
+   "respectability_rationale": "Established independent evaluator widely cited in frontier model cards, consistent harness and multiple runs with SEM; environment closed and high run-to-run variance.",
+   "verdict": "accept",
+   "verdict_reason": "Current frontier coverage incl. most scope models; independent, multi-run, published method.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://andonlabs.com/evals/vending-bench-2",
+    "https://andonlabs.com/evals/vending-bench-2/__data.json",
+    "https://andonlabs.com/_app/immutable/nodes/27.DfnfhcbM.js",
+    "https://andonlabs.com/_app/immutable/chunks/CdFT7FVG.js",
+    "https://andonlabs.com/evals/vending-bench"
+   ],
+   "raw_file": "raw/vending_bench.json",
+   "n_boards": 1,
+   "n_entries": 73,
+   "boards": [
+    {
+     "board_id": "vending_bench_2_money",
+     "category": "agentic",
+     "weight": 0.8,
+     "n_models": 66,
+     "data_date": "not shown (fetched 2026-10-30)"
+    }
+   ]
+  }
+ ],
+ "rejected": [
+  {
+   "source_id": "hf_leaderboards",
+   "name": "Hugging Face Open LLM Leaderboard v2 (plus HF-hosted multilingual/European leaderboards)",
+   "url": "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard",
+   "owner": "Hugging Face (Open LLM Leaderboard team); other spaces by community/EU projects (openGPT-X/Eurolingua, Occiglot, UONLP)",
+   "owner_type": "company-independent",
+   "measures": "Open-weight LLMs on public English benchmarks (IFEval, BBH, MATH lvl5, GPQA, MuSR, MMLU-Pro) via lm-eval-harness; related EU spaces measure translated benchmarks per European language.",
+   "categories": [
+    "reasoning",
+    "multilingual"
+   ],
+   "method_url": "https://huggingface.co/docs/leaderboards/open_llm_leaderboard/about",
+   "last_update_seen": "2025-03-20 (Open LLM Leaderboard contents dataset); 2025-04-28 (European LLM Leaderboard)",
+   "update_frequency": "stale (archived 2025)",
+   "reproducibility": "Fully open: lm-eval-harness, per-sample details datasets public.",
+   "independence": "Vendor-independent harness run by HF/community; open-weight models only, so no frontier API models.",
+   "contamination_handling": "None beyond flagging; public benchmarks, known contamination/merge gaming issues (reason for retirement).",
+   "respectability_score": 1,
+   "respectability_rationale": "Methodologically respectable when active, but archived since March 2025, open-weight only and English-only; the HF-hosted European boards are equally stale or broken, so nothing current to index.",
+   "verdict": "reject",
+   "verdict_reason": "Archived/stale (last data 2025-03 / 2025-04), no frontier or current models, no current Slovenian board on HF.",
+   "retrieval_status": "not_retrieved",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://huggingface.co/api/spaces/open-llm-leaderboard/open_llm_leaderboard",
+    "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard/raw/main/README.md",
+    "https://huggingface.co/api/datasets/open-llm-leaderboard/contents",
+    "https://huggingface.co/api/spaces/Eurolingua/european-llm-leaderboard",
+    "https://huggingface.co/api/spaces/openGPT-X/european-llm-leaderboard",
+    "https://huggingface.co/api/spaces/occiglot/euro-llm-leaderboard",
+    "https://huggingface.co/api/spaces/uonlp/open_multilingual_llm_leaderboard",
+    "https://huggingface.co/api/spaces/OpenEvals/find-a-leaderboard",
+    "https://huggingface.co/api/spaces?search=slovenian",
+    "https://huggingface.co/api/spaces?search=slovene",
+    "https://huggingface.co/api/spaces?search=slobench",
+    "https://huggingface.co/api/spaces?search=european-llm-leaderboard",
+    "https://huggingface.co/api/spaces?search=multilingual-leaderboard",
+    "https://huggingface.co/api/spaces?search=euro-llm",
+    "https://huggingface.co/api/spaces?search=openeurollm",
+    "https://huggingface.co/api/spaces?search=euroeval",
+    "https://huggingface.co/api/spaces?search=include-leaderboard",
+    "https://huggingface.co/api/spaces?search=global-mmlu"
+   ],
+   "raw_file": "raw/hf_leaderboards.json",
+   "n_boards": 0,
+   "n_entries": 0,
+   "boards": []
+  },
+  {
+   "source_id": "llm_stats",
+   "name": "LLM Stats",
+   "url": "https://llm-stats.com",
+   "owner": "LLM Stats (small startup, 'We're two people'; co-founder Jonathan Chavez; data served from api.zeroeval.com, GitHub org 'zeroeval')",
+   "owner_type": "company-independent",
+   "measures": "Aggregates lab-published benchmark scores, provider prices and its own live API speed samples into per-benchmark leaderboards and an uncertainty-aware 'LLM Stats Score'; also ran (now archived) blind community arenas.",
+   "categories": [
+    "reasoning",
+    "coding",
+    "agentic",
+    "speed",
+    "price",
+    "preference"
+   ],
+   "method_url": "https://llm-stats.com/methodology/llm-stats-score",
+   "last_update_seen": "2026-10-30 (page JSON-LD dateModified 2026-10-30T09:44Z; LLM Stats Score v3.1 'Updated September 2, 2026'; GPQA page 'last updated in October 2026')",
+   "update_frequency": "continuous (claims new releases appear within hours)",
+   "reproducibility": "No open code or per-item results; methodology only described at a high level (further details 'shared with researchers, customers, and partners'); model list JSON downloadable from api.zeroeval.com.",
+   "independence": "Vendor-independent company, but capability numbers are vendor self-reported (0 independently verified results on all 7 benchmarks checked). Sells data API, custom benchmarking and data-labeling services.",
+   "contamination_handling": "none stated",
+   "respectability_score": 2,
+   "respectability_rationale": "Useful catalogue with provenance links, but benchmark scores are copied lab claims with no independent verification, method is opaque, arenas archived, and visible data errors (e.g. 1453 s 'lowest latency').",
+   "verdict": "reject",
+   "verdict_reason": "Aggregator of vendor self-reported benchmark numbers (0 verified results on 7 checked benchmarks); would double-count vendor claims.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://llm-stats.com/",
+    "https://llm-stats.com/leaderboards/llm-leaderboard",
+    "https://llm-stats.com/methodology",
+    "https://llm-stats.com/methodology/llm-stats-score",
+    "https://llm-stats.com/about-us",
+    "https://llm-stats.com/arenas",
+    "https://llm-stats.com/arenas/coding-arena",
+    "https://llm-stats.com/benchmarks/gpqa",
+    "https://llm-stats.com/benchmarks/swe-bench-verified",
+    "https://llm-stats.com/benchmarks/mmlu-pro",
+    "https://llm-stats.com/benchmarks/livecodebench",
+    "https://llm-stats.com/benchmarks/aime-2025",
+    "https://llm-stats.com/benchmarks/humanity-s-last-exam",
+    "https://llm-stats.com/benchmarks/terminal-bench-2"
+   ],
+   "raw_file": "raw/llm_stats.json",
+   "n_boards": 0,
+   "n_entries": 0,
+   "boards": []
+  },
+  {
+   "source_id": "vellum",
+   "name": "Vellum LLM Leaderboard",
+   "url": "https://www.vellum.ai/llm-leaderboard",
+   "owner": "Vellum (Vellum AI, commercial AI-tooling / personal-assistant company; leaderboard is a marketing page)",
+   "owner_type": "company-independent",
+   "measures": "Top-N snippets of mostly vendor-reported benchmark scores (HLE, GPQA Diamond, SWE-Bench, AutoBench, OSWorld, BrowseComp, Terminal-Bench 2.1) plus price/speed/context tables.",
+   "categories": [
+    "reasoning",
+    "coding",
+    "agentic",
+    "speed",
+    "price"
+   ],
+   "method_url": null,
+   "last_update_seen": "updated Mon Sept 28 (2026-09-28)",
+   "update_frequency": "irregular (about monthly); last update ~1 month old",
+   "reproducibility": "None: no per-entry sources, no code, no data download, no settings/effort levels stated.",
+   "independence": "Company not a model vendor, but numbers are predominantly copied from vendor announcements (spot-checks match vendor claims); unspecified mix with own runs.",
+   "contamination_handling": "none stated",
+   "respectability_score": 1,
+   "respectability_rationale": "Opaque marketing leaderboard: no method, no provenance, only top-5 snippets, stale, and contains obvious data errors (Claude 3 Opus 95.4% GPQA, 0.003 s TTFT).",
+   "verdict": "reject",
+   "verdict_reason": "Copies vendor-reported numbers without provenance or method and shows clear data errors; adds no independent signal.",
+   "retrieval_status": "ok",
+   "fetched_at": "2026-10-30",
+   "urls": [
+    "https://www.vellum.ai/llm-leaderboard",
+    "https://llm-stats.com/benchmarks/humanity-s-last-exam"
+   ],
+   "raw_file": "raw/vellum.json",
+   "n_boards": 0,
+   "n_entries": 0,
+   "boards": []
+  },
+  {
+   "source_id": "hal_holistic_agent_leaderboard",
+   "name": "HAL: Holistic Agent Leaderboard",
+   "url": "https://hal.cs.princeton.edu/",
+   "owner": "SAgE team, Princeton University",
+   "verdict": "reject",
+   "verdict_reason": "Respectable academic (ICLR 2026) but site states it has paused adding new models; newest entries are 2025 models (Opus 4.5 / GPT-5 era). Stale for the frontier.",
+   "last_update_seen": "late 2025 (paused)",
+   "from": "vetting"
+  },
+  {
+   "source_id": "galileo_agent_leaderboard_v2",
+   "name": "Galileo Agent Leaderboard v2",
+   "url": "https://huggingface.co/spaces/galileo-ai/agent-leaderboard",
+   "owner": "Galileo (AI evaluation company)",
+   "verdict": "reject",
+   "verdict_reason": "Own evals, but HF space last modified 2026-06-11; predates current frontier releases (Sep-Oct 2026). Stale.",
+   "last_update_seen": "2026-06-11",
+   "from": "vetting"
+  },
+  {
+   "source_id": "wildbench_ai2",
+   "name": "WildBench (AI2)",
+   "url": "https://huggingface.co/spaces/allenai/WildBench",
+   "owner": "Allen Institute for AI",
+   "verdict": "reject",
+   "verdict_reason": "Stale: space last modified 2024-08-06.",
+   "last_update_seen": "2024-08-06",
+   "from": "vetting"
+  },
+  {
+   "source_id": "arena_hard_auto",
+   "name": "Arena-Hard-Auto",
+   "url": "https://github.com/lmarena/arena-hard-auto",
+   "owner": "LMArena",
+   "verdict": "reject",
+   "verdict_reason": "LMArena property (LMArena assigned to another agent); no separate maintained public frontier board found.",
+   "last_update_seen": "not checked further",
+   "from": "vetting"
+  },
+  {
+   "source_id": "textarena_game_leaderboard",
+   "name": "TextArena (game leaderboard)",
+   "url": "https://www.textarena.ai/leaderboard",
+   "owner": "TextArena open-source project (Guertler et al.)",
+   "verdict": "reject",
+   "verdict_reason": "JS-only; latest snapshots seen ~2026-05 with older models; site now promotes an AI text-adventure product. Stale/unverifiable.",
+   "last_update_seen": "~2026-05 (third-party mirror)",
+   "from": "vetting"
+  },
+  {
+   "source_id": "prollm_toqan_prosus",
+   "name": "ProLLM (Toqan / Prosus)",
+   "url": "https://prollm.ai/leaderboard",
+   "owner": "Prosus AI (Toqan)",
+   "verdict": "reject",
+   "verdict_reason": "Site says 'There are no public leaderboards available at the moment' (login/org account required).",
+   "last_update_seen": "n/a (no public data)",
+   "from": "vetting"
+  },
+  {
+   "source_id": "dubesor_llm_benchmark_table",
+   "name": "Dubesor LLM Benchmark table",
+   "url": "https://dubesor.de/benchtable",
+   "owner": "Dubesor (individual)",
+   "verdict": "reject",
+   "verdict_reason": "Page title marks it [ARCHIVED]; small-scale manual tests, no current models.",
+   "last_update_seen": "archived",
+   "from": "vetting"
+  },
+  {
+   "source_id": "yupp_vibe_leaderboard",
+   "name": "Yupp (VIBE leaderboard)",
+   "url": "https://yupp.ai/leaderboard",
+   "owner": "Yupp",
+   "verdict": "reject",
+   "verdict_reason": "Behind Vercel security checkpoint (HTTP 429); reported shut down in 2026-03. Not verifiable.",
+   "last_update_seen": "not reachable",
+   "from": "vetting"
+  },
+  {
+   "source_id": "openlm_ai_chatbot_arena",
+   "name": "OpenLM.ai Chatbot Arena+",
+   "url": "https://openlm.ai/chatbot-arena/",
+   "owner": "OpenLM.ai (unknown organisation)",
+   "verdict": "reject",
+   "verdict_reason": "Opaque 'Arena+' Elo from LLM-as-judge battles mixed with copied ARC-AGI numbers; no published method or data; unknown owner.",
+   "last_update_seen": "2026-10-28",
+   "from": "vetting"
+  },
+  {
+   "source_id": "gdpval_openai",
+   "name": "GDPval (OpenAI)",
+   "url": "https://evals.openai.com/",
+   "owner": "OpenAI",
+   "verdict": "reject",
+   "verdict_reason": "Vendor-run benchmark; no live public leaderboard on evals.openai.com (independent GDPval-AA run is covered by Artificial Analysis).",
+   "last_update_seen": "n/a",
+   "from": "vetting"
+  },
+  {
+   "source_id": "zeno",
+   "name": "Zeno",
+   "url": "https://zenoml.com/",
+   "owner": "Zeno (evaluation platform)",
+   "verdict": "reject",
+   "verdict_reason": "Evaluation tooling platform, no maintained frontier leaderboard.",
+   "last_update_seen": "n/a",
+   "from": "vetting"
+  },
+  {
+   "source_id": "benchlm",
+   "name": "BenchLM",
+   "url": "https://benchlm.ai/",
+   "owner": "BenchLM (independent site)",
+   "verdict": "reject",
+   "verdict_reason": "Aggregator: composite 'BenchAlign' scores from others' published rows plus a statistical estimator for missing data ('Estimated' ranks); no own evaluations.",
+   "last_update_seen": "2026-10-29",
+   "from": "vetting"
+  },
+  {
+   "source_id": "benchleader",
+   "name": "BenchLeader",
+   "url": "https://benchleader.com/",
+   "owner": "BenchLeader",
+   "verdict": "reject",
+   "verdict_reason": "States explicitly it runs no evaluations of its own; re-combines Artificial Analysis, LMArena, Epoch, LiveBench, SWE-bench etc.",
+   "last_update_seen": "2026-10-30",
+   "from": "vetting"
+  },
+  {
+   "source_id": "modelgrep",
+   "name": "modelgrep",
+   "url": "https://modelgrep.com/leaderboard",
+   "owner": "modelgrep",
+   "verdict": "reject",
+   "verdict_reason": "Ranks by copied Artificial Analysis indexes; no own method.",
+   "last_update_seen": "2026-10",
+   "from": "vetting"
+  },
+  {
+   "source_id": "writeworks",
+   "name": "WriteWorks",
+   "url": "https://writeworks.ai/",
+   "owner": "WriteWorks",
+   "verdict": "reject",
+   "verdict_reason": "AI-search content/SEO marketing platform, not a leaderboard.",
+   "last_update_seen": "n/a",
+   "from": "vetting"
+  },
+  {
+   "source_id": "veprompts",
+   "name": "VePrompts",
+   "url": "https://veprompts.com/",
+   "owner": "VePrompts",
+   "verdict": "reject",
+   "verdict_reason": "Free AI toolkit / SEO comparison pages; no own evaluations.",
+   "last_update_seen": "n/a",
+   "from": "vetting"
+  },
+  {
+   "source_id": "klu_llm_leaderboard",
+   "name": "Klu LLM Leaderboard",
+   "url": "https://klu.ai/llm-leaderboard",
+   "owner": "Klu",
+   "verdict": "reject",
+   "verdict_reason": "'Klu Index' built from Artificial Analysis data (AA v5.0) plus price/speed; no own evals.",
+   "last_update_seen": "2026-10-28",
+   "from": "vetting"
+  },
+  {
+   "source_id": "lm_market_cap",
+   "name": "LM Market Cap",
+   "url": "https://lmmarketcap.com/leaderboards/models",
+   "owner": "LM Market Cap",
+   "verdict": "reject",
+   "verdict_reason": "Aggregator of 'source-backed' third-party scores; no own evaluations.",
+   "last_update_seen": "2026-10-30",
+   "from": "vetting"
+  },
+  {
+   "source_id": "llm_index",
+   "name": "LLM Index",
+   "url": "https://llm-index.com/",
+   "owner": "LLM Index",
+   "verdict": "reject",
+   "verdict_reason": "Derived from LiveBench public scores (LiveBench assigned elsewhere); factual data retrieved 2026-07-21.",
+   "last_update_seen": "2026-07-21",
+   "from": "vetting"
+  },
+  {
+   "source_id": "ai_model_rankings",
+   "name": "AI Model Rankings",
+   "url": "https://aimodelrankings.org/",
+   "owner": "AI Model Rankings",
+   "verdict": "reject",
+   "verdict_reason": "Weekly aggregator re-verifying public leaderboard numbers; no own evaluations.",
+   "last_update_seen": "2026-10-30",
+   "from": "vetting"
+  },
+  {
+   "source_id": "opper_llm_leaderboard",
+   "name": "Opper LLM Leaderboard",
+   "url": "https://opper.ai/llm-leaderboard",
+   "owner": "Opper AI (LLM hosting company)",
+   "verdict": "reject",
+   "verdict_reason": "Scores 'sourced from Artificial Analysis'; no own evaluations.",
+   "last_update_seen": "2026-10",
+   "from": "vetting"
+  },
+  {
+   "source_id": "developers_digest_benchmarks",
+   "name": "Developers Digest benchmarks",
+   "url": "https://www.developersdigest.tech/benchmarks",
+   "owner": "Developers Digest",
+   "verdict": "reject",
+   "verdict_reason": "Copies entries from official leaderboards (incl. vendor-reported); no own evaluations.",
+   "last_update_seen": "2026-10-17",
+   "from": "vetting"
+  },
+  {
+   "source_id": "benchmarklist",
+   "name": "BenchmarkList",
+   "url": "https://benchmarklist.com/",
+   "owner": "BenchmarkList",
+   "verdict": "reject",
+   "verdict_reason": "Mass aggregator (2,500+ benchmarks) mirroring others' results; no own evaluations.",
+   "last_update_seen": "2026-10-29",
+   "from": "vetting"
+  },
+  {
+   "source_id": "ay_automate_llm_leaderboard",
+   "name": "AY Automate LLM Leaderboard",
+   "url": "https://www.ayautomate.com/models",
+   "owner": "AY Automate (AI agency)",
+   "verdict": "reject",
+   "verdict_reason": "Agency marketing page copying provider/third-party scores.",
+   "last_update_seen": "2026-10",
+   "from": "vetting"
+  },
+  {
+   "source_id": "clickrank_llm_leaderboard",
+   "name": "ClickRank LLM Leaderboard",
+   "url": "https://www.clickrank.ai/llm-leaderboard/",
+   "owner": "ClickRank (SEO tool)",
+   "verdict": "reject",
+   "verdict_reason": "SEO content page (snippet ~173 days old); not reachable by curl.",
+   "last_update_seen": "~2026-05",
+   "from": "vetting"
+  },
+  {
+   "source_id": "localaimaster_ai_model_leaderboard",
+   "name": "LocalAIMaster AI Model Leaderboard",
+   "url": "https://localaimaster.com/tools/ai-model-leaderboard",
+   "owner": "LocalAIMaster",
+   "verdict": "reject",
+   "verdict_reason": "SEO aggregator; stale (~June 2026 snapshot).",
+   "last_update_seen": "~2026-06",
+   "from": "vetting"
+  },
+  {
+   "source_id": "letslearngenai_benchmark_guide",
+   "name": "LetsLearnGenAI benchmark guide",
+   "url": "https://letslearngenai.com/guide/benchmark",
+   "owner": "LetsLearnGenAI",
+   "verdict": "reject",
+   "verdict_reason": "Educational/SEO guide, no own evaluations.",
+   "last_update_seen": "n/a",
+   "from": "vetting"
+  },
+  {
+   "source_id": "logrocket_ai_dev_tool_power_rankings",
+   "name": "LogRocket AI dev tool power rankings",
+   "url": "https://blog.logrocket.com/ai-dev-tool-power-rankings/",
+   "owner": "LogRocket (blog)",
+   "verdict": "reject",
+   "verdict_reason": "Editorial roundup; not a methodical leaderboard.",
+   "last_update_seen": "2026-10",
+   "from": "vetting"
+  },
+  {
+   "source_id": "mcp_universe",
+   "name": "MCP-Universe",
+   "url": "",
+   "owner": "Salesforce AI Research",
+   "verdict": "reject",
+   "verdict_reason": "Stale: newest entries Gemini-3-Pro-Preview / GPT-5; no 2026 frontier models.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "gaia_hf_leaderboard",
+   "name": "GAIA (HF leaderboard)",
+   "url": "",
+   "owner": "Meta/HF/AutoGPT",
+   "verdict": "reject",
+   "verdict_reason": "Entries are self-submitted agent systems with varying scaffolds; not comparable per model.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "simpleqa_verified_kaggle",
+   "name": "SimpleQA Verified (Kaggle)",
+   "url": "",
+   "owner": "Google DeepMind / Kaggle",
+   "verdict": "reject",
+   "verdict_reason": "Vendor-run; Kaggle serves no data without JavaScript (Epoch's independent SimpleQA Verified run is used instead).",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "facts_grounding_kaggle",
+   "name": "FACTS Grounding (Kaggle)",
+   "url": "",
+   "owner": "Google DeepMind / Kaggle",
+   "verdict": "reject",
+   "verdict_reason": "Vendor-run (Google) and data not retrievable without JavaScript.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "ai_language_proficiency_monitor",
+   "name": "AI Language Proficiency Monitor",
+   "url": "",
+   "owner": "GIZ FAIR Forward / community",
+   "verdict": "reject",
+   "verdict_reason": "Data stale since 2026-06; ~10 samples per language, too thin for Slovenian.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "south_slavic_classification_study_ijs",
+   "name": "South-Slavic classification study (IJS)",
+   "url": "",
+   "owner": "Jozef Stefan Institute",
+   "verdict": "reject",
+   "verdict_reason": "One-off paper snapshot, overlaps SloBench tasks; not a maintained leaderboard.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "mmlu_prox",
+   "name": "MMLU-ProX",
+   "url": "",
+   "owner": "academic consortium",
+   "verdict": "reject",
+   "verdict_reason": "No maintained leaderboard; no Slovenian.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "global_mmlu_lite_kaggle",
+   "name": "Global-MMLU-Lite (Kaggle)",
+   "url": "",
+   "owner": "Cohere Labs / Google Kaggle",
+   "verdict": "reject",
+   "verdict_reason": "Not Slovenian/EU-specific, vendor-hosted, data not extractable.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "eu_mmlu",
+   "name": "EU MMLU",
+   "url": "",
+   "owner": "unknown",
+   "verdict": "reject",
+   "verdict_reason": "No published results found.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "slovenian_llm_eval",
+   "name": "Slovenian-LLM-Eval",
+   "url": "",
+   "owner": "CJVT / UL",
+   "verdict": "reject",
+   "verdict_reason": "Results only in a paper, open models only; no maintained board.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "europa_eval",
+   "name": "europa-eval",
+   "url": "",
+   "owner": "EU pilot",
+   "verdict": "reject",
+   "verdict_reason": "Pilot project without current frontier results.",
+   "last_update_seen": null,
+   "from": "vetting"
+  },
+  {
+   "source_id": "sota2",
+   "name": "SOTA2",
+   "url": "",
+   "owner": "unknown",
+   "verdict": "reject",
+   "verdict_reason": "Aggregator without own evaluations.",
+   "last_update_seen": null,
+   "from": "vetting"
+  }
+ ],
+ "vetted_accept_without_raw": [
+  {
+   "name": "Wolfram LLM Benchmarking Project",
+   "url": "https://www.wolfram.com/llm-benchmarking-project/",
+   "owner": "Wolfram Research",
+   "verdict": "accept_limited",
+   "reason": "Own evals but a single narrow task (English -> Wolfram Language code); table is JS-rendered and data only in Wolfram Data Repository notebook format, so model list/date not verifiable without Wolfram tooling. Not extracted.",
+   "last_update_seen": "2026 (WDR citation year; exact date not visible)",
+   "own_evaluations": true
+  },
+  {
+   "name": "SuperCLUE",
+   "url": "https://www.superclueai.com/",
+   "owner": "CLUE benchmark team (China)",
+   "verdict": "accept_limited",
+   "reason": "Established Chinese benchmark with private closed questions and periodic reports (2026-03 report confirmed; third-party mirror lists Sep-2026-era models), but site is JS-only and official current table not retrieved. Not extracted.",
+   "last_update_seen": "not verified (2026-03 report confirmed)",
+   "own_evaluations": true
+  },
+  {
+   "name": "Kaggle Game Arena",
+   "url": "https://www.kaggle.com/game-arena",
+   "owner": "Google DeepMind / Kaggle",
+   "verdict": "accept_limited",
+   "reason": "Own game-play evals (chess etc., Elo), active in 2026, but vendor-affiliated (Google) and data not served without JavaScript. Not extracted.",
+   "last_update_seen": "not verified (2026-04 snapshot seen via search)",
+   "own_evaluations": true
+  },
+  {
+   "name": "Fiction.LiveBench",
+   "url": "https://fiction.live/",
+   "owner": "Fiction.live (community writing site)",
+   "verdict": "accept_limited",
+   "reason": "Own long-context comprehension tests, but JS-only story-post leaderboard and freshness not verified; data is mirrored by Epoch AI (assigned to another agent). Not extracted.",
+   "last_update_seen": "not verified",
+   "own_evaluations": true
+  }
+ ],
+ "price_source": {
+  "source_meta": {
+   "name": "Official vendor price lists",
+   "url": "https://docs.claude.com/en/docs/about-claude/pricing",
+   "owner": "Each model vendor (Anthropic, OpenAI, Google, xAI, DeepSeek, Mistral AI, Moonshot AI, Zhipu AI, Alibaba Cloud, MiniMax)",
+   "owner_type": "company-vendor",
+   "measures": "Official per-token API list prices (USD per 1M input/output tokens, standard tier).",
+   "categories": [
+    "price"
+   ],
+   "method_url": null,
+   "last_update_seen": "2026-10-30 (Gemini page 'Last updated 2026-10-28'; Alibaba Model Studio 'Last Updated Oct 29, 2026'; others undated, read 2026-10-30)",
+   "update_frequency": "per model release / vendor price change",
+   "reproducibility": "Public pages; anyone can re-read; prices change over time (several promos expire Nov-Dec 2026).",
+   "independence": "Vendor self-published prices (authoritative primary source for price, not for quality).",
+   "contamination_handling": "n/a (prices, not benchmarks)",
+   "respectability_score": 5,
+   "respectability_rationale": "Primary, authoritative source for what vendors charge; caveats are tiering, promos and regional variants, noted per entry.",
+   "verdict": "accept",
+   "verdict_reason": "Official list prices are the ground truth for the price category."
+  },
+  "urls": [
+   "https://docs.claude.com/en/docs/about-claude/pricing",
+   "https://docs.anthropic.com/en/docs/about-claude/pricing",
+   "https://www.anthropic.com/pricing",
+   "https://platform.openai.com/docs/pricing",
+   "https://platform.openai.com/docs/pricing.md",
+   "https://openai.com/api/pricing/",
+   "https://ai.google.dev/gemini-api/docs/pricing",
+   "https://docs.x.ai/docs/models",
+   "https://docs.x.ai/docs/models.md",
+   "https://api-docs.deepseek.com/quick_start/pricing",
+   "https://mistral.ai/pricing",
+   "https://mistral.ai/pricing/api",
+   "https://docs.mistral.ai/inference/pricing",
+   "https://platform.moonshot.ai/docs/pricing/chat",
+   "https://platform.kimi.ai/docs/pricing/chat.md",
+   "https://docs.z.ai/guides/overview/pricing",
+   "https://www.alibabacloud.com/help/en/model-studio/model-pricing",
+   "https://platform.minimax.io/docs/guides/pricing",
+   "https://platform.minimax.io/docs/pricing/overview",
+   "https://openrouter.ai/api/v1/models"
+  ],
+  "fetched_at": "2026-10-30",
+  "notes": "All prices read from official vendor pages via curl (raw HTML -> text; OpenAI and xAI via their .md doc versions; Kimi table from the page's embedded JSX row data). USD per 1M tokens, standard/real-time tier, no batch or cache discounts. Where a vendor tiers by prompt length the lowest tier is recorded and the threshold noted (OpenAI <=272K, Gemini Pro <=200k, xAI <200k, Claude Haiku 5.5 <=100k, Qwen plus <=256K, MiniMax <=512k). DeepSeek has peak/off-peak pricing: PEAK (full) price recorded. Time-limited prices (Gemini 4 Argon until 2026-11-30, Gemini 3.8/3.6 Flash until 2026-12-31, GPT-5.6 Sol promo) are recorded as currently charged with the scheduled price in notes. MiniMax-M3 recorded at the effective 'permanent 50% off' price; qwen3.7-plus at list price (discount figure not shown). OpenRouter public /models used only as a cross-check (matches official for Opus/Sonnet/Haiku 5.5, Fable 5.1, gpt-6.x, Gemini 4 Argon, grok-4.7, Kimi K3.1 Pro, MiniMax-M3, Mistral Large 4, qwen3.8-max). openai.com/api/pricing now shows ChatGPT business plans, so platform docs were used. Gemini 4 Carbon does not appear on the Gemini API pricing page (flagship there is Gemini 4 Argon). No Meta Llama first-party price list read."
+ }
+}
