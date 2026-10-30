@@ -62,7 +62,8 @@ test('P0-1: suppress claimed opening, require additional provider round, actual 
 });
 test('P0-1: unresolved opening claim is withheld after one repair', async () => {
   const h=harness(Array.from({length:4},()=>({text:'Odpiram naslednji izziv.'})));
-  const r=await h.post(request()); assert.equal(textOf(r.events),''); assert.equal(h.seen.length,2); assert.ok(r.events.some(e=>e.code==='OPEN_STEP_REQUIRED'));
+  const r=await h.post(request()); assert.doesNotMatch(textOf(r.events),/Odpiram naslednji izziv/); assert.equal(h.seen.length,2);
+  assert.ok(r.events.some(e=>e.type==='done'&&e.recovered)); assert.ok(!r.events.some(e=>e.type==='error'||e.type==='action'));
 });
 test('P0-2: hint/reveal require open challenge in development as well; mock recovers by opening challenge', async () => {
   for (const development of [true,false]) {
