@@ -43,21 +43,22 @@ export function createLogStore({ rpc = database } = {}) {
 }
 // Reuse Guide pricing without changing owner exemption or the visitor budget.
 export function costRecorder(budget, provider, model, events) {
-  const estimates = new WeakMap(); let ownerEstimate;
+  const estimates = new WeakMap(); let ownerEstimate, effort;
   return {
     async reserve(payload) {
+      effort = payload.output_config?.effort ?? payload.reasoning?.effort ?? null;
       const held = await budget.reserve(payload);
       let maximum = null;
       try { maximum = reservation(provider, model, payload); } catch {}
       if (held && typeof held === 'object') estimates.set(held, maximum); else ownerEstimate = maximum;
-      events.push({ kind: 'cost', payload: { provider, model, currency: 'USD', nanos: maximum, basis: 'reservation', phase: 'reserved' } });
+      events.push({ kind: 'cost', payload: { provider, model, effort, currency: 'USD', nanos: maximum, basis: 'reservation', phase: 'reserved' } });
       return held;
     },
     async settle(held, usage, rejected = false) {
       await budget.settle(held, usage, rejected);
       const maximum = held ? estimates.get(held) ?? held.amount ?? null : ownerEstimate;
-      const amount = rejected ? 0 : maximum === null ? null : charge(provider, usage, maximum);
-      events.push({ kind: 'cost', payload: { provider, model, currency: 'USD', nanos: amount, phase: 'settled', basis: rejected ? 'rejected' : !usage ? 'reserved_unknown' : maximum === null ? 'unpriced' : 'guide_usage_estimate' } });
+      const amount = rejected ? 0 : maximum === null ? null : charge(provider, usage, maximum, model);
+      events.push({ kind: 'cost', payload: { provider, model, effort, currency: 'USD', nanos: amount, phase: 'settled', basis: rejected ? 'rejected' : !usage ? 'reserved_unknown' : maximum === null ? 'unpriced' : 'guide_usage_estimate' } });
     }
   };
 }

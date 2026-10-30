@@ -97,14 +97,14 @@ test('already_open is silent no-op with tool_result, no duplicate UI action', as
   const r=await h.post(request({opened:['s1','c1']})); assert.equal(textOf(r.events),''); assert.ok(!r.events.some(e=>e.type==='action'));
   assert.match(JSON.stringify(h.seen[1].input),/already_open/);
 });
-test('P1: understanding precedes reveal, one clarifying question, hints explicit/tiered, card B in development without result action', async () => {
+test('P1: understanding precedes reveal, one question per missing idea (two maximum), hints explicit/tiered, card B in development without result action', async () => {
   let req=request({opened:['s1','c1'],message:'Krilca na žico.'}); let s=createSession(game,req);
   assert.throws(()=>s.execute('open_step',{id:'r1'}),/UNDERSTANDING_BEFORE_REVEAL/);
   assert.throws(()=>s.execute('open_step',{id:'h1'}),/HINT_ON_REQUEST/);
-  s.execute('ask_understanding',{step:'c1',question:'Zakaj bi tvoja zamisel delovala?'});
-  assert.throws(()=>s.execute('ask_understanding',{step:'c1',question:'Še eno vprašanje?'}),/INVALID_QUESTION/);
+  s.execute('ask_understanding',{step:'c1',idea:game.steps.find(s=>s.id==='c1').key_ideas[0],question:'Zakaj bi tvoja zamisel delovala?'});
+  assert.throws(()=>s.execute('ask_understanding',{step:'c1',idea:game.steps.find(s=>s.id==='c1').key_ideas[0],question:'Še eno vprašanje?'}),/INVALID_QUESTION/);
   req=request({opened:['s1','c1'],message:'Ker bi bila moja lastna pot drugačna in bi vseeno delovala.',learning:s.learning});
-  const card=call('assess_challenge',{step:'c1',card:'B',achieved:2,stars:2,why:'Drugačna pravilna pot iz ključa.',explanation:'',bonus:'test_needed',advantage:'izkoristek'});
+  const card=call('assess_challenge',{step:'c1',path:'own',achieved:game.steps.find(s=>s.id==='c1').key_ideas,why:'Drugačna pravilna pot iz ključa.',advantages:[{text:'izkoristek',kind:'needs_test'}]});
   const h=harness([{calls:[card]},{calls:[call('open_step',{id:'r1'},'tool_2')]},{text:'mark_result nimam, zapiši sam.'}]);
   const events=await finish(h,await h.post(req));
   assert.match(textOf(events),/Kartica B · tvoja pot · drugače, a deluje · 5\/5/); assert.match(textOf(events),/odklene ga preizkus/);
@@ -114,7 +114,7 @@ test('P1: understanding precedes reveal, one clarifying question, hints explicit
 });
 test('P1: A uses half-points, all five cards in coded summary, no negative points', () => {
   const req=request({opened:['s1','c1'],message:'Moja dovolj dolga razlaga mehanizma deluje takole.'}); const s=createSession(game,req);
-  s.execute('assess_challenge',{step:'c1',card:'A',achieved:1,stars:1,why:'Prvi mejnik.',explanation:req.message,bonus:'none',advantage:''});
+  s.execute('assess_challenge',{step:'c1',path:'historical',achieved:game.steps.find(s=>s.id==='c1').key_ideas.slice(0,1),why:'Prvi mejnik.',advantages:[]});
   assert.match(s.learning.cards.c1.line,/mejniki 1\/2 ✦ · 2,5\/5/);
   const learning={asked:[],cards:Object.fromEntries([1,2,3,4,5].map(n=>[`c${n}`,{card:n===2?'B':'A',line:`Kartica ${n===2?'B':'A'} · ${n}`}]))};
   const lines=finalSummary(game,learning).split('\n'); assert.equal(lines.length,5); assert.ok(lines.every(x=>x.includes('Kartica')));
@@ -122,7 +122,7 @@ test('P1: A uses half-points, all five cards in coded summary, no negative point
 });
 test('grounding prompt and safe markdown subset; technical text is repaired', async () => {
   const prompt=instructions(game,request({opened:['s1','c1']}));
-  for(const text of ['UTEMELJENOST','SPRAŠUJ','STRAN nosi vsebino','PANEL samo pogovor','nikoli ne citiraj','največ enim ask_understanding','alternatives_ok']) assert.ok(prompt.includes(text),text);
+  for(const text of ['UTEMELJENOST','SPRAŠUJ','STRAN nosi vsebino','PANEL samo pogovor','nikoli ne citiraj','največ dve na izziv','alternatives_ok']) assert.ok(prompt.includes(text),text);
   const html=safeMarkdown('**Krepko** *poševno* `**koda**`\n- ena\n- <img src=x onerror=alert(1)>\n1. dve\n<script>alert(1)</script>');
   assert.match(html,/<strong>Krepko<\/strong>/); assert.match(html,/<em>poševno<\/em>/); assert.match(html,/<code>\*\*koda\*\*<\/code>/); assert.match(html,/<ul>/); assert.match(html,/<ol>/); assert.ok(!/<(?:img|script)\b/.test(html));
   const h=harness([{text:'Odjemalec čaka na potrditev open_step c1.'},{text:'Kaj misliš ti?'}]); const r=await h.post(request({message:'Razvijava igro.'})); assert.equal(textOf(r.events),'Kaj misliš ti?');

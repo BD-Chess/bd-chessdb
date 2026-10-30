@@ -16,6 +16,8 @@ const request = () => ({ slug:'dayton1903', provider:'claude', mode:'IZUMLJAJ', 
   protocol:'game-guide-tools-v1', opened:['s1','s2','s3','s6','s7','s8'],
   learning:{asked:['s2','s8'],cards:{s2:{card:'A',line:'Prejšnja kartica.'}}},
   message:observed.args.explanation, history:[], fair_play:{paste_events:0,paste_length:0,typing_ms:0,blur_ms:0} });
+// Observed legacy call stays immutable; the repaired call uses the new schema.
+const corrected = why => ({step:'s8',path:'historical',achieved:[0,1,3].map(i=>game.steps.find(s=>s.id==='s8').key_ideas[i]),why,advantages:[]});
 const response = (name, args, id) => ({ role:'assistant',content:[{type:'tool_use',id,name,input:args}],stop_reason:'tool_use',usage:{input_tokens:1,output_tokens:1} });
 const done = { role:'assistant',content:[{type:'text',text:'Preberi razkritje na desni.'}],stop_reason:'end_turn',usage:{input_tokens:1,output_tokens:1} };
 function replay(sequence) {
@@ -46,19 +48,19 @@ test('Observed 216-character why: schema declares the actual server limit',()=>{
 });
 test('Observed valid assessment fails only its why length and reports a precise repair',()=>{
   const session=createSession(game,request());
-  assert.throws(()=>session.execute(observed.name,observed.args),e=>e.message==='INVALID_CARD'&&e.details.field==='why'&&e.details.maxLength===200&&e.details.actualLength===216);
+  assert.throws(()=>session.execute(observed.name,observed.args),e=>e.message==='INVALID_ASSESSMENT'&&e.details.field==='why'&&e.details.maxLength===200&&e.details.actualLength===216);
   assert.equal(session.learning.cards.s8,undefined);
 });
-test('One informed correction shortens only why, preserves scores, then reaches visible s12',async()=>{
+test('One informed correction shortens why and migrates legacy arguments, derives scores, then reaches visible s12',async()=>{
   // The first call is observed. This corrected reply is synthetic, not a claimed real-provider recording.
-  const repaired={...observed.args,why:'Predlagal je enakomeren zračni tok, majhne modele in primerjavo oblik; manjkata referenčna ploščica ter preverjanje konstante.'};
+  const repaired=corrected('Predlagal je enakomeren zračni tok, majhne modele in primerjavo oblik; manjkata referenčna ploščica ter preverjanje konstante.');
   const h=replay([response(observed.name,observed.args,'observed-call'),response(observed.name,repaired,'synthetic-correction'),response('open_step',{id:'s12'},'synthetic-reveal'),done]);
   const events=await h.run();assert.equal(h.seen.length,4);
   assert.ok(events.some(e=>e.type==='action'&&e.id==='s12'));assert.ok(events.some(e=>e.type==='done'&&!e.recovered));assert.ok(!events.some(e=>e.type==='error'));
   const errorResults=h.seen[1].messages.flatMap(m=>Array.isArray(m.content)?m.content.filter(c=>c.type==='tool_result').map(c=>JSON.parse(c.content)):[]);
   assert.equal(errorResults[0].details.field,'why');assert.equal(errorResults[0].details.maxLength,200);
   const assessment=h.logs.filter(e=>e.kind==='guide_trace').flatMap(e=>e.payload.tool_uses||[]).find(t=>t.name==='assess_challenge'&&t.result.ok);
-  for(const key of ['card','achieved','stars','explanation'])assert.deepEqual(assessment.args[key],observed.args[key]);
+  assert.deepEqual(assessment.args.achieved,repaired.achieved);assert.equal(assessment.result.card,'A');assert.equal(assessment.result.score,3);
   assert.ok(h.logs.some(e=>e.kind==='open_step'&&e.payload.id==='s12'&&e.payload.visible));
 });
 test('Repeating the actual overlong why remains bounded and cannot invent a card or reveal',async()=>{

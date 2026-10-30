@@ -111,7 +111,7 @@ for (const provider of ['claude', 'gpt']) test(`${provider}: shared real provide
   const payloads = [], ledger = [], client = fakeClient(provider, [{ calls: [{ name: 'open_step', args: { id: 's4' } }] }, { text: 'Plošča se nagne.' }], payloads);
   const handler = makeHandler({ ...base, clientFactory: async p => { assert.equal(p, provider); return client; }, budgetFactory: (actor, p, model) => {
     assert.equal(actor.role, 'owner'); assert.equal(p, provider);
-    assert.equal(model, provider === 'claude' ? 'claude-sonnet-5-5' : 'gpt-6-luna');
+    assert.equal(model, provider === 'claude' ? 'claude-opus-5-5' : 'gpt-6.1-sol');
     return { reserve: async payload => { ledger.push('reserve'); return { id: 'mock' }; }, settle: async (_, usage) => { assert.ok(usage); ledger.push('settle'); } };
   } });
   const response = await handler(request({ provider, mode: 'ZGODBA' })); assert.match(response.headers.get('content-type'), /text\/event-stream/);

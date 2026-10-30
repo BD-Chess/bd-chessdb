@@ -10,7 +10,7 @@ const game = stepTexts(await readFile(new URL('../public/game/dayton1903/index.h
 const actor = { role: 'owner', id: 'offline-r2' }, secret = 'offline-fixture-only-'.repeat(4);
 const request = extra => validateBody({ slug: 'dayton1903', message: 'Začniva.', provider: 'claude', mode: 'IZUMLJAJ', development: true, opened: ['s1'], protocol: 'game-guide-tools-v1', ...extra });
 const use = (name, args, id = name) => ({ name, arguments: args, call_id: id });
-const assessment = () => use('assess_challenge', { step: 's2', card: 'A', achieved: game.steps.find(s => s.id === 's2').key_ideas.length, stars: 0, why: 'Mehanizem je razložen.', explanation: '', bonus: 'none', advantage: '' });
+const assessment = () => use('assess_challenge', { step: 's2', path: 'historical', achieved: game.steps.find(s => s.id === 's2').key_ideas, why: 'Mehanizem je razložen.', advantages: [] });
 const toolResults = input => input.flatMap(m => m.type === 'function_call_output' ? [JSON.parse(m.output)] : Array.isArray(m.content) ? m.content.filter(c => c.type === 'tool_result').map(c => JSON.parse(c.content)) : []);
 function harness(outputs) {
   const seen = [];
@@ -50,7 +50,7 @@ test('R2 exact Dayton flow: s2 -> s3 -> one question -> correct answer -> s6; s4
     if (toolResults(args.input).some(r => r.wait_for_player)) return { text: 'Kaj se zgodi z vzgonom na vsaki strani?' };
     if (!ctx.opened.some(s => s.id === 's2')) return { calls: [use('open_step', { id: 's2' })] };
     if (!ctx.opened.some(s => s.id === 's3')) return { calls: [use('open_step', { id: 's3' })] };
-    if (!ctx.learning.asked.includes('s2')) return { calls: [use('ask_understanding', { step: 's2', question: 'Kaj se zgodi z vzgonom na vsaki strani?' })] };
+    if (!ctx.learning.asked.includes('s2')) return { calls: [use('ask_understanding', { step: 's2', idea: game.steps.find(s=>s.id==='s2').key_ideas[0], question: 'Kaj se zgodi z vzgonom na vsaki strani?' })] };
     if (!ctx.learning.cards.s2) return { calls: [assessment()] };
     assert.deepEqual(ctx.allowed_open_steps, [{ id: 's6', kind: 'reveal' }]);
     return { calls: [use('open_step', { id: 's6' })] };
