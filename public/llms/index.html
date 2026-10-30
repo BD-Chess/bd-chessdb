@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="sl" data-theme="dark" data-title-sl="LLM meta indeks — kateri model je res najboljši" data-title-en="LLM meta-index — which model is really the best">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="LLM meta indeks: rezultati več deset uglednih neodvisnih lestvic, normalizirani v eno oceno po kategorijah (sklepanje, programiranje, agenti, znanje, preferenca, večjezičnost in slovenščina, hitrost), s cenami in vrednostjo na dolar. Osvežitev vsak mesec. LLM meta-index of respected independent leaderboards, refreshed monthly.">
+  <link rel="canonical" href="https://www.mdlxdcc.org/llms/">
+  <title>LLM meta indeks — kateri model je res najboljši</title>
+  <script>try{var r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
+  <style>
+    :root { color-scheme: dark; --bg: #0b1220; --ink: #eff5fc; --muted: #b9c8d7; --surface: #16263a; --panel: #121e2e; --line: #304359; --accent: #7ae3ce; --plan: #f0c070; --plan-soft: #2e2614; --scale: 1; }
+    html[data-theme="light"] { color-scheme: light; --bg: #f5f7f9; --ink: #15233a; --muted: #42556a; --surface: #e5edf2; --panel: #fff; --line: #b8c8d2; --accent: #166c61; --plan: #7a4a00; --plan-soft: #fbefd9; }
+    * { box-sizing: border-box; }
+    html { font-size: calc(100% * var(--scale)); scroll-behavior: smooth; scroll-padding-top: 1rem; -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; overflow-wrap: break-word; }
+    a { color: var(--accent); }
+    code, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace; font-size: .9em; overflow-wrap: anywhere; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    [hidden], [data-lang][hidden] { display: none !important; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { position: fixed; top: .5rem; left: .5rem; z-index: 100; background: var(--panel); color: var(--ink); padding: .5rem .8rem; border: 1px solid var(--line); border-radius: .5rem; }
+    .shell { max-width: 76rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem); }
+
+    /* top toolbar – same look and storage keys as the shared AI8 toolbar */
+    .site-header { background: var(--bg); border-bottom: 1px solid var(--line); z-index: 20; }
+    .header-inner { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem 1rem; padding-top: .5rem; padding-bottom: .5rem; }
+    .brand { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; }
+    .brand .dot { color: var(--accent); margin: 0 .3em; }
+    .site-nav { display: flex; flex-wrap: wrap; gap: 0 .9rem; margin-right: auto; }
+    .site-nav a { color: var(--muted); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+    .site-nav a:hover { color: var(--accent); }
+    .ai8-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .2rem; }
+    .ai8-toolbar .ai8-divider { width: 1px; height: 1.6rem; background: var(--line); margin: 0 .3rem; }
+    .ai8-toolbar button { min-width: 44px; min-height: 44px; border: 1px solid transparent; border-radius: .5rem; padding: .3rem .45rem; background: transparent; color: inherit; font-size: .875rem; }
+    .ai8-toolbar button:hover:not(:disabled) { background: var(--surface); border-color: var(--line); }
+    .ai8-toolbar button[aria-pressed="true"] { background: var(--surface); border-color: var(--line); font-weight: 600; }
+    .ai8-toolbar button:disabled { opacity: .45; }
+    .ai8-toolbar [data-ai8-reset] { min-width: 3.6rem; font-variant-numeric: tabular-nums; }
+    @media (min-width: 760px) { .site-header { position: sticky; top: 0; } html { scroll-padding-top: 5.5rem; } }
+    @media (max-width: 600px) { .ai8-toolbar { justify-content: flex-start; } .site-nav { gap: 0 .75rem; } }
+    @media (max-width: 420px) { .ai8-toolbar .ai8-divider { display: none; } .ai8-toolbar { gap: .1rem; } .ai8-toolbar button { padding: .3rem .35rem; } }
+
+    .strip { background: var(--plan-soft); color: var(--plan); border-bottom: 1px solid var(--line); font-size: .92rem; }
+    .strip .shell { padding-top: .5rem; padding-bottom: .5rem; }
+    .strip strong { letter-spacing: .04em; }
+    .strip .warn { display: block; font-weight: 700; }
+
+    .intro { padding: clamp(1.8rem, 5vw, 3.6rem) 0 1.2rem; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; font-size: .8rem; font-weight: 700; }
+    h1 { font-size: clamp(1.9rem, 4.4vw, 3.2rem); line-height: 1.12; margin: .4rem 0 .8rem; }
+    h2 { font-size: clamp(1.4rem, 2.4vw, 2rem); line-height: 1.2; margin: .2rem 0 .6rem; }
+    h3 { font-size: 1.1rem; line-height: 1.3; margin: 1.2rem 0 .4rem; }
+    p { margin: 0 0 .9rem; }
+    .lead { color: var(--muted); max-width: 72ch; font-size: 1.08rem; }
+    .note { border-left: 4px solid var(--accent); padding: .55rem 1rem; background: var(--surface); max-width: 80ch; border-radius: 0 .5rem .5rem 0; }
+    main > section { padding: 2.2rem 0; border-top: 1px solid var(--line); }
+    .prose { max-width: 76ch; }
+    .muted { color: var(--muted); }
+    .small { font-size: .92rem; }
+    ul.plain { padding-left: 1.2rem; max-width: 80ch; }
+    ul.plain li { margin-bottom: .45rem; }
+    ol.steps { padding-left: 1.4rem; max-width: 80ch; }
+    ol.steps li { margin-bottom: .5rem; }
+    ol.steps li::marker { color: var(--accent); font-weight: 700; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .7rem; margin: 1rem 0; padding: 0; list-style: none; }
+    .stat { border: 1px solid var(--line); background: var(--panel); border-radius: .8rem; padding: .7rem .9rem; min-width: 0; }
+    .stat b { display: block; font-size: clamp(1.35rem, 3vw, 1.8rem); line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .stat span { color: var(--muted); font-size: .9rem; }
+    .leaders { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .6rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+    .leaders li { border: 1px solid var(--line); background: var(--panel); border-radius: .7rem; padding: .55rem .8rem; min-width: 0; }
+    .leaders .k { display: flex; justify-content: space-between; gap: .4rem; color: var(--muted); font-size: .82rem; }
+    .leaders .v { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .leaders .s { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    .controls { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: .8rem 0 .2rem; }
+    .controls input[type="search"] { flex: 1 1 14rem; min-height: 44px; padding: .4rem .7rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--panel); color: var(--ink); max-width: 28rem; }
+    .btn { min-height: 44px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: .5rem; padding: .3rem .9rem; }
+    .btn:hover { border-color: var(--accent); }
+    .status-line { color: var(--muted); font-size: .9rem; min-height: 1.5em; margin: .2rem 0; }
+
+    .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: .4rem 0 1rem; }
+    table.data { width: 100%; border-collapse: collapse; font-size: .95rem; }
+    table.data th, table.data td { text-align: left; padding: .45rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.data th { color: var(--muted); font-weight: 600; font-size: .82rem; white-space: nowrap; }
+    table.data td.num, table.data th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    table.data td.rk { color: var(--muted); font-variant-numeric: tabular-nums; width: 2.4rem; }
+    .mid { font-family: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace; font-size: .92em; overflow-wrap: anywhere; }
+    .named .mid { font-weight: 700; }
+    table.data .mid { white-space: nowrap; }
+    .sub { display: block; color: var(--muted); font-size: .8rem; }
+    .score { font-weight: 700; }
+    .bar { display: block; height: .3rem; background: var(--surface); border-radius: .2rem; margin-top: .2rem; min-width: 3.2rem; }
+    .bar i { display: block; height: 100%; background: var(--accent); border-radius: .2rem; }
+    .conf { display: inline-block; font-size: .78rem; border-radius: 999px; padding: 0 .45rem; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+    .conf.high { color: var(--accent); border-color: var(--accent); }
+    .conf.medium { color: var(--plan); border-color: var(--plan); }
+    .mbtn { background: none; border: 0; padding: 0; color: inherit; text-align: left; display: inline-flex; gap: .35rem; align-items: baseline; min-height: 32px; }
+    .mbtn .chev { color: var(--accent); display: inline-block; width: .8em; transition: transform .15s; }
+    .mbtn[aria-expanded="true"] .chev { transform: rotate(90deg); }
+    tr.detail > td { background: var(--panel); padding: .6rem .7rem 1rem; }
+    .catgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: .4rem; margin: 0 0 .6rem; padding: 0; list-style: none; }
+    .catgrid li { border: 1px solid var(--line); border-radius: .5rem; padding: .3rem .5rem; font-size: .85rem; }
+    .catgrid li b { display: block; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+    table.bs { font-size: .84rem; }
+    table.bs td, table.bs th { padding: .25rem .4rem; }
+    .m-only { display: none; }
+    @media (max-width: 640px) {
+      .d-only { display: none; }
+      .m-only { display: inline; }
+      .sub.m-only { display: block; }
+      table.data { font-size: .9rem; }
+      table.data th, table.data td { padding: .4rem .3rem; }
+      table.data td.rk { width: 1.6rem; }
+      .leaders li { padding: .45rem .6rem; }
+      .leaders .v { font-size: .9rem; }
+    }
+
+    .tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin: .8rem 0 .4rem; padding: 0; list-style: none; }
+    .tabs button { min-height: 44px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink); padding: .3rem .9rem; }
+    .tabs button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 700; background: var(--surface); }
+    .catdesc { color: var(--muted); max-width: 80ch; font-size: .95rem; }
+
+    .box { border: 1px solid var(--plan); background: var(--plan-soft); border-radius: .8rem; padding: 1rem clamp(.8rem, 2.5vw, 1.4rem); margin-top: 1rem; }
+    .box h3 { margin-top: .4rem; }
+    .box table.data th, .box table.data td { border-bottom-color: color-mix(in srgb, var(--plan) 35%, transparent); }
+    .comment p, .comment li { max-width: 80ch; }
+    .comment ul { padding-left: 1.2rem; }
+    .comment li { margin-bottom: .4rem; }
+
+    details.more { margin: .6rem 0; }
+    details.more > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--accent); font-weight: 600; }
+    details.src { border: 1px solid var(--line); border-radius: .6rem; background: var(--panel); margin: .45rem 0; padding: .1rem .8rem; }
+    details.src > summary { cursor: pointer; min-height: 44px; display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .6rem; padding: .3rem 0; }
+    details.src > summary .nm { font-weight: 700; }
+    details.src dl { display: grid; grid-template-columns: minmax(7rem, max-content) minmax(0, 1fr); gap: .25rem 1rem; font-size: .9rem; margin: .3rem 0 .8rem; }
+    details.src dt { color: var(--muted); }
+    details.src dd { margin: 0; overflow-wrap: anywhere; }
+    @media (max-width: 520px) { details.src dl { grid-template-columns: minmax(0, 1fr); gap: 0; } details.src dd { margin-bottom: .45rem; } }
+    .stars { color: var(--plan); letter-spacing: .05em; white-space: nowrap; }
+    .tag { display: inline-block; font-size: .75rem; border-radius: 999px; padding: 0 .5rem; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+    .tag.ok { border-color: var(--accent); color: var(--accent); }
+    .tag.lim { border-color: var(--plan); color: var(--plan); }
+    ul.rej { list-style: none; padding: 0; max-width: 90ch; }
+    ul.rej li { border-bottom: 1px solid var(--line); padding: .45rem 0; font-size: .92rem; }
+    ul.rej li b { display: inline; }
+
+    .site-footer { border-top: 1px solid var(--line); padding: 1.6rem 0 2.4rem; color: var(--muted); font-size: .92rem; }
+    .site-footer p { margin: 0 0 .4rem; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content"><span data-lang="sl">Na vsebino</span><span data-lang="en" hidden>Skip to content</span></a>
+
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="../AI8/">AI8<span class="dot">·</span><span data-lang="sl">LLM meta indeks</span><span data-lang="en" hidden>LLM meta-index</span></a>
+      <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
+        <a href="#skupno"><span data-lang="sl">Skupno</span><span data-lang="en" hidden>Overall</span></a>
+        <a href="#kategorije"><span data-lang="sl">Kategorije</span><span data-lang="en" hidden>Categories</span></a>
+        <a href="#razhajanja"><span data-lang="sl">Razhajanja</span><span data-lang="en" hidden>Disagreements</span></a>
+        <a href="#viri"><span data-lang="sl">Viri</span><span data-lang="en" hidden>Sources</span></a>
+        <a href="#metoda"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></a>
+      </nav>
+      <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance">
+        <button type="button" data-ai8-down aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button>
+        <button type="button" data-ai8-reset aria-label="Velikost besedila na 100 odstotkov" data-aria-sl="Velikost besedila na 100 odstotkov" data-aria-en="Reset text size to 100 percent">100%</button>
+        <button type="button" data-ai8-up aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-lang="en" aria-label="English" aria-pressed="false">EN</button>
+        <button type="button" data-ai8-lang="sl" aria-label="Slovenščina" aria-pressed="true">SL</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-ai8-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="strip" role="note">
+    <div class="shell">
+      <span id="strip-text">…</span>
+      <span class="warn" id="strip-warn" hidden></span>
+    </div>
+  </div>
+
+  <main class="shell" id="content">
+    <div class="intro">
+      <div class="eyebrow"><span data-lang="sl">AI8 · LLM meta indeks · mesečno</span><span data-lang="en" hidden>AI8 · LLM meta-index · monthly</span></div>
+      <h1><span data-lang="sl">LLM meta indeks — kateri model je res najboljši</span><span data-lang="en" hidden>LLM meta-index — which model is really the best</span></h1>
+      <p class="lead" data-lang="sl">Ena lestvica ne pove dosti: vsaka meri nekaj drugega, nekatere so zastarele, nekatere vodijo prodajalci podatkov. Meta indeks zato združi <b data-k="sources_accepted">33</b> uglednih virov (<b data-k="boards_used">144</b> lestvic) v primerljivo oceno za <b data-k="models_universe">203</b> modelov, od tega jih je <b data-k="models_ranked">150</b> rangiranih.</p>
+      <p class="lead" data-lang="en" hidden>A single leaderboard says little: each measures something different, some are stale, some are run by data vendors. The meta-index therefore combines <b data-k="sources_accepted">33</b> respected sources (<b data-k="boards_used">144</b> boards) into one comparable score for <b data-k="models_universe">203</b> models, <b data-k="models_ranked">150</b> of them ranked.</p>
+      <ul class="plain small" data-lang="sl">
+        <li><strong>Normalizacija:</strong> vsaka lestvica se pretvori v percentilni rang 0–100 med modeli v indeksu (100 = najboljši, 50 = sredina). Nato se popravi za moč polja (prvo mesto na stari lestvici s starimi modeli šteje manj kot prvo mesto med najnovejšimi) in uteži po ugledu vira, svežini in pomenu. Skupna ocena je tehtano povprečje kategorij.</li>
+        <li><strong>Ocene so relativne, ne absolutne.</strong> Razlika nekaj točk na vrhu je manjša od negotovosti metode, zato prvih pet beri kot skupino, ne kot strog vrstni red.</li>
+        <li><strong>Večinoma pri največjem naporu:</strong> pri vsakem modelu šteje njegova najboljša nastavitev na posamezni lestvici, običajno max/xhigh razmišljanje. Hitrejše ali cenejše nastavitve istega modela so lahko precej slabše.</li>
+        <li><strong>Cene so na žeton, ne na nalogo</strong> (USD na 1 M žetonov, vhod/izhod, standardni cenik). Modeli, ki veliko razmišljajo, porabijo več žetonov in so v praksi dražji, kot kaže tabela. Vrednost = skupna ocena ÷ mešana cena (3 : 1 vhod : izhod).</li>
+        <li><strong>Zaupanje</strong> = število neodvisnih virov (visoko ≥ 6, srednje 3–5, nizko ≤ 2). Rangiran je le model z vsaj <b data-k="rank_min_sources">3</b> viri in pokritostjo kategorij vsaj <b data-k="rank_min_coverage">45 %</b>.</li>
+      </ul>
+      <ul class="plain small" data-lang="en" hidden>
+        <li><strong>Normalisation:</strong> every board is turned into a percentile rank 0–100 among the models in the index (100 = best, 50 = middle). It is then corrected for field strength (1st place on a stale board of old models counts less than 1st place among the newest ones) and weighted by source respectability, freshness and relevance. The overall score is a weighted mean of the categories.</li>
+        <li><strong>Scores are relative, not absolute.</strong> A gap of a few points at the top is smaller than the method's uncertainty, so read the top five as a group, not a strict order.</li>
+        <li><strong>Mostly at maximum effort:</strong> each model counts with its best setting on each board, usually max/xhigh reasoning. Faster or cheaper settings of the same model can be much weaker.</li>
+        <li><strong>Prices are per token, not per task</strong> (USD per 1M tokens, input/output, standard list price). Models that think a lot use more tokens and cost more in practice than the table shows. Value = overall score ÷ blended price (3 : 1 input : output).</li>
+        <li><strong>Confidence</strong> = number of independent sources (high ≥ 6, medium 3–5, low ≤ 2). A model is ranked only with at least <b data-k="rank_min_sources">3</b> sources and category coverage of at least <b data-k="rank_min_coverage">45 %</b>.</li>
+      </ul>
+      <ul class="stats" id="stats" aria-live="polite"></ul>
+      <ul class="leaders" id="leaders"></ul>
+      <p class="status-line" id="status" role="status"></p>
+      <noscript><p class="note">Za tabele omogoči JavaScript. Podatki so tudi v <a href="meta_index.json">meta_index.json</a> in <a href="sources.json">sources.json</a>. / Enable JavaScript for the tables.</p></noscript>
+    </div>
+
+    <section id="skupno" aria-labelledby="skupno-t">
+      <div class="eyebrow"><span data-lang="sl">Skupna lestvica</span><span data-lang="en" hidden>Overall ranking</span></div>
+      <h2 id="skupno-t"><span data-lang="sl">Skupna ocena</span><span data-lang="en" hidden>Overall score</span></h2>
+      <p class="prose small muted" data-lang="sl">Klik na model odpre njegove ocene po kategorijah, vire in vse posamezne rezultate. Krepko = modeli, ki jih spremljamo posebej.</p>
+      <p class="prose small muted" data-lang="en" hidden>Click a model to see its category scores, sources and every individual result. Bold = models we track specifically.</p>
+      <div class="controls">
+        <input type="search" id="q" autocomplete="off" placeholder="Išči model ali ponudnika …" data-ph-sl="Išči model ali ponudnika …" data-ph-en="Search model or provider …" aria-label="Išči model ali ponudnika" data-aria-sl="Išči model ali ponudnika" data-aria-en="Search model or provider">
+        <button type="button" class="btn" id="all-toggle" aria-pressed="false"></button>
+      </div>
+      <div class="tw"><table class="data" id="overall"></table></div>
+      <details class="more" id="unranked-box">
+        <summary id="unranked-sum"></summary>
+        <p class="small muted" id="unranked"></p>
+      </details>
+
+      <h3><span data-lang="sl">Najboljša vrednost po cenovnih razredih</span><span data-lang="en" hidden>Best value by price tier</span></h3>
+      <p class="prose small muted" data-lang="sl">Razred po mešani ceni: frontier ≥ $5, srednji $1–5, poceni &lt; $1 na 1 M žetonov. Najboljša vrednost upošteva le rangirane modele s skupno oceno vsaj <b data-k="value_min_overall">50</b>; zadnji stolpec je brez praga kakovosti.</p>
+      <p class="prose small muted" data-lang="en" hidden>Tier by blended price: frontier ≥ $5, mid $1–5, budget &lt; $1 per 1M tokens. Best value only considers ranked models with an overall score of at least <b data-k="value_min_overall">50</b>; the last column has no quality floor.</p>
+      <div class="tw"><table class="data" id="tiers"></table></div>
+    </section>
+
+    <section id="kategorije" aria-labelledby="kategorije-t">
+      <div class="eyebrow"><span data-lang="sl">Po kategorijah</span><span data-lang="en" hidden>By category</span></div>
+      <h2 id="kategorije-t"><span data-lang="sl">Kdo je najboljši pri čem</span><span data-lang="en" hidden>Who is best at what</span></h2>
+      <ul class="tabs" id="tabs" aria-label="Kategorija" data-aria-sl="Kategorija" data-aria-en="Category"></ul>
+      <p class="catdesc" id="catdesc"></p>
+      <div class="tw"><table class="data" id="cattable"></table></div>
+      <div class="controls"><button type="button" class="btn" id="cat-toggle" aria-pressed="false"></button></div>
+    </section>
+
+    <section id="razhajanja" aria-labelledby="razhajanja-t">
+      <div class="eyebrow"><span data-lang="sl">Previdno</span><span data-lang="en" hidden>Caution</span></div>
+      <h2 id="razhajanja-t"><span data-lang="sl">Kje se viri ne strinjajo</span><span data-lang="en" hidden>Where the sources disagree</span></h2>
+      <div class="box">
+        <div class="comment" id="disagree-text"></div>
+        <h3><span data-lang="sl">Največja razhajanja med lestvicami</span><span data-lang="en" hidden>Largest spread between boards</span></h3>
+        <p class="small" data-lang="sl">SD = standardni odklon popravljenih percentilov modela čez vse lestvice. Visok SD pomeni, da je model na eni lestvici blizu vrha, na drugi pa daleč spodaj.</p>
+        <p class="small" data-lang="en" hidden>SD = standard deviation of the model's corrected percentiles across all boards. A high SD means the model is near the top of one board and far down another.</p>
+        <div class="tw"><table class="data" id="disagree"></table></div>
+        <h3><span data-lang="sl">Kdo vodi koliko lestvic</span><span data-lang="en" hidden>Who leads how many boards</span></h3>
+        <p class="small" id="leadercounts"></p>
+        <details class="more">
+          <summary><span data-lang="sl">Vodilni model na vsaki lestvici</span><span data-lang="en" hidden>Leading model on every board</span></summary>
+          <div class="tw"><table class="data" id="boardleaders"></table></div>
+        </details>
+      </div>
+      <h3><span data-lang="sl">Komentar</span><span data-lang="en" hidden>Commentary</span></h3>
+      <p class="small muted" data-lang="en" hidden>The hand-written commentary is in Slovenian; the numbers in it come from the same build as the tables.</p>
+      <div class="comment" id="commentary"></div>
+    </section>
+
+    <section id="viri" aria-labelledby="viri-t">
+      <div class="eyebrow"><span data-lang="sl">Katalog virov</span><span data-lang="en" hidden>Source catalogue</span></div>
+      <h2 id="viri-t"><span data-lang="sl">Viri</span><span data-lang="en" hidden>Sources</span></h2>
+      <p class="prose" data-lang="sl">Vsak kandidat je ocenjen v šestih točkah: znana organizacija ali akademska skupina, objavljena metodologija, ponovljivost (odprta koda, podatki, rezultati po nalogah), pogostost posodabljanja, neodvisnost od ponudnikov modelov in ravnanje s kontaminacijo. Iz tega sledi ugled 1–5 in odločitev. Opisi virov so v angleščini, kot jih je zapisal pregled.</p>
+      <p class="prose" data-lang="en" hidden>Every candidate is judged on six points: known organisation or academic group, published methodology, reproducibility (open code, data, per-item results), update frequency, independence from model vendors, and contamination handling. This gives a respectability score 1–5 and a verdict.</p>
+      <h3 id="acc-h"></h3>
+      <div id="accepted"></div>
+      <h3 id="norow-h"></h3>
+      <ul class="rej" id="norow"></ul>
+      <h3 id="price-h"><span data-lang="sl">Cene</span><span data-lang="en" hidden>Prices</span></h3>
+      <p class="prose small" id="pricesrc"></p>
+      <h3 id="rej-h"></h3>
+      <ul class="rej" id="rejected"></ul>
+    </section>
+
+    <section id="metoda" aria-labelledby="metoda-t">
+      <div class="eyebrow"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></div>
+      <h2 id="metoda-t"><span data-lang="sl">Kako je indeks izračunan</span><span data-lang="en" hidden>How the index is computed</span></h2>
+      <ol class="steps" data-lang="sl">
+        <li><strong>Pregled virov</strong> po šestih merilih (zgoraj). Zavrnjeni so zbiralniki, ki le prepisujejo številke prodajalcev ali drugih lestvic brez lastnih meritev, SEO strani ter zastarele ali ustavljene lestvice.</li>
+        <li><strong>Zajem:</strong> številke so vzete iz strojno berljivih podatkov vsakega vira (vgrajen JSON, CSV/JSON datoteke, GitHub, Hugging Face), ne iz izrisanega besedila. Česar ni bilo mogoče prebrati, ni ocenjeno.</li>
+        <li><strong>Poenotenje imen</strong> modelov (predpone ponudnikov, datumske in nastavitvene pripone, vzdevki). Nastavitev (napor, ogrodje) je shranjena pri vsakem rezultatu.</li>
+        <li><strong>Najboljša nastavitev na lestvico:</strong> če je model na isti lestvici večkrat, šteje njegov najboljši rezultat.</li>
+        <li><strong>Percentil:</strong> na vsaki lestvici dobi vsak model rang 0–100 med modeli v indeksu. Lestvice z manj kot 3 takimi modeli se ne upoštevajo.</li>
+        <li><strong>Utež lestvice</strong> = ugled/5 × pomen × svežina ÷ število lestvic istega vira v isti kategoriji. Svežina: ≤ 180 dni 1,0; ≤ 365 dni 0,5; starejše 0,25.</li>
+        <li><strong>Popravek za moč polja</strong> (dvosmerni fiksni učinki): za vsako kategorijo se oceni <code>pct ≈ θ_model + β_lestvica</code>; θ je ocena kategorije. Brez tega bi stari modeli na zastarelih lestvicah prehiteli svoje naslednike.</li>
+        <li><strong>Skupna ocena</strong> = tehtano povprečje razpoložljivih kategorij (uteži spodaj). Hitrost, cena in »drugo« se prikazujejo, a ne vstopajo v oceno kakovosti.</li>
+        <li><strong>Slovenščina:</strong> isti izračun samo na slovenskih lestvicah (EuroEval Slovene, SloBench, Slovenska pogovorna arena).</li>
+        <li><strong>Cena:</strong> uradni cenik ponudnika, sicer Artificial Analysis, sicer OpenRouter. Mešana cena = (3 × vhod + izhod) / 4.</li>
+      </ol>
+      <ol class="steps" data-lang="en" hidden>
+        <li><strong>Source vetting</strong> on six criteria (above). Rejected: aggregators that only copy vendor-reported or third-party numbers without their own runs, SEO farms, and stale or paused boards.</li>
+        <li><strong>Extraction:</strong> numbers come from each source's machine-readable data (embedded JSON, CSV/JSON files, GitHub, Hugging Face), not rendered text. What could not be read is not estimated.</li>
+        <li><strong>Name canonicalisation</strong> (vendor prefixes, date and setting suffixes, aliases). The setting (effort, harness) is kept with every result.</li>
+        <li><strong>Best setting per board:</strong> if a model appears several times on one board, its best score counts.</li>
+        <li><strong>Percentile:</strong> on each board every model gets a rank 0–100 among the models in the index. Boards with fewer than 3 such models are ignored.</li>
+        <li><strong>Board weight</strong> = respectability/5 × relevance × freshness ÷ number of boards of the same source in the same category. Freshness: ≤ 180 days 1.0; ≤ 365 days 0.5; older 0.25.</li>
+        <li><strong>Field-strength correction</strong> (two-way fixed effects): for each category <code>pct ≈ θ_model + β_board</code> is fitted; θ is the category score. Without it, old models on stale boards would outrank their successors.</li>
+        <li><strong>Overall score</strong> = weighted mean of the available categories (weights below). Speed, price and "other" are shown but never enter the quality score.</li>
+        <li><strong>Slovenian:</strong> the same fit on Slovenian boards only (EuroEval Slovene, SloBench, Slovenian Chat Arena).</li>
+        <li><strong>Price:</strong> official vendor list price, else Artificial Analysis, else OpenRouter. Blended price = (3 × input + output) / 4.</li>
+      </ol>
+      <h3><span data-lang="sl">Uteži kategorij v skupni oceni</span><span data-lang="en" hidden>Category weights in the overall score</span></h3>
+      <div class="tw"><table class="data" id="weights" style="max-width:32rem"></table></div>
+      <h3><span data-lang="sl">Omejitve</span><span data-lang="en" hidden>Limits</span></h3>
+      <ul class="plain" data-lang="sl">
+        <li>Percentil zavrže velikost razlik: prednost 0,2 točke in 10 točk štejeta enako.</li>
+        <li>»Najboljša nastavitev« daje prednost modelom, ki so bili merjeni pri največjem naporu; cene na žeton podcenijo modele, ki porabijo veliko žetonov.</li>
+        <li>Lestvice, povezane s ponudniki podatkov (Scale SEAL, Snorkel), imajo nižji ugled; nekatere lestvice mešajo agentna ogrodja.</li>
+        <li>Pokritost je neenakomerna: najnovejših modelov ni na počasi posodobljenih lestvicah. Stolpec zaupanja to označi.</li>
+        <li>Slovenskih dokazov je malo; SloBench rezultati so večinoma starejši modeli, slovenska arena ima malo glasov.</li>
+        <li>Poenotenje imen je hevristično; v dvomu glej <code>models[].board_scores</code> v JSON.</li>
+      </ul>
+      <ul class="plain" data-lang="en" hidden>
+        <li>Percentiles discard the size of gaps: a 0.2-point lead and a 10-point lead count the same.</li>
+        <li>"Best setting" favours models measured at maximum effort; per-token prices understate models that use many tokens.</li>
+        <li>Boards tied to data vendors (Scale SEAL, Snorkel) carry lower respectability; some boards mix agent harnesses.</li>
+        <li>Coverage is uneven: the newest models are missing from slow-updating boards. The confidence column flags this.</li>
+        <li>Slovenian evidence is thin; SloBench results are mostly older models and the Slovenian arena has few votes.</li>
+        <li>Name canonicalisation is heuristic; when in doubt see <code>models[].board_scores</code> in the JSON.</li>
+      </ul>
+      <h3><span data-lang="sl">Podatki</span><span data-lang="en" hidden>Data</span></h3>
+      <p class="prose small"><a data-file="meta_index.json" href="meta_index.json"><code>meta_index.json</code></a> · <a data-file="sources.json" href="sources.json"><code>sources.json</code></a> · <a data-file="commentary_sl.json" href="commentary_sl.json"><code>commentary_sl.json</code></a></p>
+      <p class="prose small muted" data-lang="sl">Indeks se osveži samodejno vsak 1. v mesecu ob 5.30 (Ljubljana): viri se ponovno zajamejo, izračun ponovi in objavi. Strani so brez piškotkov; nastavitve videza ostanejo le v tem brskalniku.</p>
+      <p class="prose small muted" data-lang="en" hidden>The index refreshes automatically on the 1st of every month at 05:30 (Ljubljana): the sources are collected again, the computation is rerun and published. No cookies; display settings stay in this browser only.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <p id="foot-dates">…</p>
+      <p><span data-lang="sl">Zbral in izračunal Claude (AI8) za BD. Ocene so modelski izračun iz javnih lestvic, ne nasvet za nakup.</span><span data-lang="en" hidden>Collected and computed by Claude (AI8) for BD. The scores are a computation from public leaderboards, not purchase advice.</span></p>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    "use strict";
+    var root = document.documentElement;
+    var D = null, S = null, C = null;
+    var BOARD = {}, CATS = ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "sl", "long_context", "speed"];
+    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {} };
+    var TOP = 40, CTOP = 25;
+    var T = {
+      sl: {
+        loading: "Nalagam podatke …", failed: "Podatkov ni bilo mogoče naložiti.", noResults: "Ni zadetkov.",
+        rank: "#", model: "Model", vendor: "Ponudnik", overall: "Skupno", conf: "Zaupanje", price: "Cena vhod/izhod", value: "Vrednost (točk/$)", valueShort: "Točk/$",
+        high: "visoko", medium: "srednje", low: "nizko", srcs: "virov", src1: "vir", boards: "lestvic", showAll: "Pokaži vse rangirane", showTop: "Pokaži prvih 40",
+        catShowAll: "Pokaži vse", catShowTop: "Pokaži prvih 25", score: "Ocena", nsrc: "Viri", nboards: "Lestvice", sl: "SL ocena", slraw: "Surovi slovenski rezultati",
+        tps: "Žetonov/s", unranked: "Ni rangirano (manj kot 3 neodvisni viri ali pokritost kategorij pod 45 %)", shown: "Prikazano", of: "od",
+        st_sources: "sprejetih virov", st_boards: "lestvic v izračunu", st_models: "modelov v indeksu", st_ranked: "rangiranih modelov", st_rejected: "zavrnjenih virov",
+        l_overall: "Skupno", tier: "Razred", bestq: "Najboljša kakovost", bestv: "Najboljša vrednost", cheapest: "Najcenejše na točko (brez praga)",
+        frontier: "frontier (≥ $5)", mid: "srednji ($1–5)", budget: "poceni (< $1)",
+        sd: "SD", bestb: "Najboljša lestvica", worstb: "Najslabša lestvica", board: "Lestvica", source: "Vir", cat: "Kategorija", leader: "Vodilni", result: "Rezultat", setting: "Nastavitev", date: "Datum",
+        data: "Podatki zbrani", built: "zgrajeno", next: "Naslednja osvežitev", at: "ob 5.30 (Ljubljana)", stale: "Podatki so starejši od 40 dni — mesečna osvežitev je morda zamudila.",
+        accepted: "Sprejeti viri", accept: "sprejet", accept_limited: "sprejet z omejitvijo", why: "Zakaj je ugleden", owner: "Lastnik", measures: "Meri", method: "Metoda", lastupd: "Zadnja posodobitev",
+        indep: "Neodvisnost", contam: "Kontaminacija", repro: "Ponovljivost", verdict: "Odločitev", nb: "lestvic", ne: "vnosov", norow: "Sprejeti, a brez podatkov", rejected: "Zavrnjeni viri",
+        catmodels: "modelov z oceno v tej kategoriji", from: "iz", cats_in: "Lestvice v tej kategoriji", weight: "Utež", detailCats: "Ocene po kategorijah", detailSrc: "Viri",
+        detailBoards: "Posamezni rezultati (surovo → percentil → popravljen)", raw: "Rezultat", pct: "Pct", adj: "Popr.", spread: "Razpršenost (SD)", tierL: "Cenovni razred",
+        speedNote: "Hitrost izhoda (žetonov na sekundo, mediana) po Artificial Analysis; ne vstopa v oceno kakovosti. Prikazani so le izmerjeni modeli.",
+        slNote: "SL ocena = popravljen percentil samo iz slovenskih lestvic (EuroEval Slovene, SloBench, Slovenska pogovorna arena). EuroEval: nižje = bolje; arena: rating; SloBench: točke naloge.",
+        noSl: "Modeli, ki jih spremljamo, brez slovenskih rezultatov:", commentBy: "Komentar", lead_n: "lestvic",
+        cat_reasoning: "Splošno & sklepanje", cat_coding: "Programiranje", cat_agentic: "Agenti & orodja", cat_knowledge: "Znanje & halucinacije", cat_preference: "Človeška preferenca",
+        cat_multilingual: "Večjezičnost", cat_sl: "Slovenščina", cat_long_context: "Dolg kontekst", cat_speed: "Hitrost", cat_other: "Drugo", cat_price: "Cena",
+        none: "–"
+      },
+      en: {
+        loading: "Loading data …", failed: "The data could not be loaded.", noResults: "No matches.",
+        rank: "#", model: "Model", vendor: "Provider", overall: "Overall", conf: "Confidence", price: "Price in/out", value: "Value (pts/$)", valueShort: "Pts/$",
+        high: "high", medium: "medium", low: "low", srcs: "sources", src1: "source", boards: "boards", showAll: "Show all ranked", showTop: "Show top 40",
+        catShowAll: "Show all", catShowTop: "Show top 25", score: "Score", nsrc: "Sources", nboards: "Boards", sl: "SL score", slraw: "Raw Slovenian results",
+        tps: "Tokens/s", unranked: "Not ranked (fewer than 3 independent sources or category coverage below 45 %)", shown: "Showing", of: "of",
+        st_sources: "accepted sources", st_boards: "boards in the computation", st_models: "models in the index", st_ranked: "ranked models", st_rejected: "rejected sources",
+        l_overall: "Overall", tier: "Tier", bestq: "Best quality", bestv: "Best value", cheapest: "Cheapest per point (no floor)",
+        frontier: "frontier (≥ $5)", mid: "mid ($1–5)", budget: "budget (< $1)",
+        sd: "SD", bestb: "Best board", worstb: "Worst board", board: "Board", source: "Source", cat: "Category", leader: "Leader", result: "Result", setting: "Setting", date: "Date",
+        data: "Data collected", built: "built", next: "Next refresh", at: "at 05:30 (Ljubljana)", stale: "The data is older than 40 days — the monthly refresh may have been missed.",
+        accepted: "Accepted sources", accept: "accepted", accept_limited: "accepted with limits", why: "Why it is respectable", owner: "Owner", measures: "Measures", method: "Method", lastupd: "Last update",
+        indep: "Independence", contam: "Contamination", repro: "Reproducibility", verdict: "Verdict", nb: "boards", ne: "entries", norow: "Accepted but without data", rejected: "Rejected sources",
+        catmodels: "models with a score in this category", from: "from", cats_in: "Boards in this category", weight: "Weight", detailCats: "Category scores", detailSrc: "Sources",
+        detailBoards: "Individual results (raw → percentile → corrected)", raw: "Result", pct: "Pct", adj: "Corr.", spread: "Spread (SD)", tierL: "Price tier",
+        speedNote: "Output speed (tokens per second, median) from Artificial Analysis; it does not enter the quality score. Only measured models are shown.",
+        slNote: "SL score = corrected percentile from Slovenian boards only (EuroEval Slovene, SloBench, Slovenian Chat Arena). EuroEval: lower = better; arena: rating; SloBench: task score.",
+        noSl: "Tracked models without any Slovenian result:", commentBy: "Commentary", lead_n: "boards",
+        cat_reasoning: "General & reasoning", cat_coding: "Coding", cat_agentic: "Agents & tools", cat_knowledge: "Knowledge & hallucination", cat_preference: "Human preference",
+        cat_multilingual: "Multilingual", cat_sl: "Slovenian", cat_long_context: "Long context", cat_speed: "Speed", cat_other: "Other", cat_price: "Price",
+        none: "–"
+      }
+    };
+    function L() { return root.lang === "en" ? "en" : "sl"; }
+    function t(k) { var v = T[L()][k]; return v === undefined ? (T.sl[k] === undefined ? k : T.sl[k]) : v; }
+    function loc() { return L() === "en" ? "en-GB" : "sl-SI"; }
+    function nf(v, d) { if (v === null || v === undefined || !isFinite(v)) return t("none"); return new Intl.NumberFormat(loc(), { minimumFractionDigits: d, maximumFractionDigits: d }).format(v); }
+    function nfi(v) { return v === null || v === undefined || !isFinite(v) ? t("none") : new Intl.NumberFormat(loc()).format(v); }
+    function money(v) { if (v === null || v === undefined || !isFinite(v)) return t("none"); return "$" + new Intl.NumberFormat(loc(), { maximumFractionDigits: 2 }).format(v); }
+    function esc(s) { return String(s === null || s === undefined ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function safeUrl(u) { return typeof u === "string" && /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : null; }
+    function link(u, text) { var s = safeUrl(u); return s ? '<a href="' + esc(s) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>' : esc(text); }
+    function el(id) { return document.getElementById(id); }
+    function parseDate(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ""); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+    function fmtDate(d) { if (!d) return t("none"); return L() === "en" ? d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : d.getDate() + ". " + (d.getMonth() + 1) + ". " + d.getFullYear(); }
+    function nextRefresh(now) {
+      var d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      if (now.getDate() === 1 && (now.getHours() < 5 || (now.getHours() === 5 && now.getMinutes() < 30))) d = new Date(now.getFullYear(), now.getMonth(), 1);
+      return d;
+    }
+    function dataBase() { var p = location.pathname; if (/\/$/.test(p) || /\.html?$/i.test(p)) return ""; return p.split("/").pop() + "/"; }
+    function catLabel(c) { return t("cat_" + c); }
+    function boardName(id) { var b = BOARD[id]; return b ? b.name : id; }
+    function confBadge(m) { var c = m.confidence || "low"; return '<span class="conf ' + esc(c) + '">' + esc(t(c)) + " · " + esc(m.n_sources) + "</span>"; }
+    function priceTxt(p) { return p ? money(p.input) + " / " + money(p.output) : t("none"); }
+    function bar(v) { var w = Math.max(0, Math.min(100, Number(v) || 0)); return '<span class="bar" aria-hidden="true"><i style="width:' + w.toFixed(1) + '%"></i></span>'; }
+    function modelCell(m, withBtn, extra) {
+      var name = '<span class="mid">' + esc(m.model_id) + "</span>";
+      var sub = '<span class="sub">' + esc(m.vendor || "") + (extra || "") + "</span>";
+      if (!withBtn) return name + sub;
+      var open = !!st.open[m.model_id];
+      return '<button type="button" class="mbtn" data-model="' + esc(m.model_id) + '" aria-expanded="' + open + '"><span class="chev" aria-hidden="true">›</span>' + name + "</button>" + sub;
+    }
+    function md(line) { return esc(line).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"); }
+    function blocks() {
+      var out = [], cur = [];
+      ((C && C.paragraphs) || []).forEach(function (p) { if (String(p).trim() === "") { if (cur.length) out.push(cur); cur = []; } else cur.push(String(p)); });
+      if (cur.length) out.push(cur);
+      return out;
+    }
+    function renderBlock(b) {
+      var html = "", list = [];
+      function flush() { if (list.length) { html += "<ul>" + list.map(function (x) { return "<li>" + md(x) + "</li>"; }).join("") + "</ul>"; list = []; } }
+      b.forEach(function (line) { if (/^\s*-\s+/.test(line)) list.push(line.replace(/^\s*-\s+/, "")); else { flush(); html += "<p>" + md(line) + "</p>"; } });
+      flush();
+      return html;
+    }
+    function isDisagreeBlock(b) { return /^\*\*Kje se viri/i.test(b[0] || ""); }
+
+    function renderMeta() {
+      var c = D.counts || {}, cfg = D.config || {};
+      var vals = { sources_accepted: c.sources_accepted, boards_used: c.boards_used, models_universe: c.models_universe, models_ranked: c.models_ranked,
+                   rank_min_sources: cfg.rank_min_sources, rank_min_coverage: cfg.rank_min_coverage !== undefined ? Math.round(cfg.rank_min_coverage * 100) + " %" : undefined,
+                   value_min_overall: cfg.value_min_overall !== undefined ? nf(cfg.value_min_overall, 0) : undefined };
+      Array.prototype.forEach.call(document.querySelectorAll("[data-k]"), function (n) { var v = vals[n.getAttribute("data-k")]; if (v !== undefined && v !== null) n.textContent = typeof v === "number" ? nfi(v) : v; });
+      var fetched = parseDate(D.data_fetched), now = new Date(), nx = nextRefresh(now);
+      var builtTxt = String(D.built || "").replace("T", " ").replace(/:\d\d(\.\d+)?\+00:00$/, " UTC");
+      el("strip-text").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("next") + ": " + fmtDate(nx) + " " + t("at");
+      var stale = fetched && (now - fetched) / 864e5 > 40;
+      el("strip-warn").hidden = !stale;
+      el("strip-warn").textContent = stale ? t("stale") : "";
+      el("foot-dates").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("built") + " " + builtTxt + " · " + t("next") + ": " + fmtDate(nx) + " " + t("at");
+      var cards = [[c.sources_accepted, t("st_sources")], [c.boards_used, t("st_boards")], [c.models_universe, t("st_models")], [c.models_ranked, t("st_ranked")], [c.sources_rejected, t("st_rejected")]];
+      el("stats").innerHTML = cards.map(function (x) { return '<li class="stat"><b>' + esc(nfi(x[0])) + "</b><span>" + esc(x[1]) + "</span></li>"; }).join("");
+      var lead = [];
+      var top = byRank()[0];
+      if (top) lead.push([t("l_overall"), top.model_id, nf(top.overall, 1)]);
+      ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "long_context"].forEach(function (k) {
+        var x = ((D.category_leaders || {})[k] || [])[0];
+        if (x) lead.push([catLabel(k), x.model_id, nf(x.score, 1)]);
+      });
+      var sl = slModels()[0];
+      if (sl) lead.push([catLabel("sl"), sl.model_id, nf(sl.slovenian, 1)]);
+      el("leaders").innerHTML = lead.map(function (x) { return '<li><span class="k"><span>' + esc(x[0]) + '</span><span class="s">' + esc(x[2]) + '</span></span><span class="v mid" title="' + esc(x[1]) + '">' + esc(x[1]) + "</span></li>"; }).join("");
+      Array.prototype.forEach.call(document.querySelectorAll("a[data-file]"), function (a) { a.setAttribute("href", dataBase() + a.getAttribute("data-file")); });
+    }
+
+    function byRank() { return D.models.filter(function (m) { return m.overall_rank; }).sort(function (a, b) { return a.overall_rank - b.overall_rank; }); }
+    function slModels() { return D.models.filter(function (m) { return m.slovenian !== null && m.slovenian !== undefined; }).sort(function (a, b) { return b.slovenian - a.slovenian; }); }
+
+    function detailRow(m, span) {
+      var cats = ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "long_context"].map(function (k) {
+        var c = (m.categories || {})[k];
+        return "<li>" + esc(catLabel(k)) + "<b>" + (c ? esc(nf(c.score, 1)) : t("none")) + "</b>" + (c ? '<span class="muted">' + esc(c.n_sources) + " " + esc(c.n_sources === 1 ? t("src1") : t("srcs")) + " · " + esc(c.n_boards) + " " + esc(t("boards")) + "</span>" : "") + "</li>";
+      });
+      if (m.slovenian !== null && m.slovenian !== undefined) cats.push("<li>" + esc(catLabel("sl")) + "<b>" + esc(nf(m.slovenian, 1)) + "</b></li>");
+      var info = [t("spread") + ": " + nf(m.pct_spread_sd, 1)];
+      if (m.tier) info.push(t("tierL") + ": " + t(m.tier));
+      if (m.output_tokens_per_s) info.push(t("tps") + ": " + nf(m.output_tokens_per_s, 0));
+      var bsr = (m.board_scores || []).slice().sort(function (a, b) { return a.category < b.category ? -1 : a.category > b.category ? 1 : (b.adj_pct || 0) - (a.adj_pct || 0); });
+      var rows = bsr.map(function (b) {
+        var bd = BOARD[b.board_id];
+        return "<tr><td>" + (bd ? link(bd.url, bd.name) : esc(b.board_id)) + '<span class="sub">' + esc(catLabel(b.category)) + (b.setting ? " · " + esc(b.setting) : "") + '</span></td><td class="num">' + esc(nf(b.score, 2)) + '</td><td class="num">' + esc(nf(b.pct, 0)) + '</td><td class="num">' + esc(nf(Math.max(0, Math.min(100, b.adj_pct)), 0)) + '</td><td class="num d-only">' + esc(nf(b.weight, 2)) + "</td></tr>";
+      }).join("");
+      return '<tr class="detail"><td colspan="' + span + '"><h4 class="small" style="margin:.1rem 0 .4rem">' + esc(t("detailCats")) + '</h4><ul class="catgrid">' + cats.join("") + "</ul>" +
+        '<p class="small">' + esc(info.join(" · ")) + "</p>" +
+        '<p class="small"><strong>' + esc(t("detailSrc")) + ":</strong> " + esc((m.sources || []).join(", ")) + "</p>" +
+        '<details class="more"><summary>' + esc(t("detailBoards")) + " (" + bsr.length + ")</summary>" +
+        '<div class="tw"><table class="data bs"><thead><tr><th>' + esc(t("board")) + '</th><th class="num">' + esc(t("raw")) + '</th><th class="num">' + esc(t("pct")) + '</th><th class="num">' + esc(t("adj")) + '</th><th class="num d-only">' + esc(t("weight")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details></td></tr>";
+    }
+
+    function renderOverall() {
+      var all = byRank(), q = st.q.trim().toLowerCase();
+      var list = q ? all.filter(function (m) { return (m.model_id + " " + (m.vendor || "")).toLowerCase().indexOf(q) >= 0; }) : all;
+      var shown = q || st.all ? list : list.slice(0, TOP);
+      var head = '<thead><tr><th scope="col">' + t("rank") + '</th><th scope="col">' + esc(t("model")) + '</th><th scope="col" class="num">' + esc(t("overall")) + '</th><th scope="col" class="d-only">' + esc(t("conf")) + '</th><th scope="col" class="num d-only">' + esc(t("price")) + '</th><th scope="col" class="num"><span class="d-only">' + esc(t("value")) + '</span><span class="m-only">' + esc(t("valueShort")) + "</span></th></tr></thead>";
+      var body = shown.map(function (m) {
+        var extra = '<span class="m-only"> · ' + esc(priceTxt(m.price)) + " · " + esc(m.n_sources) + " " + esc(t("srcs")) + "</span>";
+        var r = "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + confBadge(m) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + esc(nf(m.value_score_per_usd, 1)) + "</td></tr>";
+        if (st.open[m.model_id]) r += detailRow(m, 6);
+        return r;
+      }).join("");
+      if (!shown.length) body = '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>";
+      el("overall").innerHTML = head + "<tbody>" + body + "</tbody>";
+      var tg = el("all-toggle");
+      tg.hidden = !!q;
+      tg.textContent = st.all ? t("showTop") : t("showAll") + " (" + all.length + ")";
+      tg.setAttribute("aria-pressed", String(st.all));
+      var un = D.models.filter(function (m) { return !m.overall_rank; }).sort(function (a, b) { return b.overall - a.overall; });
+      el("unranked-sum").textContent = t("unranked") + ": " + un.length;
+      el("unranked").innerHTML = un.map(function (m) { return '<span class="mid">' + esc(m.model_id) + "</span> (" + esc(nf(m.overall, 1)) + ", " + esc(m.n_sources) + ")"; }).join(" · ");
+    }
+
+    function renderTiers() {
+      var vt = D.value_tiers || {}, BY = {};
+      D.models.forEach(function (m) { BY[m.model_id] = m; });
+      var rows = ["frontier", "mid", "budget"].filter(function (k) { return vt[k]; }).map(function (k) {
+        var x = vt[k];
+        return "<tr><td>" + esc(t(k)) + '</td><td><span class="mid">' + esc(x.best_quality) + "</span> (" + esc(nf(x.best_quality_overall, 1)) + ")</td><td><span class=\"mid\">" + esc(x.best_value) + "</span> (" + esc(nf(x.best_value_overall, 1)) + ", " + esc(nf(x.best_value_score_per_usd, 1)) + " " + esc(t("valueShort").toLowerCase()) + ')<span class="sub">' + esc(priceTxt((BY[x.best_value] || {}).price)) + '</span></td><td class="d-only"><span class="mid">' + esc(x.best_value_any_quality) + "</span></td></tr>";
+      }).join("");
+      el("tiers").innerHTML = "<thead><tr><th>" + esc(t("tier")) + "</th><th>" + esc(t("bestq")) + "</th><th>" + esc(t("bestv")) + '</th><th class="d-only">' + esc(t("cheapest")) + "</th></tr></thead><tbody>" + rows + "</tbody>";
+    }
+
+    function catBoards(c) {
+      var cat = c === "sl" ? "multilingual" : c;
+      var bs = (D.boards || []).filter(function (b) { return b.category === cat && (c !== "sl" || b.slovenian) && (c === "speed" || b.weight > 0); });
+      var srcs = {};
+      bs.forEach(function (b) { srcs[b.source_id] = 1; });
+      return { boards: bs, sources: Object.keys(srcs) };
+    }
+    function srcShort(id) {
+      var a = (S && S.accepted || []).filter(function (x) { return x.source_id === id; })[0];
+      return a ? String(a.name).split(" (")[0] : id;
+    }
+
+    function renderCats() {
+      el("tabs").innerHTML = CATS.map(function (c) { return '<li><button type="button" data-cat="' + c + '" aria-pressed="' + (st.cat === c) + '">' + esc(catLabel(c)) + "</button></li>"; }).join("");
+      var c = st.cat, rows = [], head = "", list = [], cb = catBoards(c), desc = "";
+      if (c === "speed") {
+        list = D.models.filter(function (m) { return m.output_tokens_per_s; }).sort(function (a, b) { return b.output_tokens_per_s - a.output_tokens_per_s; });
+        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("tps")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="num d-only">' + esc(t("price")) + "</th></tr>";
+        rows = list.map(function (m, i) { return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.output_tokens_per_s, 0)) + '</span></td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + "</td></tr>"; });
+        desc = t("speedNote");
+      } else if (c === "sl") {
+        list = slModels();
+        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("sl")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="d-only">' + esc(t("slraw")) + "</th></tr>";
+        rows = list.map(function (m, i) {
+          var raw = (m.slovenian_raw || []).map(function (r) { return esc(boardName(r.board_id)) + " " + esc(nf(r.score, 2)); }).join("; ");
+          return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.slovenian, 1)) + "</span>" + bar(m.slovenian) + '</td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="d-only small">' + raw + "</td></tr>";
+        });
+        var named = D.models.filter(function (m) { return m.named && (m.slovenian === null || m.slovenian === undefined); }).map(function (m) { return m.model_id; });
+        desc = t("slNote") + (named.length ? " " + t("noSl") + " " + named.join(", ") + "." : "");
+      } else {
+        list = D.models.filter(function (m) { return (m.categories || {})[c]; }).sort(function (a, b) { return b.categories[c].score - a.categories[c].score || b.overall - a.overall; });
+        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("score")) + '</th><th class="num">' + esc(t("nsrc")) + '</th><th class="num d-only">' + esc(t("nboards")) + '</th><th class="num">' + esc(t("overall")) + "</th></tr>";
+        rows = list.map(function (m, i) {
+          var k = m.categories[c];
+          return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(k.score, 1)) + "</span>" + bar(k.score) + '</td><td class="num">' + esc(k.n_sources) + '</td><td class="num d-only">' + esc(k.n_boards) + '</td><td class="num">' + esc(nf(m.overall, 1)) + "</td></tr>";
+        });
+        var w = ((D.config || {}).category_weights || {})[c];
+        desc = nfi(list.length) + " " + t("catmodels") + " · " + t("cats_in") + ": " + cb.boards.length + " " + t("from") + " " + cb.sources.length + " " + t("srcs") + " (" + cb.sources.map(srcShort).join(", ") + ")" + (w !== undefined ? " · " + t("weight") + " " + nf(w * 100, 0) + " %" : "") + ".";
+      }
+      if (c === "speed" && cb.boards.length) desc += " " + t("cats_in") + ": " + cb.boards.map(function (b) { return b.name; }).join(", ") + ".";
+      el("catdesc").textContent = desc;
+      var shown = st.catAll ? rows : rows.slice(0, CTOP);
+      el("cattable").innerHTML = "<thead>" + head + "</thead><tbody>" + (shown.join("") || '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>") + "</tbody>";
+      var tg = el("cat-toggle");
+      tg.hidden = rows.length <= CTOP;
+      tg.textContent = st.catAll ? t("catShowTop") : t("catShowAll") + " (" + rows.length + ")";
+      tg.setAttribute("aria-pressed", String(st.catAll));
+    }
+
+    function renderDisagree() {
+      var bl = blocks();
+      el("disagree-text").innerHTML = bl.filter(isDisagreeBlock).map(renderBlock).join("");
+      var rows = (D.disagreements || []).map(function (x) {
+        return '<tr><td><span class="mid">' + esc(x.model_id) + '</span><span class="sub m-only">↑ ' + esc(boardName(x.best_board)) + "<br>↓ " + esc(boardName(x.worst_board)) + '</span></td><td class="num">' + esc(nf(x.overall, 1)) + '</td><td class="num"><span class="score">' + esc(nf(x.pct_spread_sd, 1)) + '</span></td><td class="d-only">' + esc(boardName(x.best_board)) + '</td><td class="d-only">' + esc(boardName(x.worst_board)) + "</td></tr>";
+      }).join("");
+      el("disagree").innerHTML = "<thead><tr><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="num">' + esc(t("sd")) + '</th><th class="d-only">' + esc(t("bestb")) + '</th><th class="d-only">' + esc(t("worstb")) + "</th></tr></thead><tbody>" + rows + "</tbody>";
+      var lc = D.board_leader_counts || {};
+      el("leadercounts").innerHTML = Object.keys(lc).sort(function (a, b) { return lc[b] - lc[a]; }).slice(0, 12).map(function (k) { return '<span class="mid">' + esc(k) + "</span> " + esc(lc[k]); }).join(" · ") + " " + esc(t("lead_n")) + ".";
+      var order = { reasoning: 1, coding: 2, agentic: 3, knowledge: 4, preference: 5, multilingual: 6, long_context: 7 };
+      var bls = (D.board_leaders || []).slice().sort(function (a, b) { return (order[a.category] || 9) - (order[b.category] || 9) || (a.board_id < b.board_id ? -1 : 1); });
+      el("boardleaders").innerHTML = "<thead><tr><th>" + esc(t("board")) + "</th><th>" + esc(t("leader")) + '</th><th class="num">' + esc(t("result")) + '</th><th class="d-only">' + esc(t("date")) + "</th></tr></thead><tbody>" + bls.map(function (b) {
+        var bd = BOARD[b.board_id] || {};
+        return "<tr><td>" + link(bd.url, bd.name || b.board_id) + '<span class="sub">' + esc(catLabel(b.category)) + " · " + esc(srcShort(b.source_id)) + '</span></td><td><span class="mid">' + esc(b.leader) + "</span>" + (b.leader_setting ? '<span class="sub">' + esc(b.leader_setting) + "</span>" : "") + '</td><td class="num">' + esc(nf(b.leader_score, 2)) + '</td><td class="d-only small">' + esc(b.data_date_parsed || "") + "</td></tr>";
+      }).join("") + "</tbody>";
+      var by = C ? '<p class="small muted">' + esc(t("commentBy")) + ": " + esc(C.author || "") + ", " + esc(C.written || "") + "</p>" : "";
+      el("commentary").innerHTML = bl.filter(function (b) { return !isDisagreeBlock(b); }).map(renderBlock).join("") + by;
+    }
+
+    function renderSources() {
+      if (!S) return;
+      var acc = (S.accepted || []).slice().sort(function (a, b) { return (b.respectability_score || 0) - (a.respectability_score || 0) || String(a.name).localeCompare(String(b.name)); });
+      el("acc-h").textContent = t("accepted") + " (" + acc.length + ")";
+      el("accepted").innerHTML = acc.map(function (a) {
+        var n = Math.max(0, Math.min(5, a.respectability_score || 0));
+        var stars = "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+        var tag = a.verdict === "accept" ? '<span class="tag ok">' + esc(t("accept")) + "</span>" : '<span class="tag lim">' + esc(t("accept_limited")) + "</span>";
+        var cats = (a.categories || []).map(catLabel).join(", ");
+        function row(k, v) { return v ? "<dt>" + esc(t(k)) + "</dt><dd>" + v + "</dd>" : ""; }
+        return '<details class="src"><summary><span class="nm">' + esc(a.name) + '</span><span class="stars" aria-label="' + n + '/5">' + stars + "</span>" + tag + '<span class="small muted">' + esc(cats) + "</span></summary><dl>" +
+          row("why", esc(a.respectability_rationale)) + row("owner", esc(a.owner)) + row("measures", esc(a.measures)) +
+          row("method", a.method_url ? link(a.method_url, a.method_url) : "") + row("lastupd", esc(a.last_update_seen) + (a.update_frequency ? " · " + esc(a.update_frequency) : "")) +
+          row("repro", esc(a.reproducibility)) + row("indep", esc(a.independence)) + row("contam", esc(a.contamination_handling)) +
+          row("verdict", esc(a.verdict_reason) + " · " + esc(a.n_boards) + " " + esc(t("nb")) + " / " + esc(a.n_entries) + " " + esc(t("ne"))) +
+          "<dt>URL</dt><dd>" + link(a.url, a.url) + "</dd></dl></details>";
+      }).join("");
+      var nr = S.vetted_accept_without_raw || [];
+      el("norow-h").textContent = t("norow") + " (" + nr.length + ")";
+      el("norow-h").hidden = !nr.length;
+      el("norow").innerHTML = nr.map(function (a) { return "<li><b>" + link(a.url, a.name) + "</b> — " + esc(a.reason) + "</li>"; }).join("");
+      var ps = (S.price_source || {}).source_meta;
+      el("pricesrc").innerHTML = ps ? esc(ps.measures || "") + " " + esc(ps.respectability_rationale || "") + " " + link(ps.url, ps.name || ps.url) + (S.price_source.notes ? '<span class="sub">' + esc(S.price_source.notes) + "</span>" : "") : "";
+      var rej = (S.rejected || []).slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+      el("rej-h").textContent = t("rejected") + " (" + rej.length + ")";
+      el("rejected").innerHTML = rej.map(function (a) { return "<li><b>" + link(a.url, a.name) + "</b> — " + esc(a.verdict_reason || a.reason || "") + "</li>"; }).join("");
+    }
+
+    function renderWeights() {
+      var w = (D.config || {}).category_weights || {};
+      el("weights").innerHTML = "<thead><tr><th>" + esc(t("cat")) + '</th><th class="num">' + esc(t("weight")) + "</th></tr></thead><tbody>" + Object.keys(w).map(function (k) { return "<tr><td>" + esc(catLabel(k)) + '</td><td class="num">' + esc(nf(w[k] * 100, 0)) + " %</td></tr>"; }).join("") + "</tbody>";
+    }
+
+    function renderAll() {
+      if (!D) return;
+      Array.prototype.forEach.call(document.querySelectorAll("[data-ph-sl]"), function (n) { n.setAttribute("placeholder", n.getAttribute(L() === "en" ? "data-ph-en" : "data-ph-sl")); });
+      renderMeta(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderSources(); renderWeights();
+    }
+
+    var timer = 0;
+    el("q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(function () { st.q = el("q").value; if (D) renderOverall(); }, 120); });
+    el("all-toggle").addEventListener("click", function () { st.all = !st.all; renderOverall(); });
+    el("cat-toggle").addEventListener("click", function () { st.catAll = !st.catAll; renderCats(); });
+    el("tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-cat]"); if (!b) return; st.cat = b.getAttribute("data-cat"); st.catAll = false; renderCats(); var nb = el("tabs").querySelector('button[data-cat="' + st.cat + '"]'); if (nb) nb.focus(); });
+    el("overall").addEventListener("click", function (ev) {
+      var b = ev.target.closest("button[data-model]"); if (!b) return;
+      var id = b.getAttribute("data-model");
+      if (st.open[id]) delete st.open[id]; else st.open[id] = 1;
+      renderOverall();
+      var nb = el("overall").querySelector('button[data-model="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); if (nb) nb.focus();
+    });
+    new MutationObserver(function () { renderAll(); }).observe(root, { attributes: true, attributeFilter: ["lang"] });
+
+    el("status").textContent = t("loading");
+    function getJSON(name) { return fetch(dataBase() + name, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status + " " + name); return r.json(); }); }
+    window.__llmsReady = Promise.all([getJSON("meta_index.json"), getJSON("sources.json").catch(function () { return null; }), getJSON("commentary_sl.json").catch(function () { return null; })])
+      .then(function (r) {
+        D = r[0]; S = r[1]; C = r[2];
+        (D.boards || []).forEach(function (b) { BOARD[b.board_id] = b; });
+        el("status").textContent = "";
+        renderAll();
+        return true;
+      })
+      .catch(function (e) { el("status").textContent = t("failed"); throw e; });
+  })();
+  </script>
+  <script>
+  /* AI8 display controls (language, text size, theme). Same storage keys as the shared AI8 toolbar. No network calls, no cookies. */
+  (function () {
+    "use strict";
+    var root = document.documentElement;
+    var bar = document.querySelector("[data-ai8-toolbar]");
+    if (!bar) return;
+    function get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
+    function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (_) {} }
+    var lang = "sl", theme = "dark", scale = 1;
+    var sLang = get("mdlxdcc-lang"), sTheme = get("mdlxdcc-theme"), sScale = Number(get("mdlxdcc-font"));
+    if (sLang === "sl" || sLang === "en") lang = sLang;
+    if (sTheme === "dark" || sTheme === "light") theme = sTheme;
+    if (Number.isFinite(sScale) && sScale >= 0.8 && sScale <= 1.5) scale = sScale;
+
+    function apply() {
+      root.lang = lang;
+      root.setAttribute("data-theme", theme);
+      root.style.setProperty("--scale", String(scale));
+      var i, nodes = document.querySelectorAll("[data-lang]");
+      for (i = 0; i < nodes.length; i++) {
+        if (nodes[i].getAttribute("data-lang") === lang) nodes[i].removeAttribute("hidden");
+        else nodes[i].setAttribute("hidden", "");
+      }
+      nodes = document.querySelectorAll("[data-aria-sl][data-aria-en]");
+      for (i = 0; i < nodes.length; i++) {
+        nodes[i].setAttribute("aria-label", nodes[i].getAttribute(lang === "en" ? "data-aria-en" : "data-aria-sl"));
+      }
+      nodes = bar.querySelectorAll("[data-ai8-lang]");
+      for (i = 0; i < nodes.length; i++) nodes[i].setAttribute("aria-pressed", String(nodes[i].getAttribute("data-ai8-lang") === lang));
+      nodes = bar.querySelectorAll("[data-ai8-theme]");
+      for (i = 0; i < nodes.length; i++) nodes[i].setAttribute("aria-pressed", String(nodes[i].getAttribute("data-ai8-theme") === theme));
+      bar.querySelector("[data-ai8-reset]").textContent = Math.round(scale * 100) + "%";
+      bar.querySelector("[data-ai8-down]").disabled = scale <= 0.8;
+      bar.querySelector("[data-ai8-up]").disabled = scale >= 1.5;
+      var tSl = root.getAttribute("data-title-sl"), tEn = root.getAttribute("data-title-en");
+      if (tSl && tEn) document.title = lang === "en" ? tEn : tSl;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", theme === "dark" ? "#0b1220" : "#f5f7f9");
+    }
+    function setScale(v) { scale = Math.round(Math.min(1.5, Math.max(0.8, v)) * 100) / 100; put("mdlxdcc-font", scale); apply(); }
+
+    bar.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button");
+      if (!b || !bar.contains(b)) return;
+      if (b.hasAttribute("data-ai8-lang")) { lang = b.getAttribute("data-ai8-lang") === "en" ? "en" : "sl"; put("mdlxdcc-lang", lang); apply(); }
+      else if (b.hasAttribute("data-ai8-theme")) { theme = b.getAttribute("data-ai8-theme") === "light" ? "light" : "dark"; put("mdlxdcc-theme", theme); apply(); }
+      else if (b.hasAttribute("data-ai8-down")) setScale(scale - 0.05);
+      else if (b.hasAttribute("data-ai8-up")) setScale(scale + 0.05);
+      else if (b.hasAttribute("data-ai8-reset")) setScale(1);
+    });
+    window.addEventListener("storage", function (ev) {
+      if (["mdlxdcc-lang", "mdlxdcc-theme", "mdlxdcc-font", null].indexOf(ev.key) < 0) return;
+      var l = get("mdlxdcc-lang"), t = get("mdlxdcc-theme"), s = Number(get("mdlxdcc-font"));
+      lang = l === "en" ? "en" : "sl";
+      theme = t === "light" ? "light" : "dark";
+      scale = Number.isFinite(s) && s >= 0.8 && s <= 1.5 ? s : 1;
+      apply();
+    });
+    apply();
+  })();
+  </script>
+</body>
+</html>
