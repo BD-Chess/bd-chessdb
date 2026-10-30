@@ -1,7 +1,7 @@
 import { authenticate, env } from './lib/mdlxdcc-guide/access.mjs';
 import { createBudget } from './lib/mdlxdcc-guide/cost.mjs';
 import { providerRound, appendAssistant, appendTool } from './lib/mdlxdcc-guide/provider.mjs';
-import { validateBody, loadGame, validateGame, createSession, gameTools, instructions, unsafeReply, invitation } from './lib/game-guide/runtime.mjs';
+import { validateBody, loadGame, validateGame, createSession, gameTools, instructions, unsafeReply, invitation, playerQuestion, answerText } from './lib/game-guide/runtime.mjs';
 import { sealContinuation, openContinuation } from './lib/game-guide/continuation.mjs';
 import { createLogStore, readerAllowed, sessionID, privateText, costRecorder, logReadResponse, usageSummary, stopReason } from './lib/game-guide/log.mjs';
 import { diagnosticEvent } from './lib/game-guide/diagnostics.mjs';
@@ -118,6 +118,8 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
           const session = createSession(game, request);
           if (continuation?.openedThisTurn) session.restoreTurn(continuation.openedThisTurn);
           if (continuation?.closedQuestions) session.restoreClosed(continuation.closedQuestions);
+          if (continuation?.assessedThisTurn) session.restoreAssessed(continuation.assessedThisTurn);
+          if (!continuation) session.recordAnswer();
           if (request.development && /^(?:prosim[ ,]*)?(?:pokaži vse|show all)(?: korake)?[.!]?$/iu.test(request.message)) {
             // Explicit owner-only local navigation; never routed through the model.
             for (const step of game.steps) { const action = { name: 'open_step', id: step.id, owner_navigation: true }; if (log) events.push({ kind: 'open_step', payload: action }); send('action', action); }
@@ -138,6 +140,8 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
           let finished = false, count = continuation?.count ?? 0, noOpOnly = continuation?.noOpOnly ?? false, repairs = continuation?.repairs ?? 0;
           // P0-R3.4: one decisive question_closed round per turn does not burn the four-round bound.
           let roundLimit = continuation?.roundGrace === true ? 5 : 4;
+          // P0-R3.5: a real player question needs a visible answer; at most one extra answer round per request.
+          const asked = playerQuestion(request.message); let answerRepair = false;
           const repair = code => { if (repairs >= 1) recover(code); repairs++; };
           const appendResults = entries => {
             const claudeResults = [];
@@ -181,7 +185,8 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
             partialText = '';
             if (!calls.length) {
               trace('model_round', { last_model_text: lastModelText, tool_uses: [], repairs, ...callUsage });
-              let output = session.openedThisTurn ? invitation(game, session) : session.question || (noOpOnly ? '' : text?.trim());
+              const own = text?.trim() || '';
+              let output = session.openedThisTurn ? invitation(game, session) : session.question || (noOpOnly ? '' : own);
               const violation = !session.openedThisTurn && !session.question && !noOpOnly && (unsafeReply(output || '', game, session) || (session.needsReveal() || session.needsAdvance() ? 'OPEN_STEP_REQUIRED' : null));
               if (violation) {
                 if (log) events.push({ kind: 'error', payload: { code: violation, suppressed: true } });
@@ -190,6 +195,21 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
                 input.push({ role: 'user', content: `Popravi potezo samo enkrat (${violation}). Prehodi: ${JSON.stringify(session.transition())}. Za razkritje najprej assess_challenge, če je zahtevan, nato open_step na dovoljen id; ne odpiraj dodatnih namigov. Ne opisuj odprtja brez klica. Ne dodajaj tehnike ali id-jev v besedilo igralcu.` });
                 continue;
               }
+              // P0-R3.5: the fixed invite line / card never replaces the answer to a player question.
+              if (asked && !session.question) {
+                const shown = Boolean(session.openedThisTurn) || noOpOnly;
+                const answer = answerText(own) && (!shown || !unsafeReply(own, game, session)) ? own : '';
+                if (!answer && !answerRepair && n + 1 < roundLimit) {
+                  answerRepair = true;
+                  if (log) events.push({ kind: 'error', payload: { code: 'QUESTION_UNANSWERED', suppressed: true } });
+                  input.push({ role: 'user', content: 'Igralec je v tem sporočilu postavil vprašanje, ki še ni odgovorjeno. Odgovori nanj zdaj kratko (1–3 stavki) samo iz odprtega besedila ali povej, da o tem v odprtem besedilu ni podatka. Brez klicev orodij, brez odpiranja korakov in brez povzemanja novega koraka.' });
+                  continue;
+                }
+                if (answer && shown) output = session.openedThisTurn ? `${answer}\n\n${output}` : answer;
+              }
+              // P0-R3.5: after a low assessment the player chooses: add to the answer or open the reveal.
+              if (!session.openedThisTurn && !session.question && session.heldAfterAssessment() && !/razkri|dopoln/i.test(output || ''))
+                output = [output, 'Odgovor lahko dopolniš ali napišeš »razkrij«, pa odprem razkritje.'].filter(Boolean).join('\n\n');
               if (!output && !noOpOnly) throw Error('EMPTY_RESPONSE');
               if (output) { send('delta', { text: output }); if (log) events.push({ kind: 'agent_response', payload: { text: privateText(output), provider: request.provider, model } }); }
               if (response.status === 'incomplete' || response.stop_reason === 'max_tokens') send('notice', { code: 'ANSWER_TRUNCATED' });
@@ -219,7 +239,7 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
               if (n >= roundLimit - 1) recover('ROUND_LIMIT');
               const nextRequest = { ...session.snapshot(), game_session_id: log?.id ?? request.game_session_id };
               phase = 'seal_continuation';
-              const token = sealContinuation({ request: nextRequest, input, pending, rounds: n + 1, count, noOpOnly, repairs, deadline, lastModelText, openedThisTurn: session.openedThisTurn, closedQuestions: session.closedQuestions, roundGrace: roundLimit > 4 }, actor, continuationSecret());
+              const token = sealContinuation({ request: nextRequest, input, pending, rounds: n + 1, count, noOpOnly, repairs, deadline, lastModelText, openedThisTurn: session.openedThisTurn, closedQuestions: session.closedQuestions, roundGrace: roundLimit > 4, assessedThisTurn: session.assessedThisTurn }, actor, continuationSecret());
               if (log && events.length) await bounded(logStore.append(log, events.splice(0)));
               for (const p of pending) if (p.result.action) send('action', { ...p.result.action, call_id: p.call.call_id });
               send('continue', { token });
