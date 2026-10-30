@@ -41,8 +41,18 @@ main a{color:var(--link)}
 .g-fig img{width:100%;height:auto;display:block;border-radius:10px}
 .g-fig figcaption{font-size:15px;line-height:1.45;color:var(--muted)}
 .g-tag{font:600 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--verdigris);border:1px solid var(--verdigris);border-radius:3px;padding:2px 6px;white-space:nowrap}
-.g-src{font-size:14px;line-height:1.5;color:var(--muted)}
+.g-src{font-size:14px;line-height:1.5;color:var(--muted);margin:0 0 14px}
 .g-src a{color:var(--muted)}
+.g-src summary{cursor:pointer;width:fit-content;font:600 12px/1.4 ui-monospace,Consolas,"Courier New",monospace;letter-spacing:.1em;text-transform:uppercase}
+.g-src[open] summary{margin-bottom:4px}
+.g-src summary:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.g-answer{padding:12px 16px;background:var(--surface);border-left:3px solid var(--copper);font-size:17px}
+.g-answer b{color:var(--copper)}
+.g-start{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:16px 18px;margin:8px 0 16px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.g-start span{font-size:15px;line-height:1.45;color:var(--muted)}
+.g-start button{font:600 17px/1.2 Georgia,"Iowan Old Style","Times New Roman",serif;padding:10px 20px;border:0;border-radius:6px;background:var(--copper);color:var(--bg);cursor:pointer}
+.g-start button:hover{filter:brightness(1.08)}
+.g-start button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 main>footer{border-top:1px solid var(--line);padding-top:14px;font:13px/1.6 ui-monospace,Consolas,monospace;color:var(--muted)}</style>
 <link rel="stylesheet" href="/assets/game-guide/game-guide.css">
 </head>
@@ -52,241 +62,250 @@ main>footer{border-top:1px solid var(--line);padding-top:14px;font:13px/1.6 ui-m
 <p class="g-eyebrow">Pred izumom · igra</p>
 <h1>Faraday, <em>1831</em></h1>
 <p class="g-sub">Tok iz magnetizma: deset let v čevljih Michaela Faradaya</p>
-<span class="g-badge">Osnutek R2 · 29. 10. 2026</span>
+<span class="g-badge">Osnutek R3 · 30. 10. 2026</span>
 </header>
 <section class="g-step g-story" id="s1" data-step="1" data-act="1" data-kind="story">
 <p class="g-act">1. dejanje · 1820–1822 · London, Royal Institution</p><h2 class="g-act-title">Gibanje iz toka</h2>
 <p class="g-kind">Zgodba</p>
-<h3>Prolog: vajenec knjigoveza</h3>
-<p>London, poletje 1821. Ti si Michael Faraday, star 29 let. Rodil si se 22. septembra 1791 v Newingtonu pri Londonu. Oče James je bil kovač.</p>
-<p>Pri štirinajstih si šel za vajenca h knjigovezu Riebauu. Knjige, ki si jih vezal, si tudi bral. Leta 1812 si dobil vstopnice za štiri predavanja sira Humphryja Davyja v Royal Institution. Predavanja si si skrbno zapisal, zapiske vezal in jih poslal Davyju. 1. marca 1813 si postal pomočnik v laboratoriju Royal Institution, za 25 šilingov na teden in dve sobi v hiši.</p>
-<p>Zdaj imaš svoje delo v laboratoriju Royal Institution na Albemarle Street. Junija si se poročil s Sarah Barnard. Po vsej Evropi pa se govori o eni sami stvari: o magnetni igli, ki se je obrnila.</p>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://collection.sciencemuseumgroup.org.uk/people/cp1072/michael-faraday">Science Museum Group: Michael Faraday</a></p>
+<h3 data-ref="s1.title">Prolog: vajenec knjigoveza</h3>
+<p data-ref="s1.p1">London, poletje 1821. Ti si Michael Faraday, star 29 let. Rodil si se 22. septembra 1791 v Newingtonu pri Londonu. Oče James je bil kovač.</p>
+<p data-ref="s1.p2">Pri štirinajstih si šel za vajenca h knjigovezu Riebauu. Knjige, ki si jih vezal, si tudi bral. Leta 1812 si dobil vstopnice za štiri predavanja sira Humphryja Davyja v Royal Institution. Predavanja si si skrbno zapisal, zapiske vezal in jih poslal Davyju. 1. marca 1813 si postal pomočnik v laboratoriju Royal Institution, za 25 šilingov na teden in dve sobi v hiši.</p>
+<p data-ref="s1.p3">Zdaj imaš svoje delo v laboratoriju Royal Institution na Albemarle Street. Junija si se poročil s Sarah Barnard. Po vsej Evropi pa se govori o eni sami stvari: o magnetni igli, ki se je obrnila.</p>
+<div data-ref="s1.start" class="g-start" data-gg-start hidden>
+<button type="button" data-gg-action="start">Začniva igro</button>
+<span>Vodnik v panelu odpre prvi izziv ali nadaljuje zgodbo, odvisno od načina.</span>
+</div>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://collection.sciencemuseumgroup.org.uk/people/cp1072/michael-faraday">Science Museum Group: Michael Faraday</a></details>
 </section>
 <section class="g-step g-story" id="s2" data-step="2" data-act="1" data-kind="story" hidden>
 <p class="g-kind">Zgodba</p>
-<h3>Igla, ki se obrne</h3>
-<p>Julija 1820 je danski profesor Hans Christian Ørsted v Kopenhagnu objavil kratko latinsko poročilo. Žica, po kateri teče tok iz baterije, odkloni magnetno iglo pod seboj. Igle ne privlači in je ne odbija. Igla se obrne počez glede na žico. Če žico položiš pod iglo, se igla obrne v drugo smer.</p>
-<p>V Parizu je André-Marie Ampère še isto jesen pokazal, da se tudi dve žici s tokom privlačita ali odbijata. Začel je trditi, da je vsak magnet poln drobnih električnih tokov.</p>
-<p>Spomladi 1821 sta v laboratorij Royal Institution prišla Davy in William Hyde Wollaston. Wollaston je pričakoval, da se bo žica s tokom ob magnetu zavrtela okoli lastne osi. Žica se ni zavrtela.</p>
-<p>Poleti 1821 te urednik Richard Phillips prosi, da za njegov časopis <i>Annals of Philosophy</i> napišeš zgodovinski pregled elektromagnetizma. Odločiš se, da ne boš samo prepisoval. Vsak poskus, o katerem pišeš, boš ponovil sam.</p>
-<figure class="g-fig"><img src="img/01-orsted-1820.svg" alt="Ørsted, 1820: žica s tokom obrne magnetno iglo počez. Črtkano: igla brez toka." loading="lazy"><figcaption>Ørsted, 1820: žica s tokom obrne magnetno iglo počez. Črtkano: igla brez toka. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<p class="g-src">Viri: <a href="https://www.lindahall.org/about/news/scientist-of-the-day/hans-christian-oersted/">Linda Hall Library: Hans Christian Ørsted</a> · <a href="https://archive.org/details/annalsofphilosop16phil">Annals of Philosophy, zv. 16 (1820): angleški prevod Ørstedovega poročila</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Ampere/">MacTutor: André-Marie Ampère</a> · <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://rigb.org/node/3113">Royal Institution: The birth of electric motion</a></p>
+<h3 data-ref="s2.title">Igla, ki se obrne</h3>
+<p data-ref="s2.p1">Julija 1820 je danski profesor Hans Christian Ørsted v Kopenhagnu objavil kratko latinsko poročilo. Žica, po kateri teče tok iz baterije, odkloni magnetno iglo pod seboj. Igle ne privlači in je ne odbija. Igla se obrne počez glede na žico. Če žico položiš pod iglo, se igla obrne v drugo smer.</p>
+<p data-ref="s2.p2">V Parizu je André-Marie Ampère še isto jesen pokazal, da se tudi dve žici s tokom privlačita ali odbijata. Začel je trditi, da je vsak magnet poln drobnih električnih tokov.</p>
+<p data-ref="s2.p3">Spomladi 1821 sta v laboratorij Royal Institution prišla Davy in William Hyde Wollaston. Wollaston je pričakoval, da se bo žica s tokom ob magnetu zavrtela okoli lastne osi. Žica se ni zavrtela.</p>
+<p data-ref="s2.p4">Poleti 1821 te urednik Richard Phillips prosi, da za njegov časopis <i>Annals of Philosophy</i> napišeš zgodovinski pregled elektromagnetizma. Odločiš se, da ne boš samo prepisoval. Vsak poskus, o katerem pišeš, boš ponovil sam.</p>
+<figure data-ref="s2.fig1" class="g-fig"><img src="img/01-orsted-1820.svg" alt="Ørsted, 1820: žica s tokom obrne magnetno iglo počez. Črtkano: igla brez toka." loading="lazy"><figcaption>Ørsted, 1820: žica s tokom obrne magnetno iglo počez. Črtkano: igla brez toka. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (5)</summary><a href="https://www.lindahall.org/about/news/scientist-of-the-day/hans-christian-oersted/">Linda Hall Library: Hans Christian Ørsted</a> · <a href="https://archive.org/details/annalsofphilosop16phil">Annals of Philosophy, zv. 16 (1820): angleški prevod Ørstedovega poročila</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Ampere/">MacTutor: André-Marie Ampère</a> · <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://rigb.org/node/3113">Royal Institution: The birth of electric motion</a></details>
 </section>
 <section class="g-step g-challenge" id="s3" data-step="3" data-act="1" data-kind="challenge" hidden>
 <p class="g-kind">Izziv</p>
-<h3>Sila, ki ne vleče naravnost</h3>
-<p>Pri ponavljanju poskusov opazuješ iglo od blizu: nad žico, ob njej in pod njo.</p>
-<p class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Ørstedova sila igle ne vleče k žici in je ne odriva. Iglo samo obrne, potem igla obstane. Kako bi iz te sile naredil napravo, v kateri se žica ali magnet giblje <b>ves čas</b>, dokler teče tok?</p>
-<p>Imaš baterijo, bakreno žico, majhne paličaste magnete, steklene posode in vse, kar ima kemijski laboratorij leta 1821.</p>
+<h3 data-ref="s3.title">Sila, ki ne vleče naravnost</h3>
+<p data-ref="s3.p1">Pri ponavljanju poskusov opazuješ iglo od blizu: nad žico, ob njej in pod njo.</p>
+<p data-ref="s3.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Ørstedova sila igle ne vleče k žici in je ne odriva. Iglo samo obrne, potem igla obstane. Kako bi iz te sile naredil napravo, v kateri se žica ali magnet giblje <b>ves čas</b>, dokler teče tok?</p>
+<p data-ref="s3.p2">Imaš baterijo, bakreno žico, majhne paličaste magnete, steklene posode in vse, kar ima kemijski laboratorij leta 1821.</p>
+<p data-ref="s3.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
 </section>
 <section class="g-step g-hint" id="s4" data-step="4" data-act="1" data-kind="hint" data-for="s3" data-tier="1" hidden>
 <p class="g-kind">Namig 1</p>
-<p>Glej samo en konec igle, severni pol. Če ga v mislih neseš okoli žice, nad njo, ob njej in pod njo, kam ga sila potiska na vsakem mestu?</p>
+<p data-ref="s4.p1">Glej samo en konec igle, severni pol. Če ga v mislih neseš okoli žice, nad njo, ob njej in pod njo, kam ga sila potiska na vsakem mestu?</p>
 </section>
 <section class="g-step g-hint" id="s5" data-step="5" data-act="1" data-kind="hint" data-for="s3" data-tier="2" hidden>
 <p class="g-kind">Namig 2</p>
-<p>Igla ima dva pola. Sila ju potiska v nasprotni smeri, zato se igla samo obrne in obstane. Kako bi dosegel, da na žico deluje samo en pol?</p>
+<p data-ref="s5.p1">Igla ima dva pola. Sila ju potiska v nasprotni smeri, zato se igla samo obrne in obstane. Kako bi dosegel, da na žico deluje samo en pol?</p>
 </section>
 <section class="g-step g-hint" id="s6" data-step="6" data-act="1" data-kind="hint" data-for="s3" data-tier="3" hidden>
 <p class="g-kind">Namig 3</p>
-<p>Žica, ki se giblje, mora biti ves čas povezana z baterijo, tudi medtem ko kroži. Kateri prevodnik v tvojem laboratoriju je tekoč?</p>
+<p data-ref="s6.p1">Žica, ki se giblje, mora biti ves čas povezana z baterijo, tudi medtem ko kroži. Kateri prevodnik v tvojem laboratoriju je tekoč?</p>
 </section>
 <section class="g-step g-reveal" id="s7" data-step="7" data-act="1" data-kind="reveal" data-for="s3" hidden>
 <p class="g-kind">Razkritje</p>
-<h3>3. september 1821</h3>
-<p>Faraday je pri ponavljanju poskusov ugotovil, da pol magneta ob žici ne išče mesta, kjer bi miroval. Rad bi šel okoli žice. Igla se samo obrne, ker oba pola vlečeta v nasprotni smeri.</p>
-<p>V ponedeljek, 3. septembra 1821, je to izkoristil. Postavil je magnet, nalil živo srebro in nad njim obesil žico tako, da je njen spodnji konec segal v živo srebro. Ko je stekel tok, je žica začela krožiti okoli pola magneta. Krožila je, dokler je tekel tok. V dnevnik je zapisal: »revolution of the wire round the pole of the magnet«. Naslednji dan je napravo izboljšal: globoka posoda, magnet pokonci v vosku, živo srebro.</p>
-<p>V istih dneh je dosegel tudi obratno. Majhen magnet, ki ga je na enem koncu obtežil s platino, je plaval pokonci v živem srebru in krožil okoli nepremične žice.</p>
-<p><b>Zakaj tako:</b> živo srebro je tekoč prevodnik, zato žica med gibanjem ne izgubi stika. Magnet pokonci pusti delovati samo en pol.</p>
-<p>Po izročilu, ki ga je leta 1872 zapisal John Hall Gladstone, je Faraday ob vrtečih se kovinah od veselja zaplesal in vzkliknil: »There they go! there they go! we have succeeded at last.« Nato je fanta, ki mu je pomagal v laboratoriju, peljal v cirkus Astley's gledat konje.</p>
-<p>To je bila prva naprava, ki je iz električnega toka naredila neprekinjeno gibanje. Je prednica elektromotorja. Članek je izšel 1. oktobra 1821. Pozneje je instrumentar Newman izdelal napravo z dvema posodama, v kateri sta oba pojava drug ob drugem. Opis s sliko je izšel januarja 1822.</p>
-<p>Uspeh je imel senco. Ker Faraday v članku ni omenil Wollastona, so med znanstveniki zakrožile govorice, da si je prisvojil tujo zamisel. Wollaston sam je odgovoril mirno, saj je bila njegova zamisel drugačna. Spor se je vrnil leta 1823, ko je Davy nasprotoval Faradayevi izvolitvi v Royal Society. Faraday je bil januarja 1824 kljub temu izvoljen.</p>
-<figure class="g-fig"><img src="img/02-vrtenje-1821.svg" alt="Faraday, 3.–4. september 1821: žica, ki visi prosto in sega v živo srebro, kroži okoli pola magneta." loading="lazy"><figcaption>Faraday, 3.–4. september 1821: žica, ki visi prosto in sega v živo srebro, kroži okoli pola magneta. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<figure class="g-fig"><img src="img/03-newman-1822.svg" alt="Naprava instrumentarja Newmana (opis januarja 1822): levo žica kroži okoli magneta, desno magnet, privezan z nitjo, kroži okoli žice." loading="lazy"><figcaption>Naprava instrumentarja Newmana (opis januarja 1822): levo žica kroži okoli magneta, desno magnet, privezan z nitjo, kroži okoli žice. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<p class="g-src">Viri: <a href="https://rigb.org/node/3113">Royal Institution: The birth of electric motion</a> · <a href="https://archive.org/details/bub_gb_EvYWAAAAYAAJ">M. Faraday, Experimental Researches in Electricity, zv. 2 (1844; ponatisi člankov 1821–1823)</a> · <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://archive.org/details/michaelfaraday00gladrich">J. H. Gladstone, Michael Faraday (1872)</a> · <a href="https://spectrum.ieee.org/200-years-ago-faraday-invented-the-electric-motor">IEEE Spectrum: 200 Years Ago, Faraday Invented the Electric Motor</a></p>
+<h3 data-ref="s7.title">3. september 1821</h3>
+<p data-ref="s7.p1">Faraday je pri ponavljanju poskusov ugotovil, da pol magneta ob žici ne išče mesta, kjer bi miroval. Rad bi šel okoli žice. Igla se samo obrne, ker oba pola vlečeta v nasprotni smeri.</p>
+<p data-ref="s7.p2">V ponedeljek, 3. septembra 1821, je to izkoristil. Postavil je magnet, nalil živo srebro in nad njim obesil žico tako, da je njen spodnji konec segal v živo srebro. Ko je stekel tok, je žica začela krožiti okoli pola magneta. Krožila je, dokler je tekel tok. V dnevnik je zapisal: »revolution of the wire round the pole of the magnet«. Naslednji dan je napravo izboljšal: globoka posoda, magnet pokonci v vosku, živo srebro.</p>
+<p data-ref="s7.p3">V istih dneh je dosegel tudi obratno. Majhen magnet, ki ga je na enem koncu obtežil s platino, je plaval pokonci v živem srebru in krožil okoli nepremične žice.</p>
+<p data-ref="s7.p4"><b>Zakaj tako:</b> živo srebro je tekoč prevodnik, zato žica med gibanjem ne izgubi stika. Magnet pokonci pusti delovati samo en pol.</p>
+<p data-ref="s7.p5">Po izročilu, ki ga je leta 1872 zapisal John Hall Gladstone, je Faraday ob vrtečih se kovinah od veselja zaplesal in vzkliknil: »There they go! there they go! we have succeeded at last.« Nato je fanta, ki mu je pomagal v laboratoriju, peljal v cirkus Astley's gledat konje.</p>
+<p data-ref="s7.p6">To je bila prva naprava, ki je iz električnega toka naredila neprekinjeno gibanje. Je prednica elektromotorja. Članek je izšel 1. oktobra 1821. Pozneje je instrumentar Newman izdelal napravo z dvema posodama, v kateri sta oba pojava drug ob drugem. Opis s sliko je izšel januarja 1822.</p>
+<p data-ref="s7.p7">Uspeh je imel senco. Ker Faraday v članku ni omenil Wollastona, so med znanstveniki zakrožile govorice, da si je prisvojil tujo zamisel. Wollaston sam je odgovoril mirno, saj je bila njegova zamisel drugačna. Spor se je vrnil leta 1823, ko je Davy nasprotoval Faradayevi izvolitvi v Royal Society. Faraday je bil januarja 1824 kljub temu izvoljen.</p>
+<figure data-ref="s7.fig1" class="g-fig"><img src="img/02-vrtenje-1821.svg" alt="Faraday, 3.–4. september 1821: žica, ki visi prosto in sega v živo srebro, kroži okoli pola magneta." loading="lazy"><figcaption>Faraday, 3.–4. september 1821: žica, ki visi prosto in sega v živo srebro, kroži okoli pola magneta. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<figure data-ref="s7.fig2" class="g-fig"><img src="img/03-newman-1822.svg" alt="Naprava instrumentarja Newmana (opis januarja 1822): levo žica kroži okoli magneta, desno magnet, privezan z nitjo, kroži okoli žice." loading="lazy"><figcaption>Naprava instrumentarja Newmana (opis januarja 1822): levo žica kroži okoli magneta, desno magnet, privezan z nitjo, kroži okoli žice. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (5)</summary><a href="https://rigb.org/node/3113">Royal Institution: The birth of electric motion</a> · <a href="https://archive.org/details/bub_gb_EvYWAAAAYAAJ">M. Faraday, Experimental Researches in Electricity, zv. 2 (1844; ponatisi člankov 1821–1823)</a> · <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://archive.org/details/michaelfaraday00gladrich">J. H. Gladstone, Michael Faraday (1872)</a> · <a href="https://spectrum.ieee.org/200-years-ago-faraday-invented-the-electric-motor">IEEE Spectrum: 200 Years Ago, Faraday Invented the Electric Motor</a></details>
 </section>
 <section class="g-step g-story" id="s8" data-step="8" data-act="1" data-kind="story" hidden>
 <p class="g-kind">Zgodba</p>
-<h3>Stavek v zvezku, 1822</h3>
-<p>Leta 1822 začneš nov zvezek z naslovom <i>Chemical Notes, Hints, Suggestions and Objects of Pursuit</i>: kemijske beležke, namigi, predlogi in cilji. Vanj zapisuješ vprašanja, ki si jih postavljaš za prihodnja leta. Ko na kakšno odgovoriš, ga prečrtaš in pripišeš datum.</p>
-<p>Med njimi je kratek stavek: <b>»Convert magnetism into electricity.«</b> Pretvori magnetizem v elektriko.</p>
-<p>Tok naredi magnetizem, to je pokazal Ørsted. Prepričan si, da mora iti tudi obratno. Ne veš še, da bo ta stavek čakal devet let.</p>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://history.aip.org/catalog/icos/913.html">AIP / Royal Institution: katalog Faradayevih zapiskov</a></p>
+<h3 data-ref="s8.title">Stavek v zvezku, 1822</h3>
+<p data-ref="s8.p1">Leta 1822 začneš nov zvezek z naslovom <i>Chemical Notes, Hints, Suggestions and Objects of Pursuit</i>: kemijske beležke, namigi, predlogi in cilji. Vanj zapisuješ vprašanja, ki si jih postavljaš za prihodnja leta. Ko na kakšno odgovoriš, ga prečrtaš in pripišeš datum.</p>
+<p data-ref="s8.p2">Med njimi je kratek stavek: <b>»Convert magnetism into electricity.«</b> Pretvori magnetizem v elektriko.</p>
+<p data-ref="s8.p3">Tok naredi magnetizem, to je pokazal Ørsted. Prepričan si, da mora iti tudi obratno. Ne veš še, da bo ta stavek čakal devet let.</p>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://history.aip.org/catalog/icos/913.html">AIP / Royal Institution: katalog Faradayevih zapiskov</a></details>
 </section>
 <section class="g-step g-story" id="s9" data-step="9" data-act="2" data-kind="story" hidden>
 <p class="g-act">2. dejanje · 1824–1830 · London; novice iz Pariza</p><h2 class="g-act-title">Obratna pot</h2>
 <p class="g-kind">Zgodba</p>
-<h3>Disk, ki vleče iglo</h3>
-<p>Novembra 1824 pride iz Pariza nenavadna novica. François Arago je 22. novembra poročal Akademiji znanosti: če pod obešeno magnetno iglo vrtiš bakren disk, se igla odkloni v smeri vrtenja. Če vrtiš dovolj hitro, se zavrti za diskom.</p>
-<p>Baker ni magneten. Kaj torej vleče iglo? Nihče ne zna pojasniti. Leto pozneje Charles Babbage in John Herschel v Londonu pokažeta še obratno: magnet, ki se vrti spodaj, potegne za seboj obešen disk.</p>
-<p>Medtem Ampère uči, da so v vsakem magnetu drobni električni tokovi. Če je magnet v resnici tok, zakaj ne bi magnet ustvaril toka v bližnji žici?</p>
-<figure class="g-fig"><img src="img/04-arago-1824.svg" alt="Arago, 1824: bakren disk se vrti, obešena magnetna igla gre za njim." loading="lazy"><figcaption>Arago, 1824: bakren disk se vrti, obešena magnetna igla gre za njim. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<p class="g-src">Viri: <a href="https://arxiv.org/abs/2102.11036">G. Giuliani, Electromagnetic induction: physics, historical breakthroughs, epistemological issues and textbooks (arXiv:2102.11036)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Ampere/">MacTutor: André-Marie Ampère</a></p>
+<h3 data-ref="s9.title">Disk, ki vleče iglo</h3>
+<p data-ref="s9.p1">Novembra 1824 pride iz Pariza nenavadna novica. François Arago je 22. novembra poročal Akademiji znanosti: če pod obešeno magnetno iglo vrtiš bakren disk, se igla odkloni v smeri vrtenja. Če vrtiš dovolj hitro, se zavrti za diskom.</p>
+<p data-ref="s9.p2">Baker ni magneten. Kaj torej vleče iglo? Nihče ne zna pojasniti. Leto pozneje Charles Babbage in John Herschel v Londonu pokažeta še obratno: magnet, ki se vrti spodaj, potegne za seboj obešen disk.</p>
+<p data-ref="s9.p3">Medtem Ampère uči, da so v vsakem magnetu drobni električni tokovi. Če je magnet v resnici tok, zakaj ne bi magnet ustvaril toka v bližnji žici?</p>
+<figure data-ref="s9.fig1" class="g-fig"><img src="img/04-arago-1824.svg" alt="Arago, 1824: bakren disk se vrti, obešena magnetna igla gre za njim." loading="lazy"><figcaption>Arago, 1824: bakren disk se vrti, obešena magnetna igla gre za njim. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (3)</summary><a href="https://arxiv.org/abs/2102.11036">G. Giuliani, Electromagnetic induction: physics, historical breakthroughs, epistemological issues and textbooks (arXiv:2102.11036)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Ampere/">MacTutor: André-Marie Ampère</a></details>
 </section>
 <section class="g-step g-challenge" id="s10" data-step="10" data-act="2" data-kind="challenge" hidden>
 <p class="g-kind">Izziv</p>
-<h3>Zasnuj poskus</h3>
-<p>Je december 1824. Imaš baterijo, žice, tuljave, jeklene magnete in galvanometer: magnetno iglo v tuljavi, ki pokaže tok.</p>
-<p class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Kako bi preizkusil, ali magnetizem, ali tok v eni žici, ustvari tok v drugi žici? Opiši postavitev in povej, kaj bo po tvojem pokazala igla, če imaš prav.</p>
+<h3 data-ref="s10.title">Zasnuj poskus</h3>
+<p data-ref="s10.p1">Je december 1824. Imaš baterijo, žice, tuljave, jeklene magnete in galvanometer: magnetno iglo v tuljavi, ki pokaže tok.</p>
+<p data-ref="s10.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Kako bi preizkusil, ali magnetizem, ali tok v eni žici, ustvari tok v drugi žici? Opiši postavitev in povej, kaj bo po tvojem pokazala igla, če imaš prav.</p>
+<p data-ref="s10.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
 </section>
 <section class="g-step g-hint" id="s11" data-step="11" data-act="2" data-kind="hint" data-for="s10" data-tier="1" hidden>
 <p class="g-kind">Namig 1</p>
-<p>Obrni Ørstedov poskus. Ørsted je k igli postavil žico s tokom. Kaj postaviš k čemu, če iščeš pot v drugo smer?</p>
+<p data-ref="s11.p1">Obrni Ørstedov poskus. Ørsted je k igli postavil žico s tokom. Kaj postaviš k čemu, če iščeš pot v drugo smer?</p>
 </section>
 <section class="g-step g-hint" id="s12" data-step="12" data-act="2" data-kind="hint" data-for="s10" data-tier="2" hidden>
 <p class="g-kind">Namig 2</p>
-<p>Galvanometer mora biti v tokokrogu, ki nima svoje baterije. Kaj vse lahko postaviš tik ob tak tokokrog ali vanj?</p>
+<p data-ref="s12.p1">Galvanometer mora biti v tokokrogu, ki nima svoje baterije. Kaj vse lahko postaviš tik ob tak tokokrog ali vanj?</p>
 </section>
 <section class="g-step g-reveal" id="s13" data-step="13" data-act="2" data-kind="reveal" data-for="s10" hidden>
 <p class="g-kind">Razkritje</p>
-<h3>Igla miruje (1824–1828)</h3>
-<p>28. decembra 1824 je Faraday poskusil prvič. Magnet je postavil v tuljavo, ki je bila v tokokrogu z baterijo in galvanometrom. Pričakoval je, da bo magnet tok oslabil. Učinka ni bilo.</p>
-<p>28. novembra 1825 je položil dve žici vzporedno, ločeni le z dvema plastema papirja. Skozi eno je spustil tok iz baterije, drugo je povezal z galvanometrom. Zapisal je, da nikakor ni mogel pokazati nobenega učinka. Poskusil je še 2. decembra 1825 in 22. aprila 1828. Spet nič.</p>
-<p><b>Zakaj tako:</b> Faraday je posnemal Ørsteda. Ørstedov učinek traja, dokler teče tok, zato je tudi on iskal stalen tok v drugi žici: postaviš, počakaš, pogledaš iglo.</p>
-<figure class="g-fig"><img src="img/05-dve-zici-1825.svg" alt="Faraday, 28. november 1825: dve vzporedni žici, ločeni s papirjem. V eni tok iz baterije, druga na galvanometru. Igla miruje." loading="lazy"><figcaption>Faraday, 28. november 1825: dve vzporedni žici, ločeni s papirjem. V eni tok iz baterije, druga na galvanometru. Igla miruje. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a></p>
+<h3 data-ref="s13.title">Igla miruje (1824–1828)</h3>
+<p data-ref="s13.p1">28. decembra 1824 je Faraday poskusil prvič. Magnet je postavil v tuljavo, ki je bila v tokokrogu z baterijo in galvanometrom. Pričakoval je, da bo magnet tok oslabil. Učinka ni bilo.</p>
+<p data-ref="s13.p2">28. novembra 1825 je položil dve žici vzporedno, ločeni le z dvema plastema papirja. Skozi eno je spustil tok iz baterije, drugo je povezal z galvanometrom. Zapisal je, da nikakor ni mogel pokazati nobenega učinka. Poskusil je še 2. decembra 1825 in 22. aprila 1828. Spet nič.</p>
+<p data-ref="s13.p3"><b>Zakaj tako:</b> Faraday je posnemal Ørsteda. Ørstedov učinek traja, dokler teče tok, zato je tudi on iskal stalen tok v drugi žici: postaviš, počakaš, pogledaš iglo.</p>
+<figure data-ref="s13.fig1" class="g-fig"><img src="img/05-dve-zici-1825.svg" alt="Faraday, 28. november 1825: dve vzporedni žici, ločeni s papirjem. V eni tok iz baterije, druga na galvanometru. Igla miruje." loading="lazy"><figcaption>Faraday, 28. november 1825: dve vzporedni žici, ločeni s papirjem. V eni tok iz baterije, druga na galvanometru. Igla miruje. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (3)</summary><a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a></details>
 </section>
 <section class="g-step g-story" id="s14" data-step="14" data-act="2" data-kind="story" hidden>
 <p class="g-kind">Zgodba</p>
-<h3>Leta drugega dela</h3>
-<p>Vprašanje iz zvezka čaka, delo pa ne. 7. februarja 1825 postaneš direktor laboratorija Royal Institution. Istega leta iz oljnega ostanka stisnjenega svetilnega plina izločiš novo snov in jo 16. junija predstaviš Royal Society. Danes ji pravimo benzen.</p>
-<p>Pet let porabiš za naročilo Royal Society: izboljšati optično steklo za teleskope. Delo je mukotrpno in se ustavi leta 1830. 4. julija 1831 pišeš, da bi steklo rad za nekaj časa odložil, da bi užival v razmišljanju o svojih mislih (»working out my own thoughts«).</p>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://www.rigb.org/explore-science/explore/collection/michael-faradays-sample-benzene">Royal Institution: Michael Faraday&#x27;s sample of benzene</a></p>
+<h3 data-ref="s14.title">Leta drugega dela</h3>
+<p data-ref="s14.p1">Vprašanje iz zvezka čaka, delo pa ne. 7. februarja 1825 postaneš direktor laboratorija Royal Institution. Istega leta iz oljnega ostanka stisnjenega svetilnega plina izločiš novo snov in jo 16. junija predstaviš Royal Society. Danes ji pravimo benzen.</p>
+<p data-ref="s14.p2">Pet let porabiš za naročilo Royal Society: izboljšati optično steklo za teleskope. Delo je mukotrpno in se ustavi leta 1830. 4. julija 1831 pišeš, da bi steklo rad za nekaj časa odložil, da bi užival v razmišljanju o svojih mislih (»working out my own thoughts«).</p>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://www.rigb.org/explore-science/explore/collection/michael-faradays-sample-benzene">Royal Institution: Michael Faraday&#x27;s sample of benzene</a></details>
 </section>
 <section class="g-step g-story" id="s15" data-step="15" data-act="3" data-kind="story" hidden>
 <p class="g-act">3. dejanje · avgust 1831 · London, Royal Institution</p><h2 class="g-act-title">Miza</h2>
 <p class="g-kind">Zgodba</p>
-<h3>Avgust 1831: miza</h3>
-<p>London, Royal Institution, avgust 1831. Star si 39 let. Od stavka v zvezku je minilo devet let, od prvega neuspelega poskusa skoraj sedem. Steklo je odloženo. Zdaj imaš čas za svoje vprašanje.</p>
-<p>Pred tabo je miza. Baterija iz posod s kislino, v vsaki bakrena in cinkova plošča. Bakrena žica, izolirana z ovitjem iz niti; dolžino in debelino izbereš sam. Kosi mehkega železa, ki ti jih kovač skuje po meri. Jekleni magneti, podkvasti in paličasti. Galvanometer, magnetna igla v tuljavi.</p>
-<p>Prepričan si, da povezava obstaja v obe smeri. Narava ne dela enosmernih cest.</p>
-<figure class="g-fig"><img src="img/06-miza-1831.svg" alt="Miza, avgust 1831: baterija, izolirana bakrena žica, mehko železo, jekleni magneti, galvanometer." loading="lazy"><figcaption>Miza, avgust 1831: baterija, izolirana bakrena žica, mehko železo, jekleni magneti, galvanometer. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a></p>
+<h3 data-ref="s15.title">Avgust 1831: miza</h3>
+<p data-ref="s15.p1">London, Royal Institution, avgust 1831. Star si 39 let. Od stavka v zvezku je minilo devet let, od prvega neuspelega poskusa skoraj sedem. Steklo je odloženo. Zdaj imaš čas za svoje vprašanje.</p>
+<p data-ref="s15.p2">Pred tabo je miza. Baterija iz posod s kislino, v vsaki bakrena in cinkova plošča. Bakrena žica, izolirana z ovitjem iz niti; dolžino in debelino izbereš sam. Kosi mehkega železa, ki ti jih kovač skuje po meri. Jekleni magneti, podkvasti in paličasti. Galvanometer, magnetna igla v tuljavi.</p>
+<p data-ref="s15.p3">Prepričan si, da povezava obstaja v obe smeri. Narava ne dela enosmernih cest.</p>
+<figure data-ref="s15.fig1" class="g-fig"><img src="img/06-miza-1831.svg" alt="Miza, avgust 1831: baterija, izolirana bakrena žica, mehko železo, jekleni magneti, galvanometer." loading="lazy"><figcaption>Miza, avgust 1831: baterija, izolirana bakrena žica, mehko železo, jekleni magneti, galvanometer. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a></details>
 </section>
 <section class="g-step g-challenge" id="s16" data-step="16" data-act="3" data-kind="challenge" hidden>
 <p class="g-kind">Izziv</p>
-<h3>Tok iz magnetizma</h3>
-<p class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Iz magnetizma dobi električni tok, ki ga lahko izmeriš.</p>
-<ul>
+<h3 data-ref="s16.title">Tok iz magnetizma</h3>
+<p data-ref="s16.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Iz magnetizma dobi električni tok, ki ga lahko izmeriš.</p>
+<ul data-ref="s16.list1">
 <li>Imaš samo to, kar je bilo leta 1831. Ni elektronike in ni ojačevalnikov; edino merilo je igla.</li>
 <li>Ne veš, ali bo učinek močan ali komaj viden.</li>
 <li>Vsi poskusi do zdaj, tvoji in tuji, so pokazali iglo, ki miruje.</li>
 </ul>
-<p>Povej, kaj bi postavil, kaj bi naredil in kam bi gledal.</p>
+<p data-ref="s16.p1">Povej, kaj bi postavil, kaj bi naredil in kam bi gledal.</p>
+<p data-ref="s16.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
 </section>
 <section class="g-step g-hint" id="s17" data-step="17" data-act="3" data-kind="hint" data-for="s16" data-tier="1" hidden>
 <p class="g-kind">Namig 1</p>
-<p>Kako bi v tem laboratoriju dobil najmočnejši magnetizem, kar ga zmoreš? Na mizi nimaš samo jeklenih magnetov.</p>
+<p data-ref="s17.p1">Kako bi v tem laboratoriju dobil najmočnejši magnetizem, kar ga zmoreš? Na mizi nimaš samo jeklenih magnetov.</p>
 </section>
 <section class="g-step g-hint" id="s18" data-step="18" data-act="3" data-kind="hint" data-for="s16" data-tier="2" hidden>
 <p class="g-kind">Namig 2</p>
-<p>Ørsted: tok naredi magnetizem, dokler teče. Kaj, če pot nazaj ne deluje v stanju, ampak v trenutku, ko se stanje spremeni? Kdaj bi moral gledati iglo?</p>
+<p data-ref="s18.p1">Ørsted: tok naredi magnetizem, dokler teče. Kaj, če pot nazaj ne deluje v stanju, ampak v trenutku, ko se stanje spremeni? Kdaj bi moral gledati iglo?</p>
 </section>
 <section class="g-step g-hint" id="s19" data-step="19" data-act="3" data-kind="hint" data-for="s16" data-tier="3" hidden>
 <p class="g-kind">Namig 3</p>
-<p>Na isti kos mehkega železa navij dve ločeni tuljavi. Prvo prek stikala poveži z baterijo, drugo z galvanometrom. Kaj vidiš v trenutku, ko stikalo vklopiš, in ko ga izklopiš?</p>
+<p data-ref="s19.p1">Na isti kos mehkega železa navij dve ločeni tuljavi. Prvo prek stikala poveži z baterijo, drugo z galvanometrom. Kaj vidiš v trenutku, ko stikalo vklopiš, in ko ga izklopiš?</p>
 </section>
 <section class="g-step g-reveal" id="s20" data-step="20" data-act="3" data-kind="reveal" data-for="s16" hidden>
 <p class="g-kind">Razkritje</p>
-<h3>29. avgust 1831</h3>
-<p>29. avgusta 1831 je Faraday začel nov dnevnik poskusov. Dal je narediti obroč iz mehkega železa, debel 7/8 palca, z zunanjim premerom 6 palcev. Na eno stran obroča, stran A, je navil tri žice, vsako dolgo približno 24 čevljev. Na drugo stran, stran B, je navil približno 60 čevljev žice. Tuljavi se nista dotikali. Uporabil je žico, kakršno so izdelovali za ženske klobučke; navijanje je po oceni Royal Institution trajalo okoli deset delovnih dni.</p>
-<p>Konca strani B je povezal z dolgo žico, ki je tri čevlje stran tekla čez magnetno iglo. Nato je stran A priklopil na baterijo z desetimi pari plošč. Zapisal je: »immediately a sensible effect on needle« (takoj opazen učinek na iglo). Igla je zanihala in se umirila v prvotni legi. Ko je baterijo odklopil, se je igla spet zganila, tokrat v nasprotno smer. Dokler je tok tekel enakomerno, igla ni pokazala ničesar.</p>
-<p><b>Zakaj je uspelo zdaj:</b></p>
-<ul>
+<h3 data-ref="s20.title">29. avgust 1831</h3>
+<p data-ref="s20.p1">29. avgusta 1831 je Faraday začel nov dnevnik poskusov. Dal je narediti obroč iz mehkega železa, debel 7/8 palca, z zunanjim premerom 6 palcev. Na eno stran obroča, stran A, je navil tri žice, vsako dolgo približno 24 čevljev. Na drugo stran, stran B, je navil približno 60 čevljev žice. Tuljavi se nista dotikali. Uporabil je žico, kakršno so izdelovali za ženske klobučke; navijanje je po oceni Royal Institution trajalo okoli deset delovnih dni.</p>
+<p data-ref="s20.p2">Konca strani B je povezal z dolgo žico, ki je tri čevlje stran tekla čez magnetno iglo. Nato je stran A priklopil na baterijo z desetimi pari plošč. Zapisal je: »immediately a sensible effect on needle« (takoj opazen učinek na iglo). Igla je zanihala in se umirila v prvotni legi. Ko je baterijo odklopil, se je igla spet zganila, tokrat v nasprotno smer. Dokler je tok tekel enakomerno, igla ni pokazala ničesar.</p>
+<p data-ref="s20.p3"><b>Zakaj je uspelo zdaj:</b></p>
+<ul data-ref="s20.list1">
 <li>Železni obroč z ovoji na strani A je dal mnogo močnejši magnetizem kot jeklen magnet.</li>
 <li>Strani B je dal veliko ovojev, iglo pa postavil daleč od železa, da je ni motilo.</li>
 <li>Iglo je gledal v trenutku vklopa in izklopa, ne pozneje.</li>
 </ul>
-<p>Tok ne nastane iz magnetizma, ki je, ampak iz magnetizma, ki se spreminja.</p>
-<p>Leta 1825 je ženevski fizik Jean-Daniel Colladon poskusil nekaj podobnega. Galvanometer je postavil v drugo sobo, da ga magnet ne bi motil. Magnet je približal tuljavi in šel pogledat iglo. Igla je mirovala; kratek sunek je bil že mimo. Zgodbo je sam zapisal v spominih, objavljenih leta 1893.</p>
-<p>Faradayev obroč se je ohranil. Danes je razstavljen v muzeju Faraday Museum v Royal Institution, ki ga imenuje prvi električni transformator.</p>
-<figure class="g-fig"><img src="img/07-obroc-1831.svg" alt="29. avgust 1831: obroč iz mehkega železa, tuljava A z baterijo in stikalom, ločena tuljava B z galvanometrom." loading="lazy"><figcaption>29. avgust 1831: obroč iz mehkega železa, tuljava A z baterijo in stikalom, ločena tuljava B z galvanometrom. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<figure class="g-fig"><img src="img/08-sunka.svg" alt="Kaj je pokazala igla: sunek ob vklopu, nič med stalnim tokom, sunek v nasprotno smer ob izklopu." loading="lazy"><figcaption>Kaj je pokazala igla: sunek ob vklopu, nič med stalnim tokom, sunek v nasprotno smer ob izklopu. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://www.rigb.org/explore-science/explore/collection/michael-faradays-ring-coil-apparatus">Royal Institution: Michael Faraday&#x27;s ring-coil apparatus</a> · <a href="https://institutions.ville-geneve.ch/fileadmin/user_upload/mhn/images/votre_visite/site_mhs/8_Colladon_2024.pdf">Musée d&#x27;histoire des sciences de Genève: Jean-Daniel Colladon (2024)</a> · <a href="https://ethw.org/Induction_Ring">ETHW: Induction Ring</a></p>
+<p data-ref="s20.p4">Tok ne nastane iz magnetizma, ki je, ampak iz magnetizma, ki se spreminja.</p>
+<p data-ref="s20.p5">Leta 1825 je ženevski fizik Jean-Daniel Colladon poskusil nekaj podobnega. Galvanometer je postavil v drugo sobo, da ga magnet ne bi motil. Magnet je približal tuljavi in šel pogledat iglo. Igla je mirovala; kratek sunek je bil že mimo. Zgodbo je sam zapisal v spominih, objavljenih leta 1893.</p>
+<p data-ref="s20.p6">Faradayev obroč se je ohranil. Danes je razstavljen v muzeju Faraday Museum v Royal Institution, ki ga imenuje prvi električni transformator.</p>
+<figure data-ref="s20.fig1" class="g-fig"><img src="img/07-obroc-1831.svg" alt="29. avgust 1831: obroč iz mehkega železa, tuljava A z baterijo in stikalom, ločena tuljava B z galvanometrom." loading="lazy"><figcaption>29. avgust 1831: obroč iz mehkega železa, tuljava A z baterijo in stikalom, ločena tuljava B z galvanometrom. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<figure data-ref="s20.fig2" class="g-fig"><img src="img/08-sunka.svg" alt="Kaj je pokazala igla: sunek ob vklopu, nič med stalnim tokom, sunek v nasprotno smer ob izklopu." loading="lazy"><figcaption>Kaj je pokazala igla: sunek ob vklopu, nič med stalnim tokom, sunek v nasprotno smer ob izklopu. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (5)</summary><a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://www.rigb.org/explore-science/explore/collection/michael-faradays-ring-coil-apparatus">Royal Institution: Michael Faraday&#x27;s ring-coil apparatus</a> · <a href="https://institutions.ville-geneve.ch/fileadmin/user_upload/mhn/images/votre_visite/site_mhs/8_Colladon_2024.pdf">Musée d&#x27;histoire des sciences de Genève: Jean-Daniel Colladon (2024)</a> · <a href="https://ethw.org/Induction_Ring">ETHW: Induction Ring</a></details>
 </section>
 <section class="g-step g-story" id="s21" data-step="21" data-act="3" data-kind="story" hidden>
 <p class="g-kind">Zgodba</p>
-<h3>Plevel ali riba</h3>
-<p>23. septembra pišeš prijatelju Richardu Phillipsu. Spet se ukvarjaš z elektromagnetizmom in misliš, da si ujel nekaj dobrega, a še ne moreš reči: <i>»It may be a weed instead of a fish«</i>, morda je plevel namesto ribe.</p>
-<p>Sunek imaš. Ne veš pa še, ali je za sunek nujna baterija.</p>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a></p>
+<h3 data-ref="s21.title">Plevel ali riba</h3>
+<p data-ref="s21.p1">23. septembra pišeš prijatelju Richardu Phillipsu. Spet se ukvarjaš z elektromagnetizmom in misliš, da si ujel nekaj dobrega, a še ne moreš reči: <i>»It may be a weed instead of a fish«</i>, morda je plevel namesto ribe.</p>
+<p data-ref="s21.p2">Sunek imaš. Ne veš pa še, ali je za sunek nujna baterija.</p>
+<details class="g-src"><summary>Viri (1)</summary><a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a></details>
 </section>
 <section class="g-step g-story" id="s22" data-step="22" data-act="4" data-kind="story" hidden>
 <p class="g-act">4. dejanje · september–oktober 1831 · London, Royal Institution</p><h2 class="g-act-title">Brez baterije</h2>
 <p class="g-kind">Zgodba</p>
-<h3>Ali je baterija nujna?</h3>
-<p>Pri obroču je magnetizem na strani A naredila baterija. Kaj pa navaden jeklen magnet? Ne moreš ga vklopiti in ne izklopiti; ves čas je enako močan.</p>
-<p>Pravkar si dopolnil 40 let. Na mizi so paličasti magneti in dolge tuljave, navite na papirnate valje.</p>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a></p>
+<h3 data-ref="s22.title">Ali je baterija nujna?</h3>
+<p data-ref="s22.p1">Pri obroču je magnetizem na strani A naredila baterija. Kaj pa navaden jeklen magnet? Ne moreš ga vklopiti in ne izklopiti; ves čas je enako močan.</p>
+<p data-ref="s22.p2">Pravkar si dopolnil 40 let. Na mizi so paličasti magneti in dolge tuljave, navite na papirnate valje.</p>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://archive.org/details/lifelettersoffar01joneiala">Bence Jones, The Life and Letters of Faraday, zv. 1 (1870)</a> · <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a></details>
 </section>
 <section class="g-step g-challenge" id="s23" data-step="23" data-act="4" data-kind="challenge" hidden>
 <p class="g-kind">Izziv</p>
-<h3>Samo magnet in tuljava</h3>
-<p>Imaš paličast jeklen magnet in dolgo tuljavo, navito na papirnat valj. Konca tuljave vodita do galvanometra. Baterije ne uporabiš.</p>
-<p class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Kako iz tega dobiš tok? Kaj bo po tvojem pokazala igla?</p>
+<h3 data-ref="s23.title">Samo magnet in tuljava</h3>
+<p data-ref="s23.p1">Imaš paličast jeklen magnet in dolgo tuljavo, navito na papirnat valj. Konca tuljave vodita do galvanometra. Baterije ne uporabiš.</p>
+<p data-ref="s23.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Kako iz tega dobiš tok? Kaj bo po tvojem pokazala igla?</p>
+<p data-ref="s23.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
 </section>
 <section class="g-step g-hint" id="s24" data-step="24" data-act="4" data-kind="hint" data-for="s23" data-tier="1" hidden>
 <p class="g-kind">Namig 1</p>
-<p>Pri obroču je igla trznila samo ob vklopu in izklopu. Kako bi magnetizem v tuljavi »vklopil« in »izklopil«, če magneta ne moreš izklopiti?</p>
+<p data-ref="s24.p1">Pri obroču je igla trznila samo ob vklopu in izklopu. Kako bi magnetizem v tuljavi »vklopil« in »izklopil«, če magneta ne moreš izklopiti?</p>
 </section>
 <section class="g-step g-hint" id="s25" data-step="25" data-act="4" data-kind="hint" data-for="s23" data-tier="2" hidden>
 <p class="g-kind">Namig 2</p>
-<p>Magnetizem v tuljavi se spremeni tudi, če magnet premakneš.</p>
+<p data-ref="s25.p1">Magnetizem v tuljavi se spremeni tudi, če magnet premakneš.</p>
 </section>
 <section class="g-step g-reveal" id="s26" data-step="26" data-act="4" data-kind="reveal" data-for="s23" hidden>
 <p class="g-kind">Razkritje</p>
-<h3>17. oktober 1831</h3>
-<p>Prvi korak je naredil že 24. septembra. Železni valj s tuljavo je postavil med pola dveh paličastih magnetov. Vsakič, ko je magnetni stik sklenil ali prekinil, je igla trznila. V dnevnik je zapisal: »distinct conversion of magnetism into electricity«. Še vedno pa je potreboval železo in stik.</p>
-<p>17. oktobra 1831, peti dan poskusov, je Faraday vzel valjast paličast magnet, debel 3/4 palca in dolg 8 1/2 palca, ter tuljavo z 220 čevlji žice, povezano z galvanometrom. En konec magneta je vstavil v tuljavo, nato pa ga je hitro potisnil do konca. Igla se je premaknila. Ko je magnet izvlekel, se je premaknila v nasprotno smer. Tako je bilo vsakič, ko je magnet potisnil noter ali ga izvlekel. Ko je magnet miroval v tuljavi, se je igla vrnila v prvotno lego.</p>
-<p><b>Zakaj:</b> če tok nastane ob spremembi magnetizma, je tudi gibanje magneta sprememba. Baterija ni več potrebna. Dovolj je roka, ki premika magnet.</p>
-<figure class="g-fig"><img src="img/09-magnet-v-tuljavo-1831.svg" alt="17. oktober 1831: magnet potisneš noter, igla v eno smer; magnet miruje, igla na ničli; izvlečeš ga, igla v drugo smer." loading="lazy"><figcaption>17. oktober 1831: magnet potisneš noter, igla v eno smer; magnet miruje, igla na ničli; izvlečeš ga, igla v drugo smer. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a></p>
+<h3 data-ref="s26.title">17. oktober 1831</h3>
+<p data-ref="s26.p1">Prvi korak je naredil že 24. septembra. Železni valj s tuljavo je postavil med pola dveh paličastih magnetov. Vsakič, ko je magnetni stik sklenil ali prekinil, je igla trznila. V dnevnik je zapisal: »distinct conversion of magnetism into electricity«. Še vedno pa je potreboval železo in stik.</p>
+<p data-ref="s26.p2">17. oktobra 1831, peti dan poskusov, je Faraday vzel valjast paličast magnet, debel 3/4 palca in dolg 8 1/2 palca, ter tuljavo z 220 čevlji žice, povezano z galvanometrom. En konec magneta je vstavil v tuljavo, nato pa ga je hitro potisnil do konca. Igla se je premaknila. Ko je magnet izvlekel, se je premaknila v nasprotno smer. Tako je bilo vsakič, ko je magnet potisnil noter ali ga izvlekel. Ko je magnet miroval v tuljavi, se je igla vrnila v prvotno lego.</p>
+<p data-ref="s26.p3"><b>Zakaj:</b> če tok nastane ob spremembi magnetizma, je tudi gibanje magneta sprememba. Baterija ni več potrebna. Dovolj je roka, ki premika magnet.</p>
+<figure data-ref="s26.fig1" class="g-fig"><img src="img/09-magnet-v-tuljavo-1831.svg" alt="17. oktober 1831: magnet potisneš noter, igla v eno smer; magnet miruje, igla na ničli; izvlečeš ga, igla v drugo smer." loading="lazy"><figcaption>17. oktober 1831: magnet potisneš noter, igla v eno smer; magnet miruje, igla na ničli; izvlečeš ga, igla v drugo smer. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a></details>
 </section>
 <section class="g-step g-story" id="s27" data-step="27" data-act="5" data-kind="story" hidden>
 <p class="g-act">5. dejanje · 28. oktober–24. november 1831 · Woolwich in London</p><h2 class="g-act-title">Tok, ki ne preneha</h2>
 <p class="g-kind">Zgodba</p>
-<h3>Samo sunki</h3>
-<p>Vsak potisk magneta da en sunek. Ti pa bi rad tok, ki teče ves čas.</p>
-<p>In še nekaj te muči: Aragov disk iz leta 1824. Baker ni magneten, pa vendar vleče iglo.</p>
-<p>V Woolwichu, v hiši gospoda Christieja, je veliki sestavljeni magnet Royal Society. Sestavlja ga okoli 450 jeklenih palic, vsaka dolga 15 palcev. Nekoč je bil last Gowina Knighta. Je najmočnejši magnet, ki ti je dosegljiv.</p>
-<p class="g-src">Viri: <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a></p>
+<h3 data-ref="s27.title">Samo sunki</h3>
+<p data-ref="s27.p1">Vsak potisk magneta da en sunek. Ti pa bi rad tok, ki teče ves čas.</p>
+<p data-ref="s27.p2">In še nekaj te muči: Aragov disk iz leta 1824. Baker ni magneten, pa vendar vleče iglo.</p>
+<p data-ref="s27.p3">V Woolwichu, v hiši gospoda Christieja, je veliki sestavljeni magnet Royal Society. Sestavlja ga okoli 450 jeklenih palic, vsaka dolga 15 palcev. Nekoč je bil last Gowina Knighta. Je najmočnejši magnet, ki ti je dosegljiv.</p>
+<details class="g-src"><summary>Viri (2)</summary><a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a></details>
 </section>
 <section class="g-step g-challenge" id="s28" data-step="28" data-act="5" data-kind="challenge" hidden>
 <p class="g-kind">Izziv</p>
-<h3>Tok, ki teče ves čas</h3>
-<p class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Kako dobiš tok, ki teče ves čas, dokler hočeš, ne samo sunek? Pomisli tudi na Aragov disk: zakaj vrteč se bakren disk vleče iglo?</p>
+<h3 data-ref="s28.title">Tok, ki teče ves čas</h3>
+<p data-ref="s28.q" class="g-q"><b>Kaj bi naredil ti, zdaj, s tem, kar imaš?</b> Kako dobiš tok, ki teče ves čas, dokler hočeš, ne samo sunek? Pomisli tudi na Aragov disk: zakaj vrteč se bakren disk vleče iglo?</p>
+<p data-ref="s28.answer" class="g-answer"><b>Tvoj odgovor →</b> napiši ga vodniku igre v polje »Tvoje sporočilo« v panelu na levi (na telefonu spodaj). Piši s svojimi besedami, tudi pol ideje ali grobo skico je dovolj. Vodnik te bo vprašal naprej, namig pa dobiš samo, če ga prosiš.</p>
 </section>
 <section class="g-step g-hint" id="s29" data-step="29" data-act="5" data-kind="hint" data-for="s28" data-tier="1" hidden>
 <p class="g-kind">Namig 1</p>
-<p>Sunek nastane ob spremembi. Katero gibanje se nikoli ne konča, naprava pa ostane na istem mestu?</p>
+<p data-ref="s29.p1">Sunek nastane ob spremembi. Katero gibanje se nikoli ne konča, naprava pa ostane na istem mestu?</p>
 </section>
 <section class="g-step g-hint" id="s30" data-step="30" data-act="5" data-kind="hint" data-for="s28" data-tier="2" hidden>
 <p class="g-kind">Namig 2</p>
-<p>Arago je bakren disk vrtel pod iglo. Kaj, če bi ga vrtel med poloma magneta in se ga z žico dotaknil na dveh mestih?</p>
+<p data-ref="s30.p1">Arago je bakren disk vrtel pod iglo. Kaj, če bi ga vrtel med poloma magneta in se ga z žico dotaknil na dveh mestih?</p>
 </section>
 <section class="g-step g-reveal" id="s31" data-step="31" data-act="5" data-kind="reveal" data-for="s28" hidden>
 <p class="g-kind">Razkritje</p>
-<h3>28. oktober 1831</h3>
-<p>28. oktobra 1831, deveti dan poskusov, je Faraday med pola velikega magneta Royal Society postavil bakren disk s premerom 12 palcev in debelino okoli 1/5 palca, na medeninasti osi. Rob in os je prevlekel z živim srebrom. Eno žico do galvanometra je ohlapno ovil okoli osi, drug prevodnik je z roko pritiskal na rob diska med poloma. Galvanometer je bil preprost: dve namagneteni šivanki na bilki suhe trave, obešeni na svileno nit. Ko se je disk hitro vrtel, je igla skočila za 90° ali več. Pri skrbnejši izvedbi je ves čas vrtenja stala odklonjena skoraj za 45°. Faraday je zapisal, da je dosegel »the production of a permanent current of electricity by ordinary magnets«: stalen tok iz navadnih magnetov.</p>
-<p>S tem je pojasnil tudi Aragov disk. V vrtečem se bakru ob magnetu tečejo tokovi, ki s svojim magnetizmom vlečejo iglo za seboj.</p>
-<p><b>Zakaj:</b> vrtenje je sprememba, ki se ne konča. Rob diska ves čas teče mimo pola, zato tok ne usahne.</p>
-<figure class="g-fig"><img src="img/10-disk-1831.svg" alt="28. oktober 1831: bakren disk se vrti med poloma velikega magneta, drsna stika na osi in na robu vodita tok do galvanometra." loading="lazy"><figcaption>28. oktober 1831: bakren disk se vrti med poloma velikega magneta, drsna stika na osi in na robu vodita tok do galvanometra. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
-<p class="g-src">Viri: <a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://arxiv.org/abs/2102.11036">G. Giuliani, Electromagnetic induction: physics, historical breakthroughs, epistemological issues and textbooks (arXiv:2102.11036)</a></p>
+<h3 data-ref="s31.title">28. oktober 1831</h3>
+<p data-ref="s31.p1">28. oktobra 1831, deveti dan poskusov, je Faraday med pola velikega magneta Royal Society postavil bakren disk s premerom 12 palcev in debelino okoli 1/5 palca, na medeninasti osi. Rob in os je prevlekel z živim srebrom. Eno žico do galvanometra je ohlapno ovil okoli osi, drug prevodnik je z roko pritiskal na rob diska med poloma. Galvanometer je bil preprost: dve namagneteni šivanki na bilki suhe trave, obešeni na svileno nit. Ko se je disk hitro vrtel, je igla skočila za 90° ali več. Pri skrbnejši izvedbi je ves čas vrtenja stala odklonjena skoraj za 45°. Faraday je zapisal, da je dosegel »the production of a permanent current of electricity by ordinary magnets«: stalen tok iz navadnih magnetov.</p>
+<p data-ref="s31.p2">S tem je pojasnil tudi Aragov disk. V vrtečem se bakru ob magnetu tečejo tokovi, ki s svojim magnetizmom vlečejo iglo za seboj.</p>
+<p data-ref="s31.p3"><b>Zakaj:</b> vrtenje je sprememba, ki se ne konča. Rob diska ves čas teče mimo pola, zato tok ne usahne.</p>
+<figure data-ref="s31.fig1" class="g-fig"><img src="img/10-disk-1831.svg" alt="28. oktober 1831: bakren disk se vrti med poloma velikega magneta, drsna stika na osi in na robu vodita tok do galvanometra." loading="lazy"><figcaption>28. oktober 1831: bakren disk se vrti med poloma velikega magneta, drsna stika na osi in na robu vodita tok do galvanometra. <span class="g-tag">rekonstrukcija</span></figcaption></figure>
+<details class="g-src"><summary>Viri (3)</summary><a href="https://archive.org/details/lifelettersoffar02joneiala">Bence Jones, The Life and Letters of Faraday, zv. 2 (1870)</a> · <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://arxiv.org/abs/2102.11036">G. Giuliani, Electromagnetic induction: physics, historical breakthroughs, epistemological issues and textbooks (arXiv:2102.11036)</a></details>
 </section>
 <section class="g-step g-epilogue" id="s32" data-step="32" data-act="5" data-kind="epilogue" hidden>
 <p class="g-kind">Epilog</p>
-<h3>Kaj je sledilo</h3>
-<p>24. novembra 1831 je Faraday odkritja prebral pred Royal Society kot prvo serijo svojih <i>Experimental Researches in Electricity</i>; natisnjena je bila maja 1832. Tok, ki ga povzroči tok, je imenoval »volta-electric induction«, tok, ki ga povzroči magnet, pa »magneto-electric induction«. V isti razpravi je opisal »magnetne krivulje«, črte magnetne sile, kakršne pokažejo železni opilki okoli magneta.</p>
-<p>Od prvega neuspelega poskusa (28. decembra 1824) do obroča (29. avgusta 1831) je minilo 6 let in 8 mesecev. Od stavka v zvezku devet let.</p>
-<p>Novica je potovala hitro. Joseph Henry v Albanyju je slišal za Faradayev uspeh, a ne za njegovo metodo, in julija 1832 objavil svoje poskuse. 3. septembra 1832 so v Parizu Akademiji pokazali stroj Hippolyta Pixiija: z ročico vrtiš magnet pred tuljavama, preklopnik pa da tok v eni smeri.</p>
-<p>V Edinburghu se je 13. junija 1831, enajst tednov pred obročem, rodil James Clerk Maxwell. Faradayeve črte sile je pozneje prevedel v matematiko; prvi članek o njih je prebral decembra 1855.</p>
-<p>Obroč z dvema tuljavama na istem železu je zgradba vsakega transformatorja; praktični transformatorji so prišli v 1880-ih, med njimi leta 1885 transformator Zipernowskega, Bláthyja in Déria v Budimpešti. Disk, ki se vrti med poloma, je prednik vseh generatorjev. Vsaka elektrarna danes dela po načelu, ki ga je Faraday našel tisto jesen.</p>
-<p>Še ena zgodba za konec. Leta 1836 je Faraday sredi predavalnice Royal Institution zgradil kocko s stranico 12 čevljev: lesen okvir, bakrena žica, papir in trakovi kositrne folije. Zaprl se je vanjo, kocko od zunaj močno naelektril in v njej ni zaznal ničesar. Danes ji pravimo Faradayeva kletka.</p>
-<p>Več o Faradayu: <a href="/people/#michael-faraday">Michael Faraday na seznamu Top ljudje</a>.</p>
-<p class="g-src">Viri: <a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://doi.org/10.1098/rstl.1832.0006">M. Faraday, Experimental Researches in Electricity, Phil. Trans. R. Soc. 122 (1832)</a> · <a href="https://archive.org/details/sim_american-journal-of-science_1832-07_22">J. Henry, American Journal of Science 22 (julij 1832)</a> · <a href="https://archive.org/details/s3id13208200">Annales de chimie et de physique (1832): Pixiijev stroj in Ampèrova nota</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Maxwell/">MacTutor: James Clerk Maxwell</a> · <a href="https://pp.bme.hu/ee/article/download/4637/3742">Periodica Polytechnica: zgodovina transformatorja ZBD (1885)</a> · <a href="https://rigb.org/node/3138">Royal Institution: Michael Faraday, časovnica</a> · <a href="https://collection.sciencemuseumgroup.org.uk/people/cp1072/michael-faraday">Science Museum Group: Michael Faraday</a></p>
+<h3 data-ref="s32.title">Kaj je sledilo</h3>
+<p data-ref="s32.p1">24. novembra 1831 je Faraday odkritja prebral pred Royal Society kot prvo serijo svojih <i>Experimental Researches in Electricity</i>; natisnjena je bila maja 1832. Tok, ki ga povzroči tok, je imenoval »volta-electric induction«, tok, ki ga povzroči magnet, pa »magneto-electric induction«. V isti razpravi je opisal »magnetne krivulje«, črte magnetne sile, kakršne pokažejo železni opilki okoli magneta.</p>
+<p data-ref="s32.p2">Od prvega neuspelega poskusa (28. decembra 1824) do obroča (29. avgusta 1831) je minilo 6 let in 8 mesecev. Od stavka v zvezku devet let.</p>
+<p data-ref="s32.p3">Novica je potovala hitro. Joseph Henry v Albanyju je slišal za Faradayev uspeh, a ne za njegovo metodo, in julija 1832 objavil svoje poskuse. 3. septembra 1832 so v Parizu Akademiji pokazali stroj Hippolyta Pixiija: z ročico vrtiš magnet pred tuljavama, preklopnik pa da tok v eni smeri.</p>
+<p data-ref="s32.p4">V Edinburghu se je 13. junija 1831, enajst tednov pred obročem, rodil James Clerk Maxwell. Faradayeve črte sile je pozneje prevedel v matematiko; prvi članek o njih je prebral decembra 1855.</p>
+<p data-ref="s32.p5">Obroč z dvema tuljavama na istem železu je zgradba vsakega transformatorja; praktični transformatorji so prišli v 1880-ih, med njimi leta 1885 transformator Zipernowskega, Bláthyja in Déria v Budimpešti. Disk, ki se vrti med poloma, je prednik vseh generatorjev. Vsaka elektrarna danes dela po načelu, ki ga je Faraday našel tisto jesen.</p>
+<p data-ref="s32.p6">Še ena zgodba za konec. Leta 1836 je Faraday sredi predavalnice Royal Institution zgradil kocko s stranico 12 čevljev: lesen okvir, bakrena žica, papir in trakovi kositrne folije. Zaprl se je vanjo, kocko od zunaj močno naelektril in v njej ni zaznal ničesar. Danes ji pravimo Faradayeva kletka.</p>
+<p data-ref="s32.p7">Več o Faradayu: <a href="/people/#michael-faraday">Michael Faraday na seznamu Top ljudje</a>.</p>
+<details class="g-src"><summary>Viri (8)</summary><a href="https://www.gutenberg.org/ebooks/14986">M. Faraday, Experimental Researches in Electricity, zv. 1 (Project Gutenberg)</a> · <a href="https://doi.org/10.1098/rstl.1832.0006">M. Faraday, Experimental Researches in Electricity, Phil. Trans. R. Soc. 122 (1832)</a> · <a href="https://archive.org/details/sim_american-journal-of-science_1832-07_22">J. Henry, American Journal of Science 22 (julij 1832)</a> · <a href="https://archive.org/details/s3id13208200">Annales de chimie et de physique (1832): Pixiijev stroj in Ampèrova nota</a> · <a href="https://mathshistory.st-andrews.ac.uk/Biographies/Maxwell/">MacTutor: James Clerk Maxwell</a> · <a href="https://pp.bme.hu/ee/article/download/4637/3742">Periodica Polytechnica: zgodovina transformatorja ZBD (1885)</a> · <a href="https://rigb.org/node/3138">Royal Institution: Michael Faraday, časovnica</a> · <a href="https://collection.sciencemuseumgroup.org.uk/people/cp1072/michael-faraday">Science Museum Group: Michael Faraday</a></details>
 </section>
-<footer>Vse slike na tej strani so rekonstrukcije, ne arhivsko gradivo. Pred izumom · BD × AI Lab · osnutek R2</footer>
+<footer>Vse slike na tej strani so rekonstrukcije, ne arhivsko gradivo. Pred izumom · BD × AI Lab · osnutek R3</footer>
 </main>
 <script type="module" src="/assets/game-guide/game-guide.js"></script>
 </body>
