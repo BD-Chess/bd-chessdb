@@ -17,7 +17,7 @@ const token = 'offline-reader-token-'.repeat(3), id = randomUUID();
 const url = 'https://www.mdlxdcc.org/.netlify/functions/game-guide';
 const cookie = sessionCookie(owner).split(';')[0];
 const fixture = JSON.parse(await readFile(new URL('../public/game/_fixture/game.json', import.meta.url)));
-const message = { slug: '_fixture', provider: 'claude', mode: 'ZGODBA', development: true, message: 'Pokaži vse' };
+const message = { slug: '_fixture', provider: 'claude', mode: 'ZGODBA', development: true, message: 'Pokaži vse', protocol: 'game-guide-tools-v1' };
 const req = (query = '', headers = {}, method = 'GET', body) => new Request(url + query, { method, headers: { ...headers, ...(body ? { 'content-type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
 const denied = async () => { throw accessError('AUTH_REQUIRED', 401); };
 function storeFixture() {
@@ -106,8 +106,14 @@ test('normal response records provider/model, validated tool actions and Guide c
         onText('Pozdrav!');
         return { response: { content: [] }, text: 'Pozdrav!', calls: rounds === 1 ? [{ name: 'set_mode', arguments: { mode: 'IZUMLJAJ' }, call_id: 'fixture' }] : [] };
       } });
-    const r = await h(req('', {}, 'POST', { ...message, development: false, message: 'Živjo', log_consent: consenting }));
-    assert.match(await r.text(), /"type":"done"/);
+    // game-guide-tools-v1: mode changes only on the player's explicit request; client actions are
+    // logged after the browser receipt arrives through the sealed continuation round.
+    const first = await (await h(req('', {}, 'POST', { ...message, development: false, message: 'Živjo, preklopi na način Izumljaj.', log_consent: consenting }))).text();
+    const frames = first.split('\n\n').filter(Boolean).map(frame => JSON.parse(frame.slice(6)));
+    const action = frames.find(e => e.type === 'action'), continuation = frames.find(e => e.type === 'continue')?.token;
+    assert.equal(action?.name, 'set_mode'); assert.ok(continuation); assert.ok(!frames.some(e => e.type === 'done'));
+    const r = await h(req('', {}, 'POST', { continuation, receipts: [{ call_id: action.call_id, name: 'set_mode', ok: true }] }));
+    assert.match(await r.text(), /"type":"done"/); assert.equal(rounds, 2);
     if (!consenting) assert.equal(calls.length, 0);
     else {
       assert.ok(logs.some(e => e.kind === 'set_mode'));

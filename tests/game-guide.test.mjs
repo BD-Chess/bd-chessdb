@@ -11,11 +11,20 @@ const visitor = { id: 'v1', role: 'visitor', email: 'visitor@example.invalid' };
 process.env.MDLXDCC_GUIDE_SESSION_SECRET = 'synthetic-test-secret-'.repeat(4);
 process.env.MDLXDCC_GUIDE_OWNER_EMAIL = owner.email;
 const cookie = actor => sessionCookie(actor).split(';')[0];
-const request = (body = {}, headers = {}, method = 'POST') => new Request('https://www.mdlxdcc.org/.netlify/functions/game-guide', { method, headers: { 'Content-Type': 'application/json', cookie: cookie(owner), ...headers }, ...(method === 'POST' ? { body: JSON.stringify({ slug: '_fixture', message: 'Nadaljuj', ...body }) } : {}) });
+const request = (body = {}, headers = {}, method = 'POST') => new Request('https://www.mdlxdcc.org/.netlify/functions/game-guide', { method, headers: { 'Content-Type': 'application/json', cookie: cookie(owner), ...headers }, ...(method === 'POST' ? { body: JSON.stringify({ slug: '_fixture', message: 'Nadaljuj', protocol: 'game-guide-tools-v1', ...body }) } : {}) });
 // GAME-LOG-R1: these Guide tests do not exercise logging; inject a store that never logs.
 const noLog = { start: async () => null, append: async () => {} };
 const base = { logStore: noLog, configured: { claude: true, gpt: true }, gameFactory: async () => game, accessFactory: req => authenticate(req, { rpc: async () => ({ active: true }) }) };
 const readEvents = async response => (await response.text()).split('\n\n').filter(Boolean).map(line => JSON.parse(line.slice(6)));
+async function completeTurn(handler, response) {
+  let events = await readEvents(response), all = [...events];
+  for (let n = 0; n < 4; n++) {
+    const token = events.find(e => e.type === 'continue')?.token; if (!token) return all;
+    events = await readEvents(await handler(request({ continuation: token, receipts: events.filter(e => e.type === 'action').map(a => ({ call_id: a.call_id, name: a.name, opened: a.id, ok: true, visible: true, already_open: false })) })));
+    all.push(...events);
+  }
+  throw Error('Unexpected continuation count');
+}
 function fakeClient(provider, frames, capture = []) {
   let i = 0;
   if (provider === 'claude') return { messages: { stream(payload) {
@@ -50,50 +59,52 @@ test('owner cookie, absent/forged/expired cookie, visitor gate, origin and devel
 
 test('validation restricts slug, provider, mode and signals without accepting pasted contents', () => {
   const body = validateBody({ slug: '_fixture', message: 'Pojdiva', fair_play: { paste_events: 1, paste_length: 16, contents: 'NEVER_FORWARD' } });
-  assert.equal(body.provider, 'claude'); assert.equal(body.mode, 'ZGODBA'); assert.equal(JSON.stringify(body).includes('NEVER_FORWARD'), false);
+  assert.equal(body.provider, 'claude'); assert.equal(body.mode, 'IZUMLJAJ'); assert.equal(JSON.stringify(body).includes('NEVER_FORWARD'), false);
   for (const patch of [{ slug: '../private' }, { provider: 'other' }, { mode: 'admin' }, { message: '' }, { fair_play: { typing_ms: -1 } }]) assert.throws(() => validateBody({ slug: '_fixture', message: 'hi', ...patch }));
   validateGame(game, '_fixture'); assert.throws(() => validateGame({ ...game, steps: [game.steps[0], game.steps[0]] }, '_fixture'));
 });
 
-test('server loads only a fixed own-origin allowlisted JSON path and disallows redirects', async () => {
-  let seen;
-  await loadGame('_fixture', { fetcher: async (url, options) => { seen = { url, options }; return Response.json(game); } });
-  assert.equal(seen.url, 'https://www.mdlxdcc.org/game/_fixture/game.json'); assert.equal(seen.options.redirect, 'error');
+test('server loads only fixed own-origin JSON/page paths and disallows redirects', async () => {
+  const seen = [], html = await readFile(new URL('../public/game/_fixture/index.html', import.meta.url), 'utf8');
+  await loadGame('_fixture', { fetcher: async (url, options) => { seen.push({ url, options }); return url.endsWith('json') ? Response.json(game) : new Response(html); } });
+  assert.deepEqual(seen.map(s => s.url), ['https://www.mdlxdcc.org/game/_fixture/game.json', 'https://www.mdlxdcc.org/game/_fixture/']); assert.ok(seen.every(s => s.options.redirect === 'error'));
   await assert.rejects(loadGame('https://evil.invalid', { fetcher: () => assert.fail('must not fetch') }));
 });
 
 test('story skips challenges/hints and enforces sequential story/reveal/epilogue', () => {
-  const session = createSession(game, validateBody({ slug: '_fixture', message: 'Naprej' }));
+  let session = createSession(game, validateBody({ slug: '_fixture', message: 'Naprej', mode: 'ZGODBA' }));
   assert.throws(() => session.execute('open_step', { id: 's2' }), /STORY_ONLY/);
   assert.throws(() => session.execute('open_step', { id: 's3' }), /STORY_ONLY/);
   assert.throws(() => session.execute('open_step', { id: 's9' }), /STEP_ORDER/);
-  for (const id of ['s4', 's7', 's8', 's9']) assert.equal(session.execute('open_step', { id }).action.id, id);
+  for (const id of ['s4', 's7', 's8', 's9']) { assert.equal(session.execute('open_step', { id }).action.id, id); session = createSession(game, session.snapshot()); }
   assert.throws(() => session.execute('open_step', { id: 'other' }), /INVALID_STEP/);
 });
 
 test('invent mode requires explicit hint request, ordered tiers, reveal before provisional label', () => {
   let session = createSession(game, validateBody({ slug: '_fixture', message: 'Naprej', mode: 'IZUMLJAJ' }));
   session.execute('open_step', { id: 's2' });
+  session = createSession(game, session.snapshot());
   assert.throws(() => session.execute('open_step', { id: 's3' }), /HINT_ON_REQUEST/);
   assert.throws(() => session.execute('mark_result', { step: 's2', label: 'samostojno' }), /RESULT_AFTER_REVEAL/);
   session = createSession(game, validateBody({ slug: '_fixture', message: 'Prosim za namig', mode: 'IZUMLJAJ', opened: ['s2'] }));
-  session.execute('open_step', { id: 's3' }); session.execute('open_step', { id: 's4' });
+  session.execute('open_step', { id: 's3' }); session = createSession(game, { ...session.snapshot(), message: 'Preskoči.' }); session.execute('open_step', { id: 's4' });
   assert.throws(() => session.execute('mark_result', { step: 's2', label: 'samostojno' }), /HELP_WAS_OPENED/);
   assert.equal(session.execute('mark_result', { step: 's2', label: 's_pomocjo' }).action.label, 's_pomocjo');
   assert.throws(() => session.execute('mark_result', { step: 's2', label: 'cheater' }), /INVALID_RESULT/);
   const tierGame = structuredClone(game); tierGame.steps.splice(3, 0, { ...game.steps[2], id: 's3b', tier: 2 });
   session = createSession(tierGame, validateBody({ slug: '_fixture', message: 'namig', mode: 'IZUMLJAJ', opened: ['s2'] }));
   assert.throws(() => session.execute('open_step', { id: 's3b' }), /HINT_ORDER/);
-  session.execute('open_step', { id: 's3' }); session.execute('open_step', { id: 's3b' });
+  session.execute('open_step', { id: 's3' }); session = createSession(tierGame, session.snapshot()); session.execute('open_step', { id: 's3b' });
 });
 
-test('development can open all steps but exposes no result tool and rejects forged result call', () => {
+test('development model follows challenge order, exposes no result tool and rejects forged result call', () => {
   const body = validateBody({ slug: '_fixture', message: 'Pokaži vse', development: true });
   const session = createSession(game, body);
-  for (const s of [...game.steps].reverse()) session.execute('open_step', { id: s.id });
+  assert.throws(() => session.execute('open_step', { id: 's4' }), /CHALLENGE_NOT_OPEN/);
+  assert.equal(session.execute('open_step', { id: 's2' }).action.id, 's2');
   assert.equal(gameTools(true).some(t => t.name === 'mark_result'), false);
   assert.throws(() => session.execute('mark_result', { step: 's2', label: 'samostojno' }), /DEVELOPMENT_NO_RESULTS/);
-  assert.match(instructions(game, body), /NIKOLI ne kliči mark_result/);
+  assert.match(instructions(game, body), /učnega rezultata ne beležiš/);
 });
 
 for (const provider of ['claude', 'gpt']) test(`${provider}: shared real provider transport, budget reserve/settle, SSE tools and final text`, async () => {
@@ -103,16 +114,16 @@ for (const provider of ['claude', 'gpt']) test(`${provider}: shared real provide
     assert.equal(model, provider === 'claude' ? 'claude-sonnet-5-5' : 'gpt-6-luna');
     return { reserve: async payload => { ledger.push('reserve'); return { id: 'mock' }; }, settle: async (_, usage) => { assert.ok(usage); ledger.push('settle'); } };
   } });
-  const response = await handler(request({ provider })); assert.match(response.headers.get('content-type'), /text\/event-stream/);
-  const events = await readEvents(response);
-  assert.equal(events.find(e => e.type === 'action').id, 's4'); assert.equal(events.find(e => e.type === 'delta').text, 'Plošča se nagne.'); assert.equal(events.at(-1).type, 'done');
+  const response = await handler(request({ provider, mode: 'ZGODBA' })); assert.match(response.headers.get('content-type'), /text\/event-stream/);
+  const events = await completeTurn(handler, response);
+  assert.equal(events.find(e => e.type === 'action').id, 's4'); assert.match(events.find(e => e.type === 'delta').text, /Preberi in mi povej/); assert.equal(events.at(-1).type, 'done');
   assert.deepEqual(ledger, ['reserve', 'settle', 'reserve', 'settle']); assert.equal(payloads.length, 2);
 });
 
 test('default Claude and forged development result cannot emit a result action', async () => {
   const client = fakeClient('claude', [{ calls: [{ name: 'mark_result', args: { step: 's2', label: 'samostojno' } }] }, { text: 'Razvoj je brez beleženja.' }]);
   const handler = makeHandler({ ...base, clientFactory: async p => { assert.equal(p, 'claude'); return client; } });
-  const events = await readEvents(await handler(request({ development: true })));
+  const events = await readEvents(await handler(request({ development: true, message: 'Razvijava igro.' })));
   assert.equal(events.some(e => e.type === 'action'), false); assert.equal(events.at(-1).type, 'done');
 });
 
@@ -125,8 +136,9 @@ test('owner development show-all is deterministic and makes no provider round', 
 
 test('Claude multiple tool results remain in one immediately following user message', async () => {
   const payloads = [];
-  const handler = makeHandler({ ...base, clientFactory: async () => fakeClient('claude', [{ calls: [{ name: 'open_step', args: { id: 's2' } }, { name: 'open_step', args: { id: 's3' } }] }, { text: 'Odprto.' }], payloads) });
-  const events = await readEvents(await handler(request({ development: true })));
+  const client = fakeClient('claude', [{ calls: [{ name: 'open_step', args: { id: 's2' } }, { name: 'open_step', args: { id: 's3' } }] }, { text: 'Odprto.' }], payloads);
+  const handler = makeHandler({ ...base, clientFactory: async () => client });
+  const events = await completeTurn(handler, await handler(request({ development: true })));
   assert.equal(events.at(-1).type, 'done');
   const toolMessage = payloads[1].messages.at(-1); assert.equal(toolMessage.role, 'user'); assert.equal(toolMessage.content.length, 2);
   assert.ok(toolMessage.content.every(c => c.type === 'tool_result'));
@@ -160,3 +172,4 @@ test('fixture HTML mirrors JSON: 3 acts × 3 steps, first visible, all other ste
   assert.equal(/<script\b|\son[a-z]+\s*=|javascript\s*:/i.test(content), false, 'only the two trusted asset lines may inject runtime code');
   assert.equal(/<link\b/i.test(content), false, 'no additional asset injection');
 });
+
