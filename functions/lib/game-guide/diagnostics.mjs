@@ -18,12 +18,17 @@ export function diagnosticValue(value, depth = 0) {
     .map(([k, v]) => [redact(k), secretKey.test(k) ? '[credential]' : diagnosticValue(v, depth + 1)]));
   return null;
 }
+// Usage holds only integer token counts; its *_tokens keys must not hit the credential-key redaction.
+const usageValue = usage => usage && typeof usage === 'object' ? Object.fromEntries(Object.entries(usage).slice(0, 16)
+  .filter(([k, v]) => /^[a-z0-9_]{1,32}$/.test(k) && (v === null || (Number.isSafeInteger(v) && v >= 0)))) : null;
 export function diagnosticEvent(phase, fields) {
-  const payload = diagnosticValue({ ...fields, phase });
+  const { usage, ...rest } = fields;
+  const measured = usage !== undefined ? { usage: usageValue(usage), stop_reason: diagnosticValue(fields.stop_reason ?? null) } : {};
+  const payload = { ...diagnosticValue({ ...rest, phase }), ...measured };
   // Stay below the database's 160000-byte event limit, including UTF-8 expansion.
   if (Buffer.byteLength(JSON.stringify(payload), 'utf8') > 120000) {
     return { kind: 'guide_trace', payload: { phase, provider: fields.provider, model: fields.model, effort: fields.effort, truncated: true, round_count: fields.round_count,
-      preview: JSON.stringify(payload).slice(0, 12000) } };
+      ...measured, preview: JSON.stringify(payload).slice(0, 12000) } };
   }
   return { kind: 'guide_trace', payload };
 }
