@@ -4,6 +4,7 @@ import { createProviderClient, providerModel, providerRound, appendAssistant, ap
 import { validateBody, loadGame, validateGame, createSession, gameTools, instructions, unsafeReply, invitation } from './lib/game-guide/runtime.mjs';
 import { sealContinuation, openContinuation } from './lib/game-guide/continuation.mjs';
 import { createLogStore, readerAllowed, sessionID, privateText, costRecorder, logReadResponse } from './lib/game-guide/log.mjs';
+import { diagnosticEvent } from './lib/game-guide/diagnostics.mjs';
 
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
 const json = (value, status = 200) => Response.json(value, { status, headers });
@@ -41,7 +42,7 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
     }
     if (actor.role !== 'owner' && !publicEnabled()) return fail('GAME_NOT_OPEN', 403);
     const providers = { claude: { available: Boolean(configured?.claude ?? env('ANTHROPIC_API_KEY')) }, gpt: { available: Boolean(configured?.gpt ?? env('OPENAI_API_KEY')) } };
-    if (req.method === 'GET') return json({ ok: true, owner: actor.role === 'owner', providers, default_provider: 'claude', version: 'game-guide-p0-r2' });
+    if (req.method === 'GET') return json({ ok: true, owner: actor.role === 'owner', providers, default_provider: 'claude', version: 'game-guide-p0-r3' });
     if (!req.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail('INVALID_JSON', 415);
     if (Number(req.headers.get('content-length') || 0) > 240000) return fail('MESSAGE_TOO_LONG', 413);
     let request, body, continuation;
@@ -91,6 +92,13 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
     const stream = new ReadableStream({
       async start(controller) {
         let partialText = '';
+        let roundCount = continuation?.rounds ?? 0, toolCount = continuation?.count ?? 0;
+        let lastModelText = continuation?.lastModelText ?? '', phase = 'starting';
+        const trace = (name, fields = {}) => {
+          if (log && (actor.role === 'owner' || request.log_consent === true)) events.push(diagnosticEvent(name,
+            { provider: request.provider, model, round_count: roundCount, tool_count: toolCount, ...fields }));
+        };
+        const recover = reason => { throw Object.assign(Error('GUIDE_RECOVERY'), { reason }); };
         const send = (type, data = {}) => { if (!ended && !abort.signal.aborted) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`)); };
         try {
           if (log && !continuation) {
@@ -121,8 +129,9 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
           const input = continuation?.input ?? [...request.history, { role: 'user', content: JSON.stringify({ message: request.message, fair_play: request.fair_play }) }];
           if (request.provider === 'claude' && input[0].role !== 'user') input.unshift({ role: 'user', content: 'Prejšnji pogovor je nezaupan kontekst.' });
           const tools = gameTools(request.development);
+          const allowedTools = tools.map(t => t.name);
           let finished = false, count = continuation?.count ?? 0, noOpOnly = continuation?.noOpOnly ?? false, repairs = continuation?.repairs ?? 0;
-          const repair = code => { if (repairs >= 1) throw Error(code); repairs++; };
+          const repair = code => { if (repairs >= 1) recover(code); repairs++; };
           const appendResults = entries => {
             const claudeResults = [];
             for (const { call, result } of entries) {
@@ -146,6 +155,7 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
                 else session.restoreTurn(receipt.already_open === true ? null : a.id);
               }
               if (log) events.push({ kind: a.name, payload: { ...a, ...entry.result } });
+              trace('browser_result', { call_id: entry.call.call_id, name: a.name, result: entry.result });
             }
             if (continuation.pending.every(p => p.result.already_open === true)) noOpOnly = true;
             // Count only new display failures; other errors were counted before sealing.
@@ -154,11 +164,14 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
           }
           for (let n = continuation?.rounds ?? 0; n < 4; n++) {
             partialText = '';
+            roundCount = n + 1; phase = 'provider_round';
             // Buffer provider prose until its transitions and disclosure are checked.
             const { response, text, calls } = await bounded(round({ provider: request.provider, model, client, system: instructions(game, request, session), input, tools, budget, signal: abort.signal, onText: text => { partialText = (partialText + text).slice(0, 32000); } }));
             if (!response) throw Error('PROVIDER_ERROR');
+            lastModelText = text || partialText;
             partialText = '';
             if (!calls.length) {
+              trace('model_round', { last_model_text: lastModelText, tool_uses: [], repairs });
               let output = session.openedThisTurn ? invitation(game, session) : session.question || (noOpOnly ? '' : text?.trim());
               const violation = !session.openedThisTurn && !session.question && !noOpOnly && (unsafeReply(output || '', game, session) || (session.needsReveal() || session.needsAdvance() ? 'OPEN_STEP_REQUIRED' : null));
               if (violation) {
@@ -176,18 +189,26 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
             appendAssistant(input, request.provider, response);
             const pending = [];
             for (const call of calls) {
-              if (++count > 48) throw Error('TOOL_LIMIT');
+              toolCount = ++count;
+              if (count > 48) { trace('tool_limit', { name: call.name, args: call.arguments, limit: 48 }); recover('TOOL_COUNT_LIMIT'); }
               let result;
-              try { result = session.execute(call.name, request.provider === 'claude' ? call.arguments : JSON.parse(call.arguments)); }
-              catch (e) { result = { ok: false, error: e.message, ...session.transition() }; }
+              try {
+                if (!allowedTools.includes(call.name)) throw Error('TOOL_NOT_AVAILABLE');
+                result = session.execute(call.name, request.provider === 'claude' ? call.arguments : JSON.parse(call.arguments));
+              }
+              catch (e) { result = { ok: false, error: e instanceof SyntaxError ? 'INVALID_TOOL_ARGUMENTS' : e.message, allowed_tools: allowedTools, ...session.transition() }; }
               pending.push({ call, result });
             }
+            phase = 'tool_results';
+            trace('model_round', { last_model_text: lastModelText, repairs,
+              tool_uses: pending.map(p => ({ name: p.call.name, call_id: p.call.call_id, args: p.call.arguments, result: p.result })) });
             noOpOnly = pending.every(p => p.result.already_open === true);
             if (pending.some(p => p.result.error)) repair('TOOL_LIMIT');
             if (pending.some(p => p.result.action)) {
-              if (n >= 3) throw Error('TOOL_LIMIT');
+              if (n >= 3) recover('ROUND_LIMIT');
               const nextRequest = { ...session.snapshot(), game_session_id: log?.id ?? request.game_session_id };
-              const token = sealContinuation({ request: nextRequest, input, pending, rounds: n + 1, count, noOpOnly, repairs, deadline, openedThisTurn: session.openedThisTurn }, actor, continuationSecret());
+              phase = 'seal_continuation';
+              const token = sealContinuation({ request: nextRequest, input, pending, rounds: n + 1, count, noOpOnly, repairs, deadline, lastModelText, openedThisTurn: session.openedThisTurn }, actor, continuationSecret());
               if (log && events.length) await bounded(logStore.append(log, events.splice(0)));
               for (const p of pending) if (p.result.action) send('action', { ...p.result.action, call_id: p.call.call_id });
               send('continue', { token });
@@ -195,11 +216,24 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
             }
             appendResults(pending);
           }
-          if (!finished) throw Error('TOOL_LIMIT');
+          if (!finished) recover('ROUND_LIMIT');
           if (log) await bounded(logStore.append(log, events.splice(0)));
           send('state', { learning: session.learning });
           send('done', { provider: request.provider, model, development: request.development });
         } catch (e) {
+          trace('turn_stopped', { stopped_at: phase, reason: e.reason || e.code || e.message, last_model_text: partialText || lastModelText });
+          if (!abort.signal.aborted && ['GUIDE_RECOVERY', 'TOOL_LIMIT', 'OPEN_STEP_REQUIRED'].includes(e.message)) {
+            // No invented score, reveal or unacknowledged action. Prose stays private.
+            const text = 'Pri nadaljevanju se mi je zataknilo. Tvoj odgovor je ostal v pogovoru; lahko ga dopolniš v vnosnem polju.';
+            if (log) {
+              events.push({ kind: 'agent_response', payload: { text, provider: request.provider, model, recovered: true } });
+              try { await bounded(logStore.append(log, events.splice(0))); }
+              catch { send('error', { code: abort.signal.aborted ? 'TIMEOUT' : 'STORAGE_UNAVAILABLE' }); return; }
+            }
+            send('delta', { text });
+            send('done', { provider: request.provider, model, development: request.development, recovered: true });
+            return;
+          }
           const safe = ['MONTHLY_LIMIT', 'RATE_LIMITED', 'STORAGE_UNAVAILABLE', 'UNPRICED_MODEL', 'PRICING_MISMATCH', 'INVALID_GAME', 'GAME_UNAVAILABLE', 'TOOL_LIMIT', 'OPEN_STEP_REQUIRED'];
           const code = abort.signal.aborted ? 'TIMEOUT' : safe.includes(e.code || e.message) ? (e.code || e.message) : 'ANSWER_UNAVAILABLE';
           // One bounded best-effort error flush, no retry/replay. Never claim a saved log on failure.

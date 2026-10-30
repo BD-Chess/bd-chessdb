@@ -92,23 +92,23 @@ test('R2 rejected call returns exact allowed ids; one correction opens s6', asyn
   assert.deepEqual(result.allowed_open_steps, [{ id: 's6', kind: 'reveal' }]); assert.equal(h.seen.length, 3);
 });
 
-test('R2 repeated invalid tools stop after initial call + one repair', async () => {
+test('R2 repeated invalid tools stop safely after initial call + one repair', async () => {
   const h = harness(() => ({ calls: [use('open_step', { id: 's5' })] }));
   const events = await turn(h, request({ opened: ['s1', 's2', 's3'] }));
-  assert.equal(h.seen.length, 2); assert.ok(events.some(e => e.code === 'TOOL_LIMIT')); assert.ok(!events.some(e => e.type === 'action'));
+  assert.equal(h.seen.length, 2); assertDone(events); assert.ok(events.some(e => e.type === 'done' && e.recovered)); assert.ok(!events.some(e => e.type === 'action'));
 });
 
-test('R2 unsupported opening stops after one repair with player-safe OPEN_STEP_REQUIRED', async () => {
+test('R2 unsupported opening stops after one repair with a safe reply', async () => {
   const h = harness(() => ({ text: 'Odpiram naslednji izziv.' }));
   const events = await turn(h, request()); assert.equal(h.seen.length, 2);
-  assert.ok(events.some(e => e.code === 'OPEN_STEP_REQUIRED')); assert.ok(!events.some(e => e.type === 'delta'));
+  assertDone(events); assert.ok(events.some(e => e.type === 'done' && e.recovered)); assert.ok(events.some(e => e.type === 'delta'));
   assert.match(h.seen[1].input.at(-1).content, /allowed_open_steps.*s2/);
 });
 
 test('R2 repair allowance survives browser continuation', async () => {
   const h = harness([{ calls: [use('open_step', { id: 's5' })] }, { calls: [use('open_step', { id: 's2' })] }]);
   const events = await turn(h, request(), false);
-  assert.equal(h.seen.length, 2); assert.ok(events.some(e => e.code === 'TOOL_LIMIT')); assert.ok(!events.some(e => e.type === 'done'));
+  assert.equal(h.seen.length, 2); assertDone(events); assert.ok(events.some(e => e.type === 'done' && e.recovered));
 });
 
 test('R2 a rejected call in an action batch is counted once across the receipt', async () => {
