@@ -2,7 +2,7 @@ import { safeMarkdown } from './markdown.mjs';
 import { gameGuideError } from './errors.mjs';
 // Only the escaped markdown subset can produce panel markup.
 export async function mountGameGuide() {
-  const match = location.pathname.match(/^\/game\/(dayton1903|faraday1831|navierstokes1845|_fixture)\/(?:index\.html)?$/);
+  const match = location.pathname.match(/^\/game\/(dayton1903|faraday1831|navierstokes1845|tesla1888|_fixture)\/(?:index\.html)?$/);
   if (!match || document.getElementById('game-guide')) return;
   const slug = match[1], page = document.querySelector('[data-game-page]') || document.querySelector('main');
   if (!page) return;
