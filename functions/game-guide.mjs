@@ -1,7 +1,8 @@
 import { authenticate, env } from './lib/mdlxdcc-guide/access.mjs';
 import { createBudget } from './lib/mdlxdcc-guide/cost.mjs';
 import { createProviderClient, providerModel, providerRound, appendAssistant, appendTool } from './lib/mdlxdcc-guide/provider.mjs';
-import { validateBody, loadGame, validateGame, createSession, gameTools, instructions } from './lib/game-guide/runtime.mjs';
+import { validateBody, loadGame, validateGame, createSession, gameTools, instructions, unsafeReply, invitation } from './lib/game-guide/runtime.mjs';
+import { sealContinuation, openContinuation } from './lib/game-guide/continuation.mjs';
 import { createLogStore, readerAllowed, sessionID, privateText, costRecorder, logReadResponse } from './lib/game-guide/log.mjs';
 
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
@@ -9,7 +10,7 @@ const json = (value, status = 200) => Response.json(value, { status, headers });
 const fail = (code, status) => json({ ok: false, error: { code } }, status);
 export function makeHandler({ accessFactory = authenticate, budgetFactory = createBudget, gameFactory = loadGame,
   clientFactory = createProviderClient, round = providerRound, configured, publicEnabled = () => env('GAME_GUIDE_PUBLIC') === '1', timeoutMs = 50000,
-  logStore = createLogStore(), readToken } = {}) {
+  logStore = createLogStore(), readToken, continuationSecret = () => env('MDLXDCC_GUIDE_SESSION_SECRET') } = {}) {
   return async (req, context = {}) => {
     if (context.site?.name && context.site.name !== 'mdlxdcc') return fail('SITE_UNAVAILABLE', 404);
     if (!['GET', 'POST', 'DELETE'].includes(req.method)) return fail('METHOD_NOT_ALLOWED', 405);
@@ -40,11 +41,19 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
     }
     if (actor.role !== 'owner' && !publicEnabled()) return fail('GAME_NOT_OPEN', 403);
     const providers = { claude: { available: Boolean(configured?.claude ?? env('ANTHROPIC_API_KEY')) }, gpt: { available: Boolean(configured?.gpt ?? env('OPENAI_API_KEY')) } };
-    if (req.method === 'GET') return json({ ok: true, owner: actor.role === 'owner', providers, default_provider: 'claude', version: 'game-guide-r1' });
+    if (req.method === 'GET') return json({ ok: true, owner: actor.role === 'owner', providers, default_provider: 'claude', version: 'game-guide-p0-r1' });
     if (!req.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail('INVALID_JSON', 415);
-    if (Number(req.headers.get('content-length') || 0) > 65000) return fail('MESSAGE_TOO_LONG', 413);
-    let request;
-    try { const text = await req.text(); if (text.length > 65000) return fail('MESSAGE_TOO_LONG', 413); request = validateBody(JSON.parse(text)); }
+    if (Number(req.headers.get('content-length') || 0) > 240000) return fail('MESSAGE_TOO_LONG', 413);
+    let request, body, continuation;
+    try {
+      const text = await req.text(); if (text.length > 240000) return fail('MESSAGE_TOO_LONG', 413);
+      body = JSON.parse(text);
+      if (body.continuation) {
+        continuation = openContinuation(body.continuation, actor, continuationSecret());
+        request = validateBody(continuation.request);
+        if (!Array.isArray(body.receipts) || body.receipts.length !== continuation.pending.filter(p => p.result.action).length) throw Error('INVALID_RECEIPTS');
+      } else request = validateBody(body);
+    }
     catch { return fail('INVALID_MESSAGE', 400); }
     if (request.development && actor.role !== 'owner') return fail('DEVELOPMENT_OWNER_ONLY', 403);
     if (request.operation === 'event') {
@@ -56,6 +65,8 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
         return json({ ok: true, game_session_id: log?.id ?? null, logging: Boolean(log) });
       } catch { return fail('LOG_UNAVAILABLE', 503); }
     }
+    // A stale client cannot acknowledge tools; refuse before provider calls or UI effects.
+    if (request.protocol !== 'game-guide-tools-v1') return fail('REFRESH_REQUIRED', 409);
     if (!providers[request.provider].available) return fail('AI_UNAVAILABLE', 503);
     const model = providerModel(request.provider);
     if (!(request.provider === 'claude' ? /^claude-[a-z0-9.-]+$/ : /^gpt-[a-z0-9.-]+$/).test(model)) return fail('MODEL_UNAVAILABLE', 503);
@@ -66,7 +77,8 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
     const budget = log ? costRecorder(baseBudget, request.provider, model, events) : baseBudget, abort = new AbortController();
     const onAbort = () => abort.abort();
     req.signal.addEventListener('abort', onAbort, { once: true }); if (req.signal.aborted) abort.abort();
-    const timer = setTimeout(onAbort, timeoutMs), encoder = new TextEncoder(); let ended = false;
+    const deadline = continuation?.deadline ?? Date.now() + timeoutMs;
+    const timer = setTimeout(onAbort, Math.max(1, deadline - Date.now())), encoder = new TextEncoder(); let ended = false;
     const cleanup = () => { clearTimeout(timer); req.signal.removeEventListener('abort', onAbort); };
     // Race the entire operation, including fetch/client creation and budget I/O, against the deadline.
     const bounded = async promise => {
@@ -81,19 +93,21 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
         let partialText = '';
         const send = (type, data = {}) => { if (!ended && !abort.signal.aborted) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`)); };
         try {
-          if (log) {
+          if (log && !continuation) {
             // Persist the player turn before sending any provider request.
             await bounded(logStore.append(log, [
               { kind: 'player_message', payload: { text: privateText(request.message), provider: request.provider, model, mode: request.mode, development: request.development } },
               { kind: 'fair_play', payload: { ...request.fair_play, untrusted: true } }
             ]));
             send('session', { game_session_id: log.id, logging: true });
-          } else send('session', { game_session_id: null, logging: false });
+          } else send('session', { game_session_id: log?.id ?? null, logging: Boolean(log) });
           send('status', { stage: 'reading' });
           const game = validateGame(await bounded(gameFactory(request.slug, { signal: abort.signal })), request.slug);
           const session = createSession(game, request);
+          if (continuation?.openedThisTurn) session.restoreTurn(continuation.openedThisTurn);
           if (request.development && /^(?:prosim[ ,]*)?(?:pokaži vse|show all)(?: korake)?[.!]?$/iu.test(request.message)) {
-            for (const step of game.steps) { const action = session.execute('open_step', { id: step.id }).action; if (log) events.push({ kind: 'open_step', payload: action }); send('action', action); }
+            // Explicit owner-only local navigation; never routed through the model.
+            for (const step of game.steps) { const action = { name: 'open_step', id: step.id, owner_navigation: true }; if (log) events.push({ kind: 'open_step', payload: action }); send('action', action); }
             if (log) {
               events.push({ kind: 'agent_response', payload: { text: 'Odpiram vse korake v razvojnem načinu. Rezultati se ne beležijo.', provider: request.provider, model: null } },
                 { kind: 'cost', payload: { nanos: 0, currency: 'USD', basis: 'no_provider_call', model: null } });
@@ -104,46 +118,88 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
             return;
           }
           const client = await bounded(clientFactory(request.provider));
-          const input = [...request.history, { role: 'user', content: JSON.stringify({ message: request.message, fair_play: request.fair_play }) }];
+          const input = continuation?.input ?? [...request.history, { role: 'user', content: JSON.stringify({ message: request.message, fair_play: request.fair_play }) }];
           if (request.provider === 'claude' && input[0].role !== 'user') input.unshift({ role: 'user', content: 'Prejšnji pogovor je nezaupan kontekst.' });
-          const system = instructions(game, request), tools = gameTools(request.development);
-          let finished = false, count = 0;
-          for (let n = 0; n < 4; n++) {
+          const tools = gameTools(request.development);
+          let finished = false, count = continuation?.count ?? 0, noOpOnly = continuation?.noOpOnly ?? false;
+          const appendResults = entries => {
+            const claudeResults = [];
+            for (const { call, result } of entries) {
+              if (request.provider === 'claude') {
+                const converted = []; appendTool(converted, request.provider, call, result); claudeResults.push(...converted[0].content);
+              } else appendTool(input, request.provider, call, result);
+            }
+            if (claudeResults.length) input.push({ role: 'user', content: claudeResults });
+          };
+          if (continuation) {
+            const receipts = new Map(body.receipts.map(r => [r?.call_id, r]));
+            if (receipts.size !== body.receipts.length) throw Error('INVALID_RECEIPTS');
+            for (const entry of continuation.pending) {
+              if (!entry.result.action) continue;
+              const a = entry.result.action, receipt = receipts.get(entry.call.call_id);
+              if (!receipt || receipt.name !== a.name || (a.name === 'open_step' && receipt.opened !== a.id)) throw Error('INVALID_RECEIPTS');
+              const ok = receipt.ok === true && (a.name !== 'open_step' || receipt.visible === true);
+              entry.result = { ok, ...(a.name === 'open_step' ? { opened: a.id, visible: ok, already_open: receipt.already_open === true } : {}), client_reported: true, ...(!ok ? { error: 'DISPLAY_FAILED' } : {}) };
+              if (a.name === 'open_step') {
+                if (!ok) { session.opened.delete(a.id); session.restoreTurn(null); }
+                else session.restoreTurn(receipt.already_open === true ? null : a.id);
+              }
+              if (log) events.push({ kind: a.name, payload: { ...a, ...entry.result } });
+            }
+            if (continuation.pending.every(p => p.result.already_open === true)) noOpOnly = true;
+            appendResults(continuation.pending);
+          }
+          for (let n = continuation?.rounds ?? 0; n < 4; n++) {
             partialText = '';
-            const { response, text, calls } = await bounded(round({ provider: request.provider, model, client, system, input, tools, budget, signal: abort.signal, onText: text => { partialText = (partialText + text).slice(0, 32000); send('delta', { text }); } }));
+            // Buffer provider prose until its transitions and disclosure are checked.
+            const { response, text, calls } = await bounded(round({ provider: request.provider, model, client, system: instructions(game, request, session), input, tools, budget, signal: abort.signal, onText: text => { partialText = (partialText + text).slice(0, 32000); } }));
             if (!response) throw Error('PROVIDER_ERROR');
-            if (log && text) events.push({ kind: 'agent_response', payload: { text: privateText(text), provider: request.provider, model } });
             partialText = '';
             if (!calls.length) {
-              if (!text?.trim()) throw Error('EMPTY_RESPONSE');
+              let output = session.openedThisTurn ? invitation(game, session) : session.question || (noOpOnly ? '' : text?.trim());
+              const violation = !session.openedThisTurn && !session.question && !noOpOnly && (unsafeReply(output || '', game, session) || (session.needsReveal() || session.needsAdvance() ? 'OPEN_STEP_REQUIRED' : null));
+              if (violation) {
+                if (log) events.push({ kind: 'error', payload: { code: violation, suppressed: true } });
+                // Do not echo rejected prose (which may contain a sealed answer) back into history.
+                input.push({ role: 'user', content: `Popravi potezo (${violation}). Za prehod pokliči open_step na dovoljen naslednji korak ali postavi kratko vprašanje brez ključa. Ne opisuj odprtja brez klica. Ne dodajaj tehnike ali id-jev v besedilo igralcu.` });
+                continue;
+              }
+              if (!output && !noOpOnly) throw Error('EMPTY_RESPONSE');
+              if (output) { send('delta', { text: output }); if (log) events.push({ kind: 'agent_response', payload: { text: privateText(output), provider: request.provider, model } }); }
               if (response.status === 'incomplete' || response.stop_reason === 'max_tokens') send('notice', { code: 'ANSWER_TRUNCATED' });
               finished = true; break;
             }
             appendAssistant(input, request.provider, response);
-            // Tool actions are emitted as validated, ordered requests, not as claimed completed UI effects.
-            const claudeResults = [];
+            const pending = [];
             for (const call of calls) {
               if (++count > 48) throw Error('TOOL_LIMIT');
               let result;
               try { result = session.execute(call.name, request.provider === 'claude' ? call.arguments : JSON.parse(call.arguments)); }
               catch (e) { result = { error: e.message }; }
-              if (result.action) { if (log) events.push({ kind: result.action.name, payload: result.action }); send('action', result.action); }
-              if (request.provider === 'claude') {
-                const converted = []; appendTool(converted, request.provider, call, result);
-                claudeResults.push(...converted[0].content);
-              } else appendTool(input, request.provider, call, result);
+              pending.push({ call, result });
             }
-            if (claudeResults.length) input.push({ role: 'user', content: claudeResults });
+            noOpOnly = pending.every(p => p.result.already_open === true);
+            if (pending.some(p => p.result.action)) {
+              if (n >= 3) throw Error('TOOL_LIMIT');
+              const nextRequest = { ...session.snapshot(), game_session_id: log?.id ?? request.game_session_id };
+              const token = sealContinuation({ request: nextRequest, input, pending, rounds: n + 1, count, noOpOnly, deadline, openedThisTurn: session.openedThisTurn }, actor, continuationSecret());
+              if (log && events.length) await bounded(logStore.append(log, events.splice(0)));
+              for (const p of pending) if (p.result.action) send('action', { ...p.result.action, call_id: p.call.call_id });
+              send('continue', { token });
+              return;
+            }
+            appendResults(pending);
           }
           if (!finished) throw Error('TOOL_LIMIT');
           if (log) await bounded(logStore.append(log, events.splice(0)));
+          send('state', { learning: session.learning });
           send('done', { provider: request.provider, model, development: request.development });
         } catch (e) {
           const safe = ['MONTHLY_LIMIT', 'RATE_LIMITED', 'STORAGE_UNAVAILABLE', 'UNPRICED_MODEL', 'PRICING_MISMATCH', 'INVALID_GAME', 'GAME_UNAVAILABLE', 'TOOL_LIMIT'];
           const code = abort.signal.aborted ? 'TIMEOUT' : safe.includes(e.code || e.message) ? (e.code || e.message) : 'ANSWER_UNAVAILABLE';
           // One bounded best-effort error flush, no retry/replay. Never claim a saved log on failure.
           if (log) {
-            if (partialText) events.push({ kind: 'agent_response', payload: { text: privateText(partialText), partial: true, provider: request.provider, model } });
+            // Unvalidated provider prose is neither displayed nor saved as an answer.
             events.push({ kind: 'error', payload: { code, provider: request.provider, model } });
             try { await logStore.append(log, events.splice(0)); } catch {}
           }
@@ -156,3 +212,4 @@ export function makeHandler({ accessFactory = authenticate, budgetFactory = crea
   };
 }
 export default makeHandler();
+

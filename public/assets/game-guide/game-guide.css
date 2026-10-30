@@ -1,6 +1,13 @@
 /* Scoped left panel; the page and any right-hand assistant remain available. */
 #game-guide{--gg-bg:var(--bg,#faf9f6);--gg-ink:var(--ink,#242521);--gg-muted:var(--muted,#77786e);--gg-line:var(--line,#dedfd6);--gg-surface:var(--surface,#f0f1ea);--gg-accent:var(--accent,#527959);position:fixed;z-index:30;inset:0 auto 0 0;width:370px;display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--gg-line);background:var(--gg-bg);color:var(--gg-ink);font:14px/1.55 system-ui,sans-serif;box-sizing:border-box}
 #game-guide *,#game-guide *::before,#game-guide *::after{box-sizing:border-box}
+/* Pin typography even when the story styles headings, forms and controls. */
+#game-guide *{font-family:system-ui,sans-serif}
+#game-guide input{font-family:system-ui,sans-serif}
+#game-guide h2{font-family:system-ui,sans-serif;font-size:31px}
+#game-guide p{font-size:14px}
+#game-guide label,#game-guide summary{font-size:12px}
+#game-guide .gg-fine{font-size:10px}
 #game-guide [hidden]{display:none!important}
 #gg-body{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto}
 #game-guide>#gg-collapse{flex:none;min-height:28px;border-radius:0;border-width:0 0 1px;font-size:11px;text-align:right;padding:2px 14px}
@@ -9,6 +16,18 @@
 #gg-read-warning{margin:10px 0;overflow-wrap:anywhere}#gg-read-confirm button{margin-right:6px}
 #game-guide[data-reading=true] .gg-controls,#game-guide[data-reading=true] #gg-dev-tools,#game-guide[data-reading=true] #gg-login,#game-guide[data-reading=true] #gg-compose,#game-guide[data-reading=true] .gg-providers{display:none!important}
 #game-guide[data-reading=true] #gg-messages{display:none}
+#game-guide[data-reading=true] #gg-login-details{display:none}
+#game-guide[data-compact=true] .gg-controls,#game-guide[data-compact=true] #gg-dev-tools,#game-guide[data-compact=true] .gg-providers,#game-guide[data-compact=true] #gg-messages,#game-guide[data-compact=true] #gg-compose,#game-guide[data-compact=true] #gg-status{display:none!important}
+#game-guide .gg-read-description{margin:0 0 10px;font-size:12px;line-height:1.5}
+#game-guide:not([data-compact=true]) .gg-read-description{display:none}
+#gg-start-area{flex:none;padding:0 14px}
+#gg-start-area:has([hidden]),#gg-start-area:empty{display:none}
+#game-guide #gg-start{width:100%;background:var(--gg-ink);color:var(--gg-bg)}
+#gg-login-details{flex:none;padding:10px 16px;font-size:12px}
+#gg-login-details summary{cursor:pointer;color:var(--gg-muted)}
+#gg-login-details #gg-login{padding:12px 0 0;border:0}
+[data-gg-start][hidden]{display:none!important}
+[data-gg-start] button{font:inherit;cursor:pointer}
 .gg-head,.gg-controls,#gg-dev-tools,#gg-login,#gg-status{flex-shrink:0}
 .gg-page{margin-left:370px!important;min-width:0}.g-step{scroll-margin-top:24px}
 #game-guide button,#game-guide select{font:inherit;color:inherit;border:1px solid var(--gg-line);background:var(--gg-bg);border-radius:7px;min-height:34px;padding:5px 8px;cursor:pointer}
@@ -44,7 +63,18 @@
  .g-step{scroll-margin-bottom:44dvh}
  #gg-messages{min-height:110px;overflow:visible;flex:none;order:-1}
  .gg-read{order:-2}
- .gg-welcome h2{line-height:1.25;letter-spacing:-.6px}
+ #gg-start-area{order:-2;padding:8px 14px}
+ #game-guide .gg-welcome h2{font-size:23px;line-height:1.25;letter-spacing:-.6px}
+ #game-guide .gg-welcome p{font-size:12px}
+ #game-guide .gg-fine{font-size:9px}
  .gg-read{padding:8px 14px}
  #gg-login{min-height:0;overflow:visible}
 }
+
+/* Page focus belongs to the guide, without changing story layout. */
+[data-gg-opened] { animation: gg-opened 2.2s ease-out; scroll-margin-top: 1rem; }
+@keyframes gg-opened { 0%, 25% { box-shadow: 0 0 0 5px #d5b36b66; background-color: #d5b36b22; } 100% { box-shadow: 0 0 0 0 transparent; background-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { [data-gg-opened] { animation: none; outline: 2px solid #b99856; } }
+#game-guide .gg-message strong { font-weight: 700; }
+#game-guide .gg-message code { font-family: ui-monospace, monospace; background: #ffffff16; padding: 0 .2em; }
+#game-guide .gg-message ul, #game-guide .gg-message ol { margin: .35em 0; padding-left: 1.4em; }
