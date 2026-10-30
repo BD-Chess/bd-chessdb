@@ -136,7 +136,7 @@ test('continuation is encrypted, actor-bound, expiring, tamper-resistant; forged
   const stale=await h.post(request({protocol:undefined})); assert.equal(stale.status,409); assert.match(stale.raw,/REFRESH_REQUIRED/); assert.equal(h.seen.length,1);
 });
 test('trusted page extraction covers actual Dayton/Faraday text; server fetch is fixed-origin and redirect-denied', async () => {
-  for (const slug of ['dayton1903','faraday1831','navierstokes1845']) {
+  for (const slug of ['dayton1903','faraday1831','navierstokes1845','tesla1888']) {
     const manifest=JSON.parse(await readFile(new URL(`../public/game/${slug}/game.json`,import.meta.url),'utf8'));
     const html=await readFile(new URL(`../public/game/${slug}/index.html`,import.meta.url),'utf8');
     const enriched=stepTexts(html,manifest); assert.equal(enriched.steps.length,manifest.steps.length); assert.ok(enriched.steps.every(s=>s.text.length>20));

@@ -1,7 +1,7 @@
 import { stepTexts } from './content.mjs';
 import { deriveAssessment, invalidAssessment, hintCoverage, ideaEntries, resolveIdea, ideaIDs } from './assessment.mjs';
 // Only repository-owned games may be loaded. No caller-supplied URL or HTML.
-export const SLUGS = new Set(['dayton1903', 'faraday1831', 'navierstokes1845', '_fixture']);
+export const SLUGS = new Set(['dayton1903', 'faraday1831', 'navierstokes1845', 'tesla1888', '_fixture']);
 export const MODES = ['ZGODBA', 'IZUMLJAJ'];
 const kinds = new Set(['story', 'challenge', 'hint', 'reveal', 'epilogue']);
 const idOK = id => typeof id === 'string' && /^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(id);
