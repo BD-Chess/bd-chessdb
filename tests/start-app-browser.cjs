@@ -14,7 +14,7 @@ async function ready(page, url) {
   const response = await page.goto(url, { waitUntil: 'networkidle' });
   assert(response && response.ok(), 'Start document is reachable');
   await page.waitForSelector('#bd-start-proposal[data-ready="true"]');
-  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261101-start-r2');
+  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261101-start-r3');
 }
 async function state(page) { return page.evaluate(k => JSON.parse(localStorage.getItem(k)), key); }
 async function open(page, id) { if (!await page.locator(id).evaluate(el => el.open)) await page.locator(id + ' > summary').click(); }
@@ -29,6 +29,13 @@ async function suite(browser, engine, url, mobile) {
   const catalog = { latest_published_date:'2026-10-31', editions:[{date:'2026-10-31',revision:1,path:'days/2026-10-31.json',sha256:crypto.createHash('sha256').update(edition).digest('hex')}] };
   await context.route(/\/news\/catalog\.json(?:\?.*)?$/, route => route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(catalog)}));
   await context.route(/\/news\/days\/2026-10-31\.json(?:\?.*)?$/, route => route.fulfill({status:200,contentType:'application/json',body:edition}));
+  // Netlify's HTML processing canonicalizes these links. The stored/default
+  // favorites may still use their original .html URLs.
+  await context.route(/\/Start\/index\.html(?:\?.*)?$/i, async route => {
+    const response = await route.fetch();
+    const body = (await response.text()).replaceAll('href="../AI8/browser-loop.html"', 'href="/ai8/browser-loop"').replaceAll('href="../BD-AI-todo.html"', 'href="/bd-ai-todo"');
+    await route.fulfill({response,body});
+  });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -36,6 +43,8 @@ async function suite(browser, engine, url, mobile) {
   try {
     await ready(page, url);
     assert.equal(await page.locator('#bs-pins a').count(), 8, 'eight suggested favorites');
+    assert.match(await page.locator('#bs-pins').textContent(), /Browser Loop · tabla/);
+    assert.match(await page.locator('#bs-pins').textContent(), /BD × AI TODO/);
     assert.equal(await page.locator('.bs-category').count(), 6, 'six directory categories');
     await page.getByText('Novica Slovenija', {exact:true}).waitFor({state:'visible'});
     assert.match(await page.locator('#bs-live-news-status').textContent(), /Interpretacije metapodatkov RSS/);
@@ -73,6 +82,7 @@ async function suite(browser, engine, url, mobile) {
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('bd-start-v1')).preferences.favoriteUrls[1].includes('chatgpt.com'));
     await page.getByRole('button', { name:'Remove: ChatGPT', exact:true }).click();
     assert.equal(await page.locator('#bs-pins a').count(), 7);
+    assert.equal(await page.locator('#bs-pin-select option', {hasText:'Browser Loop · board'}).count(), 0, 'canonicalized favorite is not offered twice');
     await page.locator('#bs-pin-select').selectOption({label:'ChatGPT'});
     await page.locator('#bs-pin-add').click();
     assert.equal(await page.locator('#bs-pins a').count(), 8);

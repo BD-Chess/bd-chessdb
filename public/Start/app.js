@@ -60,6 +60,9 @@
     const items=new Map();
     $$('.bs-category-links a.bs-plan-link').forEach(function(a){const label=a.lastElementChild?a.lastElementChild.textContent.trim():a.textContent.trim();if(!items.has(a.href))items.set(a.href,{url:a.href,label:label});});
     Object.values(links).forEach(function(list){list.forEach(function(link){if(!items.has(link[1]))items.set(link[1],{url:link[1],label:link[0]});});});
+    // Netlify can rewrite HTML links to clean URLs while old favorites retain
+    // their original .html paths. Keep both forms mapped to the same entry.
+    [['[data-i18n="plan_board"]','../AI8/browser-loop.html'],['#bs-private-todo-link','../BD-AI-todo.html']].forEach(function(pair){const node=$(pair[0]),a=node&&node.closest('a'),item=a&&items.get(a.href);if(item)items.set(new URL(pair[1],document.baseURI).href,item);});
     return items;
   }
   function renderCatalogLinks(){
@@ -87,7 +90,7 @@
       const row=make('div','bs-pin-order-row');row.append(make('span','',label));
       [['←',-1,'pinMoveLeft'],['→',1,'pinMoveRight'],['×',0,'remove']].forEach(function(action){const b=make('button','',action[0]);b.type='button';b.setAttribute('aria-label',t(action[2])+': '+label);if(action[1]===-1&&index===0||action[1]===1&&index===favoriteUrls.length-1)b.disabled=true;b.addEventListener('click',function(){if(action[1]===0)favoriteUrls.splice(index,1);else{const to=index+action[1],v=favoriteUrls[index];favoriteUrls[index]=favoriteUrls[to];favoriteUrls[to]=v;}renderFavorites();persist();});row.append(b);});order.append(row);
     });
-    const before=select.value;select.replaceChildren();Array.from(entries.values()).filter(function(item){return !favoriteUrls.includes(item.url);}).sort(function(a,b){return a.label.localeCompare(b.label,lang);}).forEach(function(item){const o=make('option','',item.label);o.value=item.url;select.append(o);});
+    const before=select.value;select.replaceChildren();const unique=Array.from(new Map(Array.from(entries.values(),function(item){return [item.url,item];})).values());unique.filter(function(item){return !favoriteUrls.some(function(url){return url===item.url||entries.get(url)?.url===item.url;});}).sort(function(a,b){return a.label.localeCompare(b.label,lang);}).forEach(function(item){const o=make('option','',item.label);o.value=item.url;select.append(o);});
     if(Array.from(select.options).some(function(o){return o.value===before;}))select.value=before;
     $('#bs-pin-add').disabled=favoriteUrls.length>=8||!select.options.length;$('#bs-pin-status').textContent=t('pinLimit');icons();
   }
