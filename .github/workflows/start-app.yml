@@ -5,6 +5,7 @@ on:
     paths:
       - 'public/Start/**'
       - 'tests/start-app-browser.cjs'
+      - 'tests/start-state-r2.test.cjs'
       - '.github/workflows/start-app.yml'
   workflow_run:
     workflows: ['Deploy to GitHub Pages']
@@ -29,6 +30,7 @@ jobs:
           node --check public/Start/state.js
           node --check public/Start/icons.js
           node --check tests/start-app-browser.cjs
+          node --test tests/start-state-r2.test.cjs
           git diff --check
       - name: Install isolated browser test runtime
         run: |
