@@ -3,7 +3,9 @@
   'use strict';
   const KEY = 'bd-start-v1';
   const groups = ['daily', 'lab', 'markets'];
-  const panels = ['bs-links-panel', 'bs-agenda-panel', 'bs-news-panel', 'bs-weather-panel', 'bs-note-panel', 'bs-reading-panel', 'bs-more-panel', 'bs-data-panel'];
+  const panels = ['bs-links-panel', 'bs-agenda-panel', 'bs-news-panel', 'bs-weather-panel', 'bs-note-panel', 'bs-reading-panel', 'bs-more-panel', 'bs-data-panel', 'bs-plans-panel', 'bs-markets-panel', 'bs-live-news-panel'];
+  const panelDefaults = { 'bs-plans-panel': true, 'bs-markets-panel': false, 'bs-live-news-panel': true };
+  const categories = ['ai', 'research', 'development', 'daily', 'travel', 'lab'];
   const fail = () => { throw new Error('invalidData'); };
   function date(value) {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -34,7 +36,21 @@
     preferences.calendarMonth = p.calendarMonth;
     if (!p.openPanels || typeof p.openPanels !== 'object' || Array.isArray(p.openPanels)) fail();
     preferences.openPanels = {};
-    for (const id of panels) { if (typeof p.openPanels[id] !== 'boolean') fail(); preferences.openPanels[id] = p.openPanels[id]; }
+    for (const id of panels) {
+      const value = p.openPanels[id] === undefined && Object.prototype.hasOwnProperty.call(panelDefaults, id) ? panelDefaults[id] : p.openPanels[id];
+      if (typeof value !== 'boolean') fail(); preferences.openPanels[id] = value;
+    }
+    // New fields are optional so every existing version-1 export remains readable.
+    if (p.favoriteUrls !== undefined) {
+      if (!Array.isArray(p.favoriteUrls) || p.favoriteUrls.length > 8) fail();
+      preferences.favoriteUrls = p.favoriteUrls.map(url);
+      if (new Set(preferences.favoriteUrls).size !== preferences.favoriteUrls.length) fail();
+    }
+    if (p.openGroups !== undefined) {
+      if (!p.openGroups || typeof p.openGroups !== 'object' || Array.isArray(p.openGroups)) fail();
+      preferences.openGroups = {};
+      for (const id of categories) { if (typeof p.openGroups[id] !== 'boolean') fail(); preferences.openGroups[id] = p.openGroups[id]; }
+    }
     const links = {};
     if (!input.links || typeof input.links !== 'object' || Array.isArray(input.links)) fail();
     for (const group of groups) {
@@ -61,7 +77,7 @@
     return result;
   }
   function parse(text) { if (typeof text !== 'string' || text.length > 8000000) fail(); return normalize(JSON.parse(text)); }
-  const api = Object.freeze({ KEY, panels, date, url, normalize, parse });
+  const api = Object.freeze({ KEY, panels, categories, date, url, normalize, parse });
   if (typeof module === 'object' && module.exports) module.exports = api;
   else scope.BDStartState = api;
 })(typeof window === 'object' ? window : globalThis);
