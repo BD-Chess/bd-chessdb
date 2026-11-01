@@ -10,7 +10,7 @@ const stable=(r)=>Object.fromEntries(['daily/catalog.json',...fs.readdirSync(pat
 function fixture(t,{art=false}={}){
  const r=fs.mkdtempSync(path.join(os.tmpdir(),'nara-format-'));t.after(()=>fs.rmSync(r,{recursive:true,force:true}));
  const base=path.join(r,'public/Nara');fs.mkdirSync(base,{recursive:true});fs.cpSync(path.join(n,'daily'),path.join(base,'daily'),{recursive:true});
- for(const f of fs.readdirSync(n).filter(x=>x.endsWith('-pre-format-R1.html')||x==='Nara-AI-archive.html'||x.endsWith('-format-R1.html')))fs.copyFileSync(path.join(n,f),path.join(base,f));
+ for(const f of fs.readdirSync(n).filter(x=>x.endsWith('-pre-format-R1.html')||x==='Nara-AI-archive.html'||x==='Nara-AI-daily.html'||x==='Nara-AI-2026-10.html'||x.endsWith('-format-R1.html')))fs.copyFileSync(path.join(n,f),path.join(base,f));
  // A missing-art fixture omits optional manifests. A complete fixture copies
  // every declared asset, including editions added since the original tests.
  for(const item of loadFormatEditions(root)){
