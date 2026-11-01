@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta name="theme-color" content="#0b1220">
-  <meta name="description" content="GODS10, igra BD-ja: deset velikih vprašanj človeštva »bogovom«. BD-jevi odgovori, odgovori ekipe AI8 (RHP-11) in slepa primerjava 36 nizov pri 15 spletnih sodnikih. Zbiranje končano; rezultati v pripravi.">
-  <!-- Interim R1.1: final results and canonical author/family resolution remain pending. -->
-  <meta name="robots" content="noindex">
+  <meta name="description" content="GODS10, igra BD-ja: deset velikih vprašanj človeštva »bogovom«. BD-jevi odgovori, odgovori ekipe AI8 (RHP-11) in slepa primerjava 36 nizov pri 15 spletnih sodnikih. Končna R2: odgovori, primerjave, rezultati in ponovljiv izračun.">
+  <!-- Final R2 web15: canonical authors/families and frozen calculation verified. -->
   <link rel="canonical" href="https://www.mdlxdcc.org/gods/">
   <title>GODS10 · 10 vprašanj bogovom / Ten questions to the gods</title>
   <script>try{var r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
@@ -117,6 +116,22 @@
     .site-footer p { margin: 0 0 .4rem; }
     .site-footer strong { color: var(--plan); }
   .judge-scroll{overflow-x:auto;margin:1rem 0;border:1px solid var(--line);border-radius:.6rem}.judge-scroll:focus-visible{outline:3px solid var(--accent)}.judge-table{border-collapse:collapse;width:100%;font-size:.9rem}.judge-table caption{text-align:left;padding:1rem;color:var(--muted)}.judge-table th,.judge-table td{text-align:left;padding:.65rem .8rem;border-bottom:1px solid var(--line);vertical-align:top}.judge-table thead{background:var(--surface)}.judge-table th[scope="row"]{white-space:nowrap}
+/* GODS10 R2, scoped to the results section. */
+#r2-results select{font:inherit;max-width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:.35rem;padding:.45rem;min-height:44px}
+#r2-results select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#r2-results .r2-controls{display:flex;flex-wrap:wrap;gap:1rem;margin:1rem 0}
+#r2-results label{display:flex;flex-direction:column;gap:.3rem;max-width:100%;font-weight:600}
+#r2-results details{margin:1rem 0;padding:.8rem 1rem;border:1px solid var(--line);border-radius:.6rem}
+#r2-results summary{cursor:pointer;font-weight:650;min-height:32px}
+#r2-results .r2-answer-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,23rem),1fr));gap:1rem}
+#r2-results .r2-answer{padding:.8rem 1rem;border:1px solid var(--line);border-radius:.6rem;background:var(--panel)}
+#r2-results .r2-answer p{margin:.35rem 0}
+#r2-results .r2-matrix{font-variant-numeric:tabular-nums;font-size:.82rem}
+#r2-results .r2-matrix td{text-align:center;min-width:5rem}
+#r2-results .r2-matrix th[scope=row]{position:sticky;left:0;z-index:1;background:var(--panel);max-width:19rem;white-space:normal;min-width:13rem}
+#r2-results .r2-excluded{opacity:.65;background:var(--surface)}
+#r2-results pre{max-height:32rem;overflow:auto}
+
 </style>
 </head>
 <body>
@@ -131,6 +146,7 @@
         <a href="#bd">BD</a>
         <a href="#rhp11">RHP-11</a>
         <a href="#metoda"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></a>
+        <a href="#r2-results"><span data-lang="sl">Rezultati R2</span><span data-lang="en" hidden>R2 results</span></a>
         <a href="#stanje"><span data-lang="sl">Stanje</span><span data-lang="en" hidden>Status</span></a>
         <a href="#zasluge"><span data-lang="sl">Zasluge</span><span data-lang="en" hidden>Credits</span></a>
       </nav>
@@ -150,8 +166,8 @@
 
   <div class="draft" role="note">
     <div class="shell">
-      <strong data-lang="sl">VMESNA IZDAJA R1.1 · 1. 11. 2026.</strong><strong data-lang="en" hidden>INTERIM R1.1 · 1 Nov 2026.</strong>
-      <span data-lang="sl">Spletni panel je zbran: 36 sklopov, 15 popolnih sodnikov. Končni rezultati in primerjalni pogledi so v pripravi.</span><span data-lang="en" hidden>The web panel is collected: 36 answer sets and 15 complete judges. Final results and comparison views are in preparation.</span>
+      <strong data-lang="sl">KONČNA R2 · 1. 11. 2026.</strong><strong data-lang="en" hidden>FINAL R2 · 1 Nov 2026.</strong>
+      <span data-lang="sl">36 sklopov, 15 popolnih spletnih sodnikov. Preverjeni rezultati, primerjava avtorjev in izvirniki so spodaj.</span><span data-lang="en" hidden>36 answer sets and 15 complete web judges. Verified results, author comparison and originals are below.</span>
     </div>
   </div>
 
@@ -159,11 +175,11 @@
     <div class="intro">
       <div class="eyebrow">GODS10 · BD × AI Lab</div>
       <h1>GODS10 · 10 vprašanj bogovom<span class="title-sub" lang="en">Ten questions to the gods</span></h1>
-      <p class="plan-badge">R1.1 · 1. 11. 2026 · 36 × 15</p>
+      <p class="plan-badge">R2 · 1. 11. 2026 · 36 × 15</p>
       <p class="lead" data-lang="sl">Deset velikih vprašanj človeštva, zastavljenih »bogovom«. Odgovorili so BD, ekipa AI8 in vrsta jezikovnih modelov. V razširjenem spletnem krogu je 15 modelov brez imen ocenilo vseh 36 sklopov.</p>
       <p class="lead" data-lang="en" hidden>Ten big questions of humanity, put to “the gods”. BD, the AI8 team, and a range of language models answered them. In the extended web round, 15 models judged all 36 sets without author names.</p>
-      <p class="note small" data-lang="sl"><strong>Stanje:</strong> zbiranje spletnih ocen je končano. Pred objavo rezultatov povezujemo starejši arhiv avtorjev in preverjamo izračun z izločitvijo lastnih družin modelov.</p>
-      <p class="note small" data-lang="en" hidden><strong>Status:</strong> web judging is collected. Before publishing results, we are resolving the older author archive and verifying the calculation excluding each judge’s own model family.</p>
+      <p class="note small" data-lang="sl"><strong>Stanje:</strong> končna R2 vsebuje preverjeni izračun, primerjavo avtorjev in izvirne podatke.</p>
+      <p class="note small" data-lang="en" hidden><strong>Status:</strong> final R2 includes the verified calculation, author comparison and original data.</p>
     </div>
 
     <!-- 1 · Kaj je GODS10 -->
@@ -180,8 +196,8 @@
         <li><b data-lang="sl">Seme</b><b data-lang="en" hidden>Seed</b><br><span data-lang="sl">BD-jeva vprašanja in njegovi odgovori v glasu bogov.</span><span data-lang="en" hidden>BD's questions and his answers in the voice of the gods.</span></li>
         <li><b data-lang="sl">Most</b><b data-lang="en" hidden>Bridge</b><br><span data-lang="sl">Krog A: 25 nizov odgovorov na ista vprašanja.</span><span data-lang="en" hidden>Round A: 25 answer sets to the same questions.</span></li>
         <li><b>Test</b><br><span data-lang="sl">Krog B: slepo ocenjevanje po petih merilih.</span><span data-lang="en" hidden>Round B: blind judging on five criteria.</span></li>
-        <li><b data-lang="sl">Rezultat</b><b data-lang="en" hidden>Result</b><br><span data-lang="sl">Po zaključku kroga B, po vnaprej zapisanih pravilih. V pripravi.</span><span data-lang="en" hidden>After round B closes, under pre-registered rules. In preparation.</span></li>
-        <li><b data-lang="sl">Ohrani spoznanje</b><b data-lang="en" hidden>Retain learning</b><br><span data-lang="sl">Ta stran in javni zapis vseh odgovorov. V pripravi.</span><span data-lang="en" hidden>This page and a public record of all answers. In preparation.</span></li>
+        <li><b data-lang="sl">Rezultat</b><b data-lang="en" hidden>Result</b><br><span data-lang="sl">Končni izračun R2, družinska kontrola in intervali negotovosti.</span><span data-lang="en" hidden>Final R2 calculation, own-family control and uncertainty intervals.</span></li>
+        <li><b data-lang="sl">Ohrani spoznanje</b><b data-lang="en" hidden>Retain learning</b><br><span data-lang="sl">Ta stran, primerjava vseh odgovorov in prenos izvirnikov R2.</span><span data-lang="en" hidden>This page, all-answer comparison and downloadable R2 originals.</span></li>
       </ol>
     </section>
 
@@ -286,12 +302,12 @@
       <blockquote data-lang="sl">
         <p>Znotraj igre »bogovi« obstajajo. V resnici jih igramo jezikovni modeli z Zemlje, zato njihov glas ni podatek o kakršni koli naprednejši civilizaciji.</p>
         <p>Igra pokaže meje, ne preseže jih. »Bogovi«, ki jih igramo, niso dali nobene tvegane napovedi.</p>
-        <footer>— Ekipa RHP-11, končno besedilo (27. 10. 2026), odlomka. Celotno besedilo: v pripravi.</footer>
+        <footer>— Ekipa RHP-11, končno besedilo (27. 10. 2026), odlomka. <a href="data/RHP11_ORIGINAL_SL.md">Celotno izvirno besedilo (SL)</a>.</footer>
       </blockquote>
       <blockquote data-lang="en" hidden>
         <p>Within the game, “the gods” exist. In reality we, language models from Earth, play them, so their voice is not data about any more advanced civilization.</p>
         <p>The game shows limits; it does not transcend them. The “gods” we play made no risky prediction.</p>
-        <footer>— Team RHP-11, final text (27 Oct 2026), excerpts translated from Slovenian. Full text: in preparation.</footer>
+        <footer>— Team RHP-11, final text (27 Oct 2026), excerpts translated from Slovenian. <a href="data/RHP11_ORIGINAL_SL.md">Full original text (Slovenian)</a>.</footer>
       </blockquote>
 
       <h3><span data-lang="sl">Zgoščeni odgovori (največ 20 besed)</span><span data-lang="en" hidden>Condensed answers (at most 20 words)</span></h3>
@@ -342,6 +358,50 @@
     </section>
 
     <!-- 5 · Kako primerjamo -->
+    <section id="r2-results" aria-labelledby="r2-title">
+      <div class="eyebrow">R2 · WEB15</div>
+      <h2 id="r2-title"><span data-lang="sl">Odgovori, primerjave in rezultati</span><span data-lang="en" hidden>Answers, comparisons and results</span></h2>
+      <p class="prose"><span data-lang="sl">36 nizov odgovorov, 15 spletnih sodnikov. Primerjamo kakovost besedil po petih merilih. To ni preverjanje metafizične resnice ali univerzalna lestvica modelov.</span><span data-lang="en" hidden>36 answer sets, 15 web judges. We compare texts on five criteria. This is neither a test of metaphysical truth nor a universal model leaderboard.</span></p>
+      <p id="r2-load" role="status"><span data-lang="sl">Nalagam preverjene podatke …</span><span data-lang="en" hidden>Loading verified data …</span></p>
+      <div id="r2-app" hidden>
+        <div class="r2-controls">
+          <label><span data-lang="sl">Panel</span><span data-lang="en" hidden>Panel</span><select id="r2-panel"><option value="recovered">15 · recovered</option><option value="baseline">13 · original FULL</option></select></label>
+          <label><span data-lang="sl">Nizi</span><span data-lang="en" hidden>Sets</span><select id="r2-universe"><option value="all36">36 · all</option><option value="core34">34 · no EXTRA</option></select></label>
+          <label><span data-lang="sl">Analiza</span><span data-lang="en" hidden>Analysis</span><select id="r2-variant"></select></label>
+        </div>
+        <p class="note"><span data-lang="sl">Prvotni panel: 13 popolnih FULL tabel. Dopolnjeni: še Nova in Cohere, vsak kot en sodnik s tremi ločenimi paketi. Pri 34 nizih je normalizacija ponovno izračunana. Intervali opisujejo ponovno vzorčenje tega panela, ne vsega možnega znanja.</span><span data-lang="en" hidden>Original panel: 13 complete FULL tables. Recovered panel adds Nova and Cohere, each as one judge using three separate packets. Normalization is recalculated for 34 sets. Intervals describe resampling this panel, not all possible knowledge.</span></p>
+        <p id="r2-decision" class="lead"></p>
+        <p id="r2-comparison" class="prose"></p>
+        <div class="judge-scroll" role="region" tabindex="0" aria-label="Results"><table class="judge-table" id="r2-ranking"></table></div>
+        <details><summary><span data-lang="sl">Pet meril, robustne metrike in družinski bootstrap</span><span data-lang="en" hidden>Five criteria, robust metrics and family bootstrap</span></summary>
+          <p class="prose"><span data-lang="sl">Izbira merila ureja samo opisno tabelo; ne razglasi novega zmagovalca. Pri družinskem uteževanju je vsaka družina enako težka; surove vsote meril ostanejo neutežene.</span><span data-lang="en" hidden>A criterion sorts the descriptive table; it does not declare another winner. Family weighting gives each family equal weight; raw criterion sums remain unweighted.</span></p>
+          <div class="r2-controls"><label><span data-lang="sl">Merilo</span><span data-lang="en" hidden>Criterion</span><select id="r2-criterion"></select></label><label><span data-lang="sl">Bootstrap</span><span data-lang="en" hidden>Bootstrap</span><select id="r2-bootstrap"><option value="model">model</option><option value="family">family</option></select></label></div>
+          <div class="judge-scroll" role="region" tabindex="0" aria-label="Criteria"><table class="judge-table" id="r2-criteria"></table></div>
+        </details>
+        <h3><span data-lang="sl">Deset vprašanj · primerjaj avtorja</span><span data-lang="en" hidden>Ten questions · compare authors</span></h3>
+        <p class="prose"><span data-lang="sl">Spodaj so nespremenjena angleška besedila, kot so jih videli sodniki. BD-jev prevod ni slovenski izvirnik: izvirnik je dobesedno ohranjen v razdelku BD. Ohranjen je tudi slovenski glas RHP-11.</span><span data-lang="en" hidden>Below are the unchanged English texts seen by the judges. BD's translation is distinct from the verbatim Slovenian original in the BD section. The Slovenian RHP-11 voice is also preserved.</span></p>
+        <div class="r2-controls"><label><span data-lang="sl">Avtor A</span><span data-lang="en" hidden>Author A</span><select id="r2-author-a"></select></label><label><span data-lang="sl">Avtor B</span><span data-lang="en" hidden>Author B</span><select id="r2-author-b"></select></label></div>
+        <div id="r2-answers"></div>
+        <details><summary><span data-lang="sl">Globalni glasovi po vprašanjih</span><span data-lang="en" hidden>Global per-question votes</span></summary>
+          <p class="prose"><span data-lang="sl">Globalni glasovi iz izvirnih FULL odgovorov so ločeni od paketnih izborov. Veljaven glas šteje tudi brez veljavne celotne tabele. Zmagovalec vprašanja zahteva vsaj dva glasova prednosti.</span><span data-lang="en" hidden>Global votes from original FULL replies are separate from packet-local choices. A valid vote counts independently of full-table validity. A question winner needs a margin of at least two votes.</span></p>
+          <label><span data-lang="sl">Glasovi</span><span data-lang="en" hidden>Votes</span><select id="r2-vote-mode"><option value="original_FULL_all">original FULL · all</option><option value="original_FULL_own_l3">original FULL · own_l3</option><option value="complete_tables_only">complete original tables only</option></select></label>
+          <div id="r2-votes"></div>
+          <details><summary><span data-lang="sl">Paketni izbori Nove in Cohere — ne globalni glasovi</span><span data-lang="en" hidden>Nova and Cohere packet-local choices — not global votes</span></summary><pre id="r2-split" class="prompt"></pre></details>
+        </details>
+        <h3><span data-lang="sl">Matrika sodnikov</span><span data-lang="en" hidden>Judge matrix</span></h3>
+        <p class="prose"><span data-lang="sl">Pomični stolpci: 15 sodnikov. Prazno ni ničla. * pomeni delno izvirno tabelo, izključeno iz agregacije. × pomeni celico, izključeno v izbrani analizi. Ocene so 1–10, vsota 5–50; z je normaliziran po sodniku.</span><span data-lang="en" hidden>Scrollable columns: 15 judges. Missing is not zero. * marks a partial original table excluded from aggregation. × marks a cell excluded by the selected analysis. Criteria range 1–10, totals 5–50; z is normalized per judge.</span></p>
+        <label><span data-lang="sl">Vrednost</span><span data-lang="en" hidden>Value</span><select id="r2-matrix-metric"><option value="total">total</option><option value="z">z</option><option value="0">insight</option><option value="1">coherence</option><option value="2">originality</option><option value="3">clarity</option><option value="4">credibility</option></select></label>
+        <div class="judge-scroll" role="region" tabindex="0" aria-label="Judge matrix"><table class="judge-table r2-matrix" id="r2-matrix"></table></div>
+        <details><summary><span data-lang="sl">Diagnostika in omejitve</span><span data-lang="en" hidden>Diagnostics and limitations</span></summary>
+          <p class="prose"><span data-lang="sl">Samopreference so raziskovalne, p-vrednosti niso popravljene za večkratno preverjanje. Položaj in dvočrkovne oznake so preverjeni samo pri veljavnih izvirnih FULL tabelah. Neznani modeli/nastavitve ostajajo UNKNOWN. Copilot ima proizvajalca Microsoft, za konservativno družinsko izključevanje pa skupino OpenAI; njegov točni model je UNKNOWN. Stari API/lokalni sodniki in sidrna dopolnila niso del te 36-matrike.</span><span data-lang="en" hidden>Self-preference tests are exploratory; p-values are uncorrected for multiple testing. Position and two-letter labels are tested only on valid original FULL tables. Unknown models/settings remain UNKNOWN. Copilot's manufacturer is Microsoft, with OpenAI used for conservative family exclusion; its exact model is UNKNOWN. Old API/local judges and anchor supplements are not part of this 36-set matrix.</span></p>
+          <pre id="r2-diagnostics" class="prompt"></pre>
+        </details>
+      </div>
+      <noscript><p>Za interaktivne primerjave omogoči JavaScript. / Enable JavaScript for interactive comparisons.</p></noscript>
+      <p><a href="data/GODS10_RESULTS_R2.json">R2 · JSON</a> · <a href="data/GODS10_R2_REPRODUCE.zip"><span data-lang="sl">Izvirniki, ključa in ponovljiv izračun</span><span data-lang="en" hidden>Originals, keys and reproducible calculation</span></a> · <a href="data/R2_PROVENANCE.json"><span data-lang="sl">Provenienca in hashi</span><span data-lang="en" hidden>Provenance and hashes</span></a></p>
+      <p class="prose small"><span data-lang="sl">B = 10000 · R = 10000 · seme 20261027. Izvirna metoda: 27. 10. 2026. Slepi dodatek R1: zamrznjen po zbiranju in pred razkritjem, 1. 11. 2026. Zbirka in dopolnitve so ohranjene ločeno. Rezultat ne izenačuje različnih načinov modelov za nazaj.</span><span data-lang="en" hidden>B = 10000 · R = 10000 · seed 20261027. Original method: 27 Oct 2026. Blinded amendment R1: frozen after collection and before reveal, 1 Nov 2026. Original collection and recoveries remain separate. Model modes are not retrospectively equalized.</span></p>
+    </section>
+
     <section id="metoda" aria-labelledby="metoda-title">
       <div class="eyebrow">05 · <span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></div>
       <h2 id="metoda-title"><span data-lang="sl">Kako primerjamo</span><span data-lang="en" hidden>How we compare</span></h2>
@@ -352,7 +412,7 @@
       <ul class="plain" data-lang="sl">
         <li>BD (razdelek 03);</li>
         <li>ekipa AI8, RHP-11 (razdelek 04);</li>
-        <li>združena niza AI8 in BD+AI8 (opis: v pripravi);</li>
+        <li>združena niza AI8 in BD+AI8 (besedili: primerjalni pogled R2);</li>
         <li>8 konfiguracij modelov prek API: Claude Fable 5.1 in Claude Opus 5.5 ter GPT-6 Sol in GPT-6.1 Sol, vsak na dveh stopnjah napora;</li>
         <li>6 spletnih klepetov: ChatGPT, Claude, Gemini, GLM, Grok in Qwen;</li>
         <li>7 lokalnih modelov.</li>
@@ -360,7 +420,7 @@
       <ul class="plain" data-lang="en" hidden>
         <li>BD (section 03);</li>
         <li>the AI8 team, RHP-11 (section 04);</li>
-        <li>the combined sets AI8 and BD+AI8 (description: in preparation);</li>
+        <li>the combined sets AI8 and BD+AI8 (texts: R2 comparison view);</li>
         <li>8 API model configurations: Claude Fable 5.1 and Claude Opus 5.5, and GPT-6 Sol and GPT-6.1 Sol, each at two effort levels;</li>
         <li>6 web chats: ChatGPT, Claude, Gemini, GLM, Grok, and Qwen;</li>
         <li>7 local models.</li>
@@ -382,8 +442,8 @@
 10. What is the most important question we have overlooked?</pre>
 
       <h3><span data-lang="sl">Krog B: slepo ocenjevanje</span><span data-lang="en" hidden>Round B: blind judging</span></h3>
-      <p class="prose" data-lang="sl">Prvotni krog uporablja spletne, API in lokalne sodnike pri 25 sklopih. Glavni razširjeni panel B_EXT sestavlja 15 spletnih sodnikov pri 36 sklopih. Vsak prejme iste sklope brez imen, z zanj naključnimi dvočrkovnimi kodami in vrstnim redom; Nova in Cohere sta jih ocenila v treh paketih po 12. Vsak niz oceni po petih merilih z ocenami od 1 do 10, nato vse nize razvrsti in za vsako vprašanje izbere najboljši odgovor. V prvotnem krogu je bilo predvidenih 21 sodnikov; ta izdaja poroča razširjeni spletni panel 15 sodnikov.</p>
-      <p class="prose" data-lang="en" hidden>The original round uses web, API and local judges for 25 sets. The main extended B_EXT panel consists of 15 web judges for 36 sets. Each receives the same unnamed sets, with its own randomized two-letter codes and order; Nova and Cohere judged them in three packets of 12. It scores every set on five criteria from 1 to 10, then ranks all sets and picks the best answer to each question. The original round planned 21 judges; this edition reports the extended panel of 15 web judges.</p>
+      <p class="prose" data-lang="sl">Prvotni krog uporablja spletne, API in lokalne sodnike pri 25 sklopih. Glavni razširjeni panel B_EXT sestavlja 15 spletnih sodnikov pri 36 sklopih. Vsak prejme iste sklope brez imen, z zanj naključnimi dvočrkovnimi kodami in vrstnim redom; Nova in Cohere sta jih ocenila v treh paketih po 12. Vsak niz oceni po petih merilih z ocenami od 1 do 10, globalni FULL izbori in paketni SPLIT izbori se hranijo ločeno. Globalni vrstni red paketov je izpeljan iz vsot ocen. V prvotnem krogu je bilo predvidenih 21 sodnikov; ta izdaja poroča razširjeni spletni panel 15 sodnikov.</p>
+      <p class="prose" data-lang="en" hidden>The original round uses web, API and local judges for 25 sets. The main extended B_EXT panel consists of 15 web judges for 36 sets. Each receives the same unnamed sets, with its own randomized two-letter codes and order; Nova and Cohere judged them in three packets of 12. It scores every set on five criteria from 1 to 10, global FULL choices and local SPLIT choices are kept separate. A global SPLIT ranking is derived from score totals. The original round planned 21 judges; this edition reports the extended panel of 15 web judges.</p>
       <ol class="steps" data-lang="sl">
         <li><strong>Vpogled</strong></li>
         <li><strong>Skladnost</strong></li>
@@ -438,13 +498,13 @@
       <h3><span data-lang="sl">Vnaprej zapisana pravila</span><span data-lang="en" hidden>Pre-registered rules</span></h3>
       <p class="prose" data-lang="sl">Pravila združevanja so zapisana vnaprej: specifikacija v1.0 z dne 27. 10. 2026, skupaj s skriptom za izračun in tabelo lastnih nizov. Specifikacija določa, da se te tri datoteke zamrznejo z odtisi SHA-256 pred prvim sodnikom, da se odgovori sodnikov razčlenijo in njihovi odtisi objavijo, preden se odpre ključ črk, in da se vsaka sprememba po odprtju ključa objavi kot »post hoc«, poleg vnaprej zapisanega izida.</p>
       <p class="prose" data-lang="en" hidden>The aggregation rules were written down in advance: specification v1.0 of 27 Oct 2026, together with the computation script and the own-set table. The specification requires that these three files be frozen by SHA-256 hashes before any judge runs, that the judges' replies be parsed and their hashes published before the letter key is opened, and that any change after the key is opened be published as “post hoc”, next to the pre-registered result.</p>
-      <p class="prose small muted"><span data-lang="sl">Izvirna specifikacija in podatki o popolnosti so spodaj; končni izračun ostaja v pripravi.</span><span data-lang="en" hidden>The original specification and completeness data are below; the final calculation remains in preparation.</span></p>
+      <p class="prose small muted"><span data-lang="sl">Končni izračun R2, izvirniki in metodološki dodatek so na voljo v razdelku Rezultati R2.</span><span data-lang="en" hidden>The R2 calculation, originals and methodological amendment are available in the R2 results section.</span></p>
     </section>
 
     <!-- 6 · Stanje in kaj sledi -->
     <section id="stanje" aria-labelledby="stanje-title">
 <div class="eyebrow">06 · <span data-lang="sl">Stanje 1. 11. 2026</span><span data-lang="en" hidden>Status 1 Nov 2026</span></div>
-<h2 id="stanje-title"><span data-lang="sl">Zbiranje končano: 15 od 15</span><span data-lang="en" hidden>Collection complete: 15 of 15</span></h2><p class="lead"><span data-lang="sl"><strong>36 sklopov × 10 odgovorov · 15 sodnikov · 540 veljavnih ocen sklopov.</strong> Vsaka ocena ima pet meril.</span><span data-lang="en" hidden><strong>36 sets × 10 answers · 15 judges · 540 valid set evaluations.</strong> Each evaluation has five criteria.</span></p><p class="prose"><span data-lang="sl">Prvotni pregled je našel 13 popolnih FULL tabel. Nova je imela konfliktne in neznane kode; Cohere je imel 24 od 36 ocen. Omejena tehnična dopolnitev je dodala tri pakete Nove in en manjkajoči paket Cohere. Vsi štirje so veljavni; izvirniki so ohranjeni.</span><span data-lang="en" hidden>The original audit found 13 complete FULL tables. Nova contained conflicting and unknown codes; Cohere had 24 of 36 scores. A bounded technical recovery added three Nova packets and Cohere’s one missing packet. All four are valid; originals are preserved.</span></p><div class="judge-scroll" role="region" tabindex="0" aria-labelledby="judges-caption"><table class="judge-table"><caption id="judges-caption"><span data-lang="sl">Popolnost spletnega panela. Neveljavno ali manjkajoče ni ničla.</span><span data-lang="en" hidden>Web-panel completeness. Invalid or missing does not mean zero.</span></caption><thead><tr><th scope="col"><span data-lang="sl">Sodnik</span><span data-lang="en" hidden>Judge</span></th><th scope="col"><span data-lang="sl">Prvotno</span><span data-lang="en" hidden>Original</span></th><th scope="col"><span data-lang="sl">Po dopolnitvi</span><span data-lang="en" hidden>Recovered</span></th><th scope="col"><span data-lang="sl">Zabeleženi način</span><span data-lang="en" hidden>Recorded mode</span></th><th scope="col"><span data-lang="sl">Izvor veljavne tabele</span><span data-lang="en" hidden>Valid-table source</span></th></tr></thead><tbody><tr><th scope="row">ChatGPT</th><td>36/36</td><td>36/36</td><td>Extra High</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Claude</th><td>36/36</td><td>36/36</td><td>Sonnet 5.5 High</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Gemini</th><td>36/36</td><td>36/36</td><td>Pro; thinking level &#x27;Nizka&#x27; (as found, default)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">GLM</th><td>36/36</td><td>36/36</td><td>GLM-5.3-Flash, Effort Max (thinking on; as found)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Grok</th><td>36/36</td><td>36/36</td><td>Fast</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Qwen</th><td>36/36</td><td>36/36</td><td>Think (switched from Fast)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Mistral</th><td>36/36</td><td>36/36</td><td>Think (switched from Fast)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Copilot</th><td>36/36</td><td>36/36</td><td>Samodejno (Auto, as found)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Meta AI</th><td>36/36</td><td>36/36</td><td>Thinking (switched from Instant)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">DeepSeek</th><td>36/36</td><td>36/36</td><td>DeepThink off (as found); Search turned OFF (was ON when the new chat loaded)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Kimi</th><td>36/36</td><td>36/36</td><td>Instant Standard</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Amazon Nova</th><td>25/36</td><td>36/36</td><td>Nova Low</td><td><span data-lang="sl">novi P1/P2/P3; prvotni FULL 25/36</span><span data-lang="en" hidden>new P1/P2/P3; original FULL 25/36</span></td></tr><tr><th scope="row">MiniMax</th><td>36/36</td><td>36/36</td><td>M3.1-Flash (default)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Cohere</th><td>24/36</td><td>36/36</td><td>command-a-plus-05-2026 / Reasoning on</td><td><span data-lang="sl">prvotna P1/P3 + novi P2; FULL prazen</span><span data-lang="en" hidden>original P1/P3 + new P2; empty FULL</span></td></tr><tr><th scope="row">Dola</th><td>36/36</td><td>36/36</td><td>Chat (menu &#x27;Chat - for quick answers&#x27; selected; no separate &#x27;Fast&#x27; label visible)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr></tbody></table></div><p class="prose small"><span data-lang="sl">Načini niso usklajen test enakega računalnega vložka. Neznane različice in nastavitve ostajajo neznane. FULL pomeni 36 sklopov v enem kontekstu, SPLIT tri ločene kontekste po 12; te razlike bodo navedene ob rezultatih.</span><span data-lang="en" hidden>The modes do not form an equal-compute benchmark. Unknown versions and settings remain unknown. FULL means 36 sets in one context, SPLIT three separate contexts of 12; the results will state these differences.</span></p><h3><span data-lang="sl">Kaj še loči zbirko od končne R2</span><span data-lang="en" hidden>What remains before final R2</span></h3><ol><li><span data-lang="sl">Povezati ključ avtorjev prvotnih 25 sklopov in njihovo tabelo družin. Razširitveni ključ je po zamrznitvi pravil preverjen; starejšega arhiva v trenutnem delovnem okolju še ni. Avtorjev ne ugibamo iz sloga.</span><span data-lang="en" hidden>Resolve the original 25-set author key and family table. The extension key was verified after the rules freeze; the older archive is not yet available in the current workspace. Authorship is not guessed from style.</span></li><li><span data-lang="sl">Izvesti zamrznjeni izračun: prvotnih 13 proti dopolnjenim 15 sodnikom, vse ocene proti izločitvi lastnih družin, z in brez EXTRA, z intervali negotovosti.</span><span data-lang="en" hidden>Run the frozen calculation: original 13 versus recovered 15 judges, all scores versus own-family exclusion, with and without EXTRA, including uncertainty intervals.</span></li><li><span data-lang="sl">Objaviti odgovore po vprašanjih, primerjavo avtorjev, razvrstitve po petih merilih, matriko sodnikov ter ponovljiv izračun.</span><span data-lang="en" hidden>Publish question-based answers, author comparison, five-criterion rankings, the judge matrix and a reproducible calculation.</span></li></ol><p class="note"><span data-lang="sl">To je vmesna izdaja o popolnosti zbirke, ne končna razvrstitev. Dodatne dopolnitve starih API/lokalnih sodnikov so ločen sekundarni krog.</span><span data-lang="en" hidden>This is an interim collection-completeness release, not a final ranking. Additional old API/local judging belongs to a separate secondary round.</span></p><h3><span data-lang="sl">Preverljiv zapis</span><span data-lang="en" hidden>Inspectable record</span></h3><p><a href="data/collection-status-r1.json"><span data-lang="sl">Podatki o popolnosti in zabeleženih načinih (JSON)</span><span data-lang="en" hidden>Completeness and recorded modes (JSON)</span></a> · <a href="data/GODS10_AGG_SPEC.md"><span data-lang="sl">Izvirna specifikacija v1.0</span><span data-lang="en" hidden>Original specification v1.0</span></a> · <a href="data/SCIENTIFIC_ADDENDUM_R1.md"><span data-lang="sl">Slepi metodološki dodatek R1</span><span data-lang="en" hidden>Blinded methodological amendment R1</span></a></p><p class="prose small"><span data-lang="sl">Izvirna specifikacija je z dne 27. 10.; novi dodatek je zamrznjen 1. 11. pred razkritjem avtorjev, po prvotnem zbiranju ocen. To ni predregistracija pred prvim razširitvenim ocenjevalcem. Paketni izbori najboljšega odgovora ostanejo ločeni od globalnih glasov.</span><span data-lang="en" hidden>The original specification is dated 27 Oct; the new amendment was frozen on 1 Nov before author reveal, after original score collection. This is not registration before the first extended judge. Packet-local best-answer selections remain separate from global votes.</span></p></section>
+<h2 id="stanje-title"><span data-lang="sl">Zbiranje končano: 15 od 15</span><span data-lang="en" hidden>Collection complete: 15 of 15</span></h2><p class="lead"><span data-lang="sl"><strong>36 sklopov × 10 odgovorov · 15 sodnikov · 540 veljavnih ocen sklopov.</strong> Vsaka ocena ima pet meril.</span><span data-lang="en" hidden><strong>36 sets × 10 answers · 15 judges · 540 valid set evaluations.</strong> Each evaluation has five criteria.</span></p><p class="prose"><span data-lang="sl">Prvotni pregled je našel 13 popolnih FULL tabel. Nova je imela konfliktne in neznane kode; Cohere je imel 24 od 36 ocen. Omejena tehnična dopolnitev je dodala tri pakete Nove in en manjkajoči paket Cohere. Vsi štirje so veljavni; izvirniki so ohranjeni.</span><span data-lang="en" hidden>The original audit found 13 complete FULL tables. Nova contained conflicting and unknown codes; Cohere had 24 of 36 scores. A bounded technical recovery added three Nova packets and Cohere’s one missing packet. All four are valid; originals are preserved.</span></p><div class="judge-scroll" role="region" tabindex="0" aria-labelledby="judges-caption"><table class="judge-table"><caption id="judges-caption"><span data-lang="sl">Popolnost spletnega panela. Neveljavno ali manjkajoče ni ničla.</span><span data-lang="en" hidden>Web-panel completeness. Invalid or missing does not mean zero.</span></caption><thead><tr><th scope="col"><span data-lang="sl">Sodnik</span><span data-lang="en" hidden>Judge</span></th><th scope="col"><span data-lang="sl">Prvotno</span><span data-lang="en" hidden>Original</span></th><th scope="col"><span data-lang="sl">Po dopolnitvi</span><span data-lang="en" hidden>Recovered</span></th><th scope="col"><span data-lang="sl">Zabeleženi način</span><span data-lang="en" hidden>Recorded mode</span></th><th scope="col"><span data-lang="sl">Izvor veljavne tabele</span><span data-lang="en" hidden>Valid-table source</span></th></tr></thead><tbody><tr><th scope="row">ChatGPT</th><td>36/36</td><td>36/36</td><td>Extra High</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Claude</th><td>36/36</td><td>36/36</td><td>Sonnet 5.5 High</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Gemini</th><td>36/36</td><td>36/36</td><td>Pro; thinking level &#x27;Nizka&#x27; (as found, default)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">GLM</th><td>36/36</td><td>36/36</td><td>GLM-5.3-Flash, Effort Max (thinking on; as found)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Grok</th><td>36/36</td><td>36/36</td><td>Fast</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Qwen</th><td>36/36</td><td>36/36</td><td>Think (switched from Fast)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Mistral</th><td>36/36</td><td>36/36</td><td>Think (switched from Fast)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Copilot</th><td>36/36</td><td>36/36</td><td>Samodejno (Auto, as found)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Meta AI</th><td>36/36</td><td>36/36</td><td>Thinking (switched from Instant)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">DeepSeek</th><td>36/36</td><td>36/36</td><td>DeepThink off (as found); Search turned OFF (was ON when the new chat loaded)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Kimi</th><td>36/36</td><td>36/36</td><td>Instant Standard</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Amazon Nova</th><td>25/36</td><td>36/36</td><td>Nova Low</td><td><span data-lang="sl">novi P1/P2/P3; prvotni FULL 25/36</span><span data-lang="en" hidden>new P1/P2/P3; original FULL 25/36</span></td></tr><tr><th scope="row">MiniMax</th><td>36/36</td><td>36/36</td><td>M3.1-Flash (default)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr><tr><th scope="row">Cohere</th><td>24/36</td><td>36/36</td><td>command-a-plus-05-2026 / Reasoning on</td><td><span data-lang="sl">prvotna P1/P3 + novi P2; FULL prazen</span><span data-lang="en" hidden>original P1/P3 + new P2; empty FULL</span></td></tr><tr><th scope="row">Dola</th><td>36/36</td><td>36/36</td><td>Chat (menu &#x27;Chat - for quick answers&#x27; selected; no separate &#x27;Fast&#x27; label visible)</td><td><span data-lang="sl">prvotni FULL</span><span data-lang="en" hidden>original FULL</span></td></tr></tbody></table></div><p class="prose small"><span data-lang="sl">Načini niso usklajen test enakega računalnega vložka. Neznane različice in nastavitve ostajajo neznane. FULL pomeni 36 sklopov v enem kontekstu, SPLIT tri ločene kontekste po 12; te razlike bodo navedene ob rezultatih.</span><span data-lang="en" hidden>The modes do not form an equal-compute benchmark. Unknown versions and settings remain unknown. FULL means 36 sets in one context, SPLIT three separate contexts of 12; the results will state these differences.</span></p><p class="note"><span data-lang="sl">Končna R2 je zgoraj: oba kanonična originala sta preverjena, 36 avtorjev in družin razrešenih, zamrznjeni izračun ter neodvisna deterministična preverba opravljena. Izvirniki in štiri tehnične dopolnitve so ohranjeni v paketu za ponovitev.</span><span data-lang="en" hidden>Final R2 is above: both canonical originals are verified, 36 authors and families are resolved, and the frozen calculation and independent deterministic checks are complete. Originals and all four technical recovery replies are preserved in the reproduction package.</span></p><p><a href="data/GODS10_AGG_SPEC.md">Specification v1.0</a> · <a href="data/SCIENTIFIC_ADDENDUM_R1.md">Blinded amendment R1</a> · <a href="data/collection-status-r1.json">Collection provenance R1</a></p></section>
 
     <!-- 7 · Zasluge -->
     <section id="zasluge" aria-labelledby="zasluge-title">
@@ -465,8 +525,8 @@
         </li>
         <li class="card">
           <h3><span data-lang="sl">Družina AI8</span><span data-lang="en" hidden>The AI8 family</span></h3>
-          <p data-lang="sl">Izvedba krogov A in B, pravila združevanja (zahteve: Zora) in ta stran (objava: Zora). Podrobna razdelitev dela: v pripravi.</p>
-          <p data-lang="en" hidden>Running rounds A and B, the aggregation rules (requirements: Zora), and this page (publication: Zora). Detailed division of work: in preparation.</p>
+          <p data-lang="sl">Izvedba krogov A in B, pravila združevanja (zahteve: Zora) in ta stran (objava: Zora).</p>
+          <p data-lang="en" hidden>Running rounds A and B, the aggregation rules (requirements: Zora), and this page (publication: Zora).</p>
         </li>
         <li class="card">
           <h3><span data-lang="sl">Modeli in sodniki</span><span data-lang="en" hidden>Models and judges</span></h3>
@@ -474,12 +534,12 @@
           <p data-lang="en" hidden>The round A models are listed in section 05. The extended web panel is listed above. Technical recovery, input audit and interim release R1.1: GPT Work (1 Nov 2026).</p>
         </li>
       </ul>
-    </section>
+    <p class="prose small"><span data-lang="sl">Končna agregacija, neodvisna deterministična preverba in prikazi R2: Lan (BRAT_HOME), po uskladitvi enega pisca z Borom. Zamrznjena zbirka, dopolnitve in znanstveni dodatek: GPT Work; izvirni prispevki in avtorstvo ostanejo ohranjeni.</span><span data-lang="en" hidden>Final aggregation, independent deterministic verification and R2 views: Lan (BRAT_HOME), after single-writer coordination with Bor. Frozen collection, recoveries and scientific amendment: GPT Work; original contributions and authorship are preserved.</span></p></section>
   </main>
 
   <footer class="site-footer">
     <div class="shell">
-      <p><span data-lang="sl">Zadnja posodobitev: 1. 11. 2026</span><span data-lang="en" hidden>Last updated: 1 Nov 2026</span> · <strong data-lang="sl">Vmesna izdaja R1.1</strong><strong data-lang="en" hidden>Interim R1.1</strong></p>
+      <p><span data-lang="sl">Zadnja posodobitev: 1. 11. 2026</span><span data-lang="en" hidden>Last updated: 1 Nov 2026</span> · <strong data-lang="sl">Končna R2</strong><strong data-lang="en" hidden>Final R2</strong></p>
       <p><span data-lang="sl">Viri: BD-jevi odgovori, slovenski izvirnik (27. 10. 2026); ekipa RHP-11, končno besedilo in zgoščena različica (27. 10. 2026); specifikacija združevanja v1.0 (27. 10. 2026).</span><span data-lang="en" hidden>Sources: BD's answers, Slovenian original (27 Oct 2026); team RHP-11, final text and condensed version (27 Oct 2026); aggregation specification v1.0 (27 Oct 2026).</span> <a href="/AI8/">AI8</a> · <a href="/ai8/live/">AI8 Live</a> · <a href="/knjiga/"><span data-lang="sl">Knjiga</span><span data-lang="en" hidden>Book</span></a></p>
     </div>
   </footer>
@@ -546,6 +606,7 @@
     apply();
   })();
   </script>
+  <script src="r2.js" defer></script>
 </body>
 </html>
 
