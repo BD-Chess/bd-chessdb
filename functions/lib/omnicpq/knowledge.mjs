@@ -91,10 +91,18 @@ const cpqProcess = text => /\b(?:gui|klik[a-z]*|zaslon[a-z]*|modal[a-z]*|zavih[a
 
 // Longer aliases suppress only an overlapping generic alias, never another
 // independently named service. A bare acronym is a question, not an SO rule.
+function serviceAliasPattern(row, alias) {
+  const normalized = norm(alias);
+  if (row.service_id === 'TS_SO' && normalized === 'ts suvereni oblak') {
+    // Explicit singular case pairs of the registered full product name only.
+    return 'ts\\s+(?:suvereni\\s+oblak|suverenega\\s+oblaka|suverenemu\\s+oblaku|suverenem\\s+oblaku|suverenim\\s+oblakom)';
+  }
+  return escapeRE(normalized);
+}
 function serviceMatch(registry, text) {
   const value = norm(text), hits = [];
   for (const row of registry.product_modules) for (const alias of [...row.aliases, ...(row.offering_prefixes || [])]) {
-    const pattern = new RegExp(`(^|[^a-z0-9_])(${escapeRE(norm(alias))})(?=$|[^a-z0-9_])`, 'g');
+    const pattern = new RegExp(`(^|[^a-z0-9_])(${serviceAliasPattern(row, alias)})(?=$|[^a-z0-9_])`, 'g');
     for (const match of value.matchAll(pattern)) hits.push({ row, start: match.index + match[1].length, end: match.index + match[0].length });
   }
   const specific = hits.filter(hit => !hits.some(other => other.row !== hit.row && other.start <= hit.start && other.end >= hit.end && other.end - other.start > hit.end - hit.start));
