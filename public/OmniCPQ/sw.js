@@ -1,5 +1,5 @@
 // Only this application's reviewed, hash-verified shell. No API/auth/CPQ interception.
-const RELEASE = 'd77af68299b59c8a1ee6';
+const RELEASE = '9301f9934fd249b69f8f';
 const APP_VERSION = '1.8.5-bridge-stability-r1';
 const ROOT = new URL('./', self.registration.scope);
 const PREFIX = 'omnicpq-shell:' + ROOT.pathname + ':';
