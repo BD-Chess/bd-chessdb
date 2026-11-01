@@ -9,6 +9,54 @@ import {createAutoConnector} from './auto-connect.mjs';
 import {createAgentRun,runLimit,actionSignature,recoveryKind,explicitGoalGrant,goalGrantCovers,configuredChoiceGuard,continuationMessage,conversationForModel} from './agent-session.mjs';
 
 const $ = id => document.getElementById(id);
+
+let followConversation=false,conversationFrame=null;
+function viewportDOMAvailable(){return typeof document.querySelector==='function'&&typeof document.documentElement?.style?.setProperty==='function';}
+function syncViewportInsets(){
+  if(!viewportDOMAvailable())return;
+  const shell=$('composer-shell'),header=document.querySelector('.topbar');
+  const composerHeight=shell&&!shell.hidden?Math.ceil(shell.getBoundingClientRect().height):0;
+  document.documentElement.style.setProperty('--composer-inset',(composerHeight+32)+'px');
+  document.documentElement.style.setProperty('--header-inset',(Math.ceil(header?.getBoundingClientRect().height||0)+12)+'px');
+}
+function conversationNearEnd(){
+  const bottom=$('messages').getBoundingClientRect().bottom;
+  const top=$('composer-shell').hidden?window.innerHeight:$('composer-shell').getBoundingClientRect().top;
+  return bottom>=(document.querySelector('.topbar')?.getBoundingClientRect().bottom||0)&&bottom<=top+100;
+}
+function queueConversationEnd(){
+  if(!followConversation||conversationFrame!==null||typeof window.requestAnimationFrame!=='function'||!$('messages').getClientRects().length)return;
+  const pending={timer:null,raf:null};conversationFrame=pending;
+  const flush=()=>{
+    if(conversationFrame!==pending)return;conversationFrame=null;
+    window.clearTimeout(pending.timer);window.cancelAnimationFrame?.(pending.raf);
+    if(!followConversation)return;syncViewportInsets();
+    const bottom=$('messages').getBoundingClientRect().bottom;
+    const top=$('composer-shell').hidden?window.innerHeight:$('composer-shell').getBoundingClientRect().top;
+    window.scrollTo({top:Math.max(0,window.scrollY+bottom+16-top),behavior:'auto'});
+  };
+  // A throttled renderer must not leave the received answer under the composer.
+  pending.timer=window.setTimeout(flush,40);pending.raf=window.requestAnimationFrame(flush);
+}
+function watchViewportInsets(){
+  if(!viewportDOMAvailable())return;
+  syncViewportInsets();
+  if(window.ResizeObserver){const observer=new window.ResizeObserver(()=>{syncViewportInsets();queueConversationEnd();});observer.observe($('composer-shell'));observer.observe(document.querySelector('.topbar'));}
+  window.addEventListener('resize',()=>{syncViewportInsets();queueConversationEnd();},{passive:true});
+  window.visualViewport?.addEventListener('resize',()=>{syncViewportInsets();queueConversationEnd();},{passive:true});
+
+  let userScrollEpoch=0;
+  const userScroll=direction=>{const epoch=++userScrollEpoch;followConversation=false;if(direction>0)window.setTimeout(()=>{if(epoch===userScrollEpoch&&conversationNearEnd())followConversation=true;},0);};
+  window.addEventListener('wheel',event=>userScroll(event.deltaY),{passive:true});
+  let lastTouchY=null;
+  window.addEventListener('touchstart',event=>{lastTouchY=event.touches[0]?.clientY??null;},{passive:true});
+  window.addEventListener('touchmove',event=>{const y=event.touches[0]?.clientY;if(lastTouchY!==null&&typeof y==='number')userScroll(lastTouchY-y);lastTouchY=y??null;},{passive:true});
+  window.addEventListener('keydown',event=>{if(event.target?.matches?.('input,textarea,[contenteditable="true"]'))return;if(['PageUp','Home','ArrowUp'].includes(event.key))userScroll(-1);else if(['PageDown','End','ArrowDown'].includes(event.key))userScroll(1);});
+  window.addEventListener('pointerdown',event=>{if(event.clientX>=document.documentElement.clientWidth)userScroll(-1);},{passive:true});
+
+  $('go-top').onclick=()=>{userScrollEpoch++;followConversation=false;window.scrollTo({top:0,behavior:'auto'});$('settings-open').focus({preventScroll:true});};
+}
+
 const API = '/.netlify/functions/omnicpq-assistant', AUTH = '/.netlify/functions/omnicpq-auth';
 const STORAGE = 'omnicpq:workspace:v1', PREFS = 'omnicpq:preferences:v1';
 let browserBridge = createBrowserBridge();
@@ -167,7 +215,7 @@ function startNewChat(keepContext=false) {
   $('partner-v16-confirmed').checked = false; $('comparison-count').textContent = 'Brez zapisanih primerjav.';
   $('new-chat-dialog').close(); renderMessages(); updateComparisonGate(); showWorkspaceStatus(); fitComposer(); localWrite(); $('message').focus();
 }
-function fitComposer() { $('message').rows = Math.min(5, Math.max(2, $('message').value.split('\n').length)); }
+function fitComposer() { $('message').rows = Math.min(5, Math.max(2, $('message').value.split('\n').length));syncViewportInsets(); }
 function setBusy(value) {
   state.busy = value; $('send').disabled = value; $('cancel').hidden = !value; $('new-chat').disabled = value || !state.ownerVerified;
   for(const id of ['tour-start','presentation-open'])$(id).disabled=value||!state.ownerVerified||state.role!=='owner';
@@ -229,6 +277,28 @@ function messageNode(message) {
   if (message.role === 'assistant' && message.status !== 'streaming') finishMessage(message);
   return node;
 }
+
+function renderBusinessRequirement(parent,data,original){
+  if(data?.kind!=='BUSINESS_REQUIREMENT'||!data.draft||typeof data.draft!=='object')return false;
+  const draft=data.draft,strings=['title','business_goal','as_is','to_be'],lists=['scope','rules','billing','lifecycle','integrations','acceptance_criteria','proposed_work_items'];
+  if(!strings.every(key=>typeof draft[key]==='string')||!lists.every(key=>Array.isArray(draft[key])&&draft[key].length<=500&&draft[key].every(item=>typeof item==='string')))return false;
+  if(!Array.isArray(data.requirements)||data.requirements.length>500||!Array.isArray(data.open_questions)||data.open_questions.length>500)return false;
+  const panel=element('section','requirement-draft');panel.setAttribute('aria-label','Čitljiv osnutek zahteve');
+  panel.append(element('p','mode-badge','Osnutek za Jira · pregled pred izvedbo'),element('h3','',draft.title||'Osnutek zahteve'),element('p','hint','Ta prikaz ne ustvari naloge v Jira in ne potrjuje poslovne odobritve ali izvedbe. Izvirni odgovor in JSON sta spodaj.'));
+  const labels={business_goal:'Poslovni cilj',as_is:'Sedanje stanje',to_be:'Želeno stanje',scope:'Obseg',rules:'Predlagana pravila',billing:'Obračunavanje',lifecycle:'Življenjski cikel',integrations:'Integracije',acceptance_criteria:'Sprejemna merila',proposed_work_items:'Predlagane naloge'};
+  for(const key of [...strings.slice(1),...lists]){
+    const value=draft[key];if(!value.length)continue;
+    panel.append(element('h4','',labels[key]));
+    if(Array.isArray(value)){const list=element('ul');for(const text of value)list.append(element('li','',text));panel.append(list);}else panel.append(element('p','',value));
+  }
+  if(data.requirements.length){panel.append(element('h4','','Zahteve in navedeni status'));const list=element('ul');
+    const statuses={PROPOSED:'Predlog',CONFIRMED:'Navedeno kot potrjeno',UNKNOWN:'Neznano',CONFLICT:'Navedeno neskladje'};
+    for(const requirement of data.requirements){if(!requirement||typeof requirement.text!=='string')return false;list.append(element('li','',String(requirement.requirement_id||'')+' · '+(statuses[requirement.approval_status]||'Neznano')+': '+requirement.text));}panel.append(list);
+  }
+  if(data.open_questions.length){panel.append(element('h4','','Odprta vprašanja'));const list=element('ul');for(const text of data.open_questions){if(typeof text!=='string')return false;list.append(element('li','',text));}panel.append(list);}
+  const raw=element('details','original-answer');raw.append(element('summary','','Izvirni odgovor in JSON'));const body=element('div','original-answer-content');richText(body,original);raw.append(body);panel.append(raw);parent.replaceChildren(panel);return true;
+}
+
 function finishMessage(message) {
   if (!state.ownerVerified) return;
   const node = message.node; if (!node) return;
@@ -241,6 +311,7 @@ function finishMessage(message) {
   // Raw actions exist before inspecting any generated object. Bad model data
   // must never make the original answer or its diagnostic export inaccessible.
   node.append(actions);
+  if(message.status!=='complete'&&message.meta?.error==='STREAM_ENDED_WITHOUT_TERMINAL')node.append(element('p','stream-problem','Tok se je končal brez potrditve zaključka. Vzrok ni potrjen. Prejeto besedilo in izvoz sta ohranjena.'));
   const proposal = message.status === 'complete' ? navigationProposal(message.content, message.browserObservation) : null;
   if (proposal) {
     const panel = element('div','browser-action');
@@ -262,6 +333,7 @@ function finishMessage(message) {
   try { richText(message.contentNode, visibleAnswer(message.content) || 'Naslednji korak je prikazan spodaj.'); }
   catch { message.contentNode.textContent = message.content || 'Brez prejetega besedila.'; }
   const data = structured(message.content, message.meta?.sources);
+  if(data&&hasValidLifecycle(message)){try{renderBusinessRequirement(message.contentNode,data,visibleAnswer(message.content));}catch{/* Original rich text remains the fallback. */}}
   const validation = message.meta?.lifecycleValidation;
   if (data || (validation && validation.state !== 'ABSENT')) {
     const verified = hasValidLifecycle(message), panel = element('div', 'validation ' + (verified ? 'valid' : 'invalid'));
@@ -298,7 +370,7 @@ function renderMessages() {
       group.details.append(messageNode(m));
     }else nodes.push(messageNode(m));
   }
-  $('messages').replaceChildren(...nodes);$('welcome').hidden=state.messages.length>0;
+  $('messages').replaceChildren(...nodes);$('welcome').hidden=state.messages.length>0;queueConversationEnd();
 }
 function saveSession(kind) {
   const data = exportSession(state);
@@ -784,7 +856,7 @@ async function send(event, browserRun = null) {
     request.history = history; request.clientRequestId = uuid();
     state.messages.push({ role: 'user', content: request.message, input: inputRecord });
     answer = { role: 'assistant', content: '', status: 'streaming', input: inputRecord, browserObservation:request.browser, meta: {}, startedAt: new Date().toISOString(), ttftMs: null, totalMs: null };
-    state.messages.push(answer); renderMessages(); if(!browserRun)$('message').value = ''; state.promptId = null; fitComposer();
+    state.messages.push(answer); if(!browserRun)followConversation=true; renderMessages(); if(!browserRun)$('message').value = ''; state.promptId = null; fitComposer();
     start = performance.now();
     const response = await fetch(API, { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request), signal: controller.signal });
     run.modelCalls++;
@@ -802,12 +874,12 @@ async function send(event, browserRun = null) {
       if (frame.type === 'identity') Object.assign(answer.meta, { observedModel: frame.model, observedReasoning: frame.reasoning, providerRequestId: frame.providerRequestId, responseId: frame.responseId });
       if (frame.type === 'delta' && !terminal) {
         if (answer.ttftMs === null) answer.ttftMs = performance.now() - start;
-        answer.content += frame.text; answer.contentNode.textContent = visibleAnswer(answer.content);
+        answer.content += frame.text; answer.contentNode.textContent = visibleAnswer(answer.content); queueConversationEnd();
       }
       if (frame.type === 'done') { answer.status = frame.status === 'complete' ? 'complete' : 'partial'; Object.assign(answer.meta, frame); if (frame.budget) showUsage(frame.budget); terminal = true; }
       if (frame.type === 'error') { answer.status = frame.code === 'CANCELLED' ? 'cancelled' : 'partial'; answer.meta.error = frame.code; notice(issue(frame.code)); terminal = true; }
     }
-    if (!terminal) answer.status = 'partial';
+    if (!terminal) {if(controller.signal.aborted){answer.status='cancelled';answer.meta.error='CANCELLED';notice('Odgovor ustavljen. Prejeti del ostane v pogovoru.');}else{answer.status='partial';answer.meta.error='STREAM_ENDED_WITHOUT_TERMINAL';answer.meta.incompleteReason='CLIENT_TERMINAL_MISSING_CAUSE_UNKNOWN';notice('Odgovor se je prekinil brez potrditve zaključka. Prejeti del ostane ohranjen; nadaljuješ lahko z novim vprašanjem. Vzrok prekinitve ni potrjen.');}}
     const proposal = answer.status === 'complete' ? navigationProposal(answer.content,request.browser) : null;
     if (proposal && $('browser-auto').checked && automaticStageGoal(run,request.browser) && !state.browserStop && !controller.signal.aborted && state.accountId === run.accountId && run.epoch === accessEpoch) {
       const key = actionSignature(proposal);
@@ -966,7 +1038,7 @@ async function installWorker() {
 }
 
 experience=createExperience({document,window,authorized:()=>state.ownerVerified&&state.role==='owner'&&!state.busy,setMode:mode=>{setMode(mode);localWrite();},setDraft:text=>setDraft(text,state.mode),notice});
-initCards(); ownerAccess(false);
+initCards(); ownerAccess(false);watchViewportInsets();
 try {
   const prefs = JSON.parse(localStorage.getItem(PREFS) || '{}');
   $('experimental-gui').checked = prefs.experimentalGui !== false;
