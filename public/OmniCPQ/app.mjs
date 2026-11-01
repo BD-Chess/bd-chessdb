@@ -528,6 +528,10 @@ function browserProblem(error) {
     BRIDGE_UPDATE_REQUIRED:'Razširitev je starejša od protokola FULL GUI v2. Posodobi celotno mapo razširitve in klikni Znova naloži v Edge; CPQ zavihka ne osvežuj.',
     BRIDGE_INVALID_COMMAND:'Povezan je starejši Browser Bridge. Posodobi razširitev na FULL GUI 1.1.0 ter jo znova naloži brez osvežitve CPQ urejevalnika.',
     BRIDGE_DEBUGGER_UNAVAILABLE:'Edge debugger/CDP ni dosegljiv. Upravljanje miške in tipkovnice ni potrjeno; preveri dovoljenje razširitve in organizacijsko politiko.',
+    CPQ_OBSERVED_DESTINATION_MISMATCH:'Zahtevani cilj je med opaženimi kontrolami. Predlagani klik cilja drugam; korak je zadržan.',
+    CPQ_NAVIGATION_PATH_UNPROVEN:'Pot do zahtevanega cilja še ni preverjena. Navigacijski klik je zadržan; naslednji korak zahteva svež dokaz ali pregled poti.',
+    CPQ_NAVIGATION_TARGET_AMBIGUOUS:'Več opaženih gumbov ima isto oznako. Izbira primerka ni potrjena; klik je zadržan.',
+    CPQ_NAVIGATION_EFFECT_UNPROVEN:'Klik je bil odposlan, učinek pa ni potrjen. Nadaljevanje in ponovitev sta zadržana.',
     CPQ_GOAL_ACTION_MISMATCH:'Predlagano dejanje ali cilj se ne ujema z naročenim klikom oziroma izbiro. Samodejni poseg je zadržan.',
     CPQ_NAVIGATION_GOAL_ONLY:'Cilj zahteva prikaz v CPQ. Predlagana poslovna sprememba ni dovoljena za samodejno izvedbo.',
     CPQ_GOAL_CONSTRAINT_REVIEW_REQUIRED:'Cilj vsebuje izrecno omejitev. Pred poslovno spremembo preveri predlagani poseg; samodejno nadaljevanje je zadržano.',
@@ -600,6 +604,7 @@ async function readBrowserObservation(options={}) {
     throw e;
   }
   state.browserObservation = o;
+  rememberNavigationAmbiguities(state.agentRun,o);
   $('browser-preview').hidden = false;
   $('browser-observation').textContent = JSON.stringify({title:o.title,url:o.url,capturedAt:o.capturedAt,routeScope:o.routeScope,
     navigationLocked:o.navigationLocked,dialogOpen:o.dialogOpen,fields:o.fields,text:o.text,controls:o.controls},null,2);
@@ -793,6 +798,64 @@ function stageMaterialGoalAllows(value, action, observation, prepared) {
   return false;
 }
 
+
+// Permission evidence only. Observed controls or issued clicks do not attest arrival.
+const navigationNoDispatchErrors=new WeakSet(),navigationProgress=new WeakMap(),navigationKnownAmbiguities=new WeakMap(),navigationUnprovenEffects=new WeakMap();
+const navigationControlKinds=new Set(['button','link','tab','menuitem','treeitem']);
+const navigationLabel=value=>stageGoalText(value,false).replace(/\s+/g,' ').trim();
+function rememberNavigationAmbiguities(run,observation){
+  if(!run||typeof run!=='object'||observation.schema!=='omnicpq.gui.observation.v2')return;
+  const scope=JSON.stringify([observation.documentKey,observation.framePath||'']);
+  let scopes=navigationKnownAmbiguities.get(run);if(!scopes){scopes=new Map();navigationKnownAmbiguities.set(run,scopes);}
+  let labels=scopes.get(scope);if(!labels){labels=new Set();scopes.set(scope,labels);}
+  const counts=new Map();for(const control of observation.controls){if(!navigationControlKinds.has(control.kind))continue;const label=navigationLabel(control.label);if(label)counts.set(label,(counts.get(label)||0)+1);}
+  for(const [label,count] of counts)if(count>1)labels.add(label);
+}
+function navigationTargetAmbiguous(run,observation,action){
+  const target=observation.controls.find(c=>c.id===action.targetId);if(!target||!navigationControlKinds.has(target.kind))return false;
+  const label=navigationLabel(target.label);if(!label)return false;
+  const scope=JSON.stringify([observation.documentKey,observation.framePath||'']);
+  return navigationKnownAmbiguities.get(run)?.get(scope)?.has(label)||observation.controls.filter(c=>navigationControlKinds.has(c.kind)&&navigationLabel(c.label)===label).length>1;
+}
+function navigationEffectStatus(request,cursor,before,after){
+  if(after.schema!=='omnicpq.gui.observation.v2'||after.dialogOpen!==false||after.revision===before.revision)return 'EFFECT_UNPROVEN';
+  const destination=request.nodes[cursor];
+  if(navigationLabel(after.title)===destination&&navigationLabel(before.title)!==destination)return 'DESTINATION_TITLE_OBSERVED';
+  if(cursor+1<request.nodes.length){
+    const next=request.nodes[cursor+1],eligible=o=>o.controls.filter(c=>navigationControlKinds.has(c.kind)&&navigationLabel(c.label)===next&&c.enabled===true&&c.visibleInViewport===true);
+    const all=after.controls.filter(c=>navigationControlKinds.has(c.kind)&&navigationLabel(c.label)===next);
+    if(!eligible(before).length&&eligible(after).length===1&&all.length===1)return 'NEXT_REQUESTED_CONTROL_NEWLY_OBSERVED';
+  }
+  return 'EFFECT_UNPROVEN';
+}
+function navigationRequest(value){
+  const goal=stageGoalText(value),first=/^(?:odpri|open|pojdi\s+na|go\s+to|ali lahko odpres|can you open|can you go to)\s+/;
+  if(!first.test(goal)||!navigationOnlyStageGoal(value))return null;
+  let outside='',quote=null,escaped=false;const closes={'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
+  for(const ch of goal){if(quote){if(escaped)escaped=false;else if(ch==='\\')escaped=true;else if(quote.includes(ch))quote=null;outside+=' '.repeat(ch.length);continue;}if(/\p{Quotation_Mark}/u.test(ch)&&!Object.hasOwn(closes,ch))return {ambiguous:true};if(Object.hasOwn(closes,ch)){quote=closes[ch];outside+=' '.repeat(ch.length);}else outside+=ch;}
+  if(quote)return {ambiguous:true};
+  const separators=[...outside.matchAll(/[,;]\s*(?:(?:nato|potem|then)\s+)?|\s+(?:in|ter|and)\s+(?:(?:nato|potem|then)\s+)?|\s+(?:nato|potem|then)\s+/g)];
+  const chunks=[];let start=0;for(const separator of separators){chunks.push(goal.slice(start,separator.index));start=separator.index+separator[0].length;}chunks.push(goal.slice(start));
+  if(chunks.length>6)return {ambiguous:true};const nodes=[];
+  for(let index=0;index<chunks.length;index++){
+    let target=chunks[index].trim();if(index===0)target=target.replace(first,'');else target=target.replace(/^(?:odpri|odpres|open|pojdi\s+na|pojdes\s+na|go\s+to)\s+/,'');
+    target=target.replace(/[.!?]\s*$/,'').trim();const close=closes[target[0]];
+    if(close){if(target.length<3||!close.includes(target.at(-1)))return {ambiguous:true};target=target.slice(1,-1).trim();}
+    else if(/[\p{Quotation_Mark}\x60]|[;,\n]/u.test(target)||/^(?:preveri|poglej|razlozi|pojasni|check|explain|verify)\b/.test(target))return {ambiguous:true};
+    if(!target||target.length>160||/[\u0000-\u001F]/.test(target))return {ambiguous:true};nodes.push(target.replace(/\s+/g,' '));
+  }
+  return {nodes,key:JSON.stringify(nodes)};
+}
+function navigationDestinationStatus(value,observation,action,cursor=0){
+  if(!['click','doubleClick'].includes(action.operation))return 'NOT_APPLICABLE_OPERATION';
+  const request=navigationRequest(value);if(!request)return 'NOT_APPLICABLE_GOAL';if(request.ambiguous)return 'AMBIGUOUS_NAVIGATION_REQUEST';
+  if(cursor>=request.nodes.length)return 'REQUEST_ALREADY_CONSUMED';
+  if(observation.schema!=='omnicpq.gui.observation.v2'||observation.dialogOpen!==false)return 'UNRESOLVED_CONTEXT';
+  const target=request.nodes[cursor],all=observation.controls.filter(c=>navigationControlKinds.has(c.kind)&&navigationLabel(c.label)===target),destinations=all.filter(c=>c.enabled===true&&c.visibleInViewport===true);
+  if(all.length>1)return 'AMBIGUOUS_TARGET';
+  if(!destinations.length)return 'TARGET_NOT_OBSERVED';return destinations.some(c=>c.id===action.targetId)?'REQUESTED_CONTROL_OBSERVED':'CONFLICT';
+}
+
 async function executeBrowserNavigation(proposal,epoch,guided=false) {
   const connectionEpoch=browserConnectionEpoch;
   if (state.browserStop || state.browserPaused || !state.ownerVerified || epoch !== accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
@@ -819,6 +882,22 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   if (!prepared || prepared.revision !== before.revision || prepared.documentKey !== before.documentKey) throw Error('CPQ_SCREEN_CHANGED');
   const isMaterial=['business_write','irreversible','lose_unsaved'].includes(prepared.risk) || ['fill','check','selectNative','upload','drag','key'].includes(a.operation);
   if (isMaterial && state.role !== 'owner') throw Error('CPQ_OWNER_REQUIRED');
+  let acceptedNavigationStep=null;
+  if(guided&&prepared.risk==='ordinary'&&['click','doubleClick'].includes(a.operation)){
+    const run=state.agentRun,request=navigationRequest(run?.goal);
+    if(navigationTargetAmbiguous(run,before,a))throw Error('CPQ_NAVIGATION_TARGET_AMBIGUOUS');
+    if(request){
+      if(!run||typeof run!=='object')throw Error('CPQ_NAVIGATION_PATH_UNPROVEN');
+      let progress=navigationProgress.get(run);if(!progress||progress.key!==request.key){progress={key:request.key,cursor:0};navigationProgress.set(run,progress);}
+      const evidence=navigationDestinationStatus(run.goal,before,a,progress.cursor);
+      if(evidence!=='REQUESTED_CONTROL_OBSERVED'){
+        const error=Error(evidence==='CONFLICT'?'CPQ_OBSERVED_DESTINATION_MISMATCH':evidence==='AMBIGUOUS_TARGET'?'CPQ_NAVIGATION_TARGET_AMBIGUOUS':'CPQ_NAVIGATION_PATH_UNPROVEN');
+        if(evidence==='CONFLICT'||evidence==='TARGET_NOT_OBSERVED')navigationNoDispatchErrors.add(error);
+        throw error;
+      }
+      acceptedNavigationStep={progress,cursor:progress.cursor,request};
+    }
+  }
   if (guided && isMaterial && navigationOnlyStageGoal(state.agentRun?.goal)) throw Error('CPQ_NAVIGATION_GOAL_ONLY');
   if (guided && isMaterial && unboundStageConstraint(state.agentRun?.goal)) throw Error('CPQ_GOAL_CONSTRAINT_REVIEW_REQUIRED');
   if (guided && isMaterial && !stageMaterialGoalAllows(state.agentRun?.goal,a,before,prepared)) throw Error('CPQ_GOAL_ACTION_MISMATCH');
@@ -836,6 +915,18 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   const result=await browserRequest(()=>browserBridge.execute(a,{humanApproved,guidedAuthorization:guided,approvalSource:inherited?'EXPLICIT_USER_GOAL':humanApproved?'EXPLICIT_ACTION':'USER_GOAL'}));
   if (connectionEpoch!==browserConnectionEpoch || !['DISPATCHED','ALREADY_MATCHES'].includes(result.receipt?.status)) throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
   const after=await readBrowserObservation();
+  if(acceptedNavigationStep){
+    const evidence=navigationEffectStatus(acceptedNavigationStep.request,acceptedNavigationStep.cursor,before,after);
+    if(evidence==='EFFECT_UNPROVEN'){
+      const error=Error('CPQ_NAVIGATION_EFFECT_UNPROVEN');
+      const summary='Klik je bil odposlan, učinek pa ni potrjen. Nadaljevanje in ponovitev sta zadržana.';
+      const metadata={receipt:result.receipt,afterObservationId:after.id,afterRevision:after.revision,effect:'UNPROVEN',summary};
+      navigationUnprovenEffects.set(error,metadata);
+      state.guiCheckpoint={goal:state.guiCheckpoint?.goal||null,actionId:a.actionId,step:(state.guiCheckpoint?.step||0)+1,at:new Date().toISOString(),documentKey:after.documentKey,afterRevision:after.revision,status:'DISPATCHED_EFFECT_UNPROVEN',summary};
+      $('browser-result').textContent=summary;localWrite();throw error;
+    }
+    if(acceptedNavigationStep.progress.cursor===acceptedNavigationStep.cursor)acceptedNavigationStep.progress.cursor++;
+  }
   const summary=`${result.receipt.target.operation}: ${result.receipt.target.label}. Izvajalnik: ${result.receipt.status}. Novo opazovanje ${after.title}. To NI potrdilo shranitve ali realizacije.`;
   state.guiCheckpoint={goal:state.guiCheckpoint?.goal||null,actionId:a.actionId,step:(state.guiCheckpoint?.step||0)+1,
     at:new Date().toISOString(),documentKey:after.documentKey,afterRevision:after.revision,status:'OBSERVED_NOT_BUSINESS_ATTESTED',summary};
@@ -910,7 +1001,8 @@ async function send(event, browserRun = null) {
         run.attempted.push(key); run.step++;
         try { answer.meta.browserNavigation = await executeBrowserNavigation(proposal,run.epoch,true); continueNavigation = true; }
         catch(e) {
-          const kind=recoveryKind(e.message),summary=browserProblem(e);answer.meta.browserNavigation={error:e.message,summary};
+          const dispatched=navigationUnprovenEffects.get(e);navigationUnprovenEffects.delete(e);
+          const kind=dispatched?null:navigationNoDispatchErrors.delete(e)?'REPLAN':recoveryKind(e.message),summary=browserProblem(e);answer.meta.browserNavigation={...dispatched,error:e.message,summary};
           if(kind&&run.recoveries<run.budget.recoveries&&!state.browserStop&&!state.browserPaused){
             try{await readBrowserObservation();run.recoveries++;continueNavigation=true;
               answer.meta.browserNavigation.summary=summary+' '+(kind==='RECONCILE_OUTCOME'?'OUTCOME_UNKNOWN: uskladi opaženi izid; ne ponavljaj ustvarjanja/shranitve.':'Pripravi nov korak iz svežega zaslona.');}
