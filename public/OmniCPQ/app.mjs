@@ -652,6 +652,28 @@ function stageGoalText(value, stripPrefix = true) {
   const goal = String(value || '').normalize('NFD').replace(/\p{Diacritic}/gu,'').trim().toLowerCase();
   return stripPrefix ? goal.replace(/^(?:(?:prosim[:,]?|zdaj|please)\s+)*(?:v (?:cpq|stage|obstojecem narocilu|narocilu)(?:\s+omni-\d+)?[:,]?\s+)?/,'') : goal;
 }
+
+// Direct second-person requests retain the same narrow action/value gates.
+// Normalize only recognized unquoted directive verbs; quoted data stays data.
+function stageDirectiveText(value) {
+  const goal=stageGoalText(value);
+  const verbs={nastavis:'nastavi',vneses:'vnesi',spremenis:'spremeni',izberes:'izberi',kliknes:'klikni',pritisnes:'pritisni',shranis:'shrani',set:'set',enter:'enter',change:'change',select:'select',click:'click',press:'press',save:'save'};
+  const initial=goal.match(/^(?:ali lahko (nastavis|vneses|spremenis|izberes|kliknes|pritisnes|shranis)|can you (set|enter|change|select|click|press|save))(?=\s|[?!.]|$)/);
+  if(!initial)return goal;
+  let outside='',quote=null,escaped=false;
+  const closes={'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
+  for(const ch of goal){
+    if(quote){if(escaped)escaped=false;else if(ch==='\\')escaped=true;else if(quote.includes(ch))quote=null;outside+=' '.repeat(ch.length);continue;}
+    if(/\p{Quotation_Mark}/u.test(ch)&&!Object.hasOwn(closes,ch))return goal;
+    if(Object.hasOwn(closes,ch)){quote=closes[ch];outside+=' '.repeat(ch.length);}else outside+=ch;
+  }
+  if(quote)return goal;
+  const replacements=[{start:0,end:initial[0].length,text:verbs[initial[1]||initial[2]]}];
+  for(const match of outside.matchAll(/(?:[.;,\n]\s*|\b(?:in|ter|nato|potem|and|then)\s+)(nastavis|vneses|spremenis|izberes|kliknes|pritisnes|shranis)\b/g))replacements.push({start:match.index+match[0].length-match[1].length,end:match.index+match[0].length,text:verbs[match[1]]});
+  let directive=goal;for(const replacement of replacements.reverse())directive=directive.slice(0,replacement.start)+replacement.text+directive.slice(replacement.end);
+  return directive.replace(/\?\s*$/,'').trim();
+}
+
 function navigationOnlyStageGoal(value) {
   const goal = stageGoalText(value);
   if (!/^(?:(?:prosim[:,]?|please|zdaj)\s+)*(?:odpri|pojdi|pokazi|prikazi|open|go|show|ali lahko (?:odpres|pojdes|pokazes|prikazes)|can you (?:open|go|show))\b/.test(goal)) return false;
@@ -670,7 +692,7 @@ function navigationOnlyStageGoal(value) {
 // Model output cannot widen a target-directed click/select into arbitrary editing.
 // Labels come from the fresh observation, never from the model's reason text.
 function stageTargetGoalAllows(value, action, observation) {
-  let goal=stageGoalText(value).replace(/^ali lahko (kliknes|pritisnes|izberes)\b/,(_,verb)=>({kliknes:'klikni',pritisnes:'pritisni',izberes:'izberi'}[verb])).replace(/^can you (click|press|select)\b/,'$1');
+  let goal=stageDirectiveText(value).replace(/^ali lahko (kliknes|pritisnes|izberes)\b/,(_,verb)=>({kliknes:'klikni',pritisnes:'pritisni',izberes:'izberi'}[verb])).replace(/^can you (click|press|select)\b/,'$1');
   const targetVerb=/^(?:klikni|pritisni|izberi|click|press|select)\b/.test(goal);
   const navigationVerb=/^(?:odpri|pojdi|pokazi|prikazi|open|go|show)\b/.test(goal);
   if(!targetVerb&&!navigationVerb)return true;
@@ -709,7 +731,7 @@ const stageFieldName = value => {
   return /^(?:cpu|vcpu)$/.test(name)?'cpu':/^(?:ram|disk)(?: gb)?$/.test(name)?name.split(' ')[0]:null;
 };
 function stageNamedGoalBindings(value) {
-  let goal=stageGoalText(value),plain='',quote=null,quoted='',escaped=false;
+  let goal=stageDirectiveText(value),plain='',quote=null,quoted='',escaped=false;
   const closes={'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
   for(const ch of goal){
     if(quote){if(escaped){escaped=false;quoted+=' ';}else if(ch==='\\'){escaped=true;quoted+=' ';}else if(quote.includes(ch)){plain+=/^\s*\d+\s*$/.test(quoted)?' '+quoted+' ':' '.repeat(quoted.length+2);quote=null;quoted='';}else quoted+=ch;continue;}
@@ -744,7 +766,7 @@ function stageMaterialGoalAllows(value, action, observation, prepared) {
   const field=control.choiceOwner||control;
   // Existing configuredChoiceGuard must already have accepted this exact driver/value.
   if(/^(?:model postavitve|operacijski sistem|os)\b/.test(fold(field.label))&&['fill','selectNative','click'].includes(action.operation))return true;
-  const goal=stageGoalText(value),spec=stageNamedGoalBindings(value);
+  const goal=stageDirectiveText(value),spec=stageNamedGoalBindings(value);
   if(action.operation==='fill'||action.operation==='selectNative'){
     const name=stageFieldName(control.label);
     return !spec.unknown&&name&&observation.controls.filter(c=>stageFieldName(c.label)===name).length===1&&Object.hasOwn(spec.bindings,name)&&(!action.inputMode||action.inputMode==='replace')&&typeof action.value==='string'&&action.value.trim()===spec.bindings[name];
@@ -755,7 +777,7 @@ function stageMaterialGoalAllows(value, action, observation, prepared) {
       const text=clause.trim().replace(/[.!?]+$/,'');
       const match=text.match(/^(?:klikni|pritisni|izberi|click|press|select)\s+(?:(?:gumb|zavihek|button|tab)\s+)?(.+)$/);
       const target=match?.[1]?.replace(/^["'“„»«‘]|["'”“«»’]$/g,'').trim();
-      return target===label||/^(?:shrani|ustvari|dodaj|odstrani|uredi|save|create|add|remove|edit)\b/.test(text)&&(text===label||/^(?:shrani|save)$/.test(label)&&/^(?:shrani|save) (?:konfiguracijo|configuration)$/.test(text));
+      return target===label||/^(?:shrani|ustvari|dodaj|odstrani|uredi|save|create|add|remove|edit)\b/.test(text)&&(text===label||/^(?:shrani|save)(?: (?:konfiguracijo|configuration))?$/.test(label)&&/^(?:shrani|save)(?: (?:konfiguracijo|configuration))?$/.test(text));
     });
     if(!explicit)return false;
     if(/^(?:shrani|save|potrdi|confirm)\b/.test(label)){
