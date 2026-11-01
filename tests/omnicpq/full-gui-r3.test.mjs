@@ -333,3 +333,205 @@ test('explicit named STAGE goal inherits the matching business effect, never a d
   for(const s of ['Ne oddaj OMNI-99999','Razloži kako oddaj OMNI-99999','»oddaj OMNI-99999«','Oddaj OMNI-00000','Če oddaj OMNI-99999'])assert.equal(explicitGoalGrant(s,o),null,s);
   assert.equal(explicitGoalGrant('Oddaj OMNI-99999',{...o,url:'https://cpq.apps.prod-ocp.ts.telekom.si/sl/order'}),null);
 });
+
+test('AUDIT_REAL click-only goal must not allow unrelated CPU fill through actual worker',async()=>{
+  const f=fixture(), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.find(c=>c.label==='CPU').id,operation:'fill',value:'12'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Klikni podrobnosti'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.d.querySelector('#cpu').value,'1');
+  } finally {dom.window.close();f.dom.window.close();}
+});
+
+test('AUDIT_REAL_NAMED RAM goal must not allow unrelated CPU fill through actual worker',async()=>{
+  const f=fixture(), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.find(c=>c.label==='CPU').id,operation:'fill',value:'12'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Nastavi RAM na 128'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.d.querySelector('#cpu').value,'1');
+  } finally {dom.window.close();f.dom.window.close();}
+});
+
+test('AUDIT_REAL_VALUE RAM goal must not allow wrong RAM value',async()=>{
+  const f=fixture(), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.find(c=>c.label==='RAM').id,operation:'fill',value:'12'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Nastavi RAM na 128'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.d.querySelector('#ram').value,'4');
+  } finally {dom.window.close();f.dom.window.close();}
+});
+
+test('AUDIT_REAL_VALUE_POSITIVE RAM goal should allow requested RAM value',async()=>{
+  const f=fixture(), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.find(c=>c.label==='RAM').id,operation:'fill',value:'128'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Nastavi RAM na 128'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.d.querySelector('#ram').value,'128');
+  } finally {dom.window.close();f.dom.window.close();}
+});
+
+test('AUDIT_REAL_SAVE RAM goal must not save without explicit request',async()=>{
+  const f=fixture(), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.find(c=>c.label==='Shrani').id,operation:'click'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Nastavi RAM na 128'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.persisted(),null);
+  } finally {dom.window.close();f.dom.window.close();}
+});
+
+
+test('AUDIT_REAL_CROSS mixed RAM CPU goal cannot swap values',async()=>{
+  const f=fixture(), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.find(c=>c.label==='RAM').id,operation:'fill',value:'12'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Nastavi RAM na 128 in CPU na 12'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.d.querySelector('#ram').value,'4');
+  } finally {dom.window.close();f.dom.window.close();}
+});
+
+
+test('AUDIT_REAL_EARLY_SAVE explicit save waits until RAM is set',async()=>{
+  const f=fixture(), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.find(c=>c.label==='Shrani').id,operation:'click'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Nastavi RAM na 128 in shrani'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.persisted(),null);
+  } finally {dom.window.close();f.dom.window.close();}
+});
+
+
+test('AUDIT_REAL_AMBIGUOUS duplicate RAM controls must be disambiguated',async()=>{
+  const f=fixture('<label for="ram2">RAM</label><input id="ram2" type="number" value="8">'), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.filter(c=>c.label==='RAM').at(-1).id,operation:'fill',value:'128'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Nastavi RAM na 128'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.d.querySelector('#ram2').value,'8');
+  } finally {dom.window.close();f.dom.window.close();}
+});
+
+
+test('AUDIT_REAL_WRONG_CLICK different business button must not execute',async()=>{
+  const f=fixture(), dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:app,runScripts:'outside-only'}); let calls=0;
+  try {
+    const k={skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[],canonicalPrompts:prompts.CANONICAL_PROMPTS,
+      retrieve:async()=>({skill:SKILL,text:'SYNTHETIC ONLY',sources:[],intent:{mode:'work'}}),validateLifecycleAnswer:()=>({state:'ABSENT'})};
+    const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,
+      budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
+        calls++; const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;
+        const a={targetId:o.controls.find(c=>c.label==='Shrani').id,operation:'click'};
+        onText(calls===1?'Synthetic wrong proposal.\n```omnicpq_action\n'+JSON.stringify({schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',...a})+'\n```':'Synthetic complete.');
+        return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
+      }});
+    const w=dom.window; Object.assign(w,{...appRuntime,...core,...prompts,...starters,cpqLocation,createBrowserBridge:()=>f.client,Response,Blob,AbortController,TextEncoder});
+    Object.defineProperty(w,'crypto',{value:webcrypto}); w.matchMedia=()=>({matches:false}); w.document.querySelectorAll('dialog').forEach(d=>{d.close=()=>{};d.showModal=()=>{};});
+    w.fetch=(path,options={})=>handler(new Request('https://www.mdlxdcc.org'+path,{...options,headers:{...options.headers,origin:'https://www.mdlxdcc.org'}}));
+    const source=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,''); w.eval(source.replace('health(); installWorker();','window.ready=health();')+'\nwindow.testApp={state,send,connectBrowser};'); await w.ready;
+    w.document.querySelector('#experimental-gui').checked=true; w.document.querySelector('#experimental-gui').onchange(); await f.pair(); await w.testApp.connectBrowser();
+    w.document.querySelector('#message').value='Klikni Podrobnosti'; w.document.querySelector('#browser-auto').checked=true; await w.testApp.send();
+    assert.equal(f.persisted(),null);
+  } finally {dom.window.close();f.dom.window.close();}
+});

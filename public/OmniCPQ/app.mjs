@@ -456,6 +456,7 @@ function browserProblem(error) {
     BRIDGE_UPDATE_REQUIRED:'Razširitev je starejša od protokola FULL GUI v2. Posodobi celotno mapo razširitve in klikni Znova naloži v Edge; CPQ zavihka ne osvežuj.',
     BRIDGE_INVALID_COMMAND:'Povezan je starejši Browser Bridge. Posodobi razširitev na FULL GUI 1.1.0 ter jo znova naloži brez osvežitve CPQ urejevalnika.',
     BRIDGE_DEBUGGER_UNAVAILABLE:'Edge debugger/CDP ni dosegljiv. Upravljanje miške in tipkovnice ni potrjeno; preveri dovoljenje razširitve in organizacijsko politiko.',
+    CPQ_GOAL_ACTION_MISMATCH:'Predlagano dejanje ali cilj se ne ujema z naročenim klikom oziroma izbiro. Samodejni poseg je zadržan.',
     CPQ_NAVIGATION_GOAL_ONLY:'Cilj zahteva prikaz v CPQ. Predlagana poslovna sprememba ni dovoljena za samodejno izvedbo.',
     CPQ_GOAL_CONSTRAINT_REVIEW_REQUIRED:'Cilj vsebuje izrecno omejitev. Pred poslovno spremembo preveri predlagani poseg; samodejno nadaljevanje je zadržano.',
     CPQ_EXPLICIT_APPROVAL_REQUIRED:'Dejanje zahteva izrecno potrditev (oddaja, izbris ali izguba neshranjenega dela). Samodejno izvajanje je ustavljeno.',
@@ -591,8 +592,113 @@ function navigationOnlyStageGoal(value) {
     if (Object.hasOwn(closes,ch)) { quote=closes[ch]; outside+=' '; } else outside+=ch;
   }
   if (quote) return true;
-  return !/(?:[.;,]\s*|\b(?:in|nato|potem|and|then)\s+)(?:(?:prosim[:,]?|please|zdaj)\s+)*(?:nastavi|vnesi|spremeni|konfiguriraj|ustvari|dodaj|odstrani|shrani|oddaj|izbrisi|preklici|storniraj|uredi|izberi|izpolni|nalozi|povecaj|zmanjsaj|set|enter|change|configure|create|add|remove|save|submit|delete|cancel|edit|select|check|fill|upload)\b/.test(outside);
+  return !/(?:[.;,]\s*|\b(?:in|ter|nato|potem|and|then)\s+)(?:(?:prosim[:,]?|please|zdaj)\s+)*(?:nastavi|vnesi|spremeni|konfiguriraj|ustvari|dodaj|odstrani|shrani|oddaj|izbrisi|preklici|storniraj|uredi|izberi|izpolni|nalozi|povecaj|zmanjsaj|set|enter|change|configure|create|add|remove|save|submit|delete|cancel|edit|select|check|fill|upload)\b/.test(outside);
 }
+
+// Model output cannot widen a target-directed click/select into arbitrary editing.
+// Labels come from the fresh observation, never from the model's reason text.
+function stageTargetGoalAllows(value, action, observation) {
+  let goal=stageGoalText(value).replace(/^ali lahko (kliknes|pritisnes|izberes)\b/,(_,verb)=>({kliknes:'klikni',pritisnes:'pritisni',izberes:'izberi'}[verb])).replace(/^can you (click|press|select)\b/,'$1');
+  const targetVerb=/^(?:klikni|pritisni|izberi|click|press|select)\b/.test(goal);
+  const navigationVerb=/^(?:odpri|pojdi|pokazi|prikazi|open|go|show)\b/.test(goal);
+  if(!targetVerb&&!navigationVerb)return true;
+  let outside='',quote=null,escaped=false;
+  const closes={'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
+  for(const ch of goal){
+    if(quote){if(escaped)escaped=false;else if(ch==='\\')escaped=true;else if(quote.includes(ch))quote=null;outside+=' '.repeat(ch.length);continue;}
+    if(/\p{Quotation_Mark}/u.test(ch)&&!Object.hasOwn(closes,ch))return !targetVerb;
+    if(Object.hasOwn(closes,ch)){quote=closes[ch];outside+=' '.repeat(ch.length);}else outside+=ch;
+  }
+  if(quote)return !targetVerb;
+  // A separate, explicit editing instruction retains the existing write gates.
+  if(/(?:[.;,]\s*|\b(?:in|ter|nato|potem|and|then)\s+)(?:(?:prosim[:,]?|please|zdaj)\s+)*(?:nastavi|vnesi|spremeni|konfiguriraj|ustvari|dodaj|odstrani|shrani|oddaj|izbrisi|preklici|storniraj|uredi|izpolni|nalozi|povecaj|zmanjsaj|set|enter|change|configure|create|add|remove|save|submit|delete|cancel|edit|check|fill|upload)\b/.test(outside))return true;
+  const directives=[...outside.matchAll(/(?:^|[.;,]\s*|\b(?:in|ter|nato|potem|and|then)\s+)(?:(?:prosim[:,]?|please|zdaj)\s+)*(klikni|pritisni|izberi|click|press|select|odpri|pojdi|pokazi|prikazi|open|go|show)\b/g)];
+  if(!targetVerb&&!directives.some(m=>/^(?:izberi|select)$/.test(m[1])))return true;
+  if(action.operation==='read'||action.operation==='scroll')return true;
+  const clean=text=>stageGoalText(text,false).replace(/^[\s"'“”„»«‘’\x60]+|[\s.!?,;"'“”„»«‘’\x60]+$/g,'').replace(/^(?:gumb|zavihek|button|tab)\s+/,'').replace(/\s+/g,' ');
+  const control=observation.controls?.find(c=>c.id===action.targetId);
+  if(!control||typeof control.label!=='string'||!clean(control.label))return false;
+  return directives.some((m,index)=>{
+    const verb=m[1],target=clean(goal.slice(m.index+m[0].length,directives[index+1]?.index??goal.length));
+    if(!target)return false;
+    if(action.operation==='click')return target===clean(control.label)||/^(?:izberi|select)$/.test(verb)&&control.choiceOwner&&target===clean(control.choiceOwner.label+' '+control.label);
+    if(action.operation!=='selectNative'||!/^(?:izberi|select)$/.test(verb)||typeof action.value!=='string')return false;
+    const option=control.options?.find(o=>o.value===action.value);
+    if(!option||typeof option.label!=='string'||!clean(option.label))return false;
+    const label=clean(control.label),selection=clean(option.label);
+    return [label+' '+selection,label+' na '+selection,label+' = '+selection].includes(target);
+  });
+}
+
+
+
+const stageFieldName = value => {
+  const name=stageGoalText(value,false).replace(/[()*:]/g,' ').replace(/\s+/g,' ').trim();
+  return /^(?:cpu|vcpu)$/.test(name)?'cpu':/^(?:ram|disk)(?: gb)?$/.test(name)?name.split(' ')[0]:null;
+};
+function stageNamedGoalBindings(value) {
+  let goal=stageGoalText(value),plain='',quote=null,quoted='',escaped=false;
+  const closes={'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
+  for(const ch of goal){
+    if(quote){if(escaped){escaped=false;quoted+=' ';}else if(ch==='\\'){escaped=true;quoted+=' ';}else if(quote.includes(ch)){plain+=/^\s*\d+\s*$/.test(quoted)?' '+quoted+' ':' '.repeat(quoted.length+2);quote=null;quoted='';}else quoted+=ch;continue;}
+    if(/\p{Quotation_Mark}/u.test(ch)&&!Object.hasOwn(closes,ch))return {bindings:{},unknown:true,plain:''};
+    if(Object.hasOwn(closes,ch)){quote=closes[ch];quoted='';}else plain+=ch;
+  }
+  if(quote)return {bindings:{},unknown:true,plain:''};
+  const bindings={};let inherited=false,unknown=false;
+  for(let part of plain.split(/\s*(?:[;,.\n]|\b(?:in|ter|nato|potem|and|then)\b)\s*/)){
+    part=part.trim().replace(/[!?]+$/,'');if(!part)continue;
+    if(/^nadaljuj\b[^:]*:/.test(part)){inherited=true;part=part.replace(/^nadaljuj\b[^:]*:\s*/,'');}
+    const directive=part.match(/^(?:nastavi|vnesi|spremeni|konfiguriraj|izpolni|uredi|set|enter|change|configure|fill|edit)\s+/);
+    if(directive){inherited=true;part=part.slice(directive[0].length);}
+    if(!inherited)continue;
+    const forward=part.match(/^(cpu|vcpu|ram|disk)(?:\s+(?:(?:na|to)\s+)?|\s*[=:]\s*)(\d+)(?:\s*(gb))?$/);
+    const reverse=part.match(/^(\d+)\s+(cpu|vcpu|ram|disk)(?:\s*(gb))?$/);
+    const match=forward||reverse;
+    if(match){
+      const name=stageFieldName(forward?match[1]:match[2]),number=forward?match[2]:match[1];
+      if(!Number.isSafeInteger(Number(number))||Number(number)<=0||name==='cpu'&&match[3]){unknown=true;continue;}
+      if(Object.hasOwn(bindings,name)&&bindings[name]!==number)unknown=true;
+      bindings[name]=number;
+    }else if(directive||/^(?:cpu|vcpu|ram|disk)\b|^\d+\s+(?:cpu|vcpu|ram|disk)\b/.test(part))unknown=true;
+  }
+  return {bindings,unknown,plain};
+}
+function stageMaterialGoalAllows(value, action, observation, prepared) {
+  const control=observation.controls?.find(c=>c.id===action.targetId);
+  if(!control)return false;
+  if(['irreversible','lose_unsaved'].includes(prepared.risk)&&action.operation==='click')return true;
+  const fold=text=>stageGoalText(text,false).replace(/\s*\*$/,'').replace(/:$/,'').trim();
+  const field=control.choiceOwner||control;
+  // Existing configuredChoiceGuard must already have accepted this exact driver/value.
+  if(/^(?:model postavitve|operacijski sistem|os)\b/.test(fold(field.label))&&['fill','selectNative','click'].includes(action.operation))return true;
+  const goal=stageGoalText(value),spec=stageNamedGoalBindings(value);
+  if(action.operation==='fill'||action.operation==='selectNative'){
+    const name=stageFieldName(control.label);
+    return !spec.unknown&&name&&observation.controls.filter(c=>stageFieldName(c.label)===name).length===1&&Object.hasOwn(spec.bindings,name)&&(!action.inputMode||action.inputMode==='replace')&&typeof action.value==='string'&&action.value.trim()===spec.bindings[name];
+  }
+  if(action.operation==='click'){
+    const label=fold(control.label),clauses=goal.split(/\s*(?:[;,\n]|\b(?:in|ter|nato|potem|and|then)\b)\s*/);
+    const explicit=clauses.some(clause=>{
+      const text=clause.trim().replace(/[.!?]+$/,'');
+      const match=text.match(/^(?:klikni|pritisni|izberi|click|press|select)\s+(?:(?:gumb|zavihek|button|tab)\s+)?(.+)$/);
+      const target=match?.[1]?.replace(/^["'“„»«‘]|["'”“«»’]$/g,'').trim();
+      return target===label||/^(?:shrani|ustvari|dodaj|odstrani|uredi|save|create|add|remove|edit)\b/.test(text)&&(text===label||/^(?:shrani|save)$/.test(label)&&/^(?:shrani|save) (?:konfiguracijo|configuration)$/.test(text));
+    });
+    if(!explicit)return false;
+    if(/^(?:shrani|save|potrdi|confirm)\b/.test(label)){
+      if(spec.unknown)return false;
+      // All explicitly requested known values must already be freshly observed.
+      for(const [name,number] of Object.entries(spec.bindings)){
+        const fields=observation.controls.filter(c=>stageFieldName(c.label)===name);
+        if(fields.length!==1||typeof fields[0].value!=='string'||fields[0].value.trim()!==number)return false;
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
 async function executeBrowserNavigation(proposal,epoch,guided=false) {
   const connectionEpoch=browserConnectionEpoch;
   if (state.browserStop || state.browserPaused || !state.ownerVerified || epoch !== accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
@@ -611,6 +717,7 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
     const after=await readBrowserObservation({offset:proposal.offset??0,limit:proposal.limit??180,query:proposal.query??'',framePath:proposal.framePath??before.framePath??''});
     return {receipt:{status:'READ_ONLY',actionId:a.actionId},afterObservationId:after.id,afterRevision:after.revision,summary:'Prebrane so sveže kontrole: '+(after.paging.query||'stran '+after.paging.offset)};
   }
+  if(guided&&!stageTargetGoalAllows(state.agentRun?.goal,a,before))throw Error('CPQ_GOAL_ACTION_MISMATCH');
   const choice=configuredChoiceGuard(state.agentRun?.goal||'',before,a,{guided});
   if(choice?.error)throw Error(choice.error);
   if(choice?.status==='ALREADY_MATCHES')return {receipt:{status:'ALREADY_MATCHES',actionId:a.actionId,target:{operation:a.operation,label:choice.label}},afterObservationId:before.id,afterRevision:before.revision,summary:`${choice.label}: zahtevana vrednost je že opažena. Ponovnega vnosa ni bilo; to ni dokaz shranitve.`};
@@ -620,6 +727,7 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   if (isMaterial && state.role !== 'owner') throw Error('CPQ_OWNER_REQUIRED');
   if (guided && isMaterial && navigationOnlyStageGoal(state.agentRun?.goal)) throw Error('CPQ_NAVIGATION_GOAL_ONLY');
   if (guided && isMaterial && unboundStageConstraint(state.agentRun?.goal)) throw Error('CPQ_GOAL_CONSTRAINT_REVIEW_REQUIRED');
+  if (guided && isMaterial && !stageMaterialGoalAllows(state.agentRun?.goal,a,before,prepared)) throw Error('CPQ_GOAL_ACTION_MISMATCH');
   let humanApproved=!guided;
   const inherited=prepared.risk==='irreversible'&&goalGrantCovers(state.agentRun?.goalGrant,prepared,before);
   if(inherited)humanApproved=true;

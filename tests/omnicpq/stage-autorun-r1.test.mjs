@@ -9,15 +9,15 @@ import * as starters from '../../public/OmniCPQ/starters.mjs';
 import * as gui from '../../public/OmniCPQ/browser-bridge-v2.mjs';
 import * as legacy from '../../public/OmniCPQ/browser-bridge.mjs';
 const STAGE='https://cpq-stg.apps.test-ocp.ts.telekom.si',PROD='https://cpq.apps.prod-ocp.ts.telekom.si';
-async function harness({prefs={},origin=STAGE,paired=false,risk='navigate',operation='click'}={}) {
+async function harness({prefs={},origin=STAGE,paired=false,risk='navigate',operation='click',label=null,options=[],value='512',valueSource='user',currentValue='',extraControls=[]}={}) {
   const dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:'https://www.mdlxdcc.org/omnicpq/',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,$=id=>w.document.getElementById(id),calls={gui:0,legacy:0,status:[],observe:0,preview:0,execute:0,posts:0,requests:[]};
   let revision=0,token='pair-1';
-  const observation=()=>({schema:'omnicpq.gui.observation.v2',observationId:'obs-'+revision,revision:String(revision+1).repeat(64).slice(0,64),url:origin+'/sl/order/details/view/SYNTHETIC',title:'OMNI-123 SYNTHETIC',scope:'order',documentKey:'SYNTHETIC-DOC',text:'SYNTHETIC',controls:[{id:'c1',label:operation==='fill'?'RAM':risk==='irreversible'?'Oddaj':'Podrobnosti',type:operation==='fill'?'text':'button',enabled:true}],frames:[],paging:{offset:0,limit:180}});
+  const observation=()=>({schema:'omnicpq.gui.observation.v2',observationId:'obs-'+revision,revision:String(revision+1).repeat(64).slice(0,64),url:origin+'/sl/order/details/view/SYNTHETIC',title:'OMNI-123 SYNTHETIC',scope:'order',documentKey:'SYNTHETIC-DOC',text:'SYNTHETIC',controls:[{id:'c1',label:label??(operation==='fill'?'RAM':risk==='irreversible'?'Oddaj':'Podrobnosti'),options,valueSource,value:currentValue,type:operation==='fill'?'text':'button',enabled:true},...extraControls],frames:[],paging:{offset:0,limit:180}});
   const chromeRuntime={sendMessage(_extension,message,reply){
     if(message.type==='status'){calls.status.push(message.protocol);return reply(paired?{ok:true,protocol:gui.BRIDGE_PROTOCOL,token,capabilities:{schema:'omnicpq.gui.capabilities.v2',apiRevision:3,cdpAvailable:true}}:{ok:false,error:'BRIDGE_NOT_PAIRED'});}
     if(message.type==='observe'){calls.observe++;return reply({ok:true,observation:observation()});}
-    if(message.type==='preview'){calls.preview++;return reply({ok:true,prepared:{revision:observation().revision,documentKey:'SYNTHETIC-DOC',risk,label:risk==='irreversible'?'Oddaj':'Podrobnosti'}});}
+    if(message.type==='preview'){calls.preview++;return reply({ok:true,prepared:{revision:observation().revision,documentKey:'SYNTHETIC-DOC',risk,label:label??(risk==='irreversible'?'Oddaj':'Podrobnosti')}});}
     if(message.type==='execute'){calls.execute++;revision++;return reply({ok:true,receipt:{status:'DISPATCHED',target:{operation:message.action.operation,label:'SYNTHETIC'}},observation:observation()});}
     return reply({ok:true});
   }};
@@ -30,7 +30,7 @@ async function harness({prefs={},origin=STAGE,paired=false,risk='navigate',opera
   w.fetch=async(path,options={})=>{
     if(options.method==='POST'&&String(path).includes('omnicpq-assistant')){
       calls.posts++;const body=JSON.parse(options.body);calls.requests.push(body);
-      const action={schema:'omnicpq.gui.action.v2',observationId:body.browser?.id,revision:body.browser?.revision,targetId:'c1',operation,...(operation==='fill'?{value:'SYNTHETIC_NEW_VALUE'}:{}),reason:'SYNTHETIC',expectedDocument:'SYNTHETIC-DOC'};
+      const action={schema:'omnicpq.gui.action.v2',observationId:body.browser?.id,revision:body.browser?.revision,targetId:'c1',operation,...(['fill','selectNative'].includes(operation)?{value}:{}),reason:'SYNTHETIC',expectedDocument:'SYNTHETIC-DOC'};
       const text=calls.posts===1?'SYNTHETIC\n```omnicpq_action\n'+JSON.stringify(action)+'\n```':'SYNTHETIC finished';
       const frames=[{type:'delta',text,clientRequestId:body.clientRequestId},{type:'done',status:'complete',clientRequestId:body.clientRequestId}];
       return new Response(frames.map(x=>'data: '+JSON.stringify(x)+'\n\n').join(''),{headers:{'content-type':'text/event-stream'}});
@@ -151,3 +151,29 @@ for(const goal of ['Odpri podrobnosti z besedilom »in nastavi RAM na 512«','Op
 test('Slovenian quoted product label keeps an unquoted explicit mixed directive visible',async()=>{
   const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send('Odpri »SYNTHETIC OFFER« in nastavi RAM na »512«');assert.equal(h.calls.execute,1);}finally{h.close();}
 });
+
+for(const goal of ['Klikni podrobnosti','Pritisni Podrobnosti','Izberi Naročila'])test('click authority: target request never grants unrelated fill: '+goal,async()=>{const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,0);}finally{h.close();}});
+
+for(const goal of ['Klikni Podrobnosti','Pritisni Podrobnosti','Izberi Podrobnosti','Click Podrobnosti','Press Podrobnosti','Select Podrobnosti','V CPQ klikni Podrobnosti','Ali lahko klikneš Podrobnosti?','Can you click Podrobnosti?'])test('click authority: exact observed target click stays allowed: '+goal,async()=>{const h=await harness();try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,1);}finally{h.close();}});
+for(const [goal,operation,label,risk] of [['Klikni Shrani','click','Shrani','business_write'],['Izberi Naročila','click','Naročila','navigate'],['Klikni "Shrani"','click','Shrani','business_write'],['Klikni Podrobnosti in pritisni Shrani','click','Shrani','business_write']])test('click authority: explicit label-bound click preserves its allowed risk gates: '+goal,async()=>{const h=await harness({risk,operation,label});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,1);}finally{h.close();}});
+for(const [goal,operation,label] of [['Klikni Podrobnosti','click','Shrani'],['Klikni Shrani','fill','RAM'],['Izberi Naročila','selectNative','RAM'],['Klikni Podrobnosti in izberi Naročila','fill','RAM'],['Odpri podrobnosti in izberi Naročila','fill','RAM'],['Klikni Podrobnosti z besedilom "in nastavi RAM"','fill','RAM'],['Klikni Podrobnosti z besedilom »in nastavi RAM«','fill','RAM'],['Pritisni Podrobnosti','key','Podrobnosti'],['Klikni Podrobnosti','check','Podrobnosti']])test('click authority: wrong operation or target held before preview: '+goal+'/'+operation,async()=>{const h=await harness({risk:'business_write',operation,label});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,0);assert.equal(h.calls.preview,0);}finally{h.close();}});
+for(const goal of ['Klikni Podrobnosti in nastavi RAM na 512','Izberi Naročila, nato spremeni RAM na 512','Click Podrobnosti then set RAM to 512'])test('click authority: separate unquoted write directive retains material intent: '+goal,async()=>{const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,1);}finally{h.close();}});
+for(const [goal,expected] of [['Izberi OS Ubuntu',1],['Izberi OS Windows',0],['Izberi Naročila',0],['Odpri podrobnosti in izberi OS Ubuntu',0]])test('click authority: native select needs both observed field and option label: '+goal,async()=>{const h=await harness({risk:'business_write',operation:'selectNative',label:'OS',options:[{value:'ubuntu-id',label:'Ubuntu'}],value:'ubuntu-id'});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,expected);}finally{h.close();}});
+
+for(const [goal,label,value,expected] of [
+ ['Nastavi RAM na 128','CPU','12',0],['Nastavi RAM na 128','RAM','128',1],['Nastavi RAM na 128','RAM','512',0],
+ ['Nastavi vCPU na 12','CPU','12',1],['Nastavi CPU na 12 in RAM na 128 ter Disk na 512','RAM','128',1],
+ ['Nastavi CPU na 12 in RAM na 128 in Disk na 512','RAM','128',1],['Nastavi CPU na 12 in RAM na 128 in Disk na 512','Disk','512',1],
+ ['Nastavi RAM na 128 in CPU na 12','CPU','12',1],['Nastavi RAM na 128 in RAM na 256','RAM','128',0],
+ ['Nastavi RAM na 128','Popust','128',0],['Uredi ponudbo','RAM','128',0],['Nastavi CPU na -1','CPU','1',0],
+ ['Nastavi CPU na 0','CPU','0',0],['Klikni Podrobnosti in nastavi RAM na 128','CPU','12',0],
+ ['Nastavi RAM na "128"','RAM','128',1],['Klikni Podrobnosti z besedilom "in nastavi RAM na 128"','RAM','128',0],
+ ['V CPQ nastavi RAM na 128','RAM','128',1],['Nastavi RAM na 128 in CPU na 12','CPU','128',0]
+])test('named field authority: '+goal+'/'+label+'='+value,async()=>{const h=await harness({risk:'business_write',operation:'fill',label,value});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,expected);}finally{h.close();}});
+
+for(const [label,value,expected] of [['RAM','128',1],['CPU','12',1],['RAM','12',0],['CPU','128',0]])test('named field authority: exact no-preposition multi-field bindings '+label+'='+value,async()=>{const h=await harness({risk:'business_write',operation:'fill',label,value});try{await h.pair();await h.send('Nastavi RAM 128 in CPU 12');assert.equal(h.calls.execute,expected);}finally{h.close();}});
+
+for(const [goal,label,value,expected] of [['Nadaljuj isti testni strežnik: 12 CPU, 128 RAM in shrani konfiguracijo.','RAM GB','128',1],['Uredi RAM 128 GB in disk 2000 GB. Modela in OS ne spreminjaj.','Disk GB','2000',1],['Uredi RAM 128 GB in disk 2000 GB. Modela in OS ne spreminjaj.','RAM GB','2000',0]])test('named field authority: retained explicit continuation/unit binding '+label+'='+value,async()=>{const h=await harness({risk:'business_write',operation:'fill',label,value});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,expected);}finally{h.close();}});
+
+for(const [goal,ram,expected] of [['Shrani',null,1],['Klikni Shrani',null,1],['Nastavi RAM 128 in shrani','4',0],['Nastavi RAM 128 in shrani','128',1],['Nastavi RAM 128 in shrani','',0]])test('save authority: direct save or freshly satisfied requested values '+goal+'/'+ram,async()=>{const h=await harness({risk:'business_write',operation:'click',label:'Shrani',extraControls:ram===null?[]:[{id:'c2',label:'RAM GB',type:'number',enabled:true,value:ram}]});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,expected);}finally{h.close();}});
+for(const op of ['fill','click'])test('instance authority: duplicate RAM controls conservatively hold '+op,async()=>{const h=await harness({risk:'business_write',operation:op,label:op==='fill'?'RAM':'Shrani',value:'128',extraControls:op==='fill'?[{id:'c2',label:'RAM GB',type:'number',enabled:true,value:'4'}]:[{id:'c2',label:'RAM GB',type:'number',enabled:true,value:'128'},{id:'c3',label:'RAM',type:'number',enabled:true,value:'128'}]});try{await h.pair();await h.send(op==='fill'?'Nastavi RAM na 128':'Nastavi RAM 128 in shrani');assert.equal(h.calls.execute,0);}finally{h.close();}});
