@@ -36,7 +36,14 @@ export function navigationProposal(text,observation){
   }catch{return null;}
 }
 export function createBrowserBridge({runtime=globalThis.chrome?.runtime,timeoutMs=15000}={}){
-  let token=null,capabilities=null,scope=null,identity='legacy-unbound';
+  let token=null,capabilities=null,scope=null,identity='legacy-unbound',connectionEpoch=0;
+  const connecting=new Set(),revokedTokens=new Set();let disconnecting=null;
+  function endPair(previous){
+    const pending=[...connecting];if(disconnecting)pending.push(disconnecting);
+    if(previous){revokedTokens.add(previous);pending.push(send('disconnect',{token:previous}));}
+    const done=Promise.allSettled(pending).then(()=>{if(disconnecting===done)disconnecting=null;});
+    disconnecting=done;return done;
+  }
   function send(type,data={}){return new Promise((resolve,reject)=>{
     if(!runtime?.sendMessage)return reject(Error('BRIDGE_NOT_INSTALLED'));
     let finished=false;const timer=setTimeout(()=>{finished=true;reject(Error('BRIDGE_TIMEOUT'));},timeoutMs);
@@ -51,9 +58,21 @@ export function createBrowserBridge({runtime=globalThis.chrome?.runtime,timeoutM
     fields:o.controls.filter(c=>c.value!==undefined||c.checked!==undefined).map(c=>({label:c.label,value:String(c.value??c.checked??'').slice(0,500)}))});
   return {
     get capabilities(){return capabilities;},get scope(){return scope;},
-    setIdentity(value){if(identity!==value){token=null;capabilities=null;scope=null;}identity=value;},
-    async connect(){const r=await send('status',{identity});if(r.protocol!==BRIDGE_PROTOCOL||r.capabilities?.schema!=='omnicpq.gui.capabilities.v2'||r.capabilities.apiRevision<3||!r.capabilities.apiRevision)throw Error('BRIDGE_UPDATE_REQUIRED');
-      token=r.token;capabilities=r.capabilities;scope=r.scope;return r;},
+    setIdentity(value){if(identity!==value){connectionEpoch++;token=null;capabilities=null;scope=null;}identity=value;},
+    async connect(){
+      const before=connectionEpoch;if(disconnecting)await disconnecting;
+      if(before!==connectionEpoch)throw Error('BRIDGE_CONNECTION_CHANGED');
+      const request=(async()=>{
+        const r=await send('status',{identity});
+        if(before!==connectionEpoch||revokedTokens.has(r.token)){
+          if(r.token){revokedTokens.add(r.token);await send('disconnect',{token:r.token}).catch(()=>{});}
+          throw Error(before!==connectionEpoch?'BRIDGE_CONNECTION_CHANGED':'BRIDGE_NOT_PAIRED');
+        }
+        if(r.protocol!==BRIDGE_PROTOCOL||r.capabilities?.schema!=='omnicpq.gui.capabilities.v2'||r.capabilities.apiRevision<3||!r.capabilities.apiRevision)throw Error('BRIDGE_UPDATE_REQUIRED');
+        token=r.token;capabilities=r.capabilities;scope=r.scope;return r;
+      })();
+      connecting.add(request);try{return await request;}finally{connecting.delete(request);}
+    },
     async observe(offset=0,limit=180,query='',framePath=''){if(!token)throw Error('BRIDGE_NOT_PAIRED');const r=await send('observe',{token,offset,limit,query,framePath});
       if(r.observation?.schema!=='omnicpq.gui.observation.v2')throw Error('BRIDGE_UPDATE_REQUIRED');return adapt(r.observation);},
     async preview(a){if(!token)throw Error('BRIDGE_NOT_PAIRED');return (await send('preview',{token,action:a})).prepared;},
@@ -62,6 +81,6 @@ export function createBrowserBridge({runtime=globalThis.chrome?.runtime,timeoutM
       return {...r,...(r.observation?{observation:adapt(r.observation)}:{})};},
     async suspend(){if(token)await send('suspend',{token});},
     async resume(){if(token)await send('resume',{token});},
-    async disconnect(){const old=token;token=null;capabilities=null;scope=null;if(old)await send('disconnect',{token:old});}
+    async disconnect(){connectionEpoch++;const old=token;token=null;capabilities=null;scope=null;return endPair(old);}
   };
 }

@@ -1,5 +1,5 @@
 // Local status only: never calls a model, reads CPQ content, or approves a pair.
-export function createAutoConnector({ eligible, connect, changed=()=>{}, visible=()=>true, online=()=>true,
+export function createAutoConnector({ eligible, connect, available=()=>true, changed=()=>{}, visible=()=>true, online=()=>true,
   schedule=(f,ms)=>setTimeout(f,ms), unschedule=id=>clearTimeout(id) }) {
   let timer=null, stopped=false, busy=false, epoch=0, status='IDLE';
   const set=s=>{status=s;changed(s);};
@@ -7,7 +7,7 @@ export function createAutoConnector({ eligible, connect, changed=()=>{}, visible
   async function tick(){
     timer=null;
     if(stopped||!eligible())return;
-    if(busy||!visible()||!online()){arm();return;}
+    if(busy||!available()||!visible()||!online()){arm();return;}
     busy=true;const before=epoch;
     try{await connect();if(!stopped&&before===epoch)set('CONNECTED');}
     catch(e){if(!stopped&&before===epoch)set(e.message==='BRIDGE_NOT_PAIRED'?'WAITING_APPROVAL':

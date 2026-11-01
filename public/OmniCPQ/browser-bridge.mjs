@@ -22,7 +22,14 @@ export function navigationProposal(text, observation) {
   } catch {return null;}
 }
 export function createBrowserBridge({runtime=globalThis.chrome?.runtime,timeoutMs=12000}={}) {
-  let token=null;
+  let token=null,connectionEpoch=0;
+  const connecting=new Set(),revokedTokens=new Set();let disconnecting=null;
+  function endPair(previous){
+    const pending=[...connecting];if(disconnecting)pending.push(disconnecting);
+    if(previous){revokedTokens.add(previous);pending.push(send('disconnect',{token:previous}));}
+    const done=Promise.allSettled(pending).then(()=>{if(disconnecting===done)disconnecting=null;});
+    disconnecting=done;return done;
+  }
   function send(type,data={}) {
     return new Promise((resolve,reject)=>{
       if(!runtime?.sendMessage) return reject(Error('BRIDGE_NOT_INSTALLED'));
@@ -37,9 +44,21 @@ export function createBrowserBridge({runtime=globalThis.chrome?.runtime,timeoutM
     });
   }
   return {
-    async connect(){const r=await send('status');token=r.token;return r;},
+    async connect(){
+      const before=connectionEpoch;if(disconnecting)await disconnecting;
+      if(before!==connectionEpoch)throw Error('BRIDGE_CONNECTION_CHANGED');
+      const request=(async()=>{
+        const r=await send('status');
+        if(before!==connectionEpoch||revokedTokens.has(r.token)){
+          if(r.token){revokedTokens.add(r.token);await send('disconnect',{token:r.token}).catch(()=>{});}
+          throw Error(before!==connectionEpoch?'BRIDGE_CONNECTION_CHANGED':'BRIDGE_NOT_PAIRED');
+        }
+        token=r.token;return r;
+      })();
+      connecting.add(request);try{return await request;}finally{connecting.delete(request);}
+    },
     async observe(){if(!token)throw Error('BRIDGE_NOT_PAIRED');return (await send('observe',{token})).observation;},
     async navigate(a){if(!token)throw Error('BRIDGE_NOT_PAIRED');return send('navigate',{token,action:a});},
-    async disconnect(){const previous=token;token=null;if(previous)await send('disconnect',{token:previous});}
+    async disconnect(){connectionEpoch++;const previous=token;token=null;return endPair(previous);}
   };
 }

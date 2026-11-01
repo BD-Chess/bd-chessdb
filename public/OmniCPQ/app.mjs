@@ -17,8 +17,8 @@ const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready:
   capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, localSaveFailed: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
   browserConnected: false, browserObservation: null, browserStop: false, browserPaused: false, guiCheckpoint: null, agentRun:null, pendingDraft: null, release: null,
   comparisonPartner: 'copilot', partnerInputs: {} };
-let installEvent, registration, accessEpoch = 0, experience;
-const autoConnector=createAutoConnector({eligible:()=>state.ownerVerified&&state.role==='owner'&&!state.busy,
+let installEvent, registration, accessEpoch = 0, experience, browserConnectionEpoch=0, browserPairToken=null, browserChoiceEpoch=0;
+const autoConnector=createAutoConnector({eligible:()=>state.ownerVerified&&state.role==='owner',available:()=>!state.busy,
   visible:()=>document.visibilityState!=='hidden',online:()=>navigator.onLine,
   schedule:(fn,ms)=>window.setTimeout(fn,ms),unschedule:id=>window.clearTimeout(id),
   connect:()=>connectBrowser(true),changed:s=>{
@@ -364,7 +364,7 @@ async function health() {
 function showWorkspaceStatus() {
   const k=state.health?.skill,service=$('service').selectedOptions?.[0]?.textContent || 'Samodejna izbira storitve';
   const environment=state.browserObservation ? cpqLocation(state.browserObservation.url)?.environment : $('environment').value;
-  $('workspace-status').textContent = `${state.ownerVerified ? 'Prijava potrjena' : 'Potrebna prijava'} · ${k ? 'Znanje '+k.release : 'Znanje še ni potrjeno'} · ${state.ready ? 'API pripravljen' : 'API še ni pripravljen'} · ${service} · ${environment === 'UNKNOWN' ? 'Okolje ni izbrano' : environment + (state.browserConnected ? ' · povezan CPQ' : ' (ročno)')}`;
+  $('workspace-status').textContent = `${state.ownerVerified ? 'Prijava potrjena' : 'Potrebna prijava'} · ${k ? 'Znanje '+k.release : 'Znanje še ni potrjeno'} · ${state.ready ? 'API pripravljen' : 'API še ni pripravljen'} · ${service} · ${environment === 'UNKNOWN' ? 'Okolje ni izbrano' : environment + (state.browserConnected&&state.browserObservation ? ' · povezan CPQ' : ' (ročno)')}`;
 }
 async function readReleaseInfo() {
   try { const r=await fetch('/.well-known/bd-deploy.json',{credentials:'omit',cache:'no-store'}); if(!r.ok)return;
@@ -430,8 +430,8 @@ async function drawCrop() {
 
 function browserProblem(error) {
   const messages = {
-    BRIDGE_NOT_INSTALLED:'Namenska razširitev OmniCPQ še ni nameščena. V razdelku »Poveži CPQ zavihek« sta prenos in navodilo.',
-    BRIDGE_NOT_PAIRED:'ČAKAM NA ODOBRITEV · Na CPQ zavihku enkrat poveži izbrana zavihka. Pomočnik bo nadaljeval sam.',
+    BRIDGE_NOT_INSTALLED:'Brskalniška razširitev trenutno ni dosegljiva. Povezavo znova preverjam; CPQ ostane odprt.',
+    BRIDGE_NOT_PAIRED:'ČAKAM NA ODOBRITEV · enkrat poveži pravi par v razširitvi.',
     BRIDGE_PERMISSION_REQUIRED:'Dostop ni potrjen. Ikono namenske razširitve odpri neposredno na izbranem CPQ zavihku in ga ponovno poveži.',
     BRIDGE_TARGET_CHANGED:'Izbrani CPQ zavihek je zamenjal okolje ali zapustil CPQ. Ponovno ga poveži.',
     CPQ_SCREEN_CHANGED:'CPQ zaslon se je medtem spremenil. Dejanja nismo ponovili. Osveži opazovanje v pomočniku in ponovno vprašaj.',
@@ -451,30 +451,61 @@ function browserProblem(error) {
     CPQ_CHOICE_INTENT_UNCLEAR:'Zahteva za spremembo OS ali modela ni enolična. Izbire ne spreminjam.',
     CPQ_CHOICE_TARGET_MISMATCH:'Predlagana izbira se ne ujema z uporabnikovo zahtevano vrednostjo. Spremembo sem preprečil.',
     CPQ_DRIVER_STATE_UNKNOWN:'Izbire modela ali OS ni mogoče zanesljivo prebrati. Potrebna je razširitev Bridge 1.2.5; potrjenih izbir ne ponastavljam.',
+    CPQ_TARGET_OFFSCREEN:'Tarča ni v vidnem območju. Potreben je svež pregled in pomik do tarče.',
     CPQ_TARGET_COVERED:'Tarčo prekriva drugo okno ali meni. Agent bo ponovno preveril zaslon.',
     UI_CONSTRAINT_CONFLICT:'Zahtevana vrednost presega opaženo mejo. Potrebna je poslovna odločitev; vrednosti ne zmanjšamo samodejno.',
     BRIDGE_TIMEOUT:'Brskalniška povezava se ni odzvala. Morebitnega klika ne ponavljamo; najprej preveri CPQ.',
     BRIDGE_BUSY:'Na tem CPQ zavihku že poteka dejanje. Preveri njegov rezultat.',
   }; return messages[error?.message] || 'CPQ povezava ni dosegljiva. Preveri izbrana zavihka in jo ponovno vzpostavi.';
 }
+const BRIDGE_CONNECTION_FAILURES=new Set(['BRIDGE_TIMEOUT','BRIDGE_NOT_INSTALLED','BRIDGE_UNAVAILABLE','BRIDGE_NOT_PAIRED','BRIDGE_UPDATE_REQUIRED','BRIDGE_PERMISSION_REQUIRED','BRIDGE_TARGET_CHANGED']);
+// Only transport/pair failures invalidate the connection, not CPQ target/validation errors.
+async function browserRequest(request) {
+  const epoch=accessEpoch, connectionEpoch=browserConnectionEpoch;
+  try { return await request(); }
+  catch(error) {
+    if(BRIDGE_CONNECTION_FAILURES.has(error?.message)&&epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified)browserUnavailable(error);
+    throw error;
+  }
+}
+// A failed transport invalidates the displayed observation, not the approved pair.
+function browserUnavailable(error) {
+  state.browserConnected=false; state.browserObservation=null;
+  for(const id of ['browser-include','browser-auto','browser-read']) $(id).disabled=true;
+  $('browser-preview').hidden=true; $('cpq-file-tools').hidden=true;
+  $('browser-observation').textContent=''; $('browser-status').textContent=browserProblem(error);
+  $('browser-result').textContent='Povezava trenutno ni potrjena. Preverjanje povezave ne ponavlja CPQ dejanj.';
+  $('browser-setup').open=true; showWorkspaceStatus();
+}
 function disconnectBrowser(manual=false) {
+  browserConnectionEpoch++; browserPairToken=null;
   if(manual)autoConnector.stop();
   state.browserStop = true; state.browserPaused = false; state.browserConnected = false; state.browserObservation = null;
   $('browser-tools').hidden = true;
   for (const id of ['browser-include','browser-auto']) { $(id).checked = false; $(id).disabled = true; }
   $('browser-read').disabled = true; $('browser-disconnect').hidden = true; $('browser-preview').hidden = true;
   $('browser-observation').textContent = ''; $('browser-status').textContent = 'Ni povezano · priklopi izbrani CPQ zavihek za branje in klikanje.';
-  browserBridge.disconnect().catch(() => {});
+  showWorkspaceStatus(); browserBridge.disconnect().catch(() => {});
 }
 async function readBrowserObservation(options={}) {
   if (!state.ownerVerified || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
-  const epoch = accessEpoch; let o;
+  const epoch = accessEpoch, connectionEpoch=browserConnectionEpoch; let o;
   const p=state.browserObservation?.paging||{};
-  try { o = await browserBridge.observe(options.offset??p.offset??0,options.limit??p.limit??180,options.query??p.query??'',options.framePath??state.browserObservation?.framePath??''); }
-  catch(e) { state.browserObservation=null;throw e; }
-  if (epoch !== accessEpoch || !state.ownerVerified || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
-  if (!['omnicpq.gui.observation.v2','omnicpq.browser-observation.v1'].includes(o?.schema)) throw Error('BRIDGE_UPDATE_REQUIRED');
-  if (!cpqLocation(o.url) || !Array.isArray(o.controls) || o.text?.length > 16000) throw Error('BRIDGE_UNAVAILABLE');
+  try {
+    o = await browserBridge.observe(options.offset??p.offset??0,options.limit??p.limit??180,options.query??p.query??'',options.framePath??state.browserObservation?.framePath??'');
+    if (epoch !== accessEpoch || connectionEpoch!==browserConnectionEpoch || !state.ownerVerified || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
+    if (!['omnicpq.gui.observation.v2','omnicpq.browser-observation.v1'].includes(o?.schema)) throw Error('BRIDGE_UPDATE_REQUIRED');
+    if (!cpqLocation(o.url) || !Array.isArray(o.controls) || o.text?.length > 16000) throw Error('BRIDGE_UNAVAILABLE');
+  } catch(e) {
+    if(epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified){
+      if(BRIDGE_CONNECTION_FAILURES.has(e?.message))browserUnavailable(e);
+      else {
+        state.browserObservation=null; $('browser-preview').hidden=true; $('cpq-file-tools').hidden=true;
+        $('browser-observation').textContent=''; $('browser-status').textContent=browserProblem(e); showWorkspaceStatus();
+      }
+    }
+    throw e;
+  }
   state.browserObservation = o;
   $('browser-preview').hidden = false;
   $('browser-observation').textContent = JSON.stringify({title:o.title,url:o.url,capturedAt:o.capturedAt,routeScope:o.routeScope,
@@ -484,34 +515,55 @@ async function readBrowserObservation(options={}) {
   $('cpq-file-tools').hidden=!uploads.length||state.role!=='owner';
   $('cpq-file-target').replaceChildren(...uploads.map(c=>new Option(c.label,c.id)));
   $('browser-result').textContent = o.navigationLocked ? 'Urejevalnik je aktiven. Vnos in shranitev znotraj dokumenta sta dovoljena po nalogu; odhod brez pregleda je zadržan.' : 'Povezan polni GUI most. Dejanske zmožnosti CDP preveri v statusu; podatki gredo modelu samo ob pošiljanju naloge.';
-  return o;
+  showWorkspaceStatus(); return o;
 }
 async function connectBrowser(automatic=false) {
   if (!state.ownerVerified || state.role!=='owner' || state.busy) return;
-  const epoch = accessEpoch;
+  const epoch=accessEpoch, choiceEpoch=browserChoiceEpoch;let connectionEpoch=browserConnectionEpoch;
   try {
     const handshake = await browserBridge.connect();
     if ($('experimental-gui').checked && handshake.capabilities?.cdpAvailable !== true) notice('Povezan le bralni del; CDP upravljanje miške/tipkovnice v Edge ni potrjeno.');
     if (epoch !== accessEpoch || !state.ownerVerified) { await browserBridge.disconnect(); return; }
-    const fresh=!state.browserConnected;
+    if (connectionEpoch!==browserConnectionEpoch) return;
+    const newPair=browserPairToken!==handshake.token, fresh=newPair||!state.browserConnected||!state.browserObservation;
+    if(newPair)connectionEpoch=++browserConnectionEpoch;
+    if(fresh){
+      state.browserObservation=null; $('browser-preview').hidden=true; $('cpq-file-tools').hidden=true;
+      $('browser-observation').textContent=''; $('browser-status').textContent='Preverjam izbrani CPQ zavihek …';
+      for(const id of ['browser-include','browser-auto','browser-read'])$(id).disabled=true;
+      showWorkspaceStatus();
+    }
     state.browserConnected = true;
     if(!automatic)state.browserStop=false;
-    $('browser-tools').hidden = false;
-    $('browser-read').disabled = false; $('browser-disconnect').hidden = false;
-    for (const id of ['browser-include','browser-auto']) $(id).disabled = false;
-    $('browser-include').checked = true; clearFrozen();
-    if(fresh||!automatic){const o=await readBrowserObservation();if(fresh)$('browser-auto').checked=cpqLocation(o.url)?.environment==='STAGE'&&$('experimental-gui').checked;} $('browser-setup').open = false;
+    let o=state.browserObservation;
+    if(fresh||!automatic)o=await readBrowserObservation();
+    if(epoch!==accessEpoch||connectionEpoch!==browserConnectionEpoch||!state.ownerVerified)return;
+    // A status poll/recovery preserves choices made before or during the request.
+    if(newPair&&choiceEpoch===browserChoiceEpoch){
+      $('browser-include').checked=true;
+      $('browser-auto').checked=cpqLocation(o.url)?.environment==='STAGE'&&$('experimental-gui').checked;
+      clearFrozen();
+    }
+    browserPairToken=handshake.token;
+    $('browser-tools').hidden=false; $('browser-read').disabled=state.busy; $('browser-disconnect').hidden=false;
+    for(const id of ['browser-include','browser-auto'])$(id).disabled=false;
+    $('browser-setup').open=false; showWorkspaceStatus();
     if(fresh)notice('CPQ povezava je potrjena. Pripravljeno za tvoj STAGE cilj.');
-  } catch(e) {state.browserConnected=false;state.browserObservation=null;$('browser-setup').open=true;if(!automatic)notice(browserProblem(e));if(automatic)throw e;}
+  } catch(e) {
+    if(BRIDGE_CONNECTION_FAILURES.has(e?.message)&&epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified)browserUnavailable(e);
+    if(!automatic)notice(browserProblem(e));if(automatic)throw e;
+  }
 }
 async function executeBrowserNavigation(proposal,epoch,guided=false) {
+  const connectionEpoch=browserConnectionEpoch;
   if (state.browserStop || state.browserPaused || !state.ownerVerified || epoch !== accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
   const before = await readBrowserObservation();
+  if(connectionEpoch!==browserConnectionEpoch)throw Error('BRIDGE_NOT_PAIRED');
   if (before.revision !== proposal.revision || (proposal.operation!=='read'&&!before.controls.some(c=>c.id===proposal.targetId && c.enabled!==false))) throw Error('CPQ_SCREEN_CHANGED');
   if(before.schema==='omnicpq.browser-observation.v1'){
     if(state.browserStop||state.browserPaused)throw Error('CPQ_ACTION_PAUSED');
-    const result=await browserBridge.navigate({...proposal,observationId:before.id});
-    if(result.receipt?.outcome!=='CLICK_DISPATCHED')throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
+    const result=await browserRequest(()=>browserBridge.navigate({...proposal,observationId:before.id}));
+    if(connectionEpoch!==browserConnectionEpoch||result.receipt?.outcome!=='CLICK_DISPATCHED')throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
     const after=await readBrowserObservation();
     return {receipt:result.receipt,afterObservationId:after.id,afterRevision:after.revision,summary:'Navigacijski klik: '+result.receipt.target.label+'. Sveže opaženo: '+after.title};
   }
@@ -523,7 +575,7 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   const choice=configuredChoiceGuard(state.agentRun?.goal||'',before,a,{guided});
   if(choice?.error)throw Error(choice.error);
   if(choice?.status==='ALREADY_MATCHES')return {receipt:{status:'ALREADY_MATCHES',actionId:a.actionId,target:{operation:a.operation,label:choice.label}},afterObservationId:before.id,afterRevision:before.revision,summary:`${choice.label}: zahtevana vrednost je že opažena. Ponovnega vnosa ni bilo; to ni dokaz shranitve.`};
-  const prepared=await browserBridge.preview(a);
+  const prepared=await browserRequest(()=>browserBridge.preview(a));
   if (!prepared || prepared.revision !== before.revision || prepared.documentKey !== before.documentKey) throw Error('CPQ_SCREEN_CHANGED');
   const isMaterial=['business_write','irreversible','lose_unsaved'].includes(prepared.risk) || ['fill','check','selectNative','upload','drag','key'].includes(a.operation);
   if (isMaterial && state.role !== 'owner') throw Error('CPQ_OWNER_REQUIRED');
@@ -537,9 +589,9 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
     if (!humanApproved) throw Error('CPQ_ACTION_CANCELLED_BY_USER');
     if (prepared.risk==='lose_unsaved') a.leaveConfirmed=true;
   }
-  if (state.browserStop || state.browserPaused || !state.ownerVerified || epoch!==accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
-  const result=await browserBridge.execute(a,{humanApproved,guidedAuthorization:guided,approvalSource:inherited?'EXPLICIT_USER_GOAL':humanApproved?'EXPLICIT_ACTION':'USER_GOAL'});
-  if (!['DISPATCHED','ALREADY_MATCHES'].includes(result.receipt?.status)) throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
+  if (state.browserStop || state.browserPaused || !state.ownerVerified || epoch!==accessEpoch || connectionEpoch!==browserConnectionEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
+  const result=await browserRequest(()=>browserBridge.execute(a,{humanApproved,guidedAuthorization:guided,approvalSource:inherited?'EXPLICIT_USER_GOAL':humanApproved?'EXPLICIT_ACTION':'USER_GOAL'}));
+  if (connectionEpoch!==browserConnectionEpoch || !['DISPATCHED','ALREADY_MATCHES'].includes(result.receipt?.status)) throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
   const after=await readBrowserObservation();
   const summary=`${result.receipt.target.operation}: ${result.receipt.target.label}. Izvajalnik: ${result.receipt.status}. Novo opazovanje ${after.title}. To NI potrdilo shranitve ali realizacije.`;
   state.guiCheckpoint={goal:state.guiCheckpoint?.goal||null,actionId:a.actionId,step:(state.guiCheckpoint?.step||0)+1,
@@ -797,7 +849,7 @@ $('experimental-gui').onchange=()=>{stopAgent('MODE_CHANGED');disconnectBrowser(
   browserBridge.setIdentity?.(state.autoIdentity);autoConnector.check().catch(e=>notice(browserProblem(e)));};
 $('cancel').onclick = () => stopAgent('STOPPED');
 $('browser-connect').onclick = () => {autoConnector.check().catch(e=>notice(browserProblem(e)));};
-$('browser-read').onclick = () => { if (!state.busy) readBrowserObservation().catch(e => notice(browserProblem(e))); };
+$('browser-read').onclick = () => { if (!state.busy) readBrowserObservation({offset:0,query:''}).catch(e => notice(browserProblem(e))); };
 $('cpq-user-file').onchange=async event=>{
   const file=event.target.files?.[0],targetId=$('cpq-file-target').value;if(!file||!targetId||state.busy||state.role!=='owner')return;
   if(file.size>2000000){notice('Datoteka presega 2 MB.');event.target.value='';return;}
@@ -827,7 +879,7 @@ resumeButton.onclick=async()=>{if(!state.ownerVerified||!state.browserConnected|
     notice('Nadaljujem iz svežega opazovanja.');if($('message').value.trim())await send();}
   catch(e){notice(browserProblem(e));}
 };
-for (const id of ['browser-include','browser-auto']) $(id).onchange = () => { clearFrozen(); if (!$('browser-auto').checked) state.browserStop = true; else {state.browserStop=false;state.browserPaused=false;} };
+for (const id of ['browser-include','browser-auto']) $(id).onchange = () => { browserChoiceEpoch++; clearFrozen(); if (!$('browser-auto').checked) state.browserStop = true; else {state.browserStop=false;state.browserPaused=false;} };
 $('settings-open').onclick = () => $('settings-dialog').showModal(); $('settings-close').onclick = () => $('settings-dialog').close();
 $('refresh-status').onclick = async () => { if (!state.busy) { await health(); await readReleaseInfo(); } };
 $('context-toggle').onclick = $('welcome-context').onclick = () => { $('context-panel').open = true; $('context-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
