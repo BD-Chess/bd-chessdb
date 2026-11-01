@@ -116,14 +116,14 @@ function unboundStageConstraint(value) {
 }
 function automaticStageGoal(run, observation) {
   if (!$('experimental-gui').checked || observation?.schema !== 'omnicpq.gui.observation.v2' || cpqLocation(observation.url)?.environment !== 'STAGE') return false;
-  const goal = String(run?.goal || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').trim().toLowerCase();
+  const goal = stageGoalText(run?.goal);
   // A model action block cannot turn an informational, quoted or conditional question into a user command.
   if (unboundStageConstraint(goal)) return false;
-  if (/\b(?:kako|zakaj|primer|razlozi|pojasni|navodila|ce|how|why|example|explain|if)\b/.test(goal)) return false;
+  if (/\b(?:kako|zakaj|primer|razlozi|pojasni|navodila|ce|razlik\w*|pomen\w*|how|why|example|explain|if|differences?|meaning)\b/.test(goal)) return false;
   const polite = /^(?:prosim[:,]?\s+)?ali lahko (?:odpres|izberes|kliknes|pritisnes|vneses|nastavis|spremenis|konfiguriras|ustvaris|dodas|odstranis|shranis|oddas|izbrises|preklices|storniras|premaknes|oznacis|izpolnis|nalozis|povecas|zmanjsas)\b/.test(goal) || /^(?:please\s+)?can you (?:open|go|select|click|press|enter|set|change|configure|create|add|remove|save|submit|delete|cancel|scroll|check|fill|upload)\b/.test(goal);
   if (polite) return true;
-  if (/^(?:(?:prosim[:,]?|please)\s+)?(?:pokazi|prikazi|show)\b/.test(goal) && /\b(?:v cpq|in cpq)\b/.test(goal)) return true;
-  return /^(?:(?:prosim[:,]?|zdaj|please)\s+)*(?:v (?:cpq|stage|obstojecem narocilu|narocilu)(?:\s+omni-\d+)?[:,]?\s+)?(?:odpri|nadaljuj|uredi|pojdi|izberi|klikni|pritisni|vnesi|nastavi|spremeni|konfiguriraj|ustvari|dodaj|odstrani|shrani|oddaj|izbrisi|preklici|storniraj|premakni|oznaci|izpolni|nalozi|povecaj|zmanjsaj|open|continue|edit|go|select|click|press|enter|set|change|configure|create|add|remove|save|submit|delete|cancel|scroll|check|fill|upload)\b/.test(goal);
+  if (/^(?:(?:prosim[:,]?|please)\s+)?(?:pokazi|prikazi|show)\b/.test(goal) && /\b(?:v cpq|in cpq|narocil(?:o|a|u|om|i|ih)?|ponudb(?:a|o|e|i|ah|ami)?|orders?|quotes?)\b/.test(stageGoalText(run?.goal,false))) return true;
+  return /^(?:odpri|nadaljuj|uredi|pojdi|izberi|klikni|pritisni|vnesi|nastavi|spremeni|konfiguriraj|ustvari|dodaj|odstrani|shrani|oddaj|izbrisi|preklici|storniraj|premakni|oznaci|izpolni|nalozi|povecaj|zmanjsaj|open|continue|edit|go|select|click|press|enter|set|change|configure|create|add|remove|save|submit|delete|cancel|scroll|check|fill|upload)\b/.test(goal);
 }
 function setMode(mode) {
   mode=normalizeMode(mode);state.mode = mode; $('mode-badge').textContent = WORK_MODES.find(p => p.mode === mode).short;
@@ -575,6 +575,24 @@ async function connectBrowser(automatic=false) {
     if(!automatic)notice(browserProblem(e));if(automatic)throw e;
   }
 }
+function stageGoalText(value, stripPrefix = true) {
+  const goal = String(value || '').normalize('NFD').replace(/\p{Diacritic}/gu,'').trim().toLowerCase();
+  return stripPrefix ? goal.replace(/^(?:(?:prosim[:,]?|zdaj|please)\s+)*(?:v (?:cpq|stage|obstojecem narocilu|narocilu)(?:\s+omni-\d+)?[:,]?\s+)?/,'') : goal;
+}
+function navigationOnlyStageGoal(value) {
+  const goal = stageGoalText(value);
+  if (!/^(?:(?:prosim[:,]?|please|zdaj)\s+)*(?:odpri|pojdi|pokazi|prikazi|open|go|show|ali lahko (?:odpres|pojdes|pokazes|prikazes)|can you (?:open|go|show))\b/.test(goal)) return false;
+  // Quoted strings are data. An additional write directive must be explicit outside them.
+  let outside = '', quote = null, escaped = false;
+  const closes = {'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
+  for (const ch of goal) {
+    if (quote) { if (escaped) escaped=false; else if (ch==='\\') escaped=true; else if (quote.includes(ch)) quote=null; outside+=' '; continue; }
+    if (/\p{Quotation_Mark}/u.test(ch) && !Object.hasOwn(closes,ch)) return true;
+    if (Object.hasOwn(closes,ch)) { quote=closes[ch]; outside+=' '; } else outside+=ch;
+  }
+  if (quote) return true;
+  return !/(?:[.;,]\s*|\b(?:in|nato|potem|and|then)\s+)(?:(?:prosim[:,]?|please|zdaj)\s+)*(?:nastavi|vnesi|spremeni|konfiguriraj|ustvari|dodaj|odstrani|shrani|oddaj|izbrisi|preklici|storniraj|uredi|izberi|izpolni|nalozi|povecaj|zmanjsaj|set|enter|change|configure|create|add|remove|save|submit|delete|cancel|edit|select|check|fill|upload)\b/.test(outside);
+}
 async function executeBrowserNavigation(proposal,epoch,guided=false) {
   const connectionEpoch=browserConnectionEpoch;
   if (state.browserStop || state.browserPaused || !state.ownerVerified || epoch !== accessEpoch || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
@@ -600,7 +618,7 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   if (!prepared || prepared.revision !== before.revision || prepared.documentKey !== before.documentKey) throw Error('CPQ_SCREEN_CHANGED');
   const isMaterial=['business_write','irreversible','lose_unsaved'].includes(prepared.risk) || ['fill','check','selectNative','upload','drag','key'].includes(a.operation);
   if (isMaterial && state.role !== 'owner') throw Error('CPQ_OWNER_REQUIRED');
-  if (guided && isMaterial && /^(?:(?:prosim[:,]?|please)\s+)?(?:pokazi|prikazi|show)\b/i.test(String(state.agentRun?.goal || '').normalize('NFD').replace(/\p{Diacritic}/gu,''))) throw Error('CPQ_NAVIGATION_GOAL_ONLY');
+  if (guided && isMaterial && navigationOnlyStageGoal(state.agentRun?.goal)) throw Error('CPQ_NAVIGATION_GOAL_ONLY');
   if (guided && isMaterial && unboundStageConstraint(state.agentRun?.goal)) throw Error('CPQ_GOAL_CONSTRAINT_REVIEW_REQUIRED');
   let humanApproved=!guided;
   const inherited=prepared.risk==='irreversible'&&goalGrantCovers(state.agentRun?.goalGrant,prepared,before);

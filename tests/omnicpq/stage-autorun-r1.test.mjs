@@ -13,7 +13,7 @@ async function harness({prefs={},origin=STAGE,paired=false,risk='navigate',opera
   const dom=new JSDOM(await readFile('public/OmniCPQ/index.html','utf8'),{url:'https://www.mdlxdcc.org/omnicpq/',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window,$=id=>w.document.getElementById(id),calls={gui:0,legacy:0,status:[],observe:0,preview:0,execute:0,posts:0,requests:[]};
   let revision=0,token='pair-1';
-  const observation=()=>({schema:'omnicpq.gui.observation.v2',observationId:'obs-'+revision,revision:String(revision+1).repeat(64).slice(0,64),url:origin+'/sl/order/details/view/SYNTHETIC',title:'OMNI-123 SYNTHETIC',scope:'order',documentKey:'SYNTHETIC-DOC',text:'SYNTHETIC',controls:[{id:'c1',label:risk==='irreversible'?'Oddaj':'Podrobnosti',type:'button',enabled:true}],frames:[],paging:{offset:0,limit:180}});
+  const observation=()=>({schema:'omnicpq.gui.observation.v2',observationId:'obs-'+revision,revision:String(revision+1).repeat(64).slice(0,64),url:origin+'/sl/order/details/view/SYNTHETIC',title:'OMNI-123 SYNTHETIC',scope:'order',documentKey:'SYNTHETIC-DOC',text:'SYNTHETIC',controls:[{id:'c1',label:operation==='fill'?'RAM':risk==='irreversible'?'Oddaj':'Podrobnosti',type:operation==='fill'?'text':'button',enabled:true}],frames:[],paging:{offset:0,limit:180}});
   const chromeRuntime={sendMessage(_extension,message,reply){
     if(message.type==='status'){calls.status.push(message.protocol);return reply(paired?{ok:true,protocol:gui.BRIDGE_PROTOCOL,token,capabilities:{schema:'omnicpq.gui.capabilities.v2',apiRevision:3,cdpAvailable:true}}:{ok:false,error:'BRIDGE_NOT_PAIRED'});}
     if(message.type==='observe'){calls.observe++;return reply({ok:true,observation:observation()});}
@@ -96,4 +96,58 @@ test('show-in-CPQ never grants a model-proposed business write',async()=>{
 });
 test('negative navigation target constraint is held before any preview or execution',async()=>{
   const h=await harness();try{await h.pair();await h.send('Odpri meni, vendar ne klikni Nazaj');assert.equal(h.calls.execute,0);assert.equal(h.calls.preview,0);}finally{h.close();}
+});
+
+for(const goal of ['Pokaži Suvereni oblak v obstoječem naročilu prek Naročil.','Prikaži storitev na ponudbi.','Show service in the existing order.','Prikaži ponudbe.'])test('explicit order/quote context grants show navigation without literal CPQ: '+goal,async()=>{
+  const h=await harness();try{await h.pair();await h.send(goal,'guide');assert.equal(h.calls.execute,1);}finally{h.close();}
+});
+for(const goal of ['Pokaži razliko med naročilom in ponudbo.','Pokaži pomen naročila.','Show differences between orders and quotes.','Pokaži primer storitve v obstoječem naročilu.'])test('order/quote vocabulary does not turn conceptual explanation into navigation: '+goal,async()=>{
+  const h=await harness();try{await h.pair();await h.send(goal,'guide');assert.equal(h.calls.execute,0);assert.equal(h.calls.preview,0);}finally{h.close();}
+});
+test('order-context show intent still cannot authorize a business write',async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send('Pokaži storitev v naročilu.','guide');assert.equal(h.calls.execute,0);assert.equal(h.app.state.messages.findLast(m=>m.role==='assistant').meta.browserNavigation.error,'CPQ_NAVIGATION_GOAL_ONLY');}finally{h.close();}
+});
+test('order-context show intent remains nonautomatic on PROD even if checkbox is forced',async()=>{
+  const h=await harness({origin:PROD});try{await h.pair();h.$('browser-auto').checked=true;await h.send('Pokaži storitev v naročilu.');assert.equal(h.calls.execute,0);assert.equal(h.calls.preview,0);}finally{h.close();}
+});
+test('negative navigation restriction remains held with an order-context show goal',async()=>{
+  const h=await harness();try{await h.pair();await h.send('Pokaži naročilo, vendar ne klikni Nazaj.');assert.equal(h.calls.execute,0);assert.equal(h.calls.preview,0);}finally{h.close();}
+});
+
+for(const goal of ['Odpri podrobnosti','Pojdi na Naročila','Open details','Go to orders','Ali lahko odpreš podrobnosti?'])test('pure navigation request cannot grant a model-proposed business write: '+goal,async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send(goal,'work');assert.equal(h.calls.execute,0);assert.equal(h.app.state.messages.findLast(m=>m.role==='assistant').meta.browserNavigation.error,'CPQ_NAVIGATION_GOAL_ONLY');}finally{h.close();}
+});
+
+for(const goal of ['Odpri podrobnosti in nastavi RAM na 512','Pojdi na konfiguracijo, nato spremeni RAM na 512','Open details then set RAM to 512','Pokaži naročilo in nastavi RAM na 512'])test('explicit mixed navigation and write request retains its user-given material intent: '+goal,async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send(goal,'work');assert.equal(h.calls.execute,1);}finally{h.close();}
+});
+for(const goal of ['Odpri podrobnosti z besedilom "in nastavi RAM na 512"','Open details containing "then set RAM to 512"','Odpri podrobnosti z besedilom "in nastavi RAM'])test('quoted or unclosed quoted write words cannot expand a navigation goal: '+goal,async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send(goal,'work');assert.equal(h.calls.execute,0);assert.equal(h.app.state.messages.findLast(m=>m.role==='assistant').meta.browserNavigation.error,'CPQ_NAVIGATION_GOAL_ONLY');}finally{h.close();}
+});
+test('quoted product label does not hide an actual unquoted mixed write directive',async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send('Odpri "SYNTHETIC OFFER" in nastavi RAM na "512"');assert.equal(h.calls.execute,1);}finally{h.close();}
+});
+
+for(const goal of ['V CPQ odpri podrobnosti','V STAGE odpri podrobnosti','V naročilu OMNI-123 odpri podrobnosti','Prosim, v CPQ odpri podrobnosti','V obstoječem naročilu OMNI-123 odpri podrobnosti','V CPQ open details'])test('accepted location/polite prefix cannot bypass navigation-only material guard: '+goal,async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,0);assert.equal(h.app.state.messages.findLast(m=>m.role==='assistant').meta.browserNavigation.error,'CPQ_NAVIGATION_GOAL_ONLY');}finally{h.close();}
+});
+for(const goal of ['V CPQ odpri podrobnosti in nastavi RAM na 512','V naročilu OMNI-123 odpri podrobnosti, nato spremeni RAM na 512'])test('same accepted prefix preserves a separate explicit mixed material directive: '+goal,async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,1);}finally{h.close();}
+});
+test('accepted location prefix does not turn an informational show goal into navigation',async()=>{
+  const h=await harness();try{await h.pair();await h.send('V CPQ pokaži razliko med naročilom in ponudbo');assert.equal(h.calls.execute,0);assert.equal(h.calls.preview,0);}finally{h.close();}
+});
+
+test('location-prefixed show request retains its original explicit CPQ context',async()=>{
+  const h=await harness();try{await h.pair();await h.send('V CPQ pokaži storitev');assert.equal(h.calls.execute,1);}finally{h.close();}
+});
+test('location-prefixed show request cannot grant a material write',async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send('V CPQ pokaži storitev');assert.equal(h.calls.execute,0);assert.equal(h.app.state.messages.findLast(m=>m.role==='assistant').meta.browserNavigation.error,'CPQ_NAVIGATION_GOAL_ONLY');}finally{h.close();}
+});
+
+for(const goal of ['Odpri podrobnosti z besedilom »in nastavi RAM na 512«','Open details containing ‘then set RAM to 512’','Odpri podrobnosti z besedilom ⹂in nastavi RAM na 512⹂'])test('typographic or unknown quote marks cannot expand navigation material authority: '+goal,async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,0);assert.equal(h.app.state.messages.findLast(m=>m.role==='assistant').meta.browserNavigation.error,'CPQ_NAVIGATION_GOAL_ONLY');}finally{h.close();}
+});
+test('Slovenian quoted product label keeps an unquoted explicit mixed directive visible',async()=>{
+  const h=await harness({risk:'business_write',operation:'fill'});try{await h.pair();await h.send('Odpri »SYNTHETIC OFFER« in nastavi RAM na »512«');assert.equal(h.calls.execute,1);}finally{h.close();}
 });
