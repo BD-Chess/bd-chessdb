@@ -11,12 +11,12 @@ import {createAgentRun,runLimit,actionSignature,recoveryKind,explicitGoalGrant,g
 const $ = id => document.getElementById(id);
 const API = '/.netlify/functions/omnicpq-assistant', AUTH = '/.netlify/functions/omnicpq-auth';
 const STORAGE = 'omnicpq:workspace:v1', PREFS = 'omnicpq:preferences:v1';
-let browserBridge = createLegacyBridge();
+let browserBridge = createBrowserBridge();
 const navigationProposal=(text,observation)=>observation?.schema==='omnicpq.gui.observation.v2'?guiProposal(text,observation):legacyProposal(text,observation);
 const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready: false, ownerVerified: false, snapshot: null,
   capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, localSaveFailed: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
   browserConnected: false, browserObservation: null, browserStop: false, browserPaused: false, guiCheckpoint: null, agentRun:null, pendingDraft: null, release: null,
-  comparisonPartner: 'copilot', partnerInputs: {} };
+  comparisonPartner: 'copilot', partnerInputs: {}, browserAutoChoice: null };
 let installEvent, registration, accessEpoch = 0, experience, browserConnectionEpoch=0, browserPairToken=null, browserChoiceEpoch=0;
 const autoConnector=createAutoConnector({eligible:()=>state.ownerVerified&&state.role==='owner',available:()=>!state.busy,
   visible:()=>document.visibilityState!=='hidden',online:()=>navigator.onLine,
@@ -92,7 +92,7 @@ function mayExport() {
 function localWrite() {
   if (state.role === 'demo') return true;
   try {
-    localStorage.setItem(PREFS, JSON.stringify({ theme: $('theme').value, profile: state.profile, persist: state.persist }));
+    localStorage.setItem(PREFS, JSON.stringify({ theme: $('theme').value, profile: state.profile, persist: state.persist, experimentalGui: $('experimental-gui').checked, browserAuto: state.browserAutoChoice }));
     if (state.persist) localStorage.setItem(STORAGE, JSON.stringify({ ...exportSession(state,{local:true}), accountId: state.accountId, draft: $('message').value,
       context: getContext(), service: $('service').value, mode: state.mode,
       checkpoint:state.guiCheckpoint?{goal:state.guiCheckpoint.goal,step:state.guiCheckpoint.step,status:state.guiCheckpoint.status,at:state.guiCheckpoint.at,documentKey:state.guiCheckpoint.documentKey,afterRevision:state.guiCheckpoint.afterRevision}:null }));
@@ -107,9 +107,26 @@ function bodyForInput() { return { message: $('message').value.trim(), mode: sta
   profile: state.profile, context: getContext(), snapshot: state.snapshot ? { ...state.snapshot } : null,
   browser: $('browser-include').checked ? state.browserObservation : null,
   history: state.frozen?.body.history || conversationHistory() }; }
+function unboundStageConstraint(value) {
+  const goal = String(value || '').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
+  // Only these complete clauses have an existing per-target guard: configuredChoiceGuard protects Model/OS.
+  // Every other negative limit remains unproven, including a forbidden navigation target.
+  const remaining = goal.replace(/(?:^|[.;,]\s*)(?:modela(?: in os)?|os|operacijskega sistema) ne spreminjaj\s*(?=[.;,]|$)/g,' ');
+  return /\b(?:ne|nikoli|brez|never|without|do not|don't)\b/.test(remaining);
+}
+function automaticStageGoal(run, observation) {
+  if (!$('experimental-gui').checked || observation?.schema !== 'omnicpq.gui.observation.v2' || cpqLocation(observation.url)?.environment !== 'STAGE') return false;
+  const goal = String(run?.goal || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').trim().toLowerCase();
+  // A model action block cannot turn an informational, quoted or conditional question into a user command.
+  if (unboundStageConstraint(goal)) return false;
+  if (/\b(?:kako|zakaj|primer|razlozi|pojasni|navodila|ce|how|why|example|explain|if)\b/.test(goal)) return false;
+  const polite = /^(?:prosim[:,]?\s+)?ali lahko (?:odpres|izberes|kliknes|pritisnes|vneses|nastavis|spremenis|konfiguriras|ustvaris|dodas|odstranis|shranis|oddas|izbrises|preklices|storniras|premaknes|oznacis|izpolnis|nalozis|povecas|zmanjsas)\b/.test(goal) || /^(?:please\s+)?can you (?:open|go|select|click|press|enter|set|change|configure|create|add|remove|save|submit|delete|cancel|scroll|check|fill|upload)\b/.test(goal);
+  if (polite) return true;
+  if (/^(?:(?:prosim[:,]?|please)\s+)?(?:pokazi|prikazi|show)\b/.test(goal) && /\b(?:v cpq|in cpq)\b/.test(goal)) return true;
+  return /^(?:(?:prosim[:,]?|zdaj|please)\s+)*(?:v (?:cpq|stage|obstojecem narocilu|narocilu)(?:\s+omni-\d+)?[:,]?\s+)?(?:odpri|nadaljuj|uredi|pojdi|izberi|klikni|pritisni|vnesi|nastavi|spremeni|konfiguriraj|ustvari|dodaj|odstrani|shrani|oddaj|izbrisi|preklici|storniraj|premakni|oznaci|izpolni|nalozi|povecaj|zmanjsaj|open|continue|edit|go|select|click|press|enter|set|change|configure|create|add|remove|save|submit|delete|cancel|scroll|check|fill|upload)\b/.test(goal);
+}
 function setMode(mode) {
   mode=normalizeMode(mode);state.mode = mode; $('mode-badge').textContent = WORK_MODES.find(p => p.mode === mode).short;
-  if (mode !== 'work') $('browser-auto').checked = false;
   for (const button of $('mode-nav').children) { button.classList.toggle('active', button.dataset.mode === mode); button.setAttribute('aria-pressed', String(button.dataset.mode === mode)); }
   showWorkspaceStatus();
 }
@@ -138,7 +155,8 @@ function hasComparisonDraft() {
 function startNewChat(keepContext=false) {
   if (state.busy || !state.ownerVerified) return;
   state.messages = []; state.comparisons = []; state.promptId = null; state.pendingDraft = null; clearFrozen(); $('message').value = '';
-  state.browserStop = true; state.guiCheckpoint = null; $('browser-auto').checked = false;
+  state.browserStop = true; state.guiCheckpoint = null;
+  $('browser-auto').checked = state.browserConnected && $('experimental-gui').checked && cpqLocation(state.browserObservation?.url)?.environment === 'STAGE' && state.browserAutoChoice !== false;
   if (!keepContext) {
     experience?.clear();
     disconnect(); disconnectBrowser(); setSnapshot(null); $('context-text').value = ''; $('manual-url').value = '';
@@ -438,6 +456,8 @@ function browserProblem(error) {
     BRIDGE_UPDATE_REQUIRED:'Razširitev je starejša od protokola FULL GUI v2. Posodobi celotno mapo razširitve in klikni Znova naloži v Edge; CPQ zavihka ne osvežuj.',
     BRIDGE_INVALID_COMMAND:'Povezan je starejši Browser Bridge. Posodobi razširitev na FULL GUI 1.1.0 ter jo znova naloži brez osvežitve CPQ urejevalnika.',
     BRIDGE_DEBUGGER_UNAVAILABLE:'Edge debugger/CDP ni dosegljiv. Upravljanje miške in tipkovnice ni potrjeno; preveri dovoljenje razširitve in organizacijsko politiko.',
+    CPQ_NAVIGATION_GOAL_ONLY:'Cilj zahteva prikaz v CPQ. Predlagana poslovna sprememba ni dovoljena za samodejno izvedbo.',
+    CPQ_GOAL_CONSTRAINT_REVIEW_REQUIRED:'Cilj vsebuje izrecno omejitev. Pred poslovno spremembo preveri predlagani poseg; samodejno nadaljevanje je zadržano.',
     CPQ_EXPLICIT_APPROVAL_REQUIRED:'Dejanje zahteva izrecno potrditev (oddaja, izbris ali izguba neshranjenega dela). Samodejno izvajanje je ustavljeno.',
     CPQ_UNSAVED_WORK_PROTECTED:'Odprte so morebitne neshranjene spremembe. Odhod je preprečen.',
     CPQ_OWNER_REQUIRED:'Urejanje CPQ je dovoljeno le prijavljenemu lastniku.',
@@ -541,12 +561,13 @@ async function connectBrowser(automatic=false) {
     // A status poll/recovery preserves choices made before or during the request.
     if(newPair&&choiceEpoch===browserChoiceEpoch){
       $('browser-include').checked=true;
-      $('browser-auto').checked=cpqLocation(o.url)?.environment==='STAGE'&&$('experimental-gui').checked;
+      $('browser-auto').checked=cpqLocation(o.url)?.environment==='STAGE'&&$('experimental-gui').checked&&state.browserAutoChoice!==false;
       clearFrozen();
     }
     browserPairToken=handshake.token;
     $('browser-tools').hidden=false; $('browser-read').disabled=state.busy; $('browser-disconnect').hidden=false;
     for(const id of ['browser-include','browser-auto'])$(id).disabled=false;
+    $('browser-auto').disabled=cpqLocation(o.url)?.environment!=='STAGE'||!$('experimental-gui').checked;
     $('browser-setup').open=false; showWorkspaceStatus();
     if(fresh)notice('CPQ povezava je potrjena. Pripravljeno za tvoj STAGE cilj.');
   } catch(e) {
@@ -579,6 +600,8 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   if (!prepared || prepared.revision !== before.revision || prepared.documentKey !== before.documentKey) throw Error('CPQ_SCREEN_CHANGED');
   const isMaterial=['business_write','irreversible','lose_unsaved'].includes(prepared.risk) || ['fill','check','selectNative','upload','drag','key'].includes(a.operation);
   if (isMaterial && state.role !== 'owner') throw Error('CPQ_OWNER_REQUIRED');
+  if (guided && isMaterial && /^(?:(?:prosim[:,]?|please)\s+)?(?:pokazi|prikazi|show)\b/i.test(String(state.agentRun?.goal || '').normalize('NFD').replace(/\p{Diacritic}/gu,''))) throw Error('CPQ_NAVIGATION_GOAL_ONLY');
+  if (guided && isMaterial && unboundStageConstraint(state.agentRun?.goal)) throw Error('CPQ_GOAL_CONSTRAINT_REVIEW_REQUIRED');
   let humanApproved=!guided;
   const inherited=prepared.risk==='irreversible'&&goalGrantCovers(state.agentRun?.goalGrant,prepared,before);
   if(inherited)humanApproved=true;
@@ -660,7 +683,7 @@ async function send(event, browserRun = null) {
     }
     if (!terminal) answer.status = 'partial';
     const proposal = answer.status === 'complete' ? navigationProposal(answer.content,request.browser) : null;
-    if (proposal && $('browser-auto').checked && state.mode === 'work' && !state.browserStop && !controller.signal.aborted && state.accountId === run.accountId && run.epoch === accessEpoch) {
+    if (proposal && $('browser-auto').checked && automaticStageGoal(run,request.browser) && !state.browserStop && !controller.signal.aborted && state.accountId === run.accountId && run.epoch === accessEpoch) {
       const key = actionSignature(proposal);
       if (runLimit(run) || run.attempted.includes(key)) notice('Vodenje je zaustavljeno zaradi omejitve ali odsotnosti napredka. Stanje ostane ohranjeno.');
       else {
@@ -820,6 +843,9 @@ experience=createExperience({document,window,authorized:()=>state.ownerVerified&
 initCards(); ownerAccess(false);
 try {
   const prefs = JSON.parse(localStorage.getItem(PREFS) || '{}');
+  $('experimental-gui').checked = prefs.experimentalGui !== false;
+  if (!$('experimental-gui').checked) browserBridge = createLegacyBridge();
+  state.browserAutoChoice = typeof prefs.browserAuto === 'boolean' ? prefs.browserAuto : null;
   $('theme').value = prefs.theme === 'light' ? 'light' : 'dark'; document.documentElement.dataset.theme = $('theme').value;
   state.profile = prefs.profile === 'careful' ? 'careful' : 'fast'; $('profile').value = state.profile;
   state.persist = prefs.persist === true; $('persist').checked = state.persist;
@@ -846,7 +872,7 @@ window.addEventListener('online',()=>autoConnector.wake());
 function stopAgent(status){state.browserStop=true;state.browserPaused=true;state.controller?.abort();
   state.guiCheckpoint={...state.guiCheckpoint,status};browserBridge.suspend?.().catch(()=>{});localWrite();}
 $('experimental-gui').onchange=()=>{stopAgent('MODE_CHANGED');disconnectBrowser();browserBridge=$('experimental-gui').checked?createBrowserBridge():createLegacyBridge();
-  browserBridge.setIdentity?.(state.autoIdentity);autoConnector.check().catch(e=>notice(browserProblem(e)));};
+  localWrite();browserBridge.setIdentity?.(state.autoIdentity);autoConnector.check().catch(e=>notice(browserProblem(e)));};
 $('cancel').onclick = () => stopAgent('STOPPED');
 $('browser-connect').onclick = () => {autoConnector.check().catch(e=>notice(browserProblem(e)));};
 $('browser-read').onclick = () => { if (!state.busy) readBrowserObservation({offset:0,query:''}).catch(e => notice(browserProblem(e))); };
@@ -879,7 +905,7 @@ resumeButton.onclick=async()=>{if(!state.ownerVerified||!state.browserConnected|
     notice('Nadaljujem iz svežega opazovanja.');if($('message').value.trim())await send();}
   catch(e){notice(browserProblem(e));}
 };
-for (const id of ['browser-include','browser-auto']) $(id).onchange = () => { browserChoiceEpoch++; clearFrozen(); if (!$('browser-auto').checked) state.browserStop = true; else {state.browserStop=false;state.browserPaused=false;} };
+for (const id of ['browser-include','browser-auto']) $(id).onchange = () => { browserChoiceEpoch++; if(id==='browser-auto')state.browserAutoChoice=$('browser-auto').checked; localWrite(); clearFrozen(); if (!$('browser-auto').checked) state.browserStop = true; else {state.browserStop=false;state.browserPaused=false;} };
 $('settings-open').onclick = () => $('settings-dialog').showModal(); $('settings-close').onclick = () => $('settings-dialog').close();
 $('refresh-status').onclick = async () => { if (!state.busy) { await health(); await readReleaseInfo(); } };
 $('context-toggle').onclick = $('welcome-context').onclick = () => { $('context-panel').open = true; $('context-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
