@@ -531,6 +531,7 @@ function browserProblem(error) {
     CPQ_OBSERVED_DESTINATION_MISMATCH:'Zahtevani cilj je med opaženimi kontrolami. Predlagani klik cilja drugam; korak je zadržan.',
     CPQ_NAVIGATION_PATH_UNPROVEN:'Pot do zahtevanega cilja še ni preverjena. Navigacijski klik je zadržan; naslednji korak zahteva svež dokaz ali pregled poti.',
     CPQ_NAVIGATION_TARGET_AMBIGUOUS:'Več opaženih gumbov ima isto oznako. Izbira primerka ni potrjena; klik je zadržan.',
+    CPQ_VISIBLE_FIELD_UNRELATED_TARGET:'Zahtevana polja so že sveže opažena. Nepovezan klik je zadržan; uporabi opažena polja ali izrecno opredeli korak.',
     CPQ_NAVIGATION_EFFECT_UNPROVEN:'Klik je bil odposlan, učinek pa ni potrjen. Nadaljevanje in ponovitev sta zadržana.',
     CPQ_GOAL_ACTION_MISMATCH:'Predlagano dejanje ali cilj se ne ujema z naročenim klikom oziroma izbiro. Samodejni poseg je zadržan.',
     CPQ_NAVIGATION_GOAL_ONLY:'Cilj zahteva prikaz v CPQ. Predlagana poslovna sprememba ni dovoljena za samodejno izvedbo.',
@@ -829,21 +830,28 @@ function navigationEffectStatus(request,cursor,before,after){
   return 'EFFECT_UNPROVEN';
 }
 function navigationRequest(value){
-  const goal=stageGoalText(value),first=/^(?:odpri|open|pojdi\s+na|go\s+to|ali lahko odpres|can you open|can you go to)\s+/;
-  if(!first.test(goal)||!navigationOnlyStageGoal(value))return null;
+  const goal=stageDirectiveText(value),first=/^(?:odpri|odpres|open|pojdi\s+na|pojdes\s+na|go\s+to|ali lahko odpres|can you open|can you go to)\s+/;
   let outside='',quote=null,escaped=false;const closes={'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
-  for(const ch of goal){if(quote){if(escaped)escaped=false;else if(ch==='\\')escaped=true;else if(quote.includes(ch))quote=null;outside+=' '.repeat(ch.length);continue;}if(/\p{Quotation_Mark}/u.test(ch)&&!Object.hasOwn(closes,ch))return {ambiguous:true};if(Object.hasOwn(closes,ch)){quote=closes[ch];outside+=' '.repeat(ch.length);}else outside+=ch;}
+  for(const ch of goal){if(quote){if(escaped)escaped=false;else if(ch==='\\')escaped=true;else if(quote.includes(ch))quote=null;outside+='\uE000'.repeat(ch.length);continue;}if(/\p{Quotation_Mark}/u.test(ch)&&!Object.hasOwn(closes,ch))return {ambiguous:true};if(Object.hasOwn(closes,ch)){quote=closes[ch];outside+='\uE000'.repeat(ch.length);}else outside+=ch;}
   if(quote)return {ambiguous:true};
   const separators=[...outside.matchAll(/[,;]\s*(?:(?:nato|potem|then)\s+)?|\s+(?:in|ter|and)\s+(?:(?:nato|potem|then)\s+)?|\s+(?:nato|potem|then)\s+/g)];
   const chunks=[];let start=0;for(const separator of separators){chunks.push(goal.slice(start,separator.index));start=separator.index+separator[0].length;}chunks.push(goal.slice(start));
-  if(chunks.length>6)return {ambiguous:true};const nodes=[];
-  for(let index=0;index<chunks.length;index++){
-    let target=chunks[index].trim();if(index===0)target=target.replace(first,'');else target=target.replace(/^(?:odpri|odpres|open|pojdi\s+na|pojdes\s+na|go\s+to)\s+/,'');
-    target=target.replace(/[.!?]\s*$/,'').trim();const close=closes[target[0]];
+  const parts=chunks.map(chunk=>stageDirectiveText(chunk));
+  if(!parts.some(part=>first.test(part)))return null;
+  if(parts.length>20)return {ambiguous:true};
+  const material=/^(?:nastavi|nastavis|vnesi|vneses|spremeni|spremenis|konfiguriraj|ustvari|dodaj|odstrani|shrani|shranis|oddaj|izbrisi|preklici|storniraj|uredi|izberi|izberes|izpolni|nalozi|povecaj|zmanjsaj|set|enter|change|configure|create|add|remove|save|submit|delete|cancel|edit|select|check|fill|upload)\b/;
+  const nodes=[];let phase=null,transitions=0;
+  for(let index=0;index<parts.length;index++){
+    let target=parts[index].trim(),kind=first.test(target)?'navigation':material.test(target)?'material':phase;
+    if(!kind)return {ambiguous:true};
+    if(phase&&kind!==phase&&++transitions>1)return {ambiguous:true};phase=kind;
+    if(kind==='material')continue;
+    target=target.replace(first,'').replace(/[.!?]\s*$/,'').trim();const close=closes[target[0]];
     if(close){if(target.length<3||!close.includes(target.at(-1)))return {ambiguous:true};target=target.slice(1,-1).trim();}
-    else if(/[\p{Quotation_Mark}\x60]|[;,\n]/u.test(target)||/^(?:preveri|poglej|razlozi|pojasni|check|explain|verify)\b/.test(target))return {ambiguous:true};
+    else if(/[\p{Quotation_Mark}\x60]|[;,\n]/u.test(target)||/\b(?:ali|or)\b/.test(target)||/^(?:preveri|poglej|razlozi|pojasni|check|explain|verify)\b/.test(target))return {ambiguous:true};
     if(!target||target.length>160||/[\u0000-\u001F]/.test(target))return {ambiguous:true};nodes.push(target.replace(/\s+/g,' '));
   }
+  if(!nodes.length||nodes.length>6)return {ambiguous:true};
   return {nodes,key:JSON.stringify(nodes)};
 }
 function navigationDestinationStatus(value,observation,action,cursor=0){
@@ -854,6 +862,24 @@ function navigationDestinationStatus(value,observation,action,cursor=0){
   const target=request.nodes[cursor],all=observation.controls.filter(c=>navigationControlKinds.has(c.kind)&&navigationLabel(c.label)===target),destinations=all.filter(c=>c.enabled===true&&c.visibleInViewport===true);
   if(all.length>1)return 'AMBIGUOUS_TARGET';
   if(!destinations.length)return 'TARGET_NOT_OBSERVED';return destinations.some(c=>c.id===action.targetId)?'REQUESTED_CONTROL_OBSERVED':'CONFLICT';
+}
+
+function explicitOrdinaryGoalTarget(value,action,observation){
+  const goal=stageDirectiveText(value);let outside='',quote=null,escaped=false;const closes={'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
+  for(const ch of goal){if(quote){if(escaped)escaped=false;else if(ch==='\\')escaped=true;else if(quote.includes(ch))quote=null;outside+='\uE000'.repeat(ch.length);continue;}if(/\p{Quotation_Mark}/u.test(ch)&&!Object.hasOwn(closes,ch))return false;if(Object.hasOwn(closes,ch)){quote=closes[ch];outside+='\uE000'.repeat(ch.length);}else outside+=ch;}
+  if(quote)return false;
+  const separators=[...outside.matchAll(/[,;]\s*(?:(?:nato|potem|then)\s+)?|\s+(?:in|ter|and)\s+(?:(?:nato|potem|then)\s+)?|\s+(?:nato|potem|then)\s+/g)];
+  const chunks=[];let start=0;for(const separator of separators){chunks.push(goal.slice(start,separator.index));start=separator.index+separator[0].length;}chunks.push(goal.slice(start));
+  return chunks.length<=20&&chunks.some(chunk=>/^(?:klikni|pritisni|izberi|click|press|select)\s+/.test(stageDirectiveText(chunk))&&stageTargetGoalAllows(chunk,action,observation));
+}
+function observedKnownFieldClickStatus(value,observation,action){
+  if(observation.schema!=='omnicpq.gui.observation.v2')return 'NOT_APPLICABLE';
+  const spec=stageNamedGoalBindings(value),names=Object.keys(spec.bindings);if(spec.unknown||!names.length)return 'NOT_APPLICABLE';
+  const fields=names.map(name=>observation.controls.filter(c=>['field','spinbutton','combobox','select'].includes(c.kind)&&stageFieldName(c.label)===name));
+  if(fields.some(matches=>matches.length===1&&matches[0].enabled===true&&matches[0].visibleInViewport===true&&matches[0].id===action.targetId))return 'REQUESTED_FIELD_FOCUS';
+  if(fields.some(matches=>matches.length!==1||matches[0].enabled!==true||matches[0].visibleInViewport!==true))return 'NOT_ALL_REQUESTED_FIELDS_READY';
+  if(explicitOrdinaryGoalTarget(value,action,observation))return 'EXPLICIT_ORDINARY_TARGET';
+  return 'UNRELATED_TO_VISIBLE_REQUESTED_FIELDS';
 }
 
 async function executeBrowserNavigation(proposal,epoch,guided=false) {
@@ -886,16 +912,20 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   if(guided&&prepared.risk==='ordinary'&&['click','doubleClick'].includes(a.operation)){
     const run=state.agentRun,request=navigationRequest(run?.goal);
     if(navigationTargetAmbiguous(run,before,a))throw Error('CPQ_NAVIGATION_TARGET_AMBIGUOUS');
+    if(!request&&!choice&&observedKnownFieldClickStatus(run?.goal,before,a)==='UNRELATED_TO_VISIBLE_REQUESTED_FIELDS'){
+      const error=Error('CPQ_VISIBLE_FIELD_UNRELATED_TARGET');navigationNoDispatchErrors.add(error);throw error;
+    }
     if(request){
       if(!run||typeof run!=='object')throw Error('CPQ_NAVIGATION_PATH_UNPROVEN');
       let progress=navigationProgress.get(run);if(!progress||progress.key!==request.key){progress={key:request.key,cursor:0};navigationProgress.set(run,progress);}
-      const evidence=navigationDestinationStatus(run.goal,before,a,progress.cursor);
-      if(evidence!=='REQUESTED_CONTROL_OBSERVED'){
+      const completedFocus=Array.isArray(request.nodes)&&request.nodes.length>0&&progress.cursor===request.nodes.length&&typeof before.documentKey==='string'&&!!before.documentKey&&progress.observedScope?.documentKey===before.documentKey&&progress.observedScope?.framePath===(before.framePath||'')&&observedKnownFieldClickStatus(run.goal,before,a)==='REQUESTED_FIELD_FOCUS';
+      const evidence=completedFocus?'COMPLETED_NAV_REQUESTED_FIELD_FOCUS':navigationDestinationStatus(run.goal,before,a,progress.cursor);
+      if(evidence!=='REQUESTED_CONTROL_OBSERVED'&&!completedFocus){
         const error=Error(evidence==='CONFLICT'?'CPQ_OBSERVED_DESTINATION_MISMATCH':evidence==='AMBIGUOUS_TARGET'?'CPQ_NAVIGATION_TARGET_AMBIGUOUS':'CPQ_NAVIGATION_PATH_UNPROVEN');
         if(evidence==='CONFLICT'||evidence==='TARGET_NOT_OBSERVED')navigationNoDispatchErrors.add(error);
         throw error;
       }
-      acceptedNavigationStep={progress,cursor:progress.cursor,request};
+      if(!completedFocus)acceptedNavigationStep={progress,cursor:progress.cursor,request};
     }
   }
   if (guided && isMaterial && navigationOnlyStageGoal(state.agentRun?.goal)) throw Error('CPQ_NAVIGATION_GOAL_ONLY');
@@ -925,7 +955,10 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
       state.guiCheckpoint={goal:state.guiCheckpoint?.goal||null,actionId:a.actionId,step:(state.guiCheckpoint?.step||0)+1,at:new Date().toISOString(),documentKey:after.documentKey,afterRevision:after.revision,status:'DISPATCHED_EFFECT_UNPROVEN',summary};
       $('browser-result').textContent=summary;localWrite();throw error;
     }
-    if(acceptedNavigationStep.progress.cursor===acceptedNavigationStep.cursor)acceptedNavigationStep.progress.cursor++;
+    if(acceptedNavigationStep.progress.cursor===acceptedNavigationStep.cursor){
+      acceptedNavigationStep.progress.cursor++;
+      acceptedNavigationStep.progress.observedScope={documentKey:after.documentKey,framePath:after.framePath||''};
+    }
   }
   const summary=`${result.receipt.target.operation}: ${result.receipt.target.label}. Izvajalnik: ${result.receipt.status}. Novo opazovanje ${after.title}. To NI potrdilo shranitve ali realizacije.`;
   state.guiCheckpoint={goal:state.guiCheckpoint?.goal||null,actionId:a.actionId,step:(state.guiCheckpoint?.step||0)+1,
