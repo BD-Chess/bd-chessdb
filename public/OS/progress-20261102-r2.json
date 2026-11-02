@@ -1,0 +1,212 @@
+{
+  "schema": "8Z_OS_PUBLIC_PROGRESS_V1",
+  "snapshot_date": "2026-11-02",
+  "web_edition": "OS-WEB-20261102-R2",
+  "canonical_page": "https://www.mdlxdcc.org/os/#current",
+  "status": "NATIVE_VM_PROOF_RECORDED_LINUX_07_PACKAGE_PREPARED_VM_API_READY",
+  "physical_usb_firmware_acceptance": "LOCAL_ACCEPTANCE_PENDING",
+  "public_binary_download": null,
+  "download_note": "No verified public release-download URL exists for these custom images. This record does not distribute the images or model.",
+  "basis": "Final existing builder README, image manifest and final unchanged-ISO acceptance/API-readiness records reviewed for this R2 website update. No new boot, model, VM, API or benchmark runs were started for the web update.",
+  "artifacts": [
+    {
+      "variant": "01",
+      "filename": "01_8Z_OS_ORIGINAL_BIOS.img",
+      "bytes": 10485760,
+      "sha256": "398dabd5c251f270aeb932b5d3f67391f439c44280334f659db84d6ce38022cb",
+      "environment": "BIOS/Legacy",
+      "physical_acceptance": "LOCAL_ACCEPTANCE_PENDING"
+    },
+    {
+      "variant": "02",
+      "filename": "02_8Z_OS_ROBUST_BIOS.img",
+      "bytes": 10485760,
+      "sha256": "b09925b574d4f80e245d78aa19ae38f466802e4f878fe180ef04d0473fffe8c0",
+      "environment": "BIOS/Legacy",
+      "physical_acceptance": "LOCAL_ACCEPTANCE_PENDING"
+    },
+    {
+      "variant": "03",
+      "filename": "03_8Z_OS_UEFI_PREVIEW.efi",
+      "bytes": 28672,
+      "sha256": "48500b9655e0337deb8db0a5304756425740a2db9a915db3290d95ed7ac04b8b",
+      "environment": "x64 UEFI Boot Services application",
+      "physical_acceptance": "LOCAL_ACCEPTANCE_PENDING"
+    },
+    {
+      "variant": "04",
+      "filename": "04_8Z_OS_UEFI_CHAT.efi",
+      "bytes": 270426624,
+      "sha256": "0bfc06e4485bf3a7becfb499cc81d3bc2622f5e0e170dc0bf141d5474dde17ae",
+      "environment": "x64 UEFI Boot Services application",
+      "physical_acceptance": "LOCAL_ACCEPTANCE_PENDING"
+    },
+    {
+      "variant": "05",
+      "filename": "05_8Z_OS_UEFI_MENU_CHAT.efi",
+      "bytes": 270452224,
+      "sha256": "44992757b47403110a765194f0aed5c68bbed38fc7f7832c1cc46a8f1f16394e",
+      "environment": "x64 UEFI Boot Services application",
+      "physical_acceptance": "LOCAL_ACCEPTANCE_PENDING"
+    },
+    {
+      "variant": "06",
+      "filename": "06_8Z_OS_VirtualBox_Live_PorteuX_2.8.iso",
+      "bytes": 671416320,
+      "sha256": "ee5398d5d391aafe922ff54ed89fd8addecedbc180d5a82cb1365c96ef88d6a5",
+      "environment": "Linux Live + VirtualBox carrier",
+      "physical_acceptance": "LOCAL_ACCEPTANCE_PENDING"
+    },
+    {
+      "variant": "07",
+      "filename": "07_8Z_AI_OS_CPU_NVIDIA.iso",
+      "bytes": 6923943936,
+      "sha256": "78a8315d00f30ab92868e8b55f7476f8954a461545c71b4d867b92b6697e7d4e",
+      "environment": "Separate SynapseOS 1.0.2 Linux remaster; final ISO copied to USB and hash verified",
+      "physical_acceptance": "LOCAL_ACCEPTANCE_PENDING"
+    }
+  ],
+  "integrated_05_vm_evidence": {
+    "status": "PASS_SHORT_INTEGRATED_MENU_CHAT",
+    "ram_mb": 2048,
+    "cpus": 1,
+    "network": "none",
+    "physical_disks_attached": false,
+    "sequence": [
+      "graphical menu 0-7",
+      "7 opens chat",
+      "actual France/Paris response",
+      "F10 returns to graphical menu",
+      "1 starts Matrix",
+      "Esc then F10 returns to firmware loader"
+    ],
+    "prompt": "What is the capital of France?",
+    "actual_reply": "The capital of France is Paris."
+  },
+  "model": {
+    "publisher_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "revision": "12fd25f77366fa6b3b4b768ec3050bf629380bac",
+    "publisher_license": "Apache-2.0",
+    "model_card": "https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct/blob/12fd25f77366fa6b3b4b768ec3050bf629380bac/README.md",
+    "source_weights_sha256": "5af571cbf074e6d21a03528d2330792e532ca608f24ac70a143f6b369968ab8c",
+    "source_weights_bytes": 269060552,
+    "parameters_approx": 135000000,
+    "runtime_arithmetic": "FP32/SSE2 from exported BF16 weights",
+    "input": "Printable English ASCII",
+    "max_new_reply_tokens": 16,
+    "context_tokens": 256,
+    "training_by_this_project": false,
+    "factual_reliability_claimed": false,
+    "observed_incorrect_followup": {
+      "prompt": "And Germany?",
+      "actual_reply": "Germany is the capital of Germany.",
+      "environment": "Standalone UEFI and native checks"
+    },
+    "bounded_native_reference_check": {
+      "tokens": 3,
+      "same_argmax": true,
+      "max_absolute_logit_error": 6.866455078125e-05
+    }
+  },
+  "limitations": [
+    "UEFI Boot Services remain active; these EFI apps are not a new general-purpose ExitBootServices kernel.",
+    "Custom EFI binaries are unsigned; physical Secure Boot compatibility is unverified.",
+    "2 GB RAM is a first-chat recommendation, not a certified minimum.",
+    "No physical USB/firmware/keyboard acceptance, universal-PC/ARM support, broad quality benchmark or timing advantage is claimed.",
+    "Carrier 06 desktop/VirtualBox autostart passed, but inner guest boot was blocked by unavailable VT-x in the outer VM.",
+    "Separate Linux AI remaster 07 is now locally prepared with bounded final-ISO VM/API-readiness evidence; physical GPU and dedicated chat/language acceptance remain pending.",
+    "FutureMath is an information placeholder; CPUID DETECTED/MEM OK are inherited static UI labels."
+  ],
+  "screenshots": [
+    {
+      "path": "assets/20261102-menu.png",
+      "bytes": 6682,
+      "sha256": "9972f39487af6b5b28f74b86a51751b070a87749aea812d8048ca4803f0ec711",
+      "description": "Integrated UEFI menu with option 7",
+      "capture_environment": "Isolated x64 UEFI VirtualBox VM",
+      "provenance": "Unmodified project-authored demo capture; approved for this website update"
+    },
+    {
+      "path": "assets/20261102-chat.png",
+      "bytes": 6734,
+      "sha256": "a71be49e9b635300d28d92966326b9e7f1b1b111dd6f5ff62287eee29db408cc",
+      "description": "Actual France/Paris inference response",
+      "capture_environment": "Isolated x64 UEFI VirtualBox VM",
+      "provenance": "Unmodified project-authored demo capture; approved for this website update"
+    },
+    {
+      "path": "assets/20261102-matrix.png",
+      "bytes": 5209,
+      "sha256": "f9c166608be4468efb37d699269f5290bb176057c63d3cc96ae84691ae5f5b5e",
+      "description": "Matrix after returning from chat",
+      "capture_environment": "Isolated x64 UEFI VirtualBox VM",
+      "provenance": "Unmodified project-authored demo capture; approved for this website update"
+    }
+  ],
+  "snapshot_revision": "R2",
+  "previous_snapshot": {
+    "path": "progress-20261102.json",
+    "sha256": "b2a9072825218309b198b91bfcfee9b9694ce259198276752226e65ba6a70fa0",
+    "web_edition": "OS-WEB-20261102-R1",
+    "note": "Historical R1 snapshot retained unchanged."
+  },
+  "linux_07": {
+    "implementation": "Separate Linux remaster, not the native BIOS kernel or EFI applications and not the VirtualBox carrier 06.",
+    "package_status": "Final ISO prepared and copied to USB with byte/SHA-256 verification recorded",
+    "base": "SynapseOS 1.0.2",
+    "embedded_model": "Qwen3-1.7B-Q4_K_M",
+    "model_download_after_boot_required": false,
+    "boot_choices": [
+      "AUTO NVIDIA/CPU",
+      "Force CPU (8z.ai=cpu)",
+      "CPU safe graphics"
+    ],
+    "configured_cpu_threads": 4,
+    "configured_context_tokens": 2048,
+    "runtime_context_in_final_vm": "Not captured in the journal excerpt",
+    "final_unchanged_iso_vm_evidence": {
+      "status": "PASS",
+      "network": "none",
+      "physical_host_disks": "none",
+      "checks": [
+        "x64 UEFI boot",
+        "Force CPU launch parameter observed",
+        "graphical desktop",
+        "built-in AI command bar",
+        "local API readiness"
+      ],
+      "inference_queries": 0,
+      "api_http_states_observed": [
+        503,
+        200
+      ],
+      "api_ready_status": "ok",
+      "api_observed_ready_seconds": 64.12,
+      "diagnostic_elapsed_seconds": 70.68,
+      "timing_scope": "One recorded diagnostic, not a benchmark or startup-time guarantee"
+    },
+    "earlier_final_image_probe": {
+      "status": "TIMEOUT",
+      "seconds": 176.6,
+      "desktop_visible": true,
+      "cause": "Unproven; original result retained"
+    },
+    "separate_extracted_root_cpu_inference": {
+      "queries": 1,
+      "prompt": "2+2",
+      "actual_reply": "4",
+      "final_vm_inference": false
+    },
+    "pending": [
+      "Physical Ventoy USB boot, display and input",
+      "Native NVIDIA/CUDA offload and VRAM use",
+      "Force CPU with an operational NVIDIA GPU",
+      "Dedicated Vibe conversation window",
+      "Language quality, usefulness and extended conversation acceptance"
+    ],
+    "custom_image_upstream_signed": false,
+    "physical_secure_boot_compatibility": "Unverified",
+    "public_binary_download": null,
+    "new_linux_images_published": false
+  }
+}
