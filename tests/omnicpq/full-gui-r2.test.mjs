@@ -1,3 +1,6 @@
+// Keep retrieval representation regressions in both existing OmniCPQ CI suites.
+import './json-context-differential-r1.test.mjs';
+import './retrieval-context-synthetic-r1.test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
