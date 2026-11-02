@@ -899,6 +899,53 @@ function stageMaterialGoalAllows(value, action, observation, prepared) {
 const navigationNoDispatchErrors=new WeakSet(),navigationProgress=new WeakMap(),navigationKnownAmbiguities=new WeakMap(),navigationUnprovenEffects=new WeakMap();
 const navigationControlKinds=new Set(['button','link','tab','menuitem','treeitem']);
 const navigationLabel=value=>stageGoalText(value,false).replace(/\s+/g,' ').trim();
+
+// A typed shortcut only for this explicit tab request; other goals retain the literal route guard.
+const currentOrderTabContexts=new WeakMap();
+function currentOrderTabRequest(value){
+  const goal=navigationLabel(stageDirectiveText(value));
+  if(unboundStageConstraint(goal)||!/^(?:odpri|ali lahko odpres) zavihek postavke(?: v tem (?:testnem )?narocilu)?[.!?]?$/.test(goal))return null;
+  const nodes=['postavke'];return {nodes,key:JSON.stringify(['CURRENT_ORDER_TAB',...nodes]),currentOrderTab:true};
+}
+function currentOrderTabSnapshotValid(observation){
+  const location=cpqLocation(observation?.url);
+  return observation?.schema==='omnicpq.gui.observation.v2'&&location?.environment==='STAGE'&&location.routeScope==='order'&&observation.routeScope==='order'&&
+    observation.dialogOpen===false&&observation.navigationLocked===false&&typeof observation.documentKey==='string'&&!!observation.documentKey.trim()&&
+    typeof observation.id==='string'&&!!observation.id&&typeof observation.revision==='string'&&!!observation.revision&&Array.isArray(observation.controls);
+}
+function rememberCurrentOrderTabContext(run,observation){
+  const request=currentOrderTabRequest(run?.goal);if(!request||!run||typeof run!=='object')return;
+  let context=currentOrderTabContexts.get(run);
+  if(!context){
+    context={key:request.key,accountId:run.accountId,epoch:run.epoch,connectionEpoch:browserConnectionEpoch,binding:null};currentOrderTabContexts.set(run,context);
+    if(!currentOrderTabSnapshotValid(observation))return;
+    Object.assign(context,{documentKey:observation.documentKey,framePath:observation.framePath||'',url:observation.url});
+  }
+  context.binding=null;
+  if(!currentOrderTabScopeMatches(run,observation))return;
+  rememberNavigationAmbiguities(run,observation);
+  const matches=observation.controls.filter(c=>navigationControlKinds.has(c.kind)&&navigationLabel(c.label)==='postavke'),tab=matches.length===1?matches[0]:null;
+  if(tab?.kind==='tab'&&tab.enabled===true&&tab.visibleInViewport===true&&tab.hidden!==true&&tab.visible!==false&&/^c\d{1,4}$/.test(tab.id))
+    context.binding={observationId:observation.id,revision:observation.revision,targetId:tab.id};
+}
+function currentOrderTabScopeMatches(run,observation,sameUrl=true){
+  const context=currentOrderTabContexts.get(run);
+  return !!context?.documentKey&&state.agentRun===run&&state.ownerVerified&&state.role==='owner'&&state.accountId===context.accountId&&run.accountId===context.accountId&&
+    run.epoch===context.epoch&&accessEpoch===context.epoch&&browserConnectionEpoch===context.connectionEpoch&&currentOrderTabSnapshotValid(observation)&&
+    observation.documentKey===context.documentKey&&(observation.framePath||'')===context.framePath&&(!sameUrl||observation.url===context.url);
+}
+function currentOrderTabDestinationStatus(run,request,observation,action,proposal){
+  const context=currentOrderTabContexts.get(run),binding=context?.binding;
+  if(context?.key!==request.key||!currentOrderTabScopeMatches(run,observation))return 'UNRESOLVED_CONTEXT';
+  if(!binding)return 'TARGET_NOT_OBSERVED';
+  if(action.operation!=='click'||proposal.operation!=='click'||proposal.observationId!==binding.observationId||proposal.revision!==binding.revision||
+    proposal.targetId!==binding.targetId||action.targetId!==binding.targetId||proposal.expectedDocument!=null&&proposal.expectedDocument!==context.documentKey||
+    proposal.framePath!==undefined&&proposal.framePath!==context.framePath)return 'CONFLICT';
+  const all=observation.controls.filter(c=>navigationControlKinds.has(c.kind)&&navigationLabel(c.label)==='postavke');
+  if(all.length>1)return 'AMBIGUOUS_TARGET';
+  const tab=all[0];if(tab?.kind!=='tab'||tab.enabled!==true||tab.visibleInViewport!==true||tab.hidden===true||tab.visible===false)return 'TARGET_NOT_OBSERVED';
+  return tab.id===binding.targetId?'REQUESTED_CONTROL_OBSERVED':'CONFLICT';
+}
 function rememberNavigationAmbiguities(run,observation){
   if(!run||typeof run!=='object'||observation.schema!=='omnicpq.gui.observation.v2')return;
   const scope=JSON.stringify([observation.documentKey,observation.framePath||'']);
@@ -925,6 +972,7 @@ function navigationEffectStatus(request,cursor,before,after){
   return 'EFFECT_UNPROVEN';
 }
 function navigationRequest(value){
+  const tab=currentOrderTabRequest(value);if(tab)return tab;
   const goal=stageDirectiveText(value),first=/^(?:odpri|odpres|open|pojdi\s+na|pojdes\s+na|go\s+to|ali lahko odpres|can you open|can you go to)\s+/;
   let outside='',quote=null,escaped=false;const closes={'"':'"',"'":"'",'“':'”','„':'“”','»':'«','«':'»','‘':'’','\x60':'\x60'};
   for(const ch of goal){if(quote){if(escaped)escaped=false;else if(ch==='\\')escaped=true;else if(quote.includes(ch))quote=null;outside+='\uE000'.repeat(ch.length);continue;}if(/\p{Quotation_Mark}/u.test(ch)&&!Object.hasOwn(closes,ch))return {ambiguous:true};if(Object.hasOwn(closes,ch)){quote=closes[ch];outside+='\uE000'.repeat(ch.length);}else outside+=ch;}
@@ -949,10 +997,11 @@ function navigationRequest(value){
   if(!nodes.length||nodes.length>6)return {ambiguous:true};
   return {nodes,key:JSON.stringify(nodes)};
 }
-function navigationDestinationStatus(value,observation,action,cursor=0){
+function navigationDestinationStatus(value,observation,action,cursor=0,run=null,proposal=action){
   if(!['click','doubleClick'].includes(action.operation))return 'NOT_APPLICABLE_OPERATION';
   const request=navigationRequest(value);if(!request)return 'NOT_APPLICABLE_GOAL';if(request.ambiguous)return 'AMBIGUOUS_NAVIGATION_REQUEST';
   if(cursor>=request.nodes.length)return 'REQUEST_ALREADY_CONSUMED';
+  if(request.currentOrderTab)return currentOrderTabDestinationStatus(run,request,observation,action,proposal);
   if(observation.schema!=='omnicpq.gui.observation.v2'||observation.dialogOpen!==false)return 'UNRESOLVED_CONTEXT';
   const target=request.nodes[cursor],all=observation.controls.filter(c=>navigationControlKinds.has(c.kind)&&navigationLabel(c.label)===target),destinations=all.filter(c=>c.enabled===true&&c.visibleInViewport===true);
   if(all.length>1)return 'AMBIGUOUS_TARGET';
@@ -995,6 +1044,7 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
     const after=await readBrowserObservation({offset:proposal.offset??0,limit:proposal.limit??180,query:proposal.query??'',framePath:proposal.framePath??before.framePath??''});
     return {receipt:{status:'READ_ONLY',actionId:a.actionId},afterObservationId:after.id,afterRevision:after.revision,summary:'Prebrane so sveže kontrole: '+(after.paging.query||'stran '+after.paging.offset)};
   }
+  if(guided&&currentOrderTabRequest(state.agentRun?.goal)&&a.operation!=='click')throw Error('CPQ_GOAL_ACTION_MISMATCH');
   if(guided&&!stageTargetGoalAllows(state.agentRun?.goal,a,before))throw Error('CPQ_GOAL_ACTION_MISMATCH');
   const choice=configuredChoiceGuard(state.agentRun?.goal||'',before,a,{guided});
   if(choice?.error)throw Error(choice.error);
@@ -1014,13 +1064,13 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
       if(!run||typeof run!=='object')throw Error('CPQ_NAVIGATION_PATH_UNPROVEN');
       let progress=navigationProgress.get(run);if(!progress||progress.key!==request.key){progress={key:request.key,cursor:0};navigationProgress.set(run,progress);}
       const completedFocus=Array.isArray(request.nodes)&&request.nodes.length>0&&progress.cursor===request.nodes.length&&typeof before.documentKey==='string'&&!!before.documentKey&&progress.observedScope?.documentKey===before.documentKey&&progress.observedScope?.framePath===(before.framePath||'')&&observedKnownFieldClickStatus(run.goal,before,a)==='REQUESTED_FIELD_FOCUS';
-      const evidence=completedFocus?'COMPLETED_NAV_REQUESTED_FIELD_FOCUS':navigationDestinationStatus(run.goal,before,a,progress.cursor);
+      const evidence=completedFocus?'COMPLETED_NAV_REQUESTED_FIELD_FOCUS':navigationDestinationStatus(run.goal,before,a,progress.cursor,run,proposal);
       if(evidence!=='REQUESTED_CONTROL_OBSERVED'&&!completedFocus){
         const error=Error(evidence==='CONFLICT'?'CPQ_OBSERVED_DESTINATION_MISMATCH':evidence==='AMBIGUOUS_TARGET'?'CPQ_NAVIGATION_TARGET_AMBIGUOUS':'CPQ_NAVIGATION_PATH_UNPROVEN');
         if(evidence==='CONFLICT'||evidence==='TARGET_NOT_OBSERVED')navigationNoDispatchErrors.add(error);
         throw error;
       }
-      if(!completedFocus)acceptedNavigationStep={progress,cursor:progress.cursor,request};
+      if(!completedFocus)acceptedNavigationStep={progress,cursor:progress.cursor,request,run};
     }
   }
   if (guided && isMaterial && navigationOnlyStageGoal(state.agentRun?.goal)) throw Error('CPQ_NAVIGATION_GOAL_ONLY');
@@ -1041,7 +1091,7 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
   if (connectionEpoch!==browserConnectionEpoch || !['DISPATCHED','ALREADY_MATCHES'].includes(result.receipt?.status)) throw Error('CPQ_ACTION_OUTCOME_UNKNOWN');
   const after=await readBrowserObservation();
   if(acceptedNavigationStep){
-    const evidence=navigationEffectStatus(acceptedNavigationStep.request,acceptedNavigationStep.cursor,before,after);
+    const evidence=acceptedNavigationStep.request.currentOrderTab&&!currentOrderTabScopeMatches(acceptedNavigationStep.run,after,false)?'EFFECT_UNPROVEN':navigationEffectStatus(acceptedNavigationStep.request,acceptedNavigationStep.cursor,before,after);
     if(evidence==='EFFECT_UNPROVEN'){
       const error=Error('CPQ_NAVIGATION_EFFECT_UNPROVEN');
       const summary='Klik je bil odposlan, učinek pa ni potrjen. Nadaljevanje in ponovitev sta zadržana.';
@@ -1123,6 +1173,7 @@ async function send(event, browserRun = null) {
     if (!terminal) {if(controller.signal.aborted){answer.status='cancelled';answer.meta.error='CANCELLED';notice('Odgovor ustavljen. Prejeti del ostane v pogovoru.');}else{answer.status='partial';answer.meta.error='STREAM_ENDED_WITHOUT_TERMINAL';answer.meta.incompleteReason='CLIENT_TERMINAL_MISSING_CAUSE_UNKNOWN';notice('Odgovor se je prekinil brez potrditve zaključka. Prejeti del ostane ohranjen; nadaljuješ lahko z novim vprašanjem. Vzrok prekinitve ni potrjen.');}}
     const proposal = answer.status === 'complete' ? navigationProposal(answer.content,request.browser) : null;
     if (proposal && $('browser-auto').checked && automaticStageGoal(run,request.browser) && !state.browserStop && !controller.signal.aborted && state.accountId === run.accountId && run.epoch === accessEpoch) {
+      rememberCurrentOrderTabContext(run,request.browser);
       const key = actionSignature(proposal);
       if (runLimit(run) || run.attempted.includes(key)) notice('Vodenje je zaustavljeno zaradi omejitve ali odsotnosti napredka. Stanje ostane ohranjeno.');
       else {
