@@ -64,7 +64,7 @@ const navigationProposal=(text,observation)=>observation?.schema==='omnicpq.gui.
 const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready: false, ownerVerified: false, snapshot: null,
   capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, localSaveFailed: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
   browserConnected: false, browserObservation: null, browserStop: false, browserPaused: false, guiCheckpoint: null, agentRun:null, pendingDraft: null, release: null,
-  comparisonPartner: 'copilot', partnerInputs: {}, browserAutoChoice: null };
+  comparisonPartner: 'copilot', partnerInputs: {}, browserAutoChoice: null, browserPreviewChoice: false };
 let installEvent, registration, accessEpoch = 0, experience, browserConnectionEpoch=0, browserPairToken=null, browserChoiceEpoch=0;
 const autoConnector=createAutoConnector({eligible:()=>state.ownerVerified&&state.role==='owner',available:()=>!state.busy,
   visible:()=>document.visibilityState!=='hidden',online:()=>navigator.onLine,
@@ -73,6 +73,70 @@ const autoConnector=createAutoConnector({eligible:()=>state.ownerVerified&&state
     if(s==='WAITING_APPROVAL')$('browser-status').textContent='ČAKAM NA ODOBRITEV · enkrat poveži pravi par v razširitvi';
     if(s==='UPDATE_REQUIRED')$('browser-status').textContent='Potrebna posodobitev razširitve · CPQ obrazec ostane odprt';
   }});
+
+// BEGIN_LOCAL_PREVIEW_REFRESH_METHOD_R1
+// Local preview scheduling only. Read/apply callbacks are injected by the UI.
+function createLocalPreviewRefresher({eligible,read,apply,scope,changed=()=>{},now=()=>performance.now(),schedule=(fn,ms)=>setTimeout(fn,ms),unschedule=id=>clearTimeout(id),intervalMs=30000,focusDelayMs=100}={}) {
+  const inert=()=>Object.freeze({status:'DISABLED',pending:false,start:()=>false,stop:()=>false,wake:()=>false,idle:()=>false,noteFresh:()=>false,invalidate:()=>false,whenSettled:()=>Promise.resolve(false)});
+  if(![eligible,read,apply,scope,now,schedule,unschedule,changed].every(fn=>typeof fn==='function')||!Number.isFinite(intervalMs)||intervalMs<5000||intervalMs>120000||!Number.isFinite(focusDelayMs)||focusDelayMs<50||focusDelayMs>1000)return inert();
+  let stopped=true,generation=0,idleTimer=null,focusTimer=null,idleTicket=0,focusTicket=0,focusPending=false,flight=null,flightScope=null,lastFresh=null,lastScope=null,status='STOPPED';
+  const set=value=>{status=value;try{changed(value);}catch{}};
+  const gate=()=>{try{return eligible()===true;}catch{return false;}};
+  const key=()=>{try{const value=scope();return typeof value==='string'&&value.length>0&&value.length<=1024?value:null;}catch{return null;}};
+  const time=()=>{try{const value=now();return Number.isFinite(value)&&value>=0?value:null;}catch{return null;}};
+  function retireForeignFlight(currentScope){if(flight&&flightScope!==currentScope){generation++;flight=null;flightScope=null;}}
+  function clearIdle(){idleTicket++;if(idleTimer!==null){try{unschedule(idleTimer);}catch{set('FAILED');}}idleTimer=null;}
+  function clearFocus(){focusTicket++;if(focusTimer!==null){try{unschedule(focusTimer);}catch{set('FAILED');}}focusTimer=null;}
+  function armIdle(){
+    clearIdle();if(stopped||flight)return false;
+    if(focusPending&&gate()){armFocus();return true;}
+    const current=time();let delay=intervalMs;
+    if(gate()&&current!==null&&lastFresh!==null&&key()===lastScope)delay=Math.max(250,intervalMs-Math.max(0,current-lastFresh));
+    const ticket=idleTicket;
+    try{idleTimer=schedule(()=>{if(stopped||ticket!==idleTicket)return;idleTimer=null;void refresh();},delay);return true;}catch{set('FAILED');return false;}
+  }
+  function armFocus(){
+    clearFocus();if(stopped||flight)return false;
+    if(!gate()){focusPending=false;armIdle();return false;}
+    const ticket=focusTicket;
+    try{focusTimer=schedule(()=>{if(stopped||ticket!==focusTicket)return;focusTimer=null;if(!focusPending){armIdle();return;}focusPending=false;void refresh();},focusDelayMs);return true;}catch{focusPending=false;set('FAILED');armIdle();return false;}
+  }
+  function refresh(){
+    clearIdle();if(stopped||!gate()){set(stopped?'STOPPED':'SKIPPED');armIdle();return Promise.resolve(false);}if(flight)return flight;
+    const expectedGeneration=generation,expectedScope=key();if(expectedScope===null||time()===null){set('SKIPPED');armIdle();return Promise.resolve(false);}
+    const current=()=>!stopped&&generation===expectedGeneration&&gate()&&key()===expectedScope;
+    set('READING');let job;
+    const setAttempt=value=>{if(!stopped&&flight===job)set(value);};
+    job=Promise.resolve().then(async()=>{
+      if(!current()){setAttempt('SKIPPED');return false;}
+      try{
+        const capture=await read(current);
+        if(!capture||!current()){setAttempt('SKIPPED');return false;}
+        apply(capture);if(!current()){setAttempt('SKIPPED');return false;}
+        lastFresh=time();lastScope=expectedScope;setAttempt('UPDATED');return true;
+      }catch{setAttempt(current()?'FAILED':'SKIPPED');return false;}
+    }).finally(()=>{if(flight!==job)return;flight=null;flightScope=null;if(!stopped){if(focusPending&&gate())armFocus();else{if(!gate())focusPending=false;armIdle();}}});
+    flightScope=expectedScope;flight=job;return job;
+  }
+  return Object.freeze({
+    get status(){return status;},get pending(){return !!flight||focusPending;},
+    start(){if(!stopped)return false;stopped=false;generation++;set('IDLE');armIdle();return true;},
+    stop(){stopped=true;generation++;focusPending=false;clearFocus();clearIdle();set('STOPPED');return true;},
+    wake(){if(stopped||!gate())return false;const currentScope=key();if(currentScope===null)return false;retireForeignFlight(currentScope);generation++;focusPending=true;clearIdle();set('PENDING');if(!flight)armFocus();return true;},
+    idle(){if(stopped)return false;return armIdle();},
+    invalidate(){generation++;focusPending=false;clearFocus();clearIdle();if(!stopped){set('SKIPPED');armIdle();}return true;},
+    noteFresh(){if(stopped)return false;const current=time(),currentScope=key();if(current===null||currentScope===null)return false;retireForeignFlight(currentScope);generation++;focusPending=false;clearFocus();lastFresh=current;lastScope=currentScope;set('UPDATED');armIdle();return true;},
+    whenSettled(){return flight||Promise.resolve(false);}
+  });
+}
+
+// END_LOCAL_PREVIEW_REFRESH_METHOD_R1
+const previewRefresher=createLocalPreviewRefresher({
+  eligible:()=>state.browserPreviewChoice===true&&state.ownerVerified&&state.role==='owner'&&state.browserConnected&&!state.busy&&!state.browserPaused&&!state.frozen&&document.visibilityState!=='hidden'&&navigator.onLine&&!!cpqLocation(state.browserObservation?.url),
+  scope:()=>JSON.stringify([accessEpoch,browserConnectionEpoch,state.accountId]),
+  read:isCurrent=>enqueueBrowserObservation(()=>captureBrowserObservation({},isCurrent)),apply:applyBrowserObservation,
+  now:()=>performance.now(),schedule:(fn,ms)=>window.setTimeout(fn,ms),unschedule:id=>window.clearTimeout(id),intervalMs:30000,focusDelayMs:100
+});
 const element = (tag, className, text) => { const e = document.createElement(tag); if (className) e.className = className; if (text !== undefined) e.textContent = text; return e; };
 function notice(text) { $('notice').textContent = text; $('notice').hidden = !text; }
 const problems = {
@@ -140,7 +204,7 @@ function mayExport() {
 function localWrite() {
   if (state.role === 'demo') return true;
   try {
-    localStorage.setItem(PREFS, JSON.stringify({ theme: $('theme').value, profile: state.profile, persist: state.persist, experimentalGui: $('experimental-gui').checked, browserAuto: state.browserAutoChoice }));
+    localStorage.setItem(PREFS, JSON.stringify({ theme: $('theme').value, profile: state.profile, persist: state.persist, experimentalGui: $('experimental-gui').checked, browserAuto: state.browserAutoChoice, browserPreview: state.browserPreviewChoice }));
     if (state.persist) localStorage.setItem(STORAGE, JSON.stringify({ ...exportSession(state,{local:true}), accountId: state.accountId, draft: $('message').value,
       context: getContext(), service: $('service').value, mode: state.mode,
       checkpoint:state.guiCheckpoint?{goal:state.guiCheckpoint.goal,step:state.guiCheckpoint.step,status:state.guiCheckpoint.status,at:state.guiCheckpoint.at,documentKey:state.guiCheckpoint.documentKey,afterRevision:state.guiCheckpoint.afterRevision}:null }));
@@ -222,6 +286,8 @@ function setBusy(value) {
   for (const b of document.querySelectorAll('#mode-nav button,#start-cards button,#quick-actions button,#freeze-input,#load-pilot')) b.disabled = value;
   $('message').setAttribute('aria-busy', String(value));
   for (const id of ['browser-connect','browser-read']) $(id).disabled = value || !state.ownerVerified || (id === 'browser-read' && !state.browserConnected);
+  if($('browser-preview-auto'))$('browser-preview-auto').disabled=value||!state.ownerVerified||state.role!=='owner'||!state.browserConnected;
+  if(value)previewRefresher.invalidate();else previewRefresher.idle();
 }
 function download(name, value, type = 'application/json') {
   if (!mayExport()) return;
@@ -452,6 +518,7 @@ async function health() {
   } catch { label.textContent = 'AI ni dosegljiv'; $('auth-status').textContent = 'Strežniški del ni dosegljiv. Osnutek in lokalni izvozi ostanejo uporabni.'; }
 }
 function showWorkspaceStatus() {
+  if($('browser-preview-auto'))$('browser-preview-auto').disabled=state.busy||!state.ownerVerified||state.role!=='owner'||!state.browserConnected;
   const k=state.health?.skill,service=$('service').selectedOptions?.[0]?.textContent || 'Samodejna izbira storitve';
   const environment=state.browserObservation ? cpqLocation(state.browserObservation.url)?.environment : $('environment').value;
   $('workspace-status').textContent = `${state.ownerVerified ? 'Prijava potrjena' : 'Potrebna prijava'} · ${k ? 'Znanje '+k.release : 'Znanje še ni potrjeno'} · ${state.ready ? 'API pripravljen' : 'API še ni pripravljen'} · ${service} · ${environment === 'UNKNOWN' ? 'Okolje ni izbrano' : environment + (state.browserConnected&&state.browserObservation ? ' · povezan CPQ' : ' (ročno)')}`;
@@ -585,16 +652,37 @@ function disconnectBrowser(manual=false) {
   $('browser-observation').textContent = ''; $('browser-status').textContent = 'Ni povezano · priklopi izbrani CPQ zavihek za branje in klikanje.';
   showWorkspaceStatus(); browserBridge.disconnect().catch(() => {});
 }
+let browserObservationLane=null;
+function enqueueBrowserObservation(task){
+  let lane=browserObservationLane;
+  if(!lane||lane.access!==accessEpoch||lane.connection!==browserConnectionEpoch)browserObservationLane=lane={access:accessEpoch,connection:browserConnectionEpoch,pending:null};
+  let next;
+  if(lane.pending)next=lane.pending.then(task,task);
+  else {try{next=Promise.resolve(task());}catch(error){next=Promise.reject(error);}}
+  const settled=next.then(()=>{},()=>{});lane.pending=settled;
+  void settled.then(()=>{if(lane.pending===settled)lane.pending=null;});
+  return next;
+}
 async function readBrowserObservation(options={}) {
+  const expectedEpoch=accessEpoch,expectedConnection=browserConnectionEpoch;
+  return enqueueBrowserObservation(async()=>{
+    if(expectedEpoch!==accessEpoch||expectedConnection!==browserConnectionEpoch||!state.ownerVerified||!state.browserConnected)throw Error('BRIDGE_NOT_PAIRED');
+    const captured=await captureBrowserObservation(options),o=applyBrowserObservation(captured);previewRefresher.noteFresh();return o;
+  });
+}
+async function captureBrowserObservation(options={},isCurrent=null) {
+  if(isCurrent&&!isCurrent())return null;
   if (!state.ownerVerified || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
   const epoch = accessEpoch, connectionEpoch=browserConnectionEpoch; let o;
   const p=state.browserObservation?.paging||{};
   try {
     o = await browserBridge.observe(options.offset??p.offset??0,options.limit??p.limit??180,options.query??p.query??'',options.framePath??state.browserObservation?.framePath??'');
+    if(isCurrent&&!isCurrent())return null;
     if (epoch !== accessEpoch || connectionEpoch!==browserConnectionEpoch || !state.ownerVerified || !state.browserConnected) throw Error('BRIDGE_NOT_PAIRED');
     if (!['omnicpq.gui.observation.v2','omnicpq.browser-observation.v1'].includes(o?.schema)) throw Error('BRIDGE_UPDATE_REQUIRED');
     if (!cpqLocation(o.url) || !Array.isArray(o.controls) || o.text?.length > 16000) throw Error('BRIDGE_UNAVAILABLE');
   } catch(e) {
+    if(isCurrent&&!isCurrent())return null;
     if(epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified){
       if(BRIDGE_CONNECTION_FAILURES.has(e?.message))browserUnavailable(e);
       else {
@@ -604,6 +692,11 @@ async function readBrowserObservation(options={}) {
     }
     throw e;
   }
+  return {observation:o,epoch,connectionEpoch};
+}
+function applyBrowserObservation(captured) {
+  if(!captured||captured.epoch!==accessEpoch||captured.connectionEpoch!==browserConnectionEpoch||!state.ownerVerified||!state.browserConnected)throw Error('BRIDGE_NOT_PAIRED');
+  const o=captured.observation;
   state.browserObservation = o;
   rememberNavigationAmbiguities(state.agentRun,o);
   $('browser-preview').hidden = false;
@@ -616,6 +709,7 @@ async function readBrowserObservation(options={}) {
   $('browser-result').textContent = o.navigationLocked ? 'Urejevalnik je aktiven. Vnos in shranitev znotraj dokumenta sta dovoljena po nalogu; odhod brez pregleda je zadržan.' : 'Povezan polni GUI most. Dejanske zmožnosti CDP preveri v statusu; podatki gredo modelu samo ob pošiljanju naloge.';
   showWorkspaceStatus(); return o;
 }
+
 async function connectBrowser(automatic=false) {
   if (!state.ownerVerified || state.role!=='owner' || state.busy) return;
   const epoch=accessEpoch, choiceEpoch=browserChoiceEpoch;let connectionEpoch=browserConnectionEpoch;
@@ -1191,6 +1285,8 @@ try {
   $('experimental-gui').checked = prefs.experimentalGui !== false;
   if (!$('experimental-gui').checked) browserBridge = createLegacyBridge();
   state.browserAutoChoice = typeof prefs.browserAuto === 'boolean' ? prefs.browserAuto : null;
+  state.browserPreviewChoice=!!$('browser-preview-auto')&&(typeof prefs.browserPreview==='boolean'?prefs.browserPreview:true);
+  if($('browser-preview-auto'))$('browser-preview-auto').checked=state.browserPreviewChoice;
   $('theme').value = prefs.theme === 'light' ? 'light' : 'dark'; document.documentElement.dataset.theme = $('theme').value;
   state.profile = prefs.profile === 'careful' ? 'careful' : 'fast'; $('profile').value = state.profile;
   state.persist = prefs.persist === true; $('persist').checked = state.persist;
@@ -1214,7 +1310,7 @@ $('message').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shif
 for (const id of ['message', 'context-text', 'manual-url', 'environment', 'service',...Object.keys(CONTEXT_FIELDS).map(k=>'shared-'+k)]) $(id).addEventListener('input', () => { if (id === 'message') state.promptId = null; clearFrozen(); fitComposer(); localWrite(); });
 document.addEventListener('visibilitychange',()=>autoConnector.wake());
 window.addEventListener('online',()=>autoConnector.wake());
-function stopAgent(status){state.browserStop=true;state.browserPaused=true;state.controller?.abort();
+function stopAgent(status){state.browserStop=true;state.browserPaused=true;previewRefresher.invalidate();state.controller?.abort();
   state.guiCheckpoint={...state.guiCheckpoint,status};browserBridge.suspend?.().catch(()=>{});localWrite();}
 $('experimental-gui').onchange=()=>{stopAgent('MODE_CHANGED');disconnectBrowser();browserBridge=$('experimental-gui').checked?createBrowserBridge():createLegacyBridge();
   localWrite();browserBridge.setIdentity?.(state.autoIdentity);autoConnector.check().catch(e=>notice(browserProblem(e)));};
@@ -1339,6 +1435,16 @@ $('demo-refresh').onclick = listDemos; $('demo-copy').onclick = () => copy($('de
 const invitation = new URLSearchParams(location.hash.slice(1)).get('demo');
 if (/^[a-f0-9]{64}$/.test(invitation || '')) { $('demo-code').value = invitation; $('demo-code-details').open = true; history.replaceState(null, '', location.pathname + location.search); }
 setInterval(() => { if (state.role === 'demo' && !state.busy && navigator.onLine) health(); }, 30000);
+
+if($('browser-preview-auto'))$('browser-preview-auto').onchange=()=>{state.browserPreviewChoice=$('browser-preview-auto').checked;previewRefresher.invalidate();localWrite();if(state.browserPreviewChoice)previewRefresher.wake();};
+window.addEventListener('focus',()=>previewRefresher.wake());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')previewRefresher.invalidate();else previewRefresher.wake();});
+window.addEventListener('offline',()=>previewRefresher.invalidate());
+window.addEventListener('online',()=>previewRefresher.wake());
+window.addEventListener('pagehide',()=>previewRefresher.stop());
+window.addEventListener('pageshow',()=>{previewRefresher.start();previewRefresher.wake();});
+previewRefresher.start();
+
 health(); installWorker();
 readReleaseInfo();
 
