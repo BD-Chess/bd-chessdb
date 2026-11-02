@@ -55,6 +55,7 @@ function watchViewportInsets(){
   window.addEventListener('pointerdown',event=>{if(event.clientX>=document.documentElement.clientWidth)userScroll(-1);},{passive:true});
 
   $('go-top').onclick=()=>{userScrollEpoch++;followConversation=false;window.scrollTo({top:0,behavior:'auto'});$('settings-open').focus({preventScroll:true});};
+  $('go-bottom').onclick=()=>{userScrollEpoch++;followConversation=true;queueConversationEnd();};
 }
 
 const API = '/.netlify/functions/omnicpq-assistant', AUTH = '/.netlify/functions/omnicpq-auth';
