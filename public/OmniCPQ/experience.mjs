@@ -4,7 +4,8 @@ import {CONTEXT_FIELDS} from './work-modes.mjs';
 export function createExperience({document:doc,window:win,authorized,setMode,setDraft,notice}){
   if(!doc.querySelector?.('#experience-root'))return {setAccess(){},pause(){},handleCommand(){return false;},clear(){}};
   const $=id=>doc.getElementById(id),origin=win.location.origin;
-  let popup=null,pending=null,sequence=0,sound=false,localVoice=null,previousFocus=null,session=null,ready=false,accessEnabled=true;
+  let popup=null,pending=null,sequence=0,sound=false,localVoice=null,previousFocus=null,session=null,ready=false,accessEnabled=true,serviceAttempt=0,cardWarningOwned=false;
+  const CARD_WARNING='Kartica storitve ni potrjeno vidna. Preveri dostop do zasebne dokumentacije v oknu.';
   const canUse=()=>accessEnabled&&authorized();
   const post=data=>popup?.postMessage({...data,session},origin);
   const cancelSpeech=()=>win.speechSynthesis?.cancel();
@@ -16,6 +17,7 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
   function say(text){cancelSpeech();if(sound&&localVoice&&win.SpeechSynthesisUtterance){const u=new win.SpeechSynthesisUtterance(text);u.voice=localVoice;u.lang=localVoice.lang;win.speechSynthesis.speak(u);}}
   function settle(value){if(!pending)return;const p=pending;pending=null;win.clearTimeout(p.timer);p.resolve(value);}
   function deliver(scene){
+    if(scene.id!=='service')serviceAttempt++;
     settle(null);
     if(!canUse()||!ready||!session||!popup||popup.closed)return Promise.resolve(null);
     const requestId=++sequence;
@@ -28,7 +30,7 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
     silence:cancelSpeech,caption:scene=>{$('tour-caption').textContent=scene.text;say(scene.text);},
     changed:s=>{$('tour-status').textContent=`${s.index+1}/${s.total} · ${s.status==='playing'?'Prizor je viden':s.status==='opening'?'Odpiram in preverjam prizor':s.status==='stopped'?'Ustavljeno':s.status==='idle'?'Pripravljeno':'Pavza · za nadaljevanje preveri okno'}`;
       $('tour-controls').hidden=s.status==='idle';}});
-  function pausePresentation(){settle(null);tour.pause();post({type:'ts-b2b:pause'});}
+  function pausePresentation(){serviceAttempt++;settle(null);tour.pause();post({type:'ts-b2b:pause'});}
   function openWindow(){
     if(!canUse()){notice('Najprej se prijavi v pomočnika.');return false;}
     if(popup&&!popup.closed){popup.focus();return true;}
@@ -47,16 +49,26 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
       post({type:'ts-b2b:ping',requestId});
     });
   }
-  async function start(){if(!openWindow())return false;if(!await waitReady()){notice('Predstavitveno okno še ni potrdilo prikaza. Ponovi po nalaganju okna.');return false;}return tour.start();}
+  async function start(){
+    const attempt=++serviceAttempt;
+    if(!openWindow())return false;
+    const readyNow=await waitReady();
+    if(attempt!==serviceAttempt||!canUse())return false;
+    if(!readyNow){notice('Predstavitveno okno še ni potrdilo prikaza. Ponovi po nalaganju okna.');return false;}
+    return tour.start();
+  }
   async function openService(){
+    const attempt=++serviceAttempt;
     if(!openWindow())return;
-    if(!await waitReady())return;
+    if(!await waitReady()||attempt!==serviceAttempt||!canUse())return;
     tour.pause();
     const service=$('presentation-service').value;
     const ack=await deliver({id:'service',title:'Vodič za B2B storitve v TS',service,kind:'POSNETEK',text:'Preverjena dokumentacija in ilustracija; datum vira ni potrditev današnjega kataloga.'});
-    if(!ack?.visible)notice('Kartica storitve ni potrjeno vidna. Preveri dostop do zasebne dokumentacije v oknu.');
+    if(attempt!==serviceAttempt||!canUse())return;
+    if(!ack?.visible){cardWarningOwned=true;notice(CARD_WARNING);}
+    else if(cardWarningOwned){cardWarningOwned=false;if($('notice')?.textContent===CARD_WARNING)notice('');}
   }
-  const actions={next:()=>tour.next(),back:()=>tour.back(),pause:pausePresentation,resume:()=>tour.resume(),repeat:()=>tour.repeat(),stop:()=>{settle(null);tour.stop();post({type:'ts-b2b:pause'});}};
+  const actions={next:()=>tour.next(),back:()=>tour.back(),pause:pausePresentation,resume:()=>tour.resume(),repeat:()=>tour.repeat(),stop:()=>{serviceAttempt++;settle(null);tour.stop();post({type:'ts-b2b:pause'});}};
   function incoming(e){
     if(!canUse()||!popup||popup.closed||e.origin!==origin||e.source!==popup||!e.data||typeof e.data!=='object')return;
     const m=e.data;
@@ -75,7 +87,7 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
   }
   win.addEventListener('message',incoming);
   doc.addEventListener('visibilitychange',()=>{if(doc.visibilityState==='hidden')pausePresentation();});
-  win.addEventListener('pagehide',()=>{settle(null);tour.stop();post({type:'ts-b2b:clear'});session=null;ready=false;});
+  win.addEventListener('pagehide',()=>{serviceAttempt++;settle(null);tour.stop();post({type:'ts-b2b:clear'});session=null;ready=false;});
   doc.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='n'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName)&&['playing','paused'].includes(tour.state.status)&&!doc.querySelector('dialog[open]')){e.preventDefault();tour.next();}});
   $('about-open').onclick=()=>{previousFocus=doc.activeElement;$('about-dialog').showModal();};
   $('about-close').onclick=()=>$('about-dialog').close();
@@ -95,8 +107,8 @@ export function createExperience({document:doc,window:win,authorized,setMode,set
   $('tour-sound').onclick=()=>{voiceStatus();sound=!sound&&Boolean(localVoice);$('tour-sound').setAttribute('aria-pressed',String(sound));$('tour-sound').textContent=sound?'Zvok vklopljen':'Zvok izklopljen';if(sound&&tour.state.status==='playing')say($('tour-caption').textContent);else cancelSpeech();};
   win.speechSynthesis?.addEventListener?.('voiceschanged',voiceStatus);voiceStatus();
   return {tour,start,openService,pause:pausePresentation,
-    setAccess(ok){accessEnabled=ok;$('tour-start').disabled=!ok;$('presentation-open').disabled=!ok;if(!ok){settle(null);tour.stop();post({type:'ts-b2b:clear'});session=null;ready=false;}},
-    clear(){settle(null);tour.stop();post({type:'ts-b2b:clear'});session=null;ready=false;for(const key of Object.keys(CONTEXT_FIELDS))$('shared-'+key).value='';},
+    setAccess(ok){accessEnabled=ok;$('tour-start').disabled=!ok;$('presentation-open').disabled=!ok;if(!ok){serviceAttempt++;settle(null);tour.stop();post({type:'ts-b2b:clear'});session=null;ready=false;}},
+    clear(){serviceAttempt++;settle(null);tour.stop();post({type:'ts-b2b:clear'});session=null;ready=false;for(const key of Object.keys(CONTEXT_FIELDS))$('shared-'+key).value='';},
     handleCommand(text){const value=text.trim().toLocaleLowerCase('sl');if(/^(predstavi se|predstavitev pomočnika)$/.test(value)){start();return true;}if(tour.state.status==='idle'||tour.state.status==='stopped')return false;
       const key=({naprej:'next',n:'next',nazaj:'back',pavza:'pause',nadaljuj:'resume',ponovi:'repeat',ustavi:'stop',stop:'stop'})[value];if(key){actions[key]();return true;}pausePresentation();return false;}
   };
