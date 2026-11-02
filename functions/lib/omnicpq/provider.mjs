@@ -1,7 +1,7 @@
 import { error } from './identity.mjs';
 export async function* readSSE(body, signal) {
   const reader = body.getReader(), decoder = new TextDecoder(); let buffer = '';
-  const cancel = () => { reader.cancel().catch(() => {}); };
+  const cancel = () => { try { reader.cancel().catch(() => {}); } catch {} };
   signal?.addEventListener('abort', cancel, { once: true });
   try {
     while (true) {
@@ -18,7 +18,12 @@ export async function* readSSE(body, signal) {
       }
       if (done) break;
     }
-  } finally { signal?.removeEventListener('abort', cancel); await reader.cancel().catch(() => {}); reader.releaseLock(); }
+  } finally {
+    signal?.removeEventListener('abort', cancel);
+    // Cleanup must not hold a logical terminal while a transport cancellation is unsettled.
+    cancel();
+    reader.releaseLock();
+  }
 }
 
 // One request, no automatic retry or model fallback. No user-controlled endpoint.
@@ -28,7 +33,10 @@ export async function callOpenAI({ payload, signal, onText, onIdentity, fetcher 
   const response = await fetcher('https://api.openai.com/v1/responses', {
     method: 'POST', signal, headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
   });
-  if (!response.ok) { await response.body?.cancel(); throw error(response.status === 429 ? 'RATE_LIMITED' : 'AI_UNAVAILABLE', response.status === 429 ? 429 : 503); }
+  if (!response.ok) {
+    try { response.body?.cancel().catch(() => {}); } catch {}
+    throw error(response.status === 429 ? 'RATE_LIMITED' : 'AI_UNAVAILABLE', response.status === 429 ? 429 : 503);
+  }
   let final, observed;
   for await (const event of readSSE(response.body, signal)) {
     if (signal.aborted) throw error('CANCELLED', 499);
@@ -37,7 +45,12 @@ export async function callOpenAI({ payload, signal, onText, onIdentity, fetcher 
       onIdentity(observed);
     }
     if (event.type === 'response.output_text.delta') onText(event.delta);
-    if (['response.completed', 'response.incomplete'].includes(event.type)) final = event.response;
+    if (['response.completed', 'response.incomplete'].includes(event.type)) {
+      const expected = event.type === 'response.completed' ? 'completed' : 'incomplete';
+      if (!event.response || event.response.status !== expected) throw error('PROVIDER_PROTOCOL');
+      final = event.response;
+      break;
+    }
     if (['response.failed', 'error'].includes(event.type)) throw error('ANSWER_UNAVAILABLE');
   }
   if (!final || !observed || signal.aborted) throw error(signal.aborted ? 'CANCELLED' : 'PROVIDER_PROTOCOL');
