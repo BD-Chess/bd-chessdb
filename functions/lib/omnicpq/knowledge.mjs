@@ -1,5 +1,6 @@
 import { validateLifecycleAnswer } from './lifecycle.mjs';
 import { catalogExtracts, resolveCatalogQuery,categoryQuestion } from './catalog.mjs';
+import { compactCompleteJsonAsciiWhitespace, JSON_CONTEXT_PROFILE } from './json-context.mjs';
 import { resolve } from 'node:path';
 import { SKILL, error, hash } from './identity.mjs';
 import { SKILL_V15 } from './v15.mjs';
@@ -156,6 +157,38 @@ function matchesTrigger(text, trigger) {
   }));
 }
 
+// The cap measures the actual complete rendered context in JS UTF16 code units.
+const RETRIEVAL_CONTEXT_LIMIT=190_000;
+const CONTEXT_REPRESENTATION_ATTRIBUTES=' representation="json_lexical_ascii_ws_v1" locators="original_source"';
+const sourceBlock=(entry,text,attributes='')=>`${entry.open}${attributes}>\n${text}\n</source>`;
+async function renderSelectedContext(sources,entries){
+  if(sources.length!==entries.length||entries.some(entry=>typeof entry.open!=='string'||typeof entry.text!=='string'))throw error('KNOWLEDGE_INTEGRITY');
+  const rawSize=entries.reduce((size,entry,index)=>size+(index?2:0)+entry.open.length+2+entry.text.length+'\n</source>'.length,0);
+  if(rawSize<=RETRIEVAL_CONTEXT_LIMIT)return {sources,text:entries.map(entry=>sourceBlock(entry,entry.text)).join('\n\n')};
+  const representedSources=[...sources],blocks=[];let size=0;
+  for(let index=0;index<entries.length;index++){
+    const entry=entries[index];let block=sourceBlock(entry,entry.text);
+    if(entry.json){
+      const compact=compactCompleteJsonAsciiWhitespace(entry.text);
+      if(compact.changed){
+        const candidate=sourceBlock(entry,compact.text,CONTEXT_REPRESENTATION_ATTRIBUTES);
+        if(candidate.length<block.length){
+          block=candidate;
+          representedSources[index]={...sources[index],contextRepresentation:{profile:JSON_CONTEXT_PROFILE,
+            inputSha256:await hash(entry.text),contextSha256:await hash(compact.text),inputCodeUnits:entry.text.length,
+            contextCodeUnits:compact.text.length,sourceLocators:'original_source',rawSourceSha256:sources[index].sha256}};
+        }
+      }
+    }
+    size+=(index?2:0)+block.length;
+    if(size>RETRIEVAL_CONTEXT_LIMIT)throw error('RETRIEVAL_LIMIT',422);
+    blocks.push(block);
+  }
+  const text=blocks.join('\n\n');
+  if(text.length>RETRIEVAL_CONTEXT_LIMIT)throw error('RETRIEVAL_LIMIT',422);
+  return {sources:representedSources,text};
+}
+
 export function createRetriever({ files, manifest, packSha256 },{documentReader=readPrivateDocument,learningReader=readLearning}={}) {
   const registry = JSON.parse(files['references/SERVICE_REGISTRY.json']);
   const specs = new Map(manifest.payload_files.map(f => [f.path, f]));
@@ -252,13 +285,12 @@ export function createRetriever({ files, manifest, packSha256 },{documentReader=
         else if ((pricing || /\b(?:kolic[a-z]*|sla)\b/.test(question)) && /PRICE|CENE|SLA/.test(path)) add(path);
       }
       add('references/INTEGRATION_CONFLICTS.md');
-      const seen = new Set(), sources = [], blocks = []; let size = 0;
+      const seen = new Set(), sources = [], blocks = [];
       for (const path of paths) {
         const text = files[path], sha256 = specs.get(path)?.sha256;
         if (seen.has(sha256)) continue;
-        seen.add(sha256); size += text.length;
-        // Never slice a source across a qualification or adjacent section.
-        if (size > 190_000) throw error('RETRIEVAL_LIMIT', 422);
+        seen.add(sha256);
+        // Retain the complete source; final rendering enforces the cap including its header.
         const id = `S${sources.length + 1}`;
         const sections = []; let heading = 'Celoten dokument', start = 1;
         const lines = text.split('\n');
@@ -269,30 +301,28 @@ export function createRetriever({ files, manifest, packSha256 },{documentReader=
         sections.push({ heading, startLine: start, endLine: lines.length });
         const kind = /SERVICE_COVERAGE/.test(path) ? 'coverage_overview_not_product_rule' : /PLM_TEST_EXAMPLE/.test(path) ? 'synthetic_example_not_product_rule' : /JIRA_REQUIREMENTS|PLM_TESTING|WORK_MODES/.test(path) ? 'shared_workflow' : /JIRA|SUPPORT|INCIDENT/.test(path) ? 'diagnostic_evidence' : /POSLOVNA|PLM_OWNERSHIP/.test(path) ? 'proposal_template' : 'skill_reference';
         sources.push({ id, path, sha256, kind, sections });
-        blocks.push(`<source id="${id}" path="${path}" kind="${kind}">\n${text}\n</source>`);
+        blocks.push({open:`<source id="${id}" path="${path}" kind="${kind}"`,text,json:/\.json$/.test(path)});
       }
       for (const extract of extracts) {
-        const bytes = extract.text.length;
-        if (size + bytes > 190_000) throw error('RETRIEVAL_LIMIT', 422);
-        size += bytes;
+        // This existing public extract is a complete JSON representation.
         const id = `S${sources.length+1}`;
         sources.push({ id, path: extract.path, sha256: specs.get(extract.path)?.sha256, extractSha256: await hash(extract.text),
           kind: extract.kind, locator: extract.locator, sections: [{ heading: 'Izbrane celotne cenovne vrstice', startLine: 1, endLine: 1 }] });
-        blocks.push(`<source id="${id}" path="${extract.path}" kind="${extract.kind}">\n${extract.text}\n</source>`);
+        blocks.push({open:`<source id="${id}" path="${extract.path}" kind="${extract.kind}"`,text:extract.text,json:true});
       }
       let documentationStatus='NOT_REQUESTED';
       if(service?.service_id==='TS_SO'&&(hierarchyRequested||/\b(?:cpu|vcpu|ram|disk[a-z]*|konfigur[a-z]*)\b/.test(question))){
         try{
           const name='A4_SO_WORKED_EXAMPLE_R3.md',item=await documentReader(name),text=item.bytes.toString('utf8'),id=`S${sources.length+1}`;
           sources.push({id,path:'playbooks/'+name,sha256:item.sha256,kind:'dated_ui_example_not_universal_product_rule',sections:[{heading:'SO/A4 dokazni primer R3',startLine:1,endLine:text.split('\n').length}]});
-          blocks.push(`<source id="${id}" path="playbooks/${name}" kind="dated_ui_example_not_universal_product_rule">\n${text}\n</source>`);
+          blocks.push({open:`<source id="${id}" path="playbooks/${name}" kind="dated_ui_example_not_universal_product_rule"`,text,json:false});
         }catch{/* Private context is optional; original v16 and fresh UI remain usable. */}
       }
       if(request.promptId==='COVERAGE'){
         try{
           const name='B2B_pokritost_in_kandidati_OmniCPQ_v18.md',item=await documentReader(name),text=item.bytes.toString('utf8'),id=`S${sources.length+1}`;
           sources.push({id,path:'documents/'+name,sha256:item.sha256,kind:'private_documentation_v18_not_new_product_rule',sections:[{heading:'Dokumentacija v18',startLine:1,endLine:text.split('\n').length}]});
-          blocks.push(`<source id="${id}" path="documents/${name}" kind="private_documentation_v18_not_new_product_rule">\n${text}\n</source>`);documentationStatus='V18_AVAILABLE';
+          blocks.push({open:`<source id="${id}" path="documents/${name}" kind="private_documentation_v18_not_new_product_rule"`,text,json:false});documentationStatus='V18_AVAILABLE';
         }catch{documentationStatus='V18_PRIVATE_STORAGE_PENDING';}
       }
       let learningStatus='NOT_REQUESTED';
@@ -301,15 +331,17 @@ export function createRetriever({ files, manifest, packSha256 },{documentReader=
           const learning=await learningReader(),record=learning.data.records.find(r=>r.serviceId===service.service_id);
           if(record){
             const selected={...record,sources:record.sources.map(({text,...source})=>source)},text=JSON.stringify(selected),id=`S${sources.length+1}`;
-            if(size+text.length>190_000)throw error('RETRIEVAL_LIMIT',422);
-            sources.push({id,path:'documents/ts-b2b-learning-r2.json#'+record.id,sha256:learning.sha256,kind:'dated_learning_layer_not_live_catalog',locator:'https://www.mdlxdcc.org/.netlify/functions/omnicpq-documents?file=ts-b2b-learning-r2.json#'+record.id,sections:[{heading:'Pilotna učna plast · '+record.title,startLine:1,endLine:1}]});
-            blocks.push(`<source id="${id}" path="documents/ts-b2b-learning-r2.json#${record.id}" kind="dated_learning_layer_not_live_catalog">\n${text}\n</source>`);learningStatus=learning.version;
+            const learningSource={id,path:'documents/ts-b2b-learning-r2.json#'+record.id,sha256:learning.sha256,kind:'dated_learning_layer_not_live_catalog',locator:'https://www.mdlxdcc.org/.netlify/functions/omnicpq-documents?file=ts-b2b-learning-r2.json#'+record.id,sections:[{heading:'Pilotna učna plast · '+record.title,startLine:1,endLine:1}]};
+            const learningBlock={open:`<source id="${id}" path="documents/ts-b2b-learning-r2.json#${record.id}" kind="dated_learning_layer_not_live_catalog"`,text,json:true};
+            await renderSelectedContext([...sources,learningSource],[...blocks,learningBlock]);
+            sources.push(learningSource);blocks.push(learningBlock);learningStatus=learning.version;
           }else learningStatus='NO_PILOT_FOR_SERVICE';
         }catch{learningStatus='PRIVATE_LEARNING_PENDING';}
       }
+      const rendered=await renderSelectedContext(sources,blocks);
       return { service: service ? { id: service.service_id, title: service.title, coverage: service.coverage } : null,
         serviceResolution: { ambiguous: !service && selection.ambiguous, conflict: Boolean(selection.conflict), unknownNewService, candidates: !service ? selection.candidates : [] },
-        intent, documentationStatus,learningStatus,sources, text: blocks.join('\n\n'), skill: this.skill };
+        intent, documentationStatus,learningStatus,sources:rendered.sources, text:rendered.text, skill: this.skill };
     },
   };
 }
