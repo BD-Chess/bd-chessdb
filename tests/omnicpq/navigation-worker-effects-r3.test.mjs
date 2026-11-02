@@ -81,7 +81,7 @@ async function auditNavigation({html='',goal,actions,setup=()=>{},profile='fast'
   const handler=makeHandler({enabled:true,accessFactory:async()=>({id:'owner',role:'owner'}),knowledgeFactory:async()=>k,budgetFactory:()=>({reserve:async()=>null,settle:async()=>null}),transport:async({payload,onText})=>{
    stats.calls++;const input=payload.input.at(-1).content[0].text,o=JSON.parse(input.slice(input.indexOf('\n')+1,input.indexOf('\n\nVPRAŠANJE:'))).browser;stats.observations.push({revision:o.revision,labels:o.controls.map(c=>c.label),query:o.paging?.query});
    const next=actions[stats.calls-1];let text='Synthetic complete.';
-   if(next){const target=next.label?o.controls.find(c=>c.label===next.label):o.controls[0];assert(target,'SYNTHETIC_TARGET_NOT_FOUND');const {label,...rest}=next;
+   if(next){const target=next.label?o.controls.find(c=>c.label===next.label):next.labelPrefix?o.controls.find(c=>c.label.startsWith(next.labelPrefix)):o.controls[0];assert(target,'SYNTHETIC_TARGET_NOT_FOUND');const {label,labelPrefix,...rest}=next;
     const a={schema:'omnicpq.gui.action.v2',observationId:o.id,revision:o.revision,expectedDocument:o.documentKey,reason:'SYNTHETIC',operation:'click',targetId:target.id,...rest};text='Synthetic step.\n'+String.fromCharCode(96).repeat(3)+'omnicpq_action\n'+JSON.stringify(a)+'\n'+String.fromCharCode(96).repeat(3);}
    onText(text);return {model:'SYNTHETIC_TRANSPORT',status:'complete',usage:{input_tokens:1,output_tokens:1}};
   }});
@@ -105,3 +105,19 @@ for(const goal of ['Klikni Podrobnosti','Odpri Podrobnosti'])test('NAV_WORKER du
 test('NAV_WORKER observed aria-qualified instance selects exactly named B',async()=>{const r=await auditNavigation({html:'<button id="a" aria-label="Podrobnosti SYNTHETIC ROW A">Podrobnosti</button><button id="b" aria-label="Podrobnosti SYNTHETIC ROW B">Podrobnosti</button>',goal:'Odpri "Podrobnosti SYNTHETIC ROW B"',actions:[{label:'Podrobnosti SYNTHETIC ROW B'}],setup:(f,s)=>{listen(f,s,'a');listen(f,s,'b',()=>{f.d.title='Podrobnosti SYNTHETIC ROW B';});}});assert.deepEqual(r.clicks,{b:1});assert.equal(r.calls,2);assert.equal(r.navigation[0].receipt.status,'DISPATCHED');});
 test('NAV_WORKER read-query cannot discard previously observed duplicate',async()=>{const r=await auditNavigation({html:'<div role="group">ROW A<button id="a">Podrobnosti</button></div><div role="group">ROW B<button id="b">Podrobnosti</button></div>',goal:'Klikni Podrobnosti',actions:[{operation:'read',query:'ROW A'},{label:'Podrobnosti'}],setup:(f,s)=>{listen(f,s,'a');listen(f,s,'b');}});assert.deepEqual(r.clicks,{});assert.equal(r.calls,2);assert.equal(r.navigation[0].receipt.status,'READ_ONLY');assert.equal(r.navigation[1].error,'CPQ_NAVIGATION_TARGET_AMBIGUOUS');});
 test('NAV_WORKER missing target cannot authorize unrelated ordinary intermediate',async()=>{const r=await auditNavigation({html:'<button id="a">Stranke</button>',goal:'Odpri Ponudbe',actions:[{label:'Stranke'}],setup:(f,s)=>listen(f,s,'a')});assert.deepEqual(r.clicks,{});assert.equal(r.calls,2);assert.equal(r.navigation[0].error,'CPQ_NAVIGATION_PATH_UNPROVEN');});
+
+for(const profile of ['fast','careful']){
+ test('automatic navigation holds an unlabeled icon for a generic order goal '+profile,async()=>{
+  const html='<button id="unknownA" aria-describedby="hintA"><mat-icon aria-hidden="true">edit</mat-icon></button><span id="hintA" hidden>Uredi</span><button id="unknownB" aria-describedby="hintB"><mat-icon aria-hidden="true">delete</mat-icon></button><span id="hintB" hidden>Izbriši</span>';
+  const r=await auditNavigation({html,goal:'Pokaži naročilo v CPQ',actions:[{labelPrefix:'Neoznačen button'}],profile,setup:(f,s)=>{listen(f,s,'unknownA');listen(f,s,'unknownB');}});
+  assert.deepEqual(r.clicks,{});assert.equal(r.mouseEvents,0);
+ });
+ test('automatic mixed goal opens order once and does not click suggested next step '+profile,async()=>{
+  const r=await auditNavigation({html:'<button id="order">Naročilo</button><button id="detail">Podrobnosti</button>',goal:'Pokaži naročilo v CPQ, nato povej, kaj naj kliknem.',actions:[{label:'Naročilo'},{label:'Podrobnosti'}],profile,setup:(f,s)=>{listen(f,s,'order',()=>{f.d.title='Naročilo';});listen(f,s,'detail');}});
+  assert.deepEqual(r.clicks,{order:1});assert.equal(r.calls,2);
+ });
+}
+test('automatic generic order goal still navigates a named order control',async()=>{
+ const r=await auditNavigation({html:'<button id="orderNamed">Naročilo</button>',goal:'Pokaži naročilo v CPQ',actions:[{label:'Naročilo'}],setup:(f,s)=>listen(f,s,'orderNamed',()=>{f.d.title='Naročilo';})});
+ assert.deepEqual(r.clicks,{orderNamed:1});
+});

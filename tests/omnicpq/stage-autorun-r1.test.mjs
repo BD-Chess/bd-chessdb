@@ -177,3 +177,15 @@ for(const [goal,label,value,expected] of [['Nadaljuj isti testni strežnik: 12 C
 
 for(const [goal,ram,expected] of [['Shrani',null,1],['Klikni Shrani',null,1],['Nastavi RAM 128 in shrani','4',0],['Nastavi RAM 128 in shrani','128',1],['Nastavi RAM 128 in shrani','',0]])test('save authority: direct save or freshly satisfied requested values '+goal+'/'+ram,async()=>{const h=await harness({risk:'business_write',operation:'click',label:'Shrani',extraControls:ram===null?[]:[{id:'c2',label:'RAM GB',type:'number',enabled:true,value:ram}]});try{await h.pair();await h.send(goal);assert.equal(h.calls.execute,expected);}finally{h.close();}});
 for(const op of ['fill','click'])test('instance authority: duplicate RAM controls conservatively hold '+op,async()=>{const h=await harness({risk:'business_write',operation:op,label:op==='fill'?'RAM':'Shrani',value:'128',extraControls:op==='fill'?[{id:'c2',label:'RAM GB',type:'number',enabled:true,value:'4'}]:[{id:'c2',label:'RAM GB',type:'number',enabled:true,value:'128'},{id:'c3',label:'RAM',type:'number',enabled:true,value:'128'}]});try{await h.pair();await h.send(op==='fill'?'Nastavi RAM na 128':'Nastavi RAM 128 in shrani');assert.equal(h.calls.execute,0);}finally{h.close();}});
+
+for(const goal of [
+ 'Pokaži, kaj bi kliknil v naročilu.',
+ 'Prikaži mi, kateri gumb bi pritisnil v naročilu.',
+ 'Pokaži postopek odpiranja naročila v CPQ.',
+ 'Show what you would click in the order.'
+])test('hypothetical or instructional display never dispatches a model-proposed click: '+goal,async()=>{
+ const h=await harness();try{await h.pair();await h.send(goal,'guide');assert.equal(h.calls.posts,1);assert.equal(h.calls.preview,0);assert.equal(h.calls.execute,0);}finally{h.close();}
+});
+for(const mode of ['guide','jira','model','work','plm'])for(const profile of ['fast','careful'])test('hypothetical click remains informational in every mode/profile: '+mode+'/'+profile,async()=>{
+ const h=await harness();try{await h.pair();await h.send('Pokaži, kaj bi kliknil v naročilu.',mode,profile);assert.equal(h.calls.requests[0].mode,mode);assert.equal(h.calls.requests[0].profile,profile);assert.equal(h.calls.preview,0);assert.equal(h.calls.execute,0);}finally{h.close();}
+});
