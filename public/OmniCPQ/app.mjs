@@ -65,7 +65,7 @@ const navigationProposal=(text,observation)=>observation?.schema==='omnicpq.gui.
 const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready: false, ownerVerified: false, snapshot: null,
   capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, localSaveFailed: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
   browserConnected: false, browserObservation: null, browserStop: false, browserPaused: false, guiCheckpoint: null, agentRun:null, pendingDraft: null, release: null,
-  comparisonPartner: 'copilot', partnerInputs: {}, browserAutoChoice: null, browserPreviewChoice: false };
+  comparisonPartner: 'copilot', partnerInputs: {}, browserIncludeChoice: null, browserAutoChoice: null, browserPreviewChoice: false };
 let installEvent, registration, accessEpoch = 0, experience, browserConnectionEpoch=0, browserPairToken=null, browserChoiceEpoch=0;
 const autoConnector=createAutoConnector({eligible:()=>state.ownerVerified&&state.role==='owner',available:()=>!state.busy,
   visible:()=>document.visibilityState!=='hidden',online:()=>navigator.onLine,
@@ -196,7 +196,7 @@ function ownerAccess(verified) {
     $('technical-info').textContent = ''; $('knowledge-status').textContent = 'Znanje: potreben je lastniški dostop.';
     $('login-form').hidden = false; $('logout').hidden = true;
   }
-  renderMessages(); updateComparisonGate();
+  syncBrowserIncludeControl(); renderMessages(); updateComparisonGate();
 }
 function mayExport() {
   if (state.ownerVerified) return true;
@@ -281,6 +281,11 @@ function startNewChat(keepContext=false) {
   $('new-chat-dialog').close(); renderMessages(); updateComparisonGate(); showWorkspaceStatus(); fitComposer(); localWrite(); $('message').focus();
 }
 function fitComposer() { $('message').rows = Math.min(5, Math.max(2, $('message').value.split('\n').length));syncViewportInsets(); }
+function syncBrowserIncludeControl() {
+  const include=$('browser-include');
+  // A disconnected checked choice may be turned off explicitly; never opt out silently.
+  include.disabled=state.busy||!state.ownerVerified||(!include.checked&&(!state.browserConnected||!state.browserObservation));
+}
 function setBusy(value) {
   state.busy = value; $('send').disabled = value; $('cancel').hidden = !value; $('new-chat').disabled = value || !state.ownerVerified;
   for(const id of ['tour-start','presentation-open'])$(id).disabled=value||!state.ownerVerified||state.role!=='owner';
@@ -288,6 +293,7 @@ function setBusy(value) {
   $('message').setAttribute('aria-busy', String(value));
   for (const id of ['browser-connect','browser-read']) $(id).disabled = value || !state.ownerVerified || (id === 'browser-read' && !state.browserConnected);
   if($('browser-preview-auto'))$('browser-preview-auto').disabled=value||!state.ownerVerified||state.role!=='owner'||!state.browserConnected;
+  syncBrowserIncludeControl();
   if(value)previewRefresher.invalidate();else previewRefresher.idle();
 }
 function download(name, value, type = 'application/json') {
@@ -637,7 +643,8 @@ async function browserRequest(request) {
 // A failed transport invalidates the displayed observation, not the approved pair.
 function browserUnavailable(error) {
   state.browserConnected=false; state.browserObservation=null;
-  for(const id of ['browser-include','browser-auto','browser-read']) $(id).disabled=true;
+  for(const id of ['browser-auto','browser-read']) $(id).disabled=true;
+  syncBrowserIncludeControl();
   $('browser-preview').hidden=true; $('cpq-file-tools').hidden=true;
   $('browser-observation').textContent=''; $('browser-status').textContent=browserProblem(error);
   $('browser-result').textContent='Povezava trenutno ni potrjena. Preverjanje povezave ne ponavlja CPQ dejanj.';
@@ -734,13 +741,14 @@ async function connectBrowser(automatic=false) {
     if(epoch!==accessEpoch||connectionEpoch!==browserConnectionEpoch||!state.ownerVerified)return;
     // A status poll/recovery preserves choices made before or during the request.
     if(newPair&&choiceEpoch===browserChoiceEpoch){
-      $('browser-include').checked=true;
+      $('browser-include').checked=state.browserIncludeChoice!==false;
       $('browser-auto').checked=cpqLocation(o.url)?.environment==='STAGE'&&$('experimental-gui').checked&&state.browserAutoChoice!==false;
       clearFrozen();
     }
     browserPairToken=handshake.token;
     $('browser-tools').hidden=false; $('browser-read').disabled=state.busy; $('browser-disconnect').hidden=false;
     for(const id of ['browser-include','browser-auto'])$(id).disabled=false;
+    syncBrowserIncludeControl();
     $('browser-auto').disabled=cpqLocation(o.url)?.environment!=='STAGE'||!$('experimental-gui').checked;
     $('browser-setup').open=false; showWorkspaceStatus();
     if(fresh)notice('CPQ povezava je potrjena. Pripravljeno za tvoj STAGE cilj.');
@@ -1119,7 +1127,7 @@ async function send(event, browserRun = null) {
   if (!state.ready) { notice('Pomočnik še ni dosegljiv. Preveri dostop v nastavitvah.'); return; }
   if (!browserRun&&!$('message').value.trim()) { $('message').focus(); return; }
   setBusy(true); notice(''); const controller = new AbortController(); state.controller = controller;
-  if (!browserRun) {state.browserStop = false;state.browserPaused=false;try{await browserBridge.resume?.();}catch{}}
+  if (!browserRun && $('browser-include').checked) {state.browserStop = false;state.browserPaused=false;try{await browserBridge.resume?.();}catch{}}
   let run;try{run = browserRun || createAgentRun($('message').value.trim(),{accountId:state.accountId,epoch:accessEpoch,budget:{actions:Number($('agent-actions').value),modelCalls:Number($('agent-calls').value),durationMs:Number($('agent-minutes').value)*60000}});}catch(e){setBusy(false);notice('Preveri omejitve naloge.');return;}
   state.agentRun=run;
   run.id ||=uuid();
@@ -1398,7 +1406,13 @@ resumeButton.onclick=async()=>{if(!state.ownerVerified||!state.browserConnected|
     notice('Nadaljujem iz svežega opazovanja.');if($('message').value.trim())await send();}
   catch(e){notice(browserProblem(e));}
 };
-for (const id of ['browser-include','browser-auto']) $(id).onchange = () => { browserChoiceEpoch++; if(id==='browser-auto')state.browserAutoChoice=$('browser-auto').checked; localWrite(); clearFrozen(); if (!$('browser-auto').checked) state.browserStop = true; else {state.browserStop=false;state.browserPaused=false;} };
+for (const id of ['browser-include','browser-auto']) $(id).onchange = () => {
+  browserChoiceEpoch++;
+  if(id==='browser-include')state.browserIncludeChoice=$('browser-include').checked;
+  if(id==='browser-auto')state.browserAutoChoice=$('browser-auto').checked;
+  localWrite(); clearFrozen(); syncBrowserIncludeControl();
+  if (!$('browser-include').checked || !$('browser-auto').checked) state.browserStop = true; else {state.browserStop=false;state.browserPaused=false;}
+};
 $('settings-open').onclick = () => $('settings-dialog').showModal(); $('settings-close').onclick = () => $('settings-dialog').close();
 $('refresh-status').onclick = async () => { if (!state.busy) { await health(); await readReleaseInfo(); } };
 $('context-toggle').onclick = $('welcome-context').onclick = () => { $('context-panel').open = true; $('context-panel').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
