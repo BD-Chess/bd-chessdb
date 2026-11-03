@@ -8,6 +8,7 @@ import { createHash, randomUUID } from 'node:crypto';
 // Every credential and transport below is synthetic. VM is not a security sandbox.
 const providerSource = await fs.readFile(new URL('../../functions/lib/omnicpq/provider.mjs', import.meta.url), 'utf8');
 const backendSource = await fs.readFile(new URL('../../functions/omnicpq-assistant.mjs', import.meta.url), 'utf8');
+const deliveryReleaseSource = await fs.readFile(new URL('../../functions/lib/omnicpq/delivery-release.mjs', import.meta.url), 'utf8');
 const problem = (code, status = 503) => Object.assign(new Error(code), { code, status });
 const frame = value => 'data: ' + JSON.stringify(value) + '\n\n';
 const created = { type: 'response.created', response: { id: 'synthetic-response', model: 'synthetic-model', reasoning: { effort: 'low' } } };
@@ -281,6 +282,7 @@ const backendImports = [
   "import { randomUUID, createHash } from 'node:crypto';",
   "import { authenticateOmni, demoBudget } from './lib/omnicpq/runtime.mjs';",
   "import { APP_VERSION, SKILL, ADAPTER_DELTA, error } from './lib/omnicpq/identity.mjs';",
+  "import { makeDeliveryMetadata } from './lib/omnicpq/delivery-release.mjs';",
   "import { loadKnowledge } from './lib/omnicpq/knowledge.mjs';",
   "import { instructions } from './lib/omnicpq/instructions.mjs';",
   "import { callOpenAI } from './lib/omnicpq/provider.mjs';",
@@ -298,6 +300,10 @@ function loadBackend(provider) {
   source = source.replace(initializer, '').replaceAll('export function ', 'function ').replaceAll('export const ', 'const ');
   assert.doesNotMatch(source, /\bimport\s*(?:\(|[{'"*])/);
   const deny = () => { throw new Error('NATIVE_DEFAULT_DEPENDENCY_DENIED'); };
+  const deliveryCode = deliveryReleaseSource.replaceAll('export function ', 'function ').replaceAll('export const ', 'const ');
+  assert.doesNotMatch(deliveryCode, /\bimport\s*(?:\(|[{'"*])/);
+  const deliveryScope = vm.createContext({ fetch: deny, process: { env: new Proxy({}, { get: deny }) }, Netlify: { env: { get: deny } } });
+  vm.runInContext(deliveryCode + '\n;globalThis.makeDeliveryMetadata = makeDeliveryMetadata;', deliveryScope);
   const scope = vm.createContext({
     TextEncoder, TextDecoder, Buffer, Response, URL, ReadableStream, AbortController,
     setTimeout, clearTimeout, performance, randomUUID, createHash,
@@ -308,6 +314,7 @@ function loadBackend(provider) {
     } } },
     process: { env: new Proxy({}, { get: deny }) },
     APP_VERSION: 'SYNTHETIC', SKILL: 'SYNTHETIC', ADAPTER_DELTA: 'SYNTHETIC',
+    makeDeliveryMetadata: deliveryScope.makeDeliveryMetadata,
     authenticateOmni: deny, demoBudget: deny, loadKnowledge: deny, callOpenAI: provider,
     instructions: () => 'SYNTHETIC_INSTRUCTIONS_NO_PRIVATE_KNOWLEDGE',
     validateBrowser: () => null, starterMetadata: [], allowedStarter: () => false,
