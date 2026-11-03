@@ -8,6 +8,7 @@ import { posix } from 'node:path';
 // Exact public source only; no native private dependency imports, real pack or model call.
 const instructionSource = await fs.readFile(new URL('../../functions/lib/omnicpq/instructions.mjs', import.meta.url), 'utf8');
 const knowledgeSource = await fs.readFile(new URL('../../functions/lib/omnicpq/knowledge.mjs', import.meta.url), 'utf8');
+const soBusinessSource = await fs.readFile(new URL('../../functions/lib/omnicpq/so-business-knowledge.mjs', import.meta.url), 'utf8');
 const hash = value => createHash('sha256').update(value).digest('hex');
 const plain = value => JSON.parse(JSON.stringify(value));
 const deny = () => { throw new Error('NATIVE_IO_DENIED'); };
@@ -21,6 +22,7 @@ const knowledge = sources => ({ skill: { zipSha256: 'SYNTHETIC' }, sources, text
 function loadInstructions() {
   let code = instructionSource.replaceAll('\r\n', '\n');
   for (const line of [
+    "import { soBusinessSupplement } from './so-business-knowledge.mjs';",
     "import { ADAPTER_DELTA } from './identity.mjs';",
     "import { browserInstructions } from './browser.mjs';",
     "import {MODE_CONTRACT} from '../../../public/OmniCPQ/work-modes.mjs';",
@@ -36,7 +38,9 @@ function loadInstructions() {
     browserInstructions: () => 'SYNTHETIC_BROWSER_NO_EXECUTION_AUTHORITY',
     fetch: deny, process: { env: new Proxy({}, { get: deny }) },
   });
-  vm.runInContext(code + '\n;globalThis.api={instructions,currentSourceManifest:typeof currentSourceManifest==="function"?currentSourceManifest:null};', scope);
+  assert.doesNotMatch(soBusinessSource, /\bimport\s*(?:\(|[{'"*])/);
+  const soCode = soBusinessSource.replace(/^export /gm, '');
+  vm.runInContext(soCode + '\n' + code + '\n;globalThis.api={instructions,currentSourceManifest:typeof currentSourceManifest==="function"?currentSourceManifest:null};', scope);
   return scope.api;
 }
 function manifest(prompt) {
@@ -261,4 +265,19 @@ test('T22 only a verified current set permits absence claims; UNKNOWN permits ne
     assert.ok(prompt.includes('Povej, da trenutnega seznama virov ni mogoče preveriti'));
     assert.equal(prompt.includes('Če vir ni v trenutnem seznamu, povej le'), false);
   }
+});
+
+test('T23 actual public retriever service.id SDWAN blocks historical SO business supplement', async () => {
+  const req = request({ message: 'Koliko stane SD-WAN?', history: [{ role: 'user', content: 'Ikt.SO.Pck3' }] });
+  const current = await fakeRetriever().retrieve(req);
+  assert.equal(current.service.id, 'SDWAN');
+  assert.equal(current.serviceResolution.conflict, false);
+  assert.equal(api.instructions(current, req).includes('<so_business_snapshot_v1>'), false);
+});
+
+test('T24 canonical resolved service.id TS_SO admits a named child without an explicit request.service', () => {
+  const current = { ...knowledge([]), service: { id: 'TS_SO', title: 'SYNTHETIC_SO' } };
+  const req = request({ message: 'Koliko stane Veeam Cloud Connect?' });
+  assert.equal(req.service, undefined);
+  assert.equal(api.instructions(current, req).includes('<so_business_snapshot_v1>'), true);
 });
