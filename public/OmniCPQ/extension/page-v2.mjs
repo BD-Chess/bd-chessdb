@@ -17,7 +17,7 @@ export async function cpqPageV2(command) {
   const allowed = ['https://cpq-stg.apps.test-ocp.ts.telekom.si','https://cpq.apps.prod-ocp.ts.telekom.si'];
   const scope = command.scope === 'quote' ? 'quote' : 'order';
   if (!allowed.includes(location.origin) || location.origin !== command.origin ||
-      !/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(location.pathname)) return fail('CPQ_ORIGIN_NOT_ALLOWED');
+      (location.origin!==allowed[0]&&!/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(location.pathname))) return fail('CPQ_ORIGIN_NOT_ALLOWED');
   if(/^\/sl\/(?:order|quote)(?:\/|$)/.test(location.pathname) && !location.pathname.startsWith('/sl/'+scope))return fail('CPQ_ROUTE_SCOPE_CHANGED');
   const norm = v => String(v ?? '').replace(/\s+/g,' ').trim();
   const now = () => new Date().toISOString();
@@ -109,12 +109,17 @@ export async function cpqPageV2(command) {
   for(const e of doc.querySelectorAll('div,span'))if(visible(e)&&/pointer/.test(view.getComputedStyle(e).cursor)&&norm(e.textContent).length<220)all.push(clickable(e));
   let candidates=[...new Set(all)].filter(e=>visible(e)&&!isSecret(e)&&!e.matches('input[type=hidden]')&&!e.matches('option'));
   candidates=candidates.filter(e=>!e.matches('[tabindex],mat-icon')||!e.closest('button,a,[role="button"],[role="combobox"]')||e.matches('button,a,[role]'));
+  const allowedLink=value=>{try{
+    const u=new URL(value,location.href);if(u.origin!==location.origin||u.username||u.password)return false;
+    if(location.origin===allowed[0]){const m=u.pathname.match(/^\/sl\/(order|quote)(?:\/|$)/);return !m||m[1]===scope;}
+    return u.pathname.startsWith('/sl/'+scope)||u.pathname.startsWith('/sl/dashboard');
+  }catch{return false;}};
   const eligible=e=>{
     // A pointer cursor inherited by a layout wrapper is not an action target.
     // Prefer the concrete children when a generic wrapper contains several controls.
     if(kind(e)==='control' && !e.matches('[onclick],[data-action],mat-tree-node,mat-nested-tree-node') &&
        e.querySelectorAll('button,a,input,textarea,select,[role="button"],[role="menuitem"],[role="combobox"]').length>1)return false;
-    if(kind(e)==='link'){try{const u=new URL(e.getAttribute('href'),location.href);return u.origin===location.origin&&(u.pathname.startsWith('/sl/'+scope)||u.pathname.startsWith('/sl/dashboard'));}catch{return false;}}
+    if(kind(e)==='link')return allowedLink(e.getAttribute('href'));
     return true;
   };
   candidates=candidates.filter(eligible);
@@ -127,7 +132,7 @@ export async function cpqPageV2(command) {
     // Ignore duplicate nested tab stops when parent is already the control.
     if(e.matches('[tabindex]') && e.closest('button,a,[role="button"],[role="combobox"]') && !e.matches('button,a,[role]'))continue;
     const k=kind(e),name=accessible(e);
-    if(k==='link'){try{const u=new URL(e.getAttribute('href'),location.href);if(u.origin!==location.origin || !(u.pathname.startsWith('/sl/'+scope)||u.pathname.startsWith('/sl/dashboard')))continue;}catch{continue;}}
+    if(k==='link'&&!allowedLink(e.getAttribute('href')))continue;
     if(index++<offset)continue;if(controls.length>=cap)break;
     const id='c'+(offset+controls.length),r=rect(e);
     const c={id,kind:k,label:name||('Neoznačen '+k+' #'+(offset+controls.length+1)),enabled:!isDisabled(e),
@@ -162,7 +167,7 @@ export async function cpqPageV2(command) {
     text,controls,viewport:{width:topView.innerWidth,height:topView.innerHeight,scrollX:scrollX,scrollY:scrollY},
     framePath,frames:[...doc.querySelectorAll('iframe,frame')].filter(visible).slice(0,50).map((f)=>{const index=[...doc.querySelectorAll('iframe,frame')].indexOf(f);let accessible=false;try{accessible=!!f.contentDocument&&(['about:blank','about:srcdoc'].includes(f.contentDocument.URL)||f.contentDocument.location.origin===command.origin);}catch{}return {path:framePath?framePath+'.'+index:String(index),title:norm(f.title||f.getAttribute('aria-label')).slice(0,160),accessible};}),
     parentContext:framePath?[...topDoc.querySelectorAll('h1,h2,[role=heading]')].map(e=>norm(e.textContent)).join(' ').slice(0,500):'',
-    runtime:{pageVersion:'1.2.6',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
+    runtime:{pageVersion:'1.2.7',apiRevision:3,transport:'ISOLATED_FUNCTION_PER_REQUEST'},
     paging:{offset,limit:cap,totalFound:candidates.length,hasMore:offset+controls.length<candidates.length,query:norm(command.query).slice(0,160)}};
   const encode=new TextEncoder().encode(JSON.stringify({...current,stateStamp}));
   const digest=await crypto.subtle.digest('SHA-256',encode);
