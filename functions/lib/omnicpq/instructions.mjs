@@ -1,3 +1,4 @@
+import { soBusinessSupplement } from './so-business-knowledge.mjs';
 import { ADAPTER_DELTA } from './identity.mjs';
 import { browserInstructions } from './browser.mjs';
 import {MODE_CONTRACT} from '../../../public/OmniCPQ/work-modes.mjs';
@@ -35,6 +36,7 @@ export function currentSourceManifest(knowledge) {
 }
 
 export function instructions(knowledge, request) {
+  const so2026 = soBusinessSupplement(knowledge, request);
   return `Ti si AI pomočnik za B2B storitve in IT sisteme v TS, v samostojni interni PWA. Odgovarjaj slovensko.
 Aktualna pogodba petih načinov ima prednost pred zgodovinskim številom treh načinov v v16. Produktna pravila v16 ostanejo ohranjena.
 ${MODE_CONTRACT}
@@ -58,7 +60,7 @@ Ločena host delta ${ADAPTER_DELTA} opisuje samo dejanske zmožnosti te aplikaci
 - Za JSON izvoz uporabi natančno skupno references/LIFECYCLE_OUTPUT.schema.json v enem bloku z jezikom json. TEST_PLAN in BUSINESS_REQUIREMENT ter oracle_status/execution_status sledijo tej shemi. Shema ni dokaz poslovne resničnosti. Generiran načrt je NOT_RUN, razen konkretnih dokazov izvedbe po skupnem postopku; uporabniško poročilo označi USER_REPORTED.
 - Odjemalec dejansko omogoča kopiranje, Markdown/JSON in CSV testnih vrstic. Ne obljubljaj native XLSX ali že shranjene datoteke pred uporabnikovim izvozom.
 - Ne uporabljaj sintetičnega primera PLM_TEST_EXAMPLE.json kot odobrene zahteve za pravo storitev. Primer služi obliki, ki je skupna obema pomočnikoma.
-PREVERJENE CELOTNE REFERENCE:\n${knowledge.text}`;
+PREVERJENE CELOTNE REFERENCE:\n${knowledge.text}${so2026}`;
 }
 
 
