@@ -1,6 +1,7 @@
 import { randomUUID, createHash } from 'node:crypto';
 import { authenticateOmni, demoBudget } from './lib/omnicpq/runtime.mjs';
 import { APP_VERSION, SKILL, ADAPTER_DELTA, error } from './lib/omnicpq/identity.mjs';
+import { makeDeliveryMetadata } from './lib/omnicpq/delivery-release.mjs';
 import { loadKnowledge } from './lib/omnicpq/knowledge.mjs';
 import { instructions } from './lib/omnicpq/instructions.mjs';
 import { callOpenAI } from './lib/omnicpq/provider.mjs';
@@ -98,7 +99,7 @@ export function makeHandler({ accessFactory = authenticateOmni, knowledgeFactory
       console.warn('OMNICPQ_KNOWLEDGE_LOAD:' + stage);
       return failure(e.code === 'KNOWLEDGE_INTEGRITY' ? e.code : 'KNOWLEDGE_UNAVAILABLE', 503);
     }
-    if (req.method === 'GET') return json({ ok: true, version: APP_VERSION, available, simulation,
+    if (req.method === 'GET') return json({ ok: true, version: APP_VERSION, deliveryRelease: makeDeliveryMetadata({ skill: k.skill, appVersion: APP_VERSION, adapterDelta: ADAPTER_DELTA }), available, simulation,
       configuredProvider: 'OpenAI', configuredModel: model, observedModel: 'UNKNOWN', profiles, skill: k.skill,
       adapterDelta: ADAPTER_DELTA, starterPrompts: starterMetadata, services: k.services, privateKnowledge: 'VERIFIED',
       account: { id: actor.id, role: actor.role }, usage: actor.usage || { exempt: true } });
@@ -137,7 +138,7 @@ export function makeHandler({ accessFactory = authenticateOmni, knowledgeFactory
           const payload = buildPayload(retrieved, request, model);
           send('meta', { provider: 'OpenAI', configuredModel: model, observedModel: 'UNKNOWN',
             requestedReasoning: profiles[request.profile].reasoning, observedReasoning: 'UNKNOWN', profile: request.profile,
-            simulation, skill: k.skill, promptId: request.promptId, adapterDelta: ADAPTER_DELTA, service: retrieved.service, sources: retrieved.sources,
+            simulation, skill: k.skill, deliveryRelease: makeDeliveryMetadata({ skill: k.skill, appVersion: APP_VERSION, adapterDelta: ADAPTER_DELTA }), promptId: request.promptId, adapterDelta: ADAPTER_DELTA, service: retrieved.service, sources: retrieved.sources,
             snapshot: request.snapshot ? { ...request.snapshot, dataUrl: undefined } : null,
             contextOrigin: request.context.origin, browser: request.browser ? {id:request.browser.id,revision:request.browser.revision,capturedAt:request.browser.capturedAt,
               environment:request.browser.environment,routeScope:request.browser.routeScope,origin:request.browser.origin} : null,

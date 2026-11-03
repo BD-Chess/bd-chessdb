@@ -9,6 +9,7 @@ import { posix } from 'node:path';
 const instructionSource = await fs.readFile(new URL('../../functions/lib/omnicpq/instructions.mjs', import.meta.url), 'utf8');
 const knowledgeSource = await fs.readFile(new URL('../../functions/lib/omnicpq/knowledge.mjs', import.meta.url), 'utf8');
 const soBusinessSource = await fs.readFile(new URL('../../functions/lib/omnicpq/so-business-knowledge.mjs', import.meta.url), 'utf8');
+const deliveryReleaseSource = await fs.readFile(new URL('../../functions/lib/omnicpq/delivery-release.mjs', import.meta.url), 'utf8');
 const hash = value => createHash('sha256').update(value).digest('hex');
 const plain = value => JSON.parse(JSON.stringify(value));
 const deny = () => { throw new Error('NATIVE_IO_DENIED'); };
@@ -23,7 +24,8 @@ function loadInstructions() {
   let code = instructionSource.replaceAll('\r\n', '\n');
   for (const line of [
     "import { soBusinessSupplement } from './so-business-knowledge.mjs';",
-    "import { ADAPTER_DELTA } from './identity.mjs';",
+    "import { ADAPTER_DELTA, APP_VERSION } from './identity.mjs';",
+    "import { deliveryReferenceContext } from './delivery-release.mjs';",
     "import { browserInstructions } from './browser.mjs';",
     "import {MODE_CONTRACT} from '../../../public/OmniCPQ/work-modes.mjs';",
   ]) {
@@ -33,14 +35,16 @@ function loadInstructions() {
   assert.doesNotMatch(code, /\bimport\s*(?:\(|[{'"*])/);
   code = code.replaceAll('export function ', 'function ');
   const scope = vm.createContext({
-    ADAPTER_DELTA: 'SYNTHETIC_DELTA',
+    ADAPTER_DELTA: 'SYNTHETIC_DELTA', APP_VERSION: 'SYNTHETIC_APP_COMPONENT',
     MODE_CONTRACT: 'SYNTHETIC_FIVE_MODE_CONTRACT',
     browserInstructions: () => 'SYNTHETIC_BROWSER_NO_EXECUTION_AUTHORITY',
     fetch: deny, process: { env: new Proxy({}, { get: deny }) },
   });
   assert.doesNotMatch(soBusinessSource, /\bimport\s*(?:\(|[{'"*])/);
   const soCode = soBusinessSource.replace(/^export /gm, '');
-  vm.runInContext(soCode + '\n' + code + '\n;globalThis.api={instructions,currentSourceManifest:typeof currentSourceManifest==="function"?currentSourceManifest:null};', scope);
+  assert.doesNotMatch(deliveryReleaseSource, /\bimport\s*(?:\(|[{'"*])/);
+  const deliveryCode = deliveryReleaseSource.replace(/^export /gm, '');
+  vm.runInContext(soCode + '\n' + deliveryCode + '\n' + code + '\n;globalThis.api={instructions,currentSourceManifest:typeof currentSourceManifest==="function"?currentSourceManifest:null};', scope);
   return scope.api;
 }
 function manifest(prompt) {

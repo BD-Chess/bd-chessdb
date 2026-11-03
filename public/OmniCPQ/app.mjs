@@ -144,7 +144,7 @@ const problems = {
   DEMO_INVITATION_REQUIRED: 'Za demo odpri prejeto povabilo ali vnesi njegovo kodo.', DEMO_IP_UNAVAILABLE: 'IP-ja ni mogoče varno potrditi. Demo dostop je zadržan.',
   DEMO_IP_CHANGED: 'Demo je vezan na IP ob prvi aktivaciji. Za drugo omrežje potrebuješ novo povabilo.', DEMO_EXPIRED: 'Veljavnost demo dostopa je potekla.', DEMO_REVOKED: 'Demo dostop je preklican.', DEMO_LIMIT: 'Dosežena je meja demo porabe; novega API klica ne izvedemo.',
   AUTH_REQUIRED: 'Prijavi se z obstoječim računom lastnika v nastavitvah.', OWNER_REQUIRED: 'Ta prijava nima dostopa do internega znanja OmniCPQ.',
-  KNOWLEDGE_UNAVAILABLE: 'Zasebni vir znanja še ni dosegljiv na tem strežniku.', KNOWLEDGE_INTEGRITY: 'Znanje se ne ujema s preverjeno izdajo v16; zahteva je ustavljena.',
+  KNOWLEDGE_UNAVAILABLE: 'Zasebni vir znanja še ni dosegljiv na tem strežniku.', KNOWLEDGE_INTEGRITY: 'Osnovno znanje se ne ujema s preverjenim jedrom; zahteva je ustavljena.',
   AI_UNAVAILABLE: 'AI na tem strežniku še ni omogočen ali trenutno ni dosegljiv.', MODEL_NOT_ALLOWED: 'Strežniški profil modela ni na dovoljenem seznamu.',
   RATE_LIMITED: 'Dosežena je omejitev zahtev. Poskusi pozneje; ponovne zahteve ne pošljemo samodejno.', MONTHLY_LIMIT: 'Dosežena je omejitev porabe.',
   DUPLICATE_REQUEST: 'Ta zahteva je bila že sprejeta. Ne ponavljaj je brez preverjanja izida.', REQUEST_IN_PROGRESS: 'Prejšnja zahteva še poteka.',
@@ -452,7 +452,11 @@ function saveSession(kind) {
 }
 
 async function health() {
+  // A new observation must not inherit a prior server-release claim on failure.
+  state.health = unconfirmedDelivery(state.health);
+  $('knowledge-status').textContent = 'Izdaja UNKNOWN · čakam sveže metapodatke strežnika.';
   state.ready = false; $('connection').classList.remove('ready');
+  showWorkspaceStatus();
   const epoch = accessEpoch;
   const label = $('connection').querySelector('span');
   if (!navigator.onLine) { label.textContent = 'Brez povezave'; return; }
@@ -501,7 +505,7 @@ async function health() {
     if (epoch !== accessEpoch) return;
     state.health = data; state.ready = data.available && data.skill?.promptsSha256 === PROMPTS_SHA256 && startersMatch && data.version === APP_VERSION; $('simulation').hidden = !data.simulation;
     ownerAccess(true); showUsage(data.usage);
-    if (data.skill?.promptsSha256 !== PROMPTS_SHA256) notice('Začetni pozivi in strežniški v16 se ne ujemajo. Pošiljanje je zadržano do uskladitve.');
+    if (data.skill?.promptsSha256 !== PROMPTS_SHA256) notice('Začetni pozivi in strežniško jedro se ne ujemajo. Pošiljanje je zadržano do uskladitve.');
     else if (!startersMatch) notice('Vmesnik in strežniških 12 začetnih pozivov se ne ujemata. Varno posodobi aplikacijo.');
     else if (data.version !== APP_VERSION) notice('Različici aplikacije in strežnika se ne ujemata. Varno posodobi aplikacijo.');
     label.textContent = data.simulation ? 'Testni predogled' : state.ready ? 'Pomočnik pripravljen' : data.available ? 'Potrebna posodobitev' : 'AI ni omogočen';
@@ -513,7 +517,7 @@ async function health() {
     $('service').replaceChildren(new Option('Samodejna izbira iz vprašanja', ''), ...data.services.map(s => new Option(s.title, s.id)));
     $('service').value = selectedService;
     $('technical-info').textContent = JSON.stringify({...data,release:state.release || 'UNKNOWN'}, null, 2);
-    $('knowledge-status').textContent = `Dejansko naloženo ${data.skill.release} / ${data.skill.version} · ${data.skill.files} datotek · ZIP SHA-256 ${data.skill.zipSha256}. Vmesnik: 12 preverjenih začetnih pozivov.`;
+    $('knowledge-status').textContent = `${deliveryDisplay(data)} · Dejansko jedro ${data.skill.release} / ${data.skill.version} · ${data.skill.files} datotek · ZIP SHA-256 ${data.skill.zipSha256}. Vmesnik: 12 preverjenih začetnih pozivov.`;
     updateComparisonGate();
     showWorkspaceStatus();
     if(state.role==='owner'){
@@ -528,7 +532,22 @@ function showWorkspaceStatus() {
   if($('browser-preview-auto'))$('browser-preview-auto').disabled=state.busy||!state.ownerVerified||state.role!=='owner'||!state.browserConnected;
   const k=state.health?.skill,service=$('service').selectedOptions?.[0]?.textContent || 'Samodejna izbira storitve';
   const environment=state.browserObservation ? cpqLocation(state.browserObservation.url)?.environment : $('environment').value;
-  $('workspace-status').textContent = `${state.ownerVerified ? 'Prijava potrjena' : 'Potrebna prijava'} · ${k ? 'Znanje '+k.release : 'Znanje še ni potrjeno'} · ${state.ready ? 'API pripravljen' : 'API še ni pripravljen'} · ${service} · ${environment === 'UNKNOWN' ? 'Okolje ni izbrano' : environment + (state.browserConnected&&state.browserObservation ? ' · povezan CPQ' : ' (ročno)')}`;
+  $('workspace-status').textContent = `${state.ownerVerified ? 'Prijava potrjena' : 'Potrebna prijava'} · ${deliveryDisplay(state.health)} · ${k ? 'Jedro '+k.release+' / '+k.version : 'Jedro še ni potrjeno'} · ${state.ready ? 'API pripravljen' : 'API še ni pripravljen'} · ${service} · ${environment === 'UNKNOWN' ? 'Okolje ni izbrano' : environment + (state.browserConnected&&state.browserObservation ? ' · povezan CPQ' : ' (ročno)')}`;
+}
+function unconfirmedDelivery(health) {
+  return health && typeof health==='object' ? {...health,deliveryRelease:null} : health;
+}
+function deliveryDisplay(health) {
+  try {
+    const d=health?.deliveryRelease,c=d?.components;
+    const record=v=>v&&typeof v==='object'&&!Array.isArray(v);
+    const label=v=>typeof v==='string'&&/^[A-Za-z0-9_.-]{1,120}$/.test(v);
+    if(!record(d)||d.schema!=='omnicpq.delivery-release.v1'||d.release_id!=='OmniCPQ-v19-20261103'||d.delivery_version!=='v19'||d.issued_on!=='2026-11-03'||!record(c)||!record(c.application)||!record(c.core)||!label(c.application.version)||!label(c.core.release)||!label(c.core.version))return 'Izdaja UNKNOWN';
+    if(typeof health.version==='string'&&c.application.version!==health.version)return 'Izdaja UNKNOWN';
+    if(typeof health.skill?.release==='string'&&c.core.release!==health.skill.release)return 'Izdaja UNKNOWN';
+    if(typeof health.skill?.version==='string'&&c.core.version!==health.skill.version)return 'Izdaja UNKNOWN';
+    return 'Izdaja '+d.delivery_version;
+  } catch { return 'Izdaja UNKNOWN'; }
 }
 async function readReleaseInfo() {
   try { const r=await fetch('/.well-known/bd-deploy.json',{credentials:'omit',cache:'no-store'}); if(!r.ok)return;
