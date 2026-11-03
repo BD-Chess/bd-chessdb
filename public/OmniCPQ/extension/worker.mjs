@@ -3,7 +3,7 @@ const PROTOCOL='omnicpq.browser.v1', ORIGIN='https://www.mdlxdcc.org';
 const CPQ=['https://cpq-stg.apps.test-ocp.ts.telekom.si','https://cpq.apps.prod-ocp.ts.telekom.si'];
 const fail=code=>({ok:false,error:code});
 export function assistantUrl(value){try{const u=new URL(value);return u.origin===ORIGIN && /^\/omnicpq\/(?:index\.html)?$/i.test(u.pathname) && !u.username && !u.password;}catch{return false;}}
-export function cpqUrl(value){try{const u=new URL(value);return CPQ.includes(u.origin)&&/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname)&&!u.username&&!u.password;}catch{return false;}}
+export function cpqUrl(value){try{const u=new URL(value);return CPQ.includes(u.origin)&&!u.username&&!u.password&&(u.origin===CPQ[0]||/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname));}catch{return false;}}
 export function makeBridgeHandler(api,now=()=>Date.now()) {
   const busy=new Set();
   return async function handle(message,sender,internal=false) {

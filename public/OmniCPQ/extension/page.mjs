@@ -3,7 +3,7 @@
 export async function cpqPage(command) {
   const fail=code=>({ok:false,error:code});
   const allowed=['https://cpq-stg.apps.test-ocp.ts.telekom.si','https://cpq.apps.prod-ocp.ts.telekom.si'];
-  if(!allowed.includes(location.origin) || location.origin!==command.origin || !/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(location.pathname))return fail('CPQ_ORIGIN_NOT_ALLOWED');
+  if(!allowed.includes(location.origin) || location.origin!==command.origin || (location.origin!==allowed[0]&&!/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(location.pathname)))return fail('CPQ_ORIGIN_NOT_ALLOWED');
   const visible=e=>!e.closest('[hidden],[aria-hidden="true"]') && e.getClientRects().length>0 &&
     getComputedStyle(e).visibility!=='hidden' && getComputedStyle(e).display!=='none';
   const clean=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -37,7 +37,8 @@ export async function cpqPage(command) {
     const role=e.getAttribute('role');let kind,href;
     if(e.matches('a[href]')) {
       try {const u=new URL(e.getAttribute('href'),location.href);
-        if(u.origin!==location.origin || !new RegExp('^/sl/'+scope+'(?:/|$)').test(u.pathname)||u.username||u.password)continue;
+        const targetScope=u.pathname.match(/^\/sl\/(order|quote)(?:\/|$)/);
+        if(u.origin!==location.origin||u.username||u.password||(location.origin===allowed[0]?(targetScope&&targetScope[1]!==scope):!new RegExp('^/sl/'+scope+'(?:/|$)').test(u.pathname)))continue;
         href=u.href;if(locked)continue;kind='link';
       }catch{continue;}
     } else if(role==='tab' && /^(?:Podatki|(?:Editable\s+)?Postavke|Generiranje|Naročila|Ponudbe)$/i.test(name)) {

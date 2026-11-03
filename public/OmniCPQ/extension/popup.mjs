@@ -2,6 +2,7 @@ import {PAIR_REQUESTS,pendingRequests} from './pairing.mjs';
 const $=id=>document.getElementById(id);
 const status=text=>{$('status').textContent=text;};
 const send=data=>chrome.runtime.sendMessage({protocol:'omnicpq.gui.v2',...data});
+const cpqTabAllowed=value=>{try{const u=new URL(value);return !u.username&&!u.password&&(u.origin==='https://cpq-stg.apps.test-ocp.ts.telekom.si'||(u.origin==='https://cpq.apps.prod-ocp.ts.telekom.si'&&/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname)));}catch{return false;}};
 async function assistants(selected=$('assistant').value){
   const saved=await chrome.storage.session.get(PAIR_REQUESTS),legacy=await chrome.storage.session.get('requests');
   const candidates=[...pendingRequests(legacy.requests).map(r=>({...r,protocol:'omnicpq.browser.v1'})),
@@ -18,7 +19,7 @@ async function assistants(selected=$('assistant').value){
 }
 async function tabs(){
   const current=await chrome.tabs.query({currentWindow:true});
-  for(const active of current.filter(t=>/^https:\/\/(?:cpq-stg\.apps\.test-ocp|cpq\.apps\.prod-ocp)\.ts\.telekom\.si\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(t.url||'')&&!t.incognito)) {
+  for(const active of current.filter(t=>cpqTabAllowed(t.url)&&!t.incognito)) {
     $('cpq').add(new Option(active.title||'CPQ zavihek',String(active.id)));
     if(active.active)$('cpq').value=String(active.id);
   }

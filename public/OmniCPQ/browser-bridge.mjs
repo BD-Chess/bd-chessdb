@@ -6,7 +6,7 @@ export const CPQ_ORIGINS = Object.freeze({
 });
 export function cpqLocation(value) {
   try { const u=new URL(value); const environment=Object.keys(CPQ_ORIGINS).find(k=>CPQ_ORIGINS[k]===u.origin);
-    if (!environment || u.username || u.password || !/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname)) return null;
+    if (!environment || u.username || u.password || (environment!=='STAGE'&&!/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname))) return null;
     return {environment,routeScope:u.pathname.startsWith('/sl/quote')?'quote':'order',origin:u.origin};
   } catch {return null;}
 }

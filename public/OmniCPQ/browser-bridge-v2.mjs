@@ -5,7 +5,7 @@ export const BRIDGE_EXTENSION_ID='emoohebdiggbcppgphmdemdiakdamfnb';
 export const CPQ_ORIGINS=Object.freeze({STAGE:'https://cpq-stg.apps.test-ocp.ts.telekom.si',PROD:'https://cpq.apps.prod-ocp.ts.telekom.si'});
 export function cpqLocation(value){try{
   const u=new URL(value),environment=Object.keys(CPQ_ORIGINS).find(k=>CPQ_ORIGINS[k]===u.origin);
-  if(!environment||u.username||u.password||!/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname))return null;
+  if(!environment||u.username||u.password||(environment!=='STAGE'&&!/^\/sl\/(?:order|quote|dashboard)(?:\/|$)/.test(u.pathname)))return null;
   return {environment,routeScope:u.pathname.startsWith('/sl/quote')?'quote':'order',origin:u.origin};
 }catch{return null;}}
 const ALLOWED=new Set(['click','doubleClick','hover','contextClick','focus','scroll','drag','fill','key','check','selectNative','upload','ensureVisible','read']);

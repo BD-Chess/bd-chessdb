@@ -24,7 +24,9 @@ export function validateBrowser(raw,now=Date.now()) {
     if(!/^n\d{1,3}$/.test(c?.id||'')||ids.has(c.id)||typeof c.label!=='string'||c.label.length>160||!['link','tab','expand','view'].includes(c.kind))invalid();
     ids.add(c.id);
     if(c.kind==='link'){
-      const target=cpqLocation(c.href);if(!target||target.origin!==loc.origin||target.routeScope!==raw.routeScope||c.href.length>1200)invalid();
+      const target=cpqLocation(c.href);if(!target||target.origin!==loc.origin||c.href.length>1200)invalid();
+      const stageShared=loc.environment==='STAGE'&&!/^\/sl\/(?:order|quote)(?:\/|$)/.test(new URL(c.href).pathname);
+      if(!stageShared&&target.routeScope!==raw.routeScope)invalid();
     }else if(c.href!==undefined)invalid();
     return {id:c.id,label:c.label,kind:c.kind,...(c.kind==='link'?{href:c.href}:{})};
   });

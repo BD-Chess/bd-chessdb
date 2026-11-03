@@ -35,7 +35,13 @@ export function validateGuiBrowser(raw,now=Date.now()){
     if(c.selectionState!==undefined&&!['selected','unselected','mixed'].includes(c.selectionState))throw BAD();
     if(c.selectionSource!==undefined&&!['aria-selected','material-pseudo-checkbox'].includes(c.selectionSource))throw BAD();
     if((c.selectionState===undefined)!==(c.selectionSource===undefined))throw BAD();
-    if(c.href!==undefined){boundedString(c.href,1200);if(!c.href.startsWith('/sl/')||c.href.startsWith('//'))throw BAD();}
+    if(c.href!==undefined){boundedString(c.href,1200);
+      if(loc.environment==='STAGE'){
+        if(!c.href.startsWith('/')||c.href.startsWith('//'))throw BAD();
+        let target;try{target=new URL(c.href,loc.origin);}catch{throw BAD();}
+        if(target.origin!==loc.origin||target.username||target.password)throw BAD();
+      }else if(!c.href.startsWith('/sl/')||c.href.startsWith('//'))throw BAD();
+    }
     if(c.group!==undefined)boundedString(c.group,80);
     if(c.component!==undefined)boundedString(c.component,200);
     if(c.rangeText!==undefined)boundedString(c.rangeText,160);
