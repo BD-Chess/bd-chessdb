@@ -7,9 +7,10 @@ import * as core from '../../public/OmniCPQ/core.mjs';
 import * as prompts from '../../public/OmniCPQ/prompts.mjs';
 import * as starters from '../../public/OmniCPQ/starters.mjs';
 import * as bridge from '../../public/OmniCPQ/browser-bridge.mjs';
-import {APP_VERSION,SKILL} from '../../functions/lib/omnicpq/identity.mjs';
+import {APP_VERSION,SKILL,ADAPTER_DELTA} from '../../functions/lib/omnicpq/identity.mjs';
+import {makeDeliveryMetadata} from '../../functions/lib/omnicpq/delivery-release.mjs';
 import {starterMetadata} from '../../functions/lib/omnicpq/browser.mjs';
-async function harness(){
+async function harness({deliveryRelease}={}){
   const html=await readFile('public/OmniCPQ/index.html','utf8'),dom=new JSDOM(html,{url:'https://www.mdlxdcc.org/omnicpq/',runScripts:'outside-only'});
   const w=dom.window,$=id=>w.document.getElementById(id),requests=[];let disconnects=0,posts=0;
   const fakeBridge={disconnect:async()=>{disconnects++;},connect:async()=>{throw Error('BRIDGE_NOT_INSTALLED');}};
@@ -18,7 +19,7 @@ async function harness(){
   w.fetch=async(path,options={})=>{
     requests.push({path,method:options.method||'GET'});if(options.method==='POST')posts++;
     if(path==='/.well-known/bd-deploy.json')return Response.json({schema:'bd.deploy.v1',site:'mdlxdcc',source_sha:'a'.repeat(40),fingerprint:'b'.repeat(64)});
-    return Response.json({ok:true,available:true,version:APP_VERSION,account:{id:'synthetic-owner',role:'owner'},privateKnowledge:'VERIFIED',starterPrompts:starterMetadata,
+    return Response.json({...(deliveryRelease===undefined?{}:{deliveryRelease}),ok:true,available:true,version:APP_VERSION,account:{id:'synthetic-owner',role:'owner'},privateKnowledge:'VERIFIED',starterPrompts:starterMetadata,
       skill:{...SKILL,promptsSha256:prompts.PROMPTS_SHA256},services:[{id:'TS_SO',title:'TS Suvereni oblak'},{id:'VPI',title:'VPI'}]});
   };
   const code=(await readFile('public/OmniCPQ/app.mjs','utf8')).replace(/^import .*;\n/gm,'');
@@ -76,9 +77,24 @@ test('version has one generated source; refresh and release provenance use only 
     assert.equal(core.APP_VERSION,APP_VERSION);await h.$('refresh-status').onclick();
     assert.equal(h.posts(),0);assert(h.requests.every(r=>r.method==='GET'));assert.equal(h.app.state.release.source_sha,'a'.repeat(40));
     assert.equal(core.exportSession(h.app.state).appVersion,APP_VERSION);assert.equal(core.exportSession(h.app.state).release.source_sha,'a'.repeat(40));
-    assert.match(h.$('workspace-status').textContent,/Znanje v16/);assert.match(h.$('workspace-status').textContent,/API pripravljen/);
+    assert.match(h.$('workspace-status').textContent,/Izdaja UNKNOWN/);
+    assert(h.$('workspace-status').textContent.includes('Jedro '+SKILL.release+' / '+SKILL.version));
+    assert.match(h.$('workspace-status').textContent,/API pripravljen/);
   }finally{h.dom.window.close();}
 });
+
+test('valid server delivery metadata displays v19 separately from retained core with only synthetic GET requests',async()=>{
+  const deliveryRelease=makeDeliveryMetadata({skill:SKILL,appVersion:APP_VERSION,adapterDelta:ADAPTER_DELTA});
+  const h=await harness({deliveryRelease});try{
+    const status=h.$('workspace-status').textContent;
+    assert.match(status,/^Prijava potrjena · Izdaja v19 · /);
+    assert(status.includes('Jedro '+SKILL.release+' / '+SKILL.version));
+    assert.match(status,/ · API pripravljen · /);assert.match(status,/Okolje ni izbrano$/);
+    assert.doesNotMatch(status,/Izdaja UNKNOWN|Jedro v19/);
+    assert.equal(h.posts(),0);assert(h.requests.every(r=>r.method==='GET'));
+  }finally{h.dom.window.close();}
+});
+
 test('safe update waits for an unsaved draft and a connected CPQ, then requests activation after explicit local preservation',async()=>{
   const h=await harness();try{
     let applied=0;const registration={waiting:{postMessage:()=>{applied++;}},addEventListener:()=>{},active:{state:'activated'}};
