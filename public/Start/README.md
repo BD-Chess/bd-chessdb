@@ -8,4 +8,9 @@ The AI8 News panel reads the latest edition from the same-origin `/news/catalog.
 
 Runtime files are local to this directory. Icon artwork is from Lucide, upstream commit `70562c1ee1c4fdcf736fe97bc893fb8511927934`, under the included ISC/MIT license (`LICENSE-lucide`). No external fonts or runtime CDN dependencies.
 
+BD's November 4 request adds a permanent `Trading · 1s Arena` link beside the
+favorites heading and a searchable research-directory entry. These are static
+navigation additions outside the eight personal pins; no saved favorites,
+exports, notes or localStorage records are migrated or overwritten.
+
 Verification: `node --test tests/start-state-r2.test.cjs` and `NODE_PATH=/path/to/playwright/node_modules node tests/start-app-browser.cjs` from repository root. The browser suite covers Chromium and WebKit at desktop and mobile sizes, news integrity, favorites and search, data migration, CRUD, import/export, unsafe URLs, storage failures and concurrent tabs. For the current production publication process, see `docs/NETLIFY_DEPLOYMENT.md`; the historical one-shot Start release remains retired.

@@ -51,6 +51,12 @@ It is deliberately source-bounded. A result marked `DIRECT_PACKAGE` was read fro
 
 ## Public wording guardrails applied
 
+The separate completed November 4, 2026 Q1s Video Arena presentation extends this
+ledger with `TR-901`–`TR-904` in
+[`BD_Q1S_VIDEO_ARENA_PRESENTATION_20261104.md`](BD_Q1S_VIDEO_ARENA_PRESENTATION_20261104.md).
+Its 100-USDT synthetic-account TEST outcomes are not substitutions for the older
+Q1s-DETS oracle/research figures above.
+
 - `Q1s`: lead with the strong research signal and explicit mechanism improvements; then name the selected/oracle execution lane in context rather than burying the result.
 - `HSR/PiX`: retain the strong discovery and archive aggregate, but identify them as archived-derived because cited raw LIVE evidence is not in the supplied set.
 - `BB / Neutral Lock`: use only as a clearly labelled secondary preliminary donor signal until the named primary extracts are reviewed.

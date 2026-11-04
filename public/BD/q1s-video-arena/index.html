@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="sl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="description" content="Predvajanje dejanskega, zaključenega Q1s preizkusa: cena, virtualne izvršitve, wallet, neto vrednost in drawdown.">
+  <link rel="canonical" href="https://www.mdlxdcc.org/bd/trading/1s-arena/">
+  <link rel="stylesheet" href="./viewer.css?v=20261104-r1">
+  <title>BD 1s Arena · predvajanje zaključenega teka</title>
+</head>
+<body>
+  <a class="skip" href="#main" data-t="skip">Preskoči na predvajanje</a>
+  <header class="topbar">
+    <a class="brand" href="https://www.mdlxdcc.org/bd/trading"><b>BD × AI</b><span>1s Arena</span></a>
+    <nav aria-label="Trading"><a href="https://www.mdlxdcc.org/bd/trading" data-t="hub">Trading meni</a><a href="https://www.mdlxdcc.org/bd/trading-research-atlas#q1s-video-20261104">Atlas</a><a href="https://www.mdlxdcc.org/start/">Start</a></nav>
+    <div class="display-tools"><button id="language" type="button" aria-label="English">EN</button><button id="theme" type="button" aria-label="Svetla ali temna tema">◐</button></div>
+  </header>
+  <main id="main">
+    <section class="page-heading">
+      <div><p class="eyebrow" data-t="archive">ZAKLJUČENI TEK · 4. 11. 2026</p><h1 data-t="title">Poglej, kako se je trgovalo.</h1><p class="lead" data-t="lead">Predvajanje shranjene simulacije na 1-sekundnih podatkih. Virtualni denar, zgodovinski trg.</p></div>
+      <div class="mode"><span class="mode-dot"></span><span data-t="readOnly">ARHIV · SAMO PRIKAZ</span><small>BTCUSDT · Binance spot<br>5.–7. 2. 2026 · 48 h TEST</small></div>
+    </section>
+    <div id="load-status" class="notice" role="status" aria-live="polite" data-t="loading">Nalagam preverjene rezultate …</div>
+    <div id="load-error" class="error" role="alert" hidden></div>
+
+    <section class="selection panel" aria-label="Izbira izvedene poti">
+      <label><span data-t="policy">Izvedena različica</span><select id="policy"><option value="B:C00" data-t="b00">C00 · sintetični 200×</option><option value="A:C07" data-t="a07">C07 · primerjalni kandidat 1×</option><option value="A:C00" data-t="a00">C00 · začetna različica 1×</option></select></label>
+      <label><span data-t="cost">Izvedeni stroškovni scenarij</span><select id="cost"><option value="C0" data-t="c0">C0 · 0 fee vstop / 0 fee izstop</option><option value="C1" data-t="c1">C1 · predpostavljeni stroški</option><option value="C2" data-t="c2">C2 · večji predpostavljeni stroški</option></select></label>
+      <div class="scenario-note"><b id="trial-name">T063</b><p id="cost-note"></p></div>
+    </section>
+
+    <section class="metrics" aria-label="Virtualni račun na izbranem času">
+      <div class="metric"><span data-t="wallet">Wallet · knjiženi denar</span><strong id="wallet">—</strong><small data-t="virtualUsdt">virtualni USDT</small></div>
+      <div class="metric"><span data-t="equity">Neto vrednost računa</span><strong id="equity">—</strong><small data-t="netExplanation">z odprto pozicijo in modeliranim izstopom</small></div>
+      <div class="metric"><span data-t="return">Donos neto vrednosti</span><strong id="return">—</strong><small data-t="from100">od začetnih 100 USDT</small></div>
+      <div class="metric"><span data-t="drawdown">Največji padec do tega časa</span><strong id="drawdown">—</strong><small data-t="sampledDd">vzorec na dogodkih / zaključkih sveč</small></div>
+    </section>
+
+    <section class="transport panel" aria-label="Predvajanje zgodovine">
+      <div class="transport-top"><div class="buttons"><button id="play" class="primary" disabled data-t="play">▶ Predvajaj</button><button id="begin" disabled data-t="begin">Na začetek</button><button id="previous" disabled aria-label="Prejšnja sekunda">−1 s</button><button id="next" disabled aria-label="Naslednja sekunda">+1 s</button></div><label class="speed"><span data-t="speed">Hitrost</span><select id="speed"><option value="1">1×</option><option value="10">10×</option><option value="60" selected>60×</option><option value="600">600×</option><option value="3600">3600×</option></select></label></div>
+      <label class="sr-only" for="timeline" data-t="timeline">Čas v zaključenem TEST obdobju</label><input id="timeline" type="range" min="0" max="172800" step="1" value="172800" disabled>
+      <div class="time-row"><time id="market-time">—</time><span id="elapsed">48:00:00 / 48:00:00</span></div>
+      <div class="jumps"><span data-t="jump">Skoči na:</span><button id="jump-mark" disabled data-t="jumpMark">prvih +50 % vrednosti</button><button id="jump-flat" disabled data-t="jumpFlat">prvih +50 % zaprtega walleta</button><button id="jump-dd" disabled data-t="jumpDd">največji padec</button><button id="end" disabled data-t="end">konec</button></div>
+    </section>
+
+    <section class="chart-grid">
+      <article class="panel chart-panel"><div class="panel-heading"><div><h2 data-t="price">Cena in simulirane izvršitve</h2><p id="price-caption">BTCUSDT · 1s vir</p></div><label class="zoom"><span data-t="window">Okno</span><select id="window"><option value="60">1 min · 1s</option><option value="300">5 min</option><option value="900">15 min</option><option value="3600" selected>1 h</option><option value="21600">6 h</option><option value="172800">48 h</option></select></label></div><div class="chart-wrap"><canvas id="price-chart" role="img" aria-label="Zgodovinske sveče in simulirane izvršitve"></canvas></div><p class="chart-legend"><span class="mark increase">▲</span><span data-t="increase">vstop / dodajanje</span><span class="mark reduce">▼</span><span data-t="reduce">zmanjšanje / stop</span></p></article>
+      <article class="panel chart-panel"><div class="panel-heading"><div><h2 data-t="accountPath">Pot virtualnega računa</h2><p data-t="wholeTest">Celotnih 48 h · prikaz do izbranega časa</p></div></div><div class="chart-wrap"><canvas id="account-chart" role="img" aria-label="Wallet in neto vrednost virtualnega računa"></canvas></div><p class="chart-legend"><span class="swatch net"></span><span data-t="equityShort">neto vrednost</span><span class="swatch cash"></span><span>Wallet</span><span class="swatch baseline"></span><span data-t="initial">začetnih 100</span></p></article>
+    </section>
+
+    <section class="position-strip panel" aria-label="Pozicije in zaključek"><div><span data-t="positions">Odprte virtualne pozicije</span><strong id="positions">—</strong></div><div><span data-t="unrealized">Nerealizirani PnL pred modeliranim izstopom</span><strong id="unrealized">—</strong></div><div><span data-t="closedCycles">Zaključeni cikli do tega časa</span><strong id="cycles-count">—</strong></div></section>
+
+    <section class="panel executions"><div class="panel-heading"><div><h2 data-t="executions">Zadnje simulirane izvršitve</h2><p data-t="executionsNote">Dejanski zapisi arene do izbranega časa. Delne izvršitve so prikazane ločeno.</p></div><span id="fills-count" class="chip">—</span></div><div class="table-scroll" tabindex="0"><table><thead><tr><th data-t="time">Čas UTC</th><th data-t="action">Dogodek</th><th data-t="leg">Knjiga</th><th>BTC</th><th data-t="fillPrice">Cena USDT</th><th data-t="fee">Fee USDT</th><th data-t="cycle">Cikel</th></tr></thead><tbody id="fills-body"></tbody></table></div><p id="fills-empty" class="empty" data-t="noFills">Do tega časa še ni izvršitev.</p></section>
+
+    <section class="panel final-result"><div class="panel-heading"><div><h2 data-t="finalResult">Končni rezultat izbrane poti</h2><p data-t="finalNote">Končni izid ostane viden tudi med predvajanjem zgodovine.</p></div><span id="feasibility" class="chip">—</span></div><div id="terminal-summary" class="result-copy"></div><div class="table-scroll"><table><thead><tr><th data-t="variant">Različica</th><th data-t="scenario">Scenarij</th><th data-t="finalEquity">Končna neto vrednost</th><th data-t="return">Donos</th><th data-t="maxDd">Največji padec</th></tr></thead><tbody id="comparison-body"></tbody></table></div></section>
+
+    <section class="scope-note"><h2 data-t="scope">Kaj ta prikaz dokazuje</h2><p data-t="scopeText">To je shranjeni BTC preizkus s sintetičnim računom. Ni MEXC/APT rekonstrukcija tvojih posnetkov ali dokaz preseganja tvojega trgovanja. C0 ima nič provizije, zdrsa in fundinga; C1/C2 sta dodatna predpostavljena scenarija. Naravne končne pozicije ostanejo odprte. Predvajanje ne zaganja strategije in ne pošilja naročil.</p></section>
+    <details class="panel sources"><summary data-t="sources">Viri, datumi in preverjanje podatkov</summary><div><p data-t="sourceText">65 izvedenih vrednotenj: 32 TRAIN, 16 VAL, 8 ORIGINAL in 9 TEST. TEST uporablja predhodno izbrani volatilni BTC teden, ki je bil uporabljen že pri starejših raziskavah. V tem novem iskanju ni bil uporabljen za izbor kandidatov.</p><p data-t="numericText">Grafi in oblikovane številke uporabljajo prikazno natančnost. Izvorno računovodstvo uporablja Decimal; izvorne vrednosti in hashi so ohranjeni v dokaznem paketu.</p><p><a href="https://drive.google.com/file/d/182bGrj0Blt_LHLfGr9wZBej1yyGK-hb-/view" target="_blank" rel="noopener noreferrer" data-t="report">Končno poročilo</a> · <a href="https://drive.google.com/file/d/1sUf9reQ6bly_JcafMFE_5jnNIHqKPQeU/view" target="_blank" rel="noopener noreferrer" data-t="evidence">Dokazni paket</a> · <a href="./replay-index.r1.json" download data-t="index">Indeks prikazanih poti</a></p><p class="hash">RESULT SHA256<br><code>c7f8b164da707c477efc3c081b542ae856cd659c4de16e778183cba092c55c9e</code></p><p id="integrity" class="integrity"></p></div></details>
+    <footer><span>BD × AI · Q1s Video Arena R1</span><span data-t="footer">Zaključeni tek je ohranjen. Ta stran je njegov bralni prikaz.</span></footer>
+  </main>
+  <noscript><p>Za predvajanje zgodovine omogoči JavaScript. <a href="https://drive.google.com/file/d/182bGrj0Blt_LHLfGr9wZBej1yyGK-hb-/view">Preberi shranjeno poročilo.</a></p></noscript>
+  <script type="module" src="./viewer.mjs?v=20261104-r1"></script>
+</body>
+</html>
