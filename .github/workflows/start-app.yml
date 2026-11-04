@@ -17,7 +17,8 @@ permissions:
 jobs:
   verify:
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    # Pinned Playwright 1.58.2 supports Ubuntu 24.04, not the new 26.04 runner.
+    runs-on: ubuntu-24.04
     timeout-minutes: 14
     steps:
       - uses: actions/checkout@v4
