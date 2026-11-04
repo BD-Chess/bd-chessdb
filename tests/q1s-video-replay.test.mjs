@@ -3,7 +3,22 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
+import {runInNewContext} from 'node:vm';
 import {upperBound,pathForDisplay,sampleAt,lineEnvelope,candlesForWindow,decodeVerified,loadVerified} from '../public/BD/q1s-video-arena/replay-core.mjs';
+
+test('slash-insensitive hosting never self-redirects; no-slash document normalizes before relative assets',async()=>{
+  const html=await readFile(new URL('../public/BD/q1s-video-arena/index.html',import.meta.url),'utf8');
+  const redirects=await readFile(new URL('../public/_redirects',import.meta.url),'utf8');
+  const rules=redirects.split('\n').filter(l=>/^\/bd\/trading\/1s-arena/.test(l));
+  assert.ok(rules.length>=2);assert.ok(rules.every(l=>!(/\s30[1278](?:\s|$)/.test(l))));
+  const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  assert.ok(html.indexOf('<script>')<html.indexOf('rel="stylesheet"'));
+  for(const pathname of ['/bd/trading/1s-arena','/bd/trading/1s-arena/','/BD/q1s-video-arena/']){
+    const calls=[];runInNewContext(script,{location:{pathname,search:'?trial=T063',hash:'#history'},history:{replaceState:(...args)=>calls.push(args)}});
+    if(pathname==='/bd/trading/1s-arena')assert.equal(calls[0][2],'/bd/trading/1s-arena/?trial=T063#history');
+    else assert.equal(calls.length,0);
+  }
+});
 
 test('as-of lookup preserves zero start and the last same-time recorded state',()=>{
   const p=pathForDisplay({rows:[[1,'100','100','100',1,1],[2,'101','100','101',0,1],[2,'102','99','103',0,1],[3,'98','98','98',1,1]]});
