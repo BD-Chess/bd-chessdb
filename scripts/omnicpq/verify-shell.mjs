@@ -15,7 +15,7 @@ export async function verifyShell(root) {
   return {status:'PASS',release,files:SHELL_FILES.length};
 }
 export async function verifyLiveShell(site,root,{fetcher=fetch}={}) {
-  const prepared=await verifyShell(root),names=[...SHELL_FILES,'shell-integrity.json','sw.js','OmniCPQ_Browser_Bridge_R6.zip','browser-extension-integrity.json','OMNICPQ_ZACETNI_POZIVI_12_R6.txt'];
+  const prepared=await verifyShell(root),names=[...SHELL_FILES,'shell-integrity.json','sw.js','OmniCPQ_Browser_Bridge_R6.zip','browser-extension-integrity.json','OMNICPQ_ZACETNI_POZIVI_12_R6.txt','AI_za_OmniCPQ_DEMO_v1.zip','demo-extension-integrity.json'];
   const checked=[];
   for(let i=0;i<names.length;i+=4)await Promise.all(names.slice(i,i+4).map(async name=>{
     const expected=hash(await readFile(join(root,name)));

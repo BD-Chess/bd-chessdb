@@ -35,12 +35,14 @@ export async function callOpenAI({ payload, signal, onText, onIdentity, fetcher 
   });
   if (!response.ok) {
     try { response.body?.cancel().catch(() => {}); } catch {}
-    throw error(response.status === 429 ? 'RATE_LIMITED' : 'AI_UNAVAILABLE', response.status === 429 ? 429 : 503);
+    throw error(response.status===429?'RATE_LIMITED':response.status===404?'MODEL_UNAVAILABLE':response.status===400||response.status===422?'MODEL_PROFILE_UNAVAILABLE':'AI_UNAVAILABLE',response.status===429?429:[400,404,422].includes(response.status)?response.status:503);
   }
   let final, observed;
   for await (const event of readSSE(response.body, signal)) {
     if (signal.aborted) throw error('CANCELLED', 499);
     if (event.response?.model) {
+      if(typeof event.response.model!=='string'||!(event.response.model===payload.model||event.response.model.startsWith(payload.model+'-')))throw error('MODEL_IDENTITY_MISMATCH');
+      if(event.response.reasoning?.effort&&event.response.reasoning.effort!==payload.reasoning?.effort)throw error('MODEL_REASONING_MISMATCH');
       observed = { model: event.response.model, reasoning: event.response.reasoning?.effort || 'UNKNOWN', providerRequestId: response.headers.get('x-request-id') || 'UNKNOWN', responseId: event.response.id || 'UNKNOWN' };
       onIdentity(observed);
     }

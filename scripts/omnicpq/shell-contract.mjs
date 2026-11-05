@@ -1,2 +1,3 @@
 export const SHELL_FILES = ['index.html','app.css','app.mjs','core.mjs','version.mjs','lifecycle-validation.mjs','prompts.mjs','starters.mjs','work-modes.mjs','experience.mjs','tour.mjs','presentation.html','presentation.mjs','browser-bridge.mjs','browser-bridge-v2.mjs','auto-connect.mjs','agent-session.mjs','browser-help.html','manifest.webmanifest',
+  'model-profiles.mjs','demo/index.html','demo/app.mjs','demo/style.css','extension-demo/privacy.mjs','demo-help.html',
   'icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png','icons/apple-touch-icon.png','icons/favicon-32.png','icons/original.png'];

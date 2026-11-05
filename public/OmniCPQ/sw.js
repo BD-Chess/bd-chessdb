@@ -1,10 +1,10 @@
 // Only this application's reviewed, hash-verified shell. No API/auth/CPQ interception.
-const RELEASE = '7da14148f75f22ccdcd2';
-const APP_VERSION = '1.8.6-stage-autorun-r12';
+const RELEASE = 'd5c82173fa7278cd566e';
+const APP_VERSION = '1.9.0-demo-profiles-r1';
 const ROOT = new URL('./', self.registration.scope);
 const PREFIX = 'omnicpq-shell:' + ROOT.pathname + ':';
 const CACHE = PREFIX + RELEASE;
-const FILES = ["index.html","app.css","app.mjs","core.mjs","version.mjs","lifecycle-validation.mjs","prompts.mjs","starters.mjs","work-modes.mjs","experience.mjs","tour.mjs","presentation.html","presentation.mjs","browser-bridge.mjs","browser-bridge-v2.mjs","auto-connect.mjs","agent-session.mjs","browser-help.html","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png","icons/favicon-32.png","icons/original.png"];
+const FILES = ["index.html","app.css","app.mjs","core.mjs","version.mjs","lifecycle-validation.mjs","prompts.mjs","starters.mjs","work-modes.mjs","experience.mjs","tour.mjs","presentation.html","presentation.mjs","browser-bridge.mjs","browser-bridge-v2.mjs","auto-connect.mjs","agent-session.mjs","browser-help.html","manifest.webmanifest","model-profiles.mjs","demo/index.html","demo/app.mjs","demo/style.css","extension-demo/privacy.mjs","demo-help.html","icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png","icons/favicon-32.png","icons/original.png"];
 const PATHS = new Map(FILES.map(name => [new URL(name, ROOT).pathname, name]));
 PATHS.set(ROOT.pathname, 'index.html');
 PATHS.set(new URL('browser-help',ROOT).pathname,'browser-help.html');

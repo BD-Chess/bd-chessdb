@@ -1,3 +1,4 @@
+import {MODEL_PROFILES as profiles,DEFAULT_PROFILE,modelProfile} from '../../public/OmniCPQ/model-profiles.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -142,7 +143,7 @@ test('T06 HTTP errors keep mappings and do not await pending cancellation', asyn
   for (const status of [400, 401, 429, 500, 503]) {
     const r = runProvider([], { status, cancel: 'pending' });
     try {
-      await rejectsCode(r.promise, status === 429 ? 'RATE_LIMITED' : 'AI_UNAVAILABLE', status === 429 ? 429 : 503);
+      await rejectsCode(r.promise, status === 429 ? 'RATE_LIMITED' : status === 400 ? 'MODEL_PROFILE_UNAVAILABLE' : 'AI_UNAVAILABLE', status === 429 ? 429 : status === 400 ? 400 : 503);
       assert.equal(r.seen.requests.length, 1);
       assert.equal(r.io.stats.cancel, 1);
     } finally { r.io.close(); }
@@ -288,6 +289,8 @@ const backendImports = [
   "import { callOpenAI } from './lib/omnicpq/provider.mjs';",
   "import { validateBrowser, starterMetadata, allowedStarter } from './lib/omnicpq/browser.mjs';",
   "import {normalizeMode,normalizeWorkspace,CONTEXT_FIELDS} from '../public/OmniCPQ/work-modes.mjs';",
+  "import {MODEL_PROFILES as profiles,DEFAULT_PROFILE,modelProfile} from '../public/OmniCPQ/model-profiles.mjs';",
+  "import {makeDemoHandler} from './lib/omnicpq/demo-assistant.mjs';",
 ];
 function loadBackend(provider) {
   let source = backendSource.replace(/\r\n/g, '\n');
@@ -295,9 +298,9 @@ function loadBackend(provider) {
     assert.equal(source.split(line).length, 2, 'exact backend import boundary');
     source = source.replace(line, '');
   }
-  const initializer = 'export default makeHandler();';
+  const initializer = '\nconst requestGate={seen:new Map(),active:new Set()};';
   assert.equal(source.split(initializer).length, 2);
-  source = source.replace(initializer, '').replaceAll('export function ', 'function ').replaceAll('export const ', 'const ');
+  source = source.split(initializer)[0].replaceAll('export function ', 'function ').replaceAll('export const ', 'const ');
   assert.doesNotMatch(source, /\bimport\s*(?:\(|[{'"*])/);
   const deny = () => { throw new Error('NATIVE_DEFAULT_DEPENDENCY_DENIED'); };
   const deliveryCode = deliveryReleaseSource.replaceAll('export function ', 'function ').replaceAll('export const ', 'const ');
@@ -306,6 +309,7 @@ function loadBackend(provider) {
   vm.runInContext(deliveryCode + '\n;globalThis.makeDeliveryMetadata = makeDeliveryMetadata;', deliveryScope);
   const scope = vm.createContext({
     TextEncoder, TextDecoder, Buffer, Response, URL, ReadableStream, AbortController,
+    profiles, DEFAULT_PROFILE, modelProfile, makeDemoHandler: deny,
     setTimeout, clearTimeout, performance, randomUUID, createHash,
     console: { warn() {} }, error: problem,
     Netlify: { env: { get(name) {
@@ -325,7 +329,10 @@ function loadBackend(provider) {
   return scope.api;
 }
 async function backendCase(events, { abort = false, profile = 'fast' } = {}) {
-  const p = loadProvider(), io = fakeStream(events, { cancel: 'pending' });
+  // Rebind only authenticated model setup to the selected current profile. Event order, text and terminal oracles stay unchanged.
+  const selected=modelProfile(profile);
+  const currentEvents=events.map(e=>e.response?.model==='synthetic-model'?{...e,response:{...e.response,model:selected.model,reasoning:{effort:selected.reasoning}}}:e);
+  const p = loadProvider(), io = fakeStream(currentEvents, { cancel: 'pending' });
   const counters = { fetch: 0, reserve: 0, settle: 0, auth: 0, knowledge: 0, cpq: 0 };
   const seenPayload = [];
   const { makeHandler } = loadBackend(p.callOpenAI);
@@ -376,7 +383,7 @@ test('T19 backend genuine provider completion emits exactly one done without HTT
   assert.equal(counters.fetch, 1); assert.equal(counters.reserve, 1); assert.equal(counters.settle, 1);
   assert.equal(counters.cpq, 0);
   assert.equal(seenPayload[0].model, 'gpt-6-luna');
-  assert.equal(seenPayload[0].reasoning.effort, 'low');
+  assert.equal(seenPayload[0].reasoning.effort, 'medium');
   assert.equal(seenPayload[0].max_output_tokens, 6000);
   assert.equal(seenPayload[0].store, false);
   assert.equal(seenPayload[0].service_tier, 'default');
@@ -386,6 +393,7 @@ test('T20 backend incomplete emits one partial done and keeps careful reasoning 
   const endings = messages.filter(m => ['done', 'error'].includes(m.type));
   assert.equal(endings.length, 1); assert.equal(endings[0].type, 'done'); assert.equal(endings[0].status, 'partial');
   assert.equal(endings[0].incompleteReason, 'max_output_tokens');
+  assert.equal(seenPayload[0].model, 'gpt-6.1-terra');
   assert.equal(seenPayload[0].reasoning.effort, 'high');
   assert.equal(counters.fetch, 1); assert.equal(counters.cpq, 0);
 });

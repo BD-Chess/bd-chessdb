@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
+import {modelChargeCeilings} from '../../../public/OmniCPQ/model-profiles.mjs';
 import { authenticate, passwordMatches, env, accessError } from '../mdlxdcc-guide/access.mjs';
 
 const COOKIE = '__Host-omnicpq-demo';
@@ -77,21 +78,22 @@ export async function createDemo({ rpc = runtime } = {}) {
   return { id, token };
 }
 
-// Prices: official gpt-6-luna page, verified 2026-10-22. Conservative upper
+// Prices: official Luna/Terra pages, checked 2026-11-05. Conservative upper
 // rates include long context, cache writes and the regional premium. Images
 // reserve the entire model context, avoiding any pixel/token approximation.
 export function maximumCharge(payload) {
-  if (payload.model !== 'gpt-6-luna' || payload.service_tier !== 'default' || payload.tools?.length ||
+  const rates=modelChargeCeilings(payload.model);
+  if (payload.service_tier !== 'default' || payload.tools?.length ||
       !Number.isSafeInteger(payload.max_output_tokens) || payload.max_output_tokens < 1 || payload.max_output_tokens > 6000) throw accessError('UNPRICED_MODEL');
   const hasImage = payload.input?.some(m => Array.isArray(m.content) && m.content.some(c => c.type === 'input_image'));
   const input = hasImage ? 1_050_000 : Math.min(1_050_000, Buffer.byteLength(JSON.stringify(payload), 'utf8') + 8192);
-  return input * 275 + payload.max_output_tokens * 825;
+  return input * rates.input + payload.max_output_tokens * rates.output;
 }
 export function demoBudget(actor, provider, model, { rpc = runtime, requestId = randomUUID() } = {}) {
   return {
     async reserve(payload) {
       if (actor.role === 'owner') return null;
-      if (actor.role !== 'demo' || provider !== 'gpt' || model !== 'gpt-6-luna') throw accessError('AUTH_REQUIRED', 401);
+      if (actor.role !== 'demo' || provider !== 'gpt' || !['gpt-6-luna','gpt-6.1-terra'].includes(model)) throw accessError('AUTH_REQUIRED', 401);
       const held = { id: randomUUID(), amount: maximumCharge(payload) };
       await rpc('reserve', { id: held.id, demo_id: actor.id, request_id: requestId, ip_hash: actor.ipHash, amount: held.amount });
       return held;
@@ -99,7 +101,8 @@ export function demoBudget(actor, provider, model, { rpc = runtime, requestId = 
     async settle(held, usage, rejected = false) {
       if (!held) return null;
       const known = usage && Number.isSafeInteger(usage.input_tokens) && Number.isSafeInteger(usage.output_tokens) && usage.input_tokens >= 0 && usage.output_tokens >= 0;
-      const amount = rejected ? 0 : known ? usage.input_tokens * 275 + usage.output_tokens * 825 : held.amount;
+      const rates=modelChargeCeilings(model);
+      const amount = rejected ? 0 : known ? usage.input_tokens * rates.input + usage.output_tokens * rates.output : held.amount;
       return rpc('settle', { id: held.id, demo_id: actor.id, amount, unknown: !known && !rejected });
     },
   };

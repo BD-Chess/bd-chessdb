@@ -63,7 +63,7 @@ const STORAGE = 'omnicpq:workspace:v1', PREFS = 'omnicpq:preferences:v1';
 let browserBridge = createBrowserBridge();
 const navigationProposal=(text,observation)=>observation?.schema==='omnicpq.gui.observation.v2'?guiProposal(text,observation):legacyProposal(text,observation);
 const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready: false, ownerVerified: false, snapshot: null,
-  capture: null, frozen: null, profile: 'fast', promptId: null, persist: false, localSaveFailed: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
+  capture: null, frozen: null, profile: 'careful', promptId: null, persist: false, localSaveFailed: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
   browserConnected: false, browserObservation: null, browserStop: false, browserPaused: false, guiCheckpoint: null, agentRun:null, pendingDraft: null, release: null,
   comparisonPartner: 'copilot', partnerInputs: {}, browserIncludeChoice: null, browserAutoChoice: null, browserPreviewChoice: false };
 let installEvent, registration, accessEpoch = 0, experience, browserConnectionEpoch=0, browserPairToken=null, browserChoiceEpoch=0;
@@ -145,7 +145,7 @@ const problems = {
   DEMO_IP_CHANGED: 'Demo je vezan na IP ob prvi aktivaciji. Za drugo omrežje potrebuješ novo povabilo.', DEMO_EXPIRED: 'Veljavnost demo dostopa je potekla.', DEMO_REVOKED: 'Demo dostop je preklican.', DEMO_LIMIT: 'Dosežena je meja demo porabe; novega API klica ne izvedemo.',
   AUTH_REQUIRED: 'Prijavi se z obstoječim računom lastnika v nastavitvah.', OWNER_REQUIRED: 'Ta prijava nima dostopa do internega znanja OmniCPQ.',
   KNOWLEDGE_UNAVAILABLE: 'Zasebni vir znanja še ni dosegljiv na tem strežniku.', KNOWLEDGE_INTEGRITY: 'Osnovno znanje se ne ujema s preverjenim jedrom; zahteva je ustavljena.',
-  AI_UNAVAILABLE: 'AI na tem strežniku še ni omogočen ali trenutno ni dosegljiv.', MODEL_NOT_ALLOWED: 'Strežniški profil modela ni na dovoljenem seznamu.',
+  AI_UNAVAILABLE: 'AI na tem strežniku še ni omogočen ali trenutno ni dosegljiv.', MODEL_UNAVAILABLE:'Izbrani model ni na voljo. Drug model ni bil uporabljen.', MODEL_PROFILE_UNAVAILABLE:'Izbrani model ali njegova zahtevnost ni podprta za ta račun. Drug model ni bil uporabljen.', MODEL_IDENTITY_MISMATCH:'Vrnjeni model se ne ujema z izbranim profilom. Zahteva je ustavljena.', MODEL_REASONING_MISMATCH:'Vrnjena zahtevnost se ne ujema z izbranim profilom. Zahteva je ustavljena.', MODEL_NOT_ALLOWED: 'Strežniški profil modela ni na dovoljenem seznamu.',
   RATE_LIMITED: 'Dosežena je omejitev zahtev. Poskusi pozneje; ponovne zahteve ne pošljemo samodejno.', MONTHLY_LIMIT: 'Dosežena je omejitev porabe.',
   DUPLICATE_REQUEST: 'Ta zahteva je bila že sprejeta. Ne ponavljaj je brez preverjanja izida.', REQUEST_IN_PROGRESS: 'Prejšnja zahteva še poteka.',
   TIMEOUT: 'Čas za odgovor je potekel. Prejeti del je ohranjen; novega klica nismo sprožili.', CANCELLED: 'Odgovor je ustavljen.',
@@ -1367,7 +1367,7 @@ try {
   state.browserPreviewChoice=!!$('browser-preview-auto')&&(typeof prefs.browserPreview==='boolean'?prefs.browserPreview:true);
   if($('browser-preview-auto'))$('browser-preview-auto').checked=state.browserPreviewChoice;
   $('theme').value = prefs.theme === 'light' ? 'light' : 'dark'; document.documentElement.dataset.theme = $('theme').value;
-  state.profile = prefs.profile === 'careful' ? 'careful' : 'fast'; $('profile').value = state.profile;
+  state.profile = prefs.profile === 'fast' ? 'fast' : 'careful'; $('profile').value = state.profile;
   state.persist = prefs.persist === true; $('persist').checked = state.persist;
   if (state.persist) {
     const data = JSON.parse(localStorage.getItem(STORAGE) || 'null');
