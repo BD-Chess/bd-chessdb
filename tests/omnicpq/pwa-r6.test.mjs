@@ -41,3 +41,13 @@ test('live byte verification includes HTML, worker, manifest and downloads; a pr
   altered='index.html';await assert.rejects(verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher}),/live shell differs.*index.html/);
   for(const name of ['AI_za_OmniCPQ_DEMO_v1.zip','demo-extension-integrity.json']){altered=name;await assert.rejects(verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher}),e=>e.message.includes('live shell differs')&&e.message.endsWith(name));}
 });
+
+test('new help links already use final canonical URLs and need no provider HTML rewrite',async()=>{
+  for(const name of ['index.html','demo/index.html','demo-help.html']){
+    const html=await readFile('public/OmniCPQ/'+name,'utf8');
+    const links=[...html.matchAll(/<a\b[^>]*href=["']([^"']+)["']/g)].map(m=>m[1]);
+    assert(links.length>0);
+    assert.equal(links.filter(href=>/\.html$/.test(new URL(href,'https://www.mdlxdcc.org/omnicpq/').pathname)).length,0,name+' must not need Netlify pretty-URL rewriting');
+  }
+  for(const name of ['index.html','demo/index.html'])assert.match(await readFile('public/OmniCPQ/'+name,'utf8'),/href="\/omnicpq\/demo-help"/);
+});
