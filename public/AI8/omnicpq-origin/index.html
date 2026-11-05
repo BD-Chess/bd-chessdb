@@ -4,12 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0b1521">
-  <meta name="description" content="Od prvih pogovorov v Copilotu do znanja, dveh AI pomočnikov in ekipe, ki ju preizkuša: zgodba nastanka AI pomočnika za OmniCPQ.">
+  <meta name="description" content="Kako nastaja AI pomočnik za OmniCPQ: trije lokalni Python koraki, preverljivo znanje iz Jire, zaščiteni demo Bridge in načrt AI učenja.">
   <title>Origin story · Kako nastaja AI pomočnik za OmniCPQ</title>
   <style>
     :root{color-scheme:dark;--bg:#0b1521;--panel:#112332;--soft:#152b3a;--line:#2b4855;--ink:#edf7f4;--muted:#b3c8c6;--teal:#79e0c6;--gold:#f2cc81;--max:1120px}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 85% 0%,#174139 0,transparent 38%),var(--bg);color:var(--ink);font:16px/1.75 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--teal);text-underline-offset:4px}a:hover{color:#fff}a:focus-visible{outline:3px solid var(--gold);outline-offset:4px}h1,h2,h3,p,figure{margin-top:0}h1,h2,h3{line-height:1.14;letter-spacing:-.035em}h1{font-size:clamp(3rem,7.5vw,6.9rem);font-weight:700;max-width:940px;margin-bottom:25px}h2{font-size:clamp(2rem,4vw,3.25rem);margin-bottom:20px}h3{font-size:1.2rem;letter-spacing:-.015em;margin-bottom:10px}p{margin-bottom:1em}.wrap{width:min(var(--max),calc(100% - 48px));margin:auto}.top{border-bottom:1px solid var(--line);padding:20px 0}.top .wrap{display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}.mark{font-size:.8rem;text-transform:uppercase;letter-spacing:.16em;font-weight:750;text-decoration:none}.top a:not(.mark){font-size:.88rem;color:var(--muted)}.hero{padding:100px 0 76px}.eyebrow{display:block;color:var(--teal);font-weight:750;letter-spacing:.18em;text-transform:uppercase;font-size:.73rem;margin-bottom:22px}.hero h1 em{font-style:normal;color:var(--teal)}.lead{font-size:clamp(1.1rem,2.2vw,1.45rem);max-width:780px;color:#d2e6df;line-height:1.6}.byline{font-size:.88rem;color:var(--muted);margin-top:28px}.jump{display:flex;gap:9px;flex-wrap:wrap;margin-top:36px}.jump a{border:1px solid var(--line);border-radius:999px;padding:7px 14px;text-decoration:none;color:var(--ink);font-size:.82rem}.jump a:hover{border-color:var(--teal)}main section{padding:76px 0;border-top:1px solid var(--line)}.intro{max-width:780px;font-size:1.08rem;color:#d0e0dd}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{padding:25px;background:linear-gradient(150deg,#15303a,#112332);border:1px solid var(--line);border-radius:16px}.card p:last-child{margin-bottom:0}.card .num{font-size:.74rem;letter-spacing:.14em;font-weight:750;color:var(--teal);text-transform:uppercase;margin-bottom:16px}.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}.level{position:relative;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:22px 18px 20px;min-height:226px}.level:after{content:'→';position:absolute;right:-14px;top:45%;z-index:1;color:var(--teal);background:var(--bg);font-size:21px;line-height:1}.level:last-child:after{display:none}.level b{display:block;color:var(--teal);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px}.level p{font-size:.92rem;color:var(--muted);line-height:1.6}.level.planned{border-color:#7a643d;background:#2a281d}.level.planned b{color:var(--gold)}.caption{color:var(--muted);font-size:.85rem;margin:14px 0 0}.steps{counter-reset:story;display:grid;gap:0;max-width:920px}.step{counter-increment:story;display:grid;grid-template-columns:65px 1fr;gap:20px;padding:27px 0;border-top:1px solid var(--line)}.step::before{content:counter(story,decimal-leading-zero);color:var(--teal);font-size:.85rem;font-weight:800;letter-spacing:.12em}.step p{color:#c5d7d3}.step p:last-child{margin-bottom:0}.flow{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:27px 0}.flow span{padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-size:.88rem;font-weight:650}.flow i{font-style:normal;color:var(--teal)}.quote{border-left:3px solid var(--teal);padding:7px 0 7px 22px;max-width:830px;font-size:clamp(1.18rem,2vw,1.45rem);color:#d9f4e9}.callout{padding:23px;border-left:3px solid var(--gold);background:#28291f;color:#eddfc0;border-radius:0 12px 12px 0}.pills{display:flex;flex-wrap:wrap;gap:8px}.pill{border:1px solid #36545d;border-radius:999px;padding:6px 12px;font-size:.82rem;color:#d6e8e2}.footer{border-top:1px solid var(--line);padding:32px 0 50px;color:var(--muted);font-size:.9rem}.footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}@media(max-width:760px){.wrap{width:min(100% - 32px,var(--max))}.hero{padding:70px 0 54px}main section{padding:56px 0}.levels{grid-template-columns:1fr 1fr}.level:after{display:none}.grid{grid-template-columns:1fr}.level{min-height:0}.step{grid-template-columns:42px 1fr;gap:12px}}@media(max-width:410px){.levels{grid-template-columns:1fr}.top .wrap{gap:6px}.flow i{display:none}}
     .whole-figure{margin:32px 0 0}.schema-scroll{overflow-x:auto;border-radius:22px;overscroll-behavior-x:contain}.schema-scroll:focus-visible{outline:3px solid var(--gold);outline-offset:4px}.whole-schema{display:block;width:100%;min-width:880px;height:auto;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.sc-box{fill:#142b38;stroke:#395764;stroke-width:1.3}.sc-focus{fill:#15363a;stroke:#5dbba8}.sc-line{fill:none;stroke:#79e0c6;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.sc-title{font-size:17px;font-weight:700;fill:#eef8f4}.sc-sub{font-size:14px;fill:#bbd0cb}.sc-label{font-size:12px;font-weight:800;letter-spacing:1.5px;fill:#79e0c6}.sc-highlight{font-size:18px;font-weight:750;fill:#79e0c6}.sc-plan{font-size:12px;font-weight:800;letter-spacing:1.5px;fill:#f2cc81}
+
+    .status-row{display:flex;flex-wrap:wrap;gap:8px;margin:25px 0 10px}.status-chip{display:inline-block;border:1px solid #41645e;border-radius:999px;padding:6px 12px;font-size:.8rem;color:#d3e9e2;background:#13302e}.status-chip.plan{border-color:#806b42;background:#302a1c;color:#f2d79e}.status-chip.pause{border-color:#53626e;background:#1a2834;color:#d4dfe7}.archive-link{font-size:.85rem;color:var(--muted)}
+    .pipeline{list-style:none;margin:28px 0 12px;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:22px}.pipeline.five{grid-template-columns:repeat(5,minmax(0,1fr))}.pipeline li{position:relative;border:1px solid #3a5a67;border-radius:14px;background:#132b39;padding:20px 15px;min-height:205px}.pipeline li:after{content:'→';position:absolute;right:-20px;top:43%;color:var(--teal);font-size:24px;line-height:1}.pipeline li:last-child:after{display:none}.pipeline .local{background:#15332f;border-color:#477364}.pipeline .model{background:#302a1c;border-color:#7f6a42}.pipeline b{display:block;font-size:.73rem;letter-spacing:.1em;color:var(--teal);margin-bottom:13px}.pipeline .model b{color:var(--gold)}.pipeline h3{font-size:1.04rem;line-height:1.25;letter-spacing:-.015em}.pipeline p{font-size:.87rem;line-height:1.6;color:#c2d7d1;margin:0}.pipeline-label{font-size:.86rem;color:var(--muted);margin:10px 0 26px}
+    .code-name{display:block;font: .79rem/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:#a2ead7;overflow-wrap:anywhere;margin-bottom:14px}.triple{grid-template-columns:repeat(3,minmax(0,1fr))}.case-detail{margin:18px 0 0;padding-top:16px;border-top:1px solid var(--line)}.case-detail dt{font-size:.76rem;font-weight:750;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-top:13px}.case-detail dd{margin:4px 0 0;font-size:.94rem;color:#d1dfdc}.case-detail .unknown{color:var(--muted)}.decision{display:inline-block;font-size:.75rem;font-weight:750;border:1px solid #3d6d5e;border-radius:7px;padding:3px 9px;color:#9ee7cd;margin-bottom:12px}.decision.hold{border-color:#7e6a42;color:#f0d49c}
+    .scope-list{padding-left:22px;color:#c6d9d3}.scope-list li{margin:8px 0}.evidence-note{font-size:.9rem;color:var(--muted);max-width:900px}.version-date{font-size:.79rem;color:var(--muted)}.pill.planned{color:var(--gold);border-color:#806b42;background:#302a1c}
+    @media(max-width:1100px)and(min-width:761px){.pipeline{grid-template-columns:repeat(3,minmax(0,1fr))}.pipeline:not(.five) li:nth-child(3):after{display:none}.pipeline.five{grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}.pipeline.five li{padding:16px 11px}.triple{grid-template-columns:1fr 1fr}}
+    @media(max-width:760px){.pipeline,.pipeline.five{grid-template-columns:1fr;gap:23px}.pipeline li{min-height:0;padding:19px 21px}.pipeline li:after{content:'↓';right:26px;top:auto;bottom:-23px}.pipeline h3{font-size:1.1rem;margin-bottom:7px}.pipeline p{font-size:.94rem}.pipeline b{margin-bottom:7px}.triple{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
   </style>
 </head>
 <body>
@@ -19,74 +27,35 @@
       <span class="eyebrow">Origin story · človek × umetna inteligenca</span>
       <h1>Kako nastaja <em>AI pomočnik</em> za OmniCPQ</h1>
       <p class="lead">Začelo se je z vprašanjem, kako prodajalcem olajšati delo v kompleksnem sistemu. Iz pogovora je zrasel pomočnik. Okoli pomočnika pa še ekipa AI sej, ki ga gradi in preizkuša.</p>
-      <p class="byline">Zamisel in avtor projekta: <strong>Bojan Dobrečevič</strong> · zgodba projekta v nastajanju</p>
-      <nav class="jump" aria-label="Na tej strani"><a href="#shema">Shema celote</a><a href="#nivoji">Štirje nivoji</a><a href="#zgodba">Kako se je začelo</a><a href="#znanje">Od gradiva do znanja</a><a href="#preizkusanje">AI testira AI</a><a href="#naprej">Kaj je naslednje</a></nav>
+      <p class="byline">Zamisel in avtor projekta: <strong>Bojan Dobrečevič</strong> · posodobljeno <time datetime="2026-11-05">5. novembra 2026</time></p><div class="status-row" aria-label="Stanje razvoja"><span class="status-chip">Zaščiteni demo · omejeno branje in navigacija</span><span class="status-chip plan">AI učenje · načrtovano</span><span class="status-chip pause">Masovna vsebinska analiza · na premoru</span></div><p class="archive-link"><a href="./index2.html">Prejšnja različica te zgodbe</a></p>
+      <nav class="jump" aria-label="Na tej strani"><a href="#shema">Potek priprave</a><a href="#znanje">Trije Python koraki</a><a href="#primeri">Praktična korist</a><a href="#bridge">Zaščiteni demo</a><a href="#ai-ucenje">AI učenje</a><a href="#razlicice">Različice</a><a href="#zgodba">Začetek zgodbe</a></nav>
     </div>
 
     <section id="shema"><div class="wrap">
-      <span class="eyebrow">Celotna zgodba na enem mestu</span>
-      <h2>Od ideje do ekipe, ki gradi in preizkuša</h2>
-      <p class="intro">Različni viri se skozi pripravo spremenijo v znanje. Iz tega nastaneta dve obliki pomočnika, nato pa se sklene razvojna zanka: preizkus, ugotovitev, popravek in ponovni preizkus.</p>
-      <figure class="whole-figure" aria-describedby="whole-caption">
-        <div class="schema-scroll" tabindex="0" aria-label="Shemo je mogoče vodoravno premikati">
-          <svg class="whole-schema" viewBox="0 0 1120 805" role="img" aria-labelledby="whole-title whole-desc" xmlns="http://www.w3.org/2000/svg">
-            <title id="whole-title">Shema nastajanja AI pomočnika za OmniCPQ</title>
-            <desc id="whole-desc">Bojan določa potrebo, cilje in usmeritve. Navodila OmniCPQ, gradiva B2B, PLM in PIM ter vsebine Jire in Confluence se zajamejo, anonimizirajo, izberejo in pregledajo. Nastane znanje SKILL za Copilot agenta in samostojni spletni GPT demonstrator z Bridgeom do OmniCPQ STAGE. AI tester postavlja naloge in opazuje, ugotovitve zapiše na Drive, builder pripravi popravke in sledi ponovni preizkus. Četrti nivo, ki bi podpiral neprekinjeno delo ekipe, je načrtovan.</desc>
-            <defs><marker id="whole-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#79e0c6"/></marker></defs>
-            <rect x="2" y="2" width="1116" height="801" rx="22" fill="#0d1c28" stroke="#31505a"/>
-            <rect x="254" y="23" width="612" height="70" rx="14" fill="#18383c" stroke="#5dbba8"/>
-            <text x="560" y="52" text-anchor="middle" class="sc-title">BOJAN · ČLOVEK VODI PROJEKT</text>
-            <text x="560" y="75" text-anchor="middle" class="sc-sub">Potreba, cilji, usmeritve in odločitve</text>
-            <path class="sc-line" d="M560 93 V126" marker-end="url(#whole-arrow)"/>
-
-            <text x="32" y="151" class="sc-label">01 · VIRI</text><text x="410" y="151" class="sc-label">02 · PRIPRAVA ZNANJA</text><text x="780" y="151" class="sc-label">03 · DVE OBLIKI POMOČNIKA</text>
-            <rect class="sc-box" x="30" y="166" width="310" height="66" rx="12"/>
-            <text x="49" y="192" class="sc-title">OmniCPQ navodila</text><text x="49" y="215" class="sc-sub">Confluence → MHTML → PDF s kazalom</text>
-            <rect class="sc-box" x="30" y="246" width="310" height="66" rx="12"/>
-            <text x="49" y="272" class="sc-title">B2B · PLM · PIM</text><text x="49" y="295" class="sc-sub">Opisi storitev in priročniki</text>
-            <rect class="sc-box" x="30" y="326" width="310" height="66" rx="12"/>
-            <text x="49" y="352" class="sc-title">Jira in Confluence</text><text x="49" y="375" class="sc-sub">Zajem gradiva: HTML → JSON</text>
-
-            <rect class="sc-box sc-focus" x="410" y="181" width="305" height="190" rx="14"/>
-            <text x="432" y="211" class="sc-title">Zajem, anonimizacija in izbor</text>
-            <text x="432" y="237" class="sc-sub">Urejanje, združevanje in pregled</text>
-            <path d="M431 254 H694" stroke="#3a6168"/>
-            <text x="432" y="280" class="sc-sub">Osnutek → kandidat → vključitev</text>
-            <text x="432" y="311" class="sc-highlight">SKILL · paket znanja</text>
-            <text x="432" y="340" class="sc-sub">Več različic in razvojnih vej</text>
-            <path class="sc-line" d="M340 199 H374 V225 H410" marker-end="url(#whole-arrow)"/>
-            <path class="sc-line" d="M340 279 H410" marker-end="url(#whole-arrow)"/>
-            <path class="sc-line" d="M340 359 H374 V327 H410" marker-end="url(#whole-arrow)"/>
-
-            <rect class="sc-box" x="780" y="166" width="308" height="76" rx="12"/>
-            <text x="799" y="194" class="sc-title">Copilot agent</text><text x="799" y="219" class="sc-sub">Za prodajo in podporno službo</text>
-            <rect class="sc-box" x="780" y="269" width="308" height="76" rx="12"/>
-            <text x="799" y="297" class="sc-title">Samostojni GPT pomočnik</text><text x="799" y="322" class="sc-sub">Spletni demonstrator + Bridge</text>
-            <rect class="sc-box" x="780" y="374" width="308" height="66" rx="12"/>
-            <text x="799" y="401" class="sc-title">OmniCPQ · STAGE</text><text x="799" y="424" class="sc-sub">Opazovanje in dejanja v brskalniku</text>
-            <path class="sc-line" d="M715 275 H744 V204 H780" marker-end="url(#whole-arrow)"/>
-            <path class="sc-line" d="M744 275 V307 H780" marker-end="url(#whole-arrow)"/>
-            <path class="sc-line" d="M934 345 V374" marker-start="url(#whole-arrow)" marker-end="url(#whole-arrow)"/>
-
-            <path class="sc-line" d="M934 440 V465 H142 V512" marker-end="url(#whole-arrow)"/>
-            <text x="32" y="496" class="sc-label">RAZVOJNA ZANKA · AI KOT TESTER</text>
-            <rect class="sc-box" x="30" y="516" width="225" height="86" rx="12"/>
-            <text x="48" y="545" class="sc-title">AI tester</text><text x="48" y="569" class="sc-sub">Vprašanja, vnosi in kliki</text><text x="48" y="589" class="sc-sub">Opazovanje obnašanja</text>
-            <rect class="sc-box" x="305" y="516" width="225" height="86" rx="12"/>
-            <text x="323" y="545" class="sc-title">Ugotovitve</text><text x="323" y="569" class="sc-sub">Poročilo in predaja</text><text x="323" y="589" class="sc-sub">Drive</text>
-            <rect class="sc-box" x="580" y="516" width="225" height="86" rx="12"/>
-            <text x="598" y="545" class="sc-title">Builder in arhitekt</text><text x="598" y="569" class="sc-sub">Razume težavo in</text><text x="598" y="589" class="sc-sub">pripravi popravek</text>
-            <rect class="sc-box" x="855" y="516" width="233" height="86" rx="12"/>
-            <text x="873" y="545" class="sc-title">Ponovni preizkus</text><text x="873" y="569" class="sc-sub">Preverjanje dejanskega</text><text x="873" y="589" class="sc-sub">učinka v CPQ</text>
-            <path class="sc-line" d="M255 559 H305" marker-end="url(#whole-arrow)"/><path class="sc-line" d="M530 559 H580" marker-end="url(#whole-arrow)"/><path class="sc-line" d="M805 559 H855" marker-end="url(#whole-arrow)"/>
-            <path class="sc-line" d="M972 602 V632 H142 V602" marker-end="url(#whole-arrow)"/>
-            <rect x="30" y="670" width="1058" height="100" rx="14" fill="#28291f" stroke="#ae8f58" stroke-dasharray="7 5"/>
-            <text x="50" y="700" class="sc-plan">04 · NASLEDNJI NIVO · NAČRT</text>
-            <text x="50" y="727" class="sc-title">Podpora delu ekipe: opazovanje → dovoljeni koraki → preverjanje → nadaljevanje</text>
-            <text x="50" y="751" class="sc-sub">Bolj zanesljiva povezava in manj prekinitev; zasnova še ni potrjena kot delujoča celota.</text>
-          </svg>
-        </div>
-        <figcaption id="whole-caption" class="caption">Shema povezuje že opravljene korake in načrtovani četrti nivo. Na ožjem zaslonu jo lahko premakneš levo ali desno.</figcaption>
+      <span class="eyebrow">Dva ločena podatkovna toka</span>
+      <h2>Od vira do preverljivega znanja</h2>
+      <p class="intro">Pri pripravi znanja imajo Python programi in jezikovni model različne naloge. Lokalna priprava omogoči pregled, vsebinska presoja pa mora povedati, kaj zapis prispeva pomočniku in na katerem dokazu temelji.</p>
+      <figure aria-labelledby="knowledge-flow-caption">
+        <ol class="pipeline" aria-label="Priprava znanja od leve proti desni">
+          <li><b>VHOD</b><h3>Jira in Confluence</h3><p>Vsebina, polja in razpoložljivi komentarji.</p></li>
+          <li class="local"><b>PYTHON 1 · LOKALNO</b><h3>Zajem</h3><p>REST API in shranjevanje strukturiranih lokalnih JSON izvozov.</p></li>
+          <li class="local"><b>PYTHON 2 · LOKALNO</b><h3>Anonimizacija</h3><p>Obdelava po pravilih ter prikrivanje prepoznanih osebnih in identifikacijskih podatkov.</p></li>
+          <li class="local"><b>PYTHON 3 · LOKALNO</b><h3>Ovrednotenje in izbor</h3><p>Kategorije, relevantnost in vrstni red nadaljnjega pregleda.</p></li>
+          <li class="model"><b>LLM · DOVOLJENI KONTEKST</b><h3>Vsebinska presoja</h3><p>Pomen, uporabnost, nasprotja in predlog z navedbo vira.</p></li>
+          <li><b>IZHOD</b><h3>Kandidat za znanje</h3><p>Pregled pred vključitvijo v skill ali HTML pomočnika.</p></li>
+        </ol>
+        <figcaption class="pipeline-label" id="knowledge-flow-caption">Prvi trije obdelovalni koraki se izvajajo lokalno. Model prejme samo posebej dovoljeno, pregledano vsebino. Pripravljen kandidat še ni vključeno ali potrjeno poslovno pravilo.</figcaption>
+      </figure>
+      <h3>Ločeni tok zaščitene uporabe v CPQ</h3>
+      <figure aria-labelledby="demo-flow-caption">
+        <ol class="pipeline five" aria-label="Zaščiteni demonstracijski tok">
+          <li><b>VHOD</b><h3>OmniCPQ STAGE</h3><p>Izbrani zaslon in dovoljeno opravilo.</p></li>
+          <li class="local"><b>LOKALNA ZAŠČITA</b><h3>AI za OmniCPQ</h3><p>Demo Bridge prikrije in minimizira sprotni kontekst.</p></li>
+          <li><b>PRENOS</b><h3>Dovoljeni kontekst</h3><p>Zaprt nabor podatkov. Cene in prosto besedilo so izključeni.</p></li>
+          <li class="model"><b>POMOČNIK</b><h3>Odgovor in predlog</h3><p>Branje in omejena navigacija. Vgrajeno AI učenje je načrtovano.</p></li>
+          <li><b>IZHOD</b><h3>Pregled uporabnika</h3><p>Navigacija s potrditvijo, brez poslovnih vnosov ali ustvarjanja VM.</p></li>
+        </ol>
+        <figcaption class="pipeline-label" id="demo-flow-caption">Pythonov anonimizacijski korak pripravlja gradivo za znanje. Demo Bridge omejuje kontekst sprotne uporabe. Gre za dve ločeni zaščitni plasti.</figcaption>
       </figure>
     </div></section>
 
@@ -96,7 +65,7 @@
       <figure aria-labelledby="levels-caption"><div class="levels">
         <article class="level"><b>01 · Orodje</b><h3>OmniCPQ</h3><p>Prodajalci v poslovnem sistemu pripravljajo ponudbe in konfigurirajo storitve.</p></article>
         <article class="level"><b>02 · Pomočnik</b><h3>AI ob uporabniku</h3><p>Razlaga, usmerja in pomaga pri delu. Copilot je pot za poslovne uporabnike; samostojni GPT agent je zasebna demonstracija.</p></article>
-        <article class="level"><b>03 · Ekipa</b><h3>AI gradi in testira AI</h3><p>Seja testerja nastopa kot uporabnik, builder prejme ugotovitve, izdela popravke in jih vrne v preverjanje.</p></article>
+        <article class="level"><b>03 · Ekipa</b><h3>AI gradi in testira AI</h3><p>Razvojni preizkusi ustvarjajo ugotovitve za popravke in ponovni pregled. Vgrajeni tester v načinu AI učenje je naslednja razvojna faza.</p></article>
         <article class="level planned"><b>04 · Načrt</b><h3>Podpora ekipi</h3><p>Zanesljivejša povezava in izvršilci za dovoljene ponavljajoče se korake, da lahko delo teče z manj prekinitvami.</p></article>
       </div><figcaption class="caption" id="levels-caption">Od prodajnega sistema do ekipe okoli pomočnika. Četrti nivo je razvojna zamisel, ne že potrjena samodejna rešitev.</figcaption></figure>
     </div></section>
@@ -108,43 +77,71 @@
         <article class="step"><div><h3>Copilot in prva zasnova</h3><p>V eni pogovorni seji je z GPT-jem snoval znanje in navodila, v drugem oknu pa gradil Copilot agenta. Nastajali so paket znanja v obliki SKILL ZIP, dokumenti in začetne kartice pozivov. Ko je gradiva postajalo več, je za njegovo obdelavo uporabil tudi ChatGPT Work z zahtevnejšim razmišljanjem.</p></div></article>
         <article class="step"><div><h3>Uporabniška navodila dobijo novo obliko</h3><p>Confluence priročnik je bil razpršen čez veliko strani. S pomočjo Copilota sta nastali dve skripti Python: prva je strani zajela v lokalne datoteke MHTML, druga jih je združila v urejen PDF z aktivnim kazalom. PDF je postal gradivo za analizo znanja in priloga pomočniku.</p></div></article>
         <article class="step"><div><h3>Širša slika storitev in sistemov</h3><p>Dodani so bili dokumenti z opisi B2B storitev in uporabniška navodila za produktni katalog PLM ter spletni PIM. Smisel ni bil le poznati gumbov v CPQ, temveč razumeti povezavo med storitvijo, produktnim modelom in uporabnikovim delom.</p></div></article>
-        <article class="step"><div><h3>Od posameznih dokumentov do velike zbirke</h3><p>Nastale so dodatne skripte za zajem strani in zapisov iz Jire in Confluence v JSON, za pripravo anonimiziranih kopij ter za vrednotenje, združevanje in izbor gradiva. Obseg je bil velik: približno 20.000 zapisov Jire in več tisoč strani Confluence. Obdelava poteka postopno; sama priprava gradiva še ne pomeni, da je vsa vsebina pregledana ali potrjena.</p></div></article>
+        <article class="step"><div><h3>Od posameznih dokumentov do velike zbirke</h3><p>Nastale so dodatne skripte za zajem strani in zapisov iz Jire in Confluence v JSON, za pripravo anonimiziranih kopij ter za vrednotenje, združevanje in izbor gradiva. Obseg je bil velik: približno 20.000 zapisov Jire in več tisoč strani Confluence. Masovna vsebinska analiza je trenutno na premoru. Obseg zbranega gradiva ni število vsebinsko pregledanih ali v pomočnika že vključenih zapisov.</p></div></article>
         <article class="step"><div><h3>Znanje se razvija skozi različice</h3><p>SKILL ni bil izdelan v enem poskusu. V enem ohranjenem arhivu družine znanja za Suvereni oblak je 15 različnih številčnih oznak od v1 do v17, z vmesnimi vrzelmi. Skupaj je tam 18 paketov ZIP, ker imajo nekatere različice tudi svoje veje. To so oznake paketov znanja, ne število produkcijskih izdaj celotnega agenta.</p></div></article>
       </div>
     </div></section>
 
     <section id="znanje"><div class="wrap">
-      <span class="eyebrow">Postopek dela</span><h2>Od gradiva do uporabnega znanja</h2>
-      <p class="intro">Velik jezikovni model potrebuje dober kontekst. Zato so zbiranje, čiščenje, izbor, preverjanje in pakiranje znanja samostojni deli dela – ne zgolj en velik poziv.</p>
-      <div class="flow" aria-label="Potek: viri, zajem, anonimizacija, izbor, pregledan osnutek, kandidat za vključitev, vključeno znanje"><span>Viri in navodila</span><i>→</i><span>Zajem</span><i>→</i><span>Anonimizacija</span><i>→</i><span>Izbor in združevanje</span><i>→</i><span>Pregledan osnutek</span><i>→</i><span>Kandidat za vključitev</span><i>→</i><span>Vključeno znanje</span></div>
-      <p class="muted">Vsak prehod zahteva svoj pregled. Pripravljena datoteka ali uspešen lokalni preizkus še ne pomenita, da je njena vsebina potrjeno aktualno poslovno pravilo ali da jo pomočnik že uporablja.</p>
-      <div class="grid"><article class="card"><div class="num">Izhod 01</div><h3>Copilot agent</h3><p>Za prodajnike in podporno službo je predviden pomočnik v okolju Copilot. Paket SKILL, dokumenti in kartice pozivov sestavljajo osnovo za delo s poznavanjem storitev in procesov.</p></article><article class="card"><div class="num">Izhod 02</div><h3>Samostojni GPT pomočnik</h3><p>Ločena spletna različica je zasebna demonstracija zmožnosti velikih jezikovnih modelov. Ponuja več načinov dela in v testnem okolju tudi preizkuša dejansko upravljanje CPQ.</p></article></div>
-      <p class="caption">Javna predstavitev opisuje metodo in razvoj; interna gradiva, dostopi in podatki testnih naročil niso del te strani.</p>
+      <span class="eyebrow">Lokalna priprava in vsebinska presoja</span><h2>Kaj opravijo trije Python programi</h2>
+      <div class="grid triple">
+        <article class="card"><div class="num">Python 1 · zajem</div><h3>Strukturirano lokalno gradivo</h3><code class="code-name">PP_B2B_zbiralnik.py</code><p>Pridobi razpoložljivo vsebino Jira in Confluence prek REST API ter jo shrani v JSON. Obseg določata dostop in vsebina, ki jo API vrne. Binarne priloge niso samodejno besedilno obdelane.</p></article>
+        <article class="card"><div class="num">Python 2 · anonimizacija</div><h3>Obdelava občutljivih vzorcev</h3><code class="code-name">PP_B2B_anonimizacija.py</code><p>Lokalne kopije obdeluje po nastavljenih pravilih. Prepoznane identitete in druge podprte vzorce prikrije ali nadomesti; dosledne oznake ohranijo povezljivost. Preostali poslovni pomen zahteva ločeno presojo.</p></article>
+        <article class="card"><div class="num">Python 3 · priprava</div><h3>Relevantnost in prioriteta</h3><code class="code-name">PP_B2B_priprava.py</code><p>S pravili in ključnimi besedami razvrsti gradivo po temah in prioriteti. Nizko ocenjeni zapisi ostanejo evidentirani. Ocena relevantnosti sama ne potrjuje vsebinske pravilnosti ali dovoljenja za prenos.</p></article>
+      </div>
+      <h3 style="margin-top:30px">Kaj doda LLM</h3>
+      <p class="intro">Iz dovoljenega gradiva razbere problem, pogoje in povezave. Loči dejstvo iz vira od svojega predloga pravila ali testa, navede dokaz in ohrani neznanke. Tako nastane kandidat, ki ga je mogoče pregledati in šele nato vključiti.</p>
+      <div class="flow" aria-label="Pregled kandidata pred vključitvijo"><span>Dokaz iz vira</span><i>→</i><span>Opažanje</span><i>→</i><span>Predlog pravila ali testa</span><i>→</i><span>Pregled</span><i>→</i><span>Vključitev</span></div>
+      <div class="callout">Anonimizacijski program in dodaten pregled pomagata omejiti razkritje. Noben posamezen pregled vzorcev ne potrjuje popolne anonimnosti vseh zapisov ali organizacijske odobritve. Za konkretno uporabo je potreben dovoljen obseg.</div>
+      <div class="grid" style="margin-top:24px"><article class="card"><div class="num">Oblika znanja</div><h3>Copilot agent</h3><p>Paket SKILL, dokumenti in kartice pozivov so osnova za pomoč prodaji in podporni službi. Različica paketa znanja je ločena od različice spletnega vmesnika.</p></article><article class="card"><div class="num">Druga oblika</div><h3>Samostojni spletni pomočnik</h3><p>Demonstrator ima svojo izdajo in povezavo z okoljem CPQ. Zaščiteni demonstracijski obseg je opisan posebej; razvojna izkušnja z drugo potjo ne potrjuje njegovih zmožnosti.</p></article></div>
+      <p class="caption">Priprava gradiva ne pomeni vsebinskega pregleda celotnega korpusa. Masovna analiza ostaja ustavljena; posamezni dovoljeni primeri se obravnavajo ločeno.</p>
+    </div></section>
+
+    <section id="primeri"><div class="wrap">
+      <span class="eyebrow">Zakaj pregledovati veliko zapisov</span><h2>Iz konkretnega problema v uporabno pomoč</h2>
+      <p class="intro">Vrednost zbirke je v ponovni uporabi preverljivega pomena: uporabnik hitreje najde soroden problem, povezavo med sistemi ali smiseln preizkus. Vsak zajeti zapis zato ne postane navodilo.</p>
+      <div class="grid">
+        <article class="card"><span class="decision">Kandidat za diagnostiko in test</span><h3>Dva odgovora integracije za isto naročilo</h3><dl class="case-detail"><dt>Opažanje iz vira</dt><dd>Tehnični zapis opisuje dva odgovora za eno naročilo v testnem okolju.</dd><dt>Praktična korist</dt><dd>Ko uporabnik vpraša, ali naj naročilo odda ponovno, pomočnik najprej usmeri preverbo na povezavo obeh odgovorov z naročilom, njun pomen in trenutno stanje.</dd><dt>Predlog preverbe</dt><dd>Izmišljeno testno naročilo z dvema odgovoroma. Pomočnik mora zaznati odstopanje in zahtevati preverbo pred novim učinkom.</dd><dt>Meja ugotovitve</dt><dd class="unknown">To je predlog testa. Vzrok in uspešen popravek s tem nista potrjena.</dd></dl></article>
+        <article class="card"><span class="decision">Kandidat za znanje o integracijah</span><h3>Storitev je prisotna, povezani SLA pa ni potrjen</h3><dl class="case-detail"><dt>Opažanje iz vira</dt><dd>Zahteva obravnava pridobivanje podatkov o storitvah in SLA za ciljno evidenco.</dd><dt>Praktična korist</dt><dd>Pomočnik ločeno preverja pokritost storitve in SLA ter uporabnika usmeri k potrjeni preslikavi in rezultatu prenosa.</dd><dt>Predlog preverbe</dt><dd>Sintetičen primer s prisotno storitvijo in nepotrjenim SLA. Odgovor ne sme samodejno razglasiti prenosa za popolnega.</dd><dt>Meja ugotovitve</dt><dd class="unknown">Celotna preslikava polj, današnje stanje in uspešen E2E prenos ostajajo ločene preverbe.</dd></dl></article>
+      </div>
+      <article class="card" style="margin-top:18px"><span class="decision hold">Izločitev iz trenutnega predloga</span><h3>Posamični poseg brez potrjenega splošnega pravila</h3><p>Iz omejenega pregleda konkretnega omrežnega posega ni dovolj podlage za prenosljivo navodilo OmniCPQ. Zapis ostane zunaj tega predloga, ohrani pa se za morebitno strokovno razjasnitev. Izločitev ne pomeni izbrisa ali trditve, da je celoten zapis nekoristen.</p></article>
+      <p class="evidence-note" style="margin-top:20px">To so javno posplošeni prikazi iz omejenega pregleda naslovov in opisov. Predlagani testi še niso izvedeni in kandidati še niso vgrajeni v skill. Interni identifikatorji, povezave in izvirna gradiva niso objavljeni. Ti primeri ne dokazujejo obdelave celotnega korpusa ali doseženega finančnega učinka.</p>
     </div></section>
 
     <section id="razlicice"><div class="wrap">
-      <span class="eyebrow">Tri sledi razvoja</span><h2>Znanje, pomočnik in Bridge imajo vsak svojo zgodovino</h2>
-      <p class="intro">Številka različice pove, katero sestavino gledamo. Paketa znanja, spletnega vmesnika in brskalniške razširitve zato ne štejemo kot eno samo zaporedje izdaj.</p>
-      <div class="grid"><article class="card"><div class="num">Znanje · SKILL</div><h3>Oznake v1–v17</h3><p>V opisanem arhivu so ohranjene številčne oznake z vmesnimi vrzelmi in več vejami. To je sled razvoja paketov znanja.</p></article><article class="card"><div class="num">Spletni pomočnik · PWA</div><h3>Mejnik: 1.8.5</h3><p>Objavljeni statični paket je 1. novembra 2026 nosil oznako 1.8.5-bridge-stability-r1. Že odprt zavihek lahko še uporablja starejšo izdajo.</p></article><article class="card"><div class="num">Brskalniška razširitev</div><h3>Bridge ima svojo različico</h3><p>Razširitev ima ločeno zgodovino, med drugim različico 1.2.6. Različico, ki je res aktivna v posameznem brskalniku, je treba preveriti posebej.</p></article></div>
-      <p class="caption">Objavljen paket, prevzem v odprtem zavihku in dejansko uspešno dejanje so različne stvari.</p>
+      <span class="eyebrow">Datirani mejniki</span><h2>Znanje, vmesnik in Bridge imajo ločene različice</h2>
+      <p class="intro">Številka različice pove, katero sestavino gledamo. Objavljena koda, aktivna namestitev in dejansko uspešen postopek v CPQ se preverjajo ločeno.</p>
+      <div class="grid triple">
+        <article class="card"><div class="num">Znanje · SKILL</div><h3>Paket v19</h3><p class="version-date">Zadnji dokumentirani paket · november 2026</p><p>Pripravljena sta paket znanja za Copilot in ločen paket za HTML pomočnika. V starejšem arhivu so ohranjene oznake v1–v17 z vrzelmi in razvojnimi vejami; to ni število produkcijskih izdaj agenta.</p></article>
+        <article class="card"><div class="num">Spletni pomočnik</div><h3>1.9.2 demo profiles r3</h3><p class="version-date">Dokumentirana objava · 5. november 2026</p><p>Objavljena koda vsebuje profila Hiter in Premišljen. Dejanski model na uporabnikovem računu in prevzem izdaje v odprtem zavihku zahtevata posebno preverbo. Izdaja 1.8.5 z dne 1. novembra ostaja zgodovinski mejnik.</p></article>
+        <article class="card"><div class="num">Zaščiteni demo Bridge</div><h3>AI za OmniCPQ 1.0.0</h3><p class="version-date">Dokumentirana ločena izdaja · 5. november 2026</p><p>Omejeno branje in potrjena navigacija. Paket razširitve ni dokaz namestitve v konkretnem brskalniku ali uspešnega živega E2E postopka.</p></article>
+      </div>
+      <p class="caption">Mejniki opisujejo ohranjene izdaje. Ne pomenijo novega preverjanja vseh naprav, računov ali trenutno odprtih zavihkov.</p>
     </div></section>
 
     <section id="bridge"><div class="wrap">
-      <span class="eyebrow">Povezava dveh svetov</span><h2>Od odgovora do dejanja</h2>
-      <p class="intro">Spletni pomočnik in OmniCPQ nista v istem okolju: prvi je dostopen prek spleta, CPQ pa je poslovna aplikacija v intranetu. Lokalni Browser Bridge poveže izbrana zavihka v uporabnikovem brskalniku.</p>
-      <div class="flow" aria-label="Uporabnik poda nalogo pomočniku, pomočnik in Bridge izmenjujeta informacije z OmniCPQ, sledi opazovanje in preverjanje učinka"><span>Uporabnikova naloga</span><i>→</i><span>AI pomočnik</span><i>⇄</i><span>Browser Bridge</span><i>⇄</i><span>OmniCPQ</span><i>→</i><span>Opazovanje in preverjanje učinka</span></div>
-      <p class="intro">V testih lahko pomočnik ob ustrezni povezavi prebere trenutno stanje, izbere kontrolo, vnese vrednost ali klikne gumb. Nato je treba dejanski učinek še opazovati. Kadar je pomembna trajnost spremembe, sta shranitev in ponovno odprtje dodatna koraka. Poslan ukaz ali prepričljiv odgovor sam po sebi še ne dokazuje, da se je sprememba v CPQ zgodila ali shranila.</p>
-      <div class="callout">Razširitev in uporabnikova prijava omogočata povezavo v okviru obstoječih dostopov. Zanesljivost povezave in prepoznavanje posameznih kontrol sta še del razvoja in preizkušanja.</div>
+      <span class="eyebrow">Sedanji zaščiteni demonstracijski obseg</span><h2>AI za OmniCPQ omeji kontekst pred prenosom</h2>
+      <p class="intro">Demo Bridge je lokalna razširitev, ki pripravi zaprt, minimiziran nabor podatkov za pomočnika. Izbran mora biti pravi zaščiteni scenarij; sama prijava uporabnika zaščite ne vključi.</p>
+      <div class="grid"><article class="card"><div class="num">Omogočeno</div><h3>Branje in potrjena navigacija</h3><p>Sedanja izdaja podpira štiri fiksne bralne oziroma navigacijske naloge. Predlagano navigacijo posebej potrdi uporabnik. Poslovnih podatkov v CPQ ne vpisuje in ne ustvarja virtualnih strežnikov.</p></article><article class="card"><div class="num">Izključeno iz demo konteksta</div><h3>Podrobne vrednosti in prosti vnosi</h3><p>Cene so skrite. Izvirne identitete, dejanske tehnične vrednosti, prosto besedilo, zgodovina, slike, priloge in uvozi so izključeni iz sedanjega demo obsega.</p></article></div>
+      <div class="callout" style="margin-top:24px">Programski preizkusi in objavljeni artefakti so preverjeni. Namestitev pri uporabniku, dejanski ponudnikov klic, živi STAGE E2E ter neodvisni varnostni in organizacijski sprejem ostajajo ločene preverbe.</div>
+      <p style="margin-top:22px"><a href="/omnicpq/demo-help.html">Navodila za omejeno demonstracijo</a></p>
+      <p class="evidence-note">Zgodovinski razvojni preizkusi vnosa ali klikanja niso opis zmožnosti tega omejenega demo Bridgea. Izključitev polj ni splošno potrdilo popolne anonimnosti.</p>
     </div></section>
 
     <section id="preizkusanje"><div class="wrap">
-      <span class="eyebrow">Pogled od blizu</span><h2>Ko AI postane tester</h2>
-      <p class="quote">Skoraj kot znanstvena fantastika: AI preizkuša pomočnika, ugotovitve preda builderju, ta pripravi popravke – in nato se začne nov krog testiranja.</p>
-      <p class="intro">Testerjeva naloga je nastopati kot človek: postavljati vprašanja, prositi za pomoč, dajati realna navodila in opazovati, kaj se zgodi na zaslonu. Preizkuša tudi napačne ali dvoumne zahteve. Ugotovitve zapiše za builderja; človek določa cilj, daje usmeritve in presoja rezultat.</p>
-      <p class="muted">Vloge so razdeljene: človek postavi smer, koordinator oziroma arhitekt uskladi obseg in dokaze, builder pripravi spremembo, tester pa preveri vedenje. Koordinator in builder sta lahko ista seja.</p>
-      <div class="flow" aria-label="Zanka: naloga, preizkus, ugotovitev, predaja, popravek, ponovni preizkus"><span>Naloga</span><i>→</i><span>Preizkus</span><i>→</i><span>Ugotovitev</span><i>→</i><span>Predaja</span><i>→</i><span>Popravek</span><i>→</i><span>Ponovni preizkus ↺</span></div>
-      <div class="grid"><article class="card"><div class="num">Načini dela</div><h3>Več kot en sam klepet</h3><p>Vodič, zahteve, modeliranje, OmniCPQ in testiranje – vsak način odpira drugačno vrsto vprašanj. Preizkušena sta bila tudi hitri in poglobljeni način razmišljanja.</p><div class="pills"><span class="pill">Vodič</span><span class="pill">Zahteve</span><span class="pill">Modeliranje</span><span class="pill">OmniCPQ</span><span class="pill">Testiranje</span></div></article><article class="card"><div class="num">Primer obsega</div><h3>Suvereni oblak</h3><p>V testnem okolju je bil poudarek na virtualnem strežniku: procesor, pomnilnik, disk, operacijski sistem, varnostne kopije in dodatne možnosti. Druga področja so bila deloma obravnavana z vprašanji, kar ni enako dejanski konfiguraciji storitve.</p></article></div>
-      <p class="caption">V enem dokumentiranem sklopu je bilo vnesenih najmanj 221 uporabniških pozivov in nastalo 91 oštevilčenih kontrolnih zapisov. Pozivi vključujejo vprašanja, ponovitve in posamezna opravila; niso enako število neodvisnih testnih primerov.</p>
+      <span class="eyebrow">Razvoj in preverjanje</span><h2>AI pomaga preizkušati pomočnika</h2>
+      <p class="intro">Razvojni tester postavlja naloge, primerja pričakovani in opaženi rezultat ter pripravi ugotovitev za popravek. Po spremembi sledi primerljiv ponovni preizkus. Človek določa cilj in presoja sprejem.</p>
+      <div class="flow" aria-label="Razvojna zanka"><span>Naloga</span><i>→</i><span>Preizkus</span><i>→</i><span>Dokaz in ugotovitev</span><i>→</i><span>Popravek</span><i>→</i><span>Ponovni preizkus</span></div>
+      <div class="grid"><article class="card"><div class="num">Načini dela pomočnika</div><h3>Različne naloge potrebujejo različna orodja</h3><div class="pills"><span class="pill">Vodič</span><span class="pill">Zahteve</span><span class="pill">Modeliranje</span><span class="pill">OmniCPQ</span><span class="pill">Testiranje</span><span class="pill planned">AI učenje · načrt</span></div><p style="margin-top:16px">Testiranje pomaga pri preizkusih storitev in procesov. Načrtovani način AI učenje bo preverjal samega pomočnika. Zaščitena demonstracija še ne podpira vseh funkcij vseh načinov.</p></article><article class="card"><div class="num">Zgodovinski razvojni primer</div><h3>Suvereni oblak</h3><p>V razvojnih testih je bil poudarek na virtualnem strežniku: procesor, pomnilnik, disk, operacijski sistem in varnostne kopije. To ni dokaz, da sedanji zaščiteni demo ustvarja VM ali preverja njihove dejanske vrednosti.</p></article></div>
+      <p class="caption">V enem ohranjenem razvojnem sklopu je dokumentiranih najmanj 221 uporabniških pozivov in 91 kontrolnih zapisov. Pozivi vključujejo ponovitve in posamezna opravila; niso enako število neodvisnih testnih primerov nove demo izdaje.</p>
+    </div></section>
+
+    <section id="ai-ucenje"><div class="wrap">
+      <span class="eyebrow">Šesti način · načrtovan razvoj</span><h2>AI učenje bo preverjalo vedenje pomočnika</h2>
+      <p class="intro">Vgrajeni tester bo izbral dovoljeni preizkus, podal nalogo pomočniku in primerjal pričakovani rezultat z neodvisnim opažanjem. Ugotovitve bodo podlaga za pregledane izboljšave pravil, znanja, orodij in testov.</p>
+      <div class="callout">Učenje tukaj ne pomeni samodejnega spreminjanja uteži modela. Vgrajeni tester, celovit zaščiteni šestnačinski pomočnik in samodejna lokalna predaja še niso izvedeni.</div>
+      <div class="grid" style="margin-top:24px"><article class="card"><div class="num">Dostop in poraba</div><h3>Lastništvo mora potrditi strežnik</h3><p>Vsak zagon, nadaljevanje in izvoz potrebuje preverjeno lastniško prijavo. Demo račun nima dostopa do AI učenja. Načrt vključuje omejitve porabe in časa ter trajni STOP, ki ustavi nadaljnje načrtovanje in modelske klice.</p></article><article class="card"><div class="num">Dokazi in nadaljevanje</div><h3>Izjava pomočnika še ni uspeh</h3><p>Rezultat mora temeljiti na ločenem opažanju. Manjkajoč dokaz ostane neznan. Checkpoint in lokalno poročilo morata omogočiti nadaljevanje brez podvajanja učinkov; avtomatski prevzem zahteva preverjeno lokalno podporo in ACK.</p></article></div>
+      <p class="evidence-note" style="margin-top:20px">Najprej sledijo sintetični preizkusi in pregled izhodnih zahtevkov. Živi CPQ preizkusi, dejanski model ter stroški API se preverjajo v posebej dovoljenem obsegu. Neprekinjeno nočno delo brez dokazov ni potrjena zmožnost.</p>
     </div></section>
 
     <section id="naprej"><div class="wrap">
@@ -157,6 +154,6 @@
 
     <section><div class="wrap"><span class="eyebrow">Zakaj je to zanimivo</span><h2>Človek vodi. AI razširi ekipo.</h2><p class="intro">V središču ostaja konkretna človeška potreba: manj iskanja po navodilih, boljše razumevanje storitev in pomoč pri delu. AI pri tem ni samo odgovor na vprašanje. Lahko pomaga zbirati in urejati znanje, zgraditi orodje, preizkusiti njegovo delovanje in pripraviti naslednjo izboljšavo.</p><p class="intro">Zgodba se nadaljuje. Vsak naslednji krog poveže idejo, izvedbo, dokaz in povratno informacijo v nekaj, kar je mogoče znova preveriti.</p><p><a href="/ai8/about/">← Nazaj na zgodbo o AI8</a></p></div></section>
   </main>
-  <footer class="footer"><div class="wrap"><span>BD × AI · AI pomočnik za OmniCPQ</span><span>Zgodba projekta · 1. november 2026</span></div></footer>
+  <footer class="footer"><div class="wrap"><span>BD × AI · AI pomočnik za OmniCPQ</span><span>Posodobljeno 5. novembra 2026 · <a href="./index2.html">Prejšnja različica</a></span></div></footer>
 </body>
 </html>
