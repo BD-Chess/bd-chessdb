@@ -1,6 +1,6 @@
 import {DEMO_PROTOCOL,DEMO_EXTENSION_ID,DEMO_PRODUCT,DEMO_POLICY,DEMO_TASKS,validateDemoHandshake,validateDemoObservation,validateDemoAction,makeDemoRequest,parseDemoAction,demoError} from '../extension-demo/privacy.mjs';
 import {sseEvents} from '../core.mjs';
-export const DEMO_API='/.netlify/functions/omnicpq-demo-assistant';
+export const DEMO_API='/.netlify/functions/omnicpq-assistant?omnicpq_demo=local-v1';
 export function makeDemoClient({runtime=globalThis.chrome?.runtime,fetcher=globalThis.fetch,timeoutMs=15000,onState=()=>{},onText=()=>{}}={}){
  const identity=crypto.randomUUID();let handshake=null,observation=null,action=null,controller=null,epoch=0,busy=false;
  const state=()=>({connected:!!handshake,protected:!!handshake,observation,action,busy,product:handshake?.product||'NI POTRJENO',policy:handshake?.protection?.policy||'NI POTRJENO'});

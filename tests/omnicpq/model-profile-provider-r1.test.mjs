@@ -26,7 +26,7 @@ function personalFactory(){
   instructions:()=> 'SYNTHETIC_PUBLIC_INSTRUCTIONS',validateBrowser:()=>null,starterMetadata:[],allowedStarter:()=>false,
   normalizeMode:v=>v==='work'?'work':null,normalizeWorkspace:v=>v,CONTEXT_FIELDS:{},
   process:{env:new Proxy({},{get:deny})},Netlify:{env:{get:deny}},console:{warn(){}}});
- vm.runInContext(source+'\n;globalThis.make=makeHandler;',context);return context.make;
+ vm.runInContext(source+'\n;globalThis.make=makeHandler;globalThis.route=assistantRoute;',context);context.make.route=context.route;return context.make;
 }
 function providerFactory(){
  const header="import { error } from './identity.mjs';\n";assert.ok(provider.startsWith(header));
@@ -105,5 +105,13 @@ test('closed datetime and control ids reject covert text/callbacks before egress
 test('production dispatch uses one original rate limit and the same request gate',()=>{
  assert.match(backend,/makeHandler\(\{requestGate\}\),demoHandler=makeDemoHandler\(\{requestGate\}\)/);
  assert.match(backend,/windowLimit: 12, windowSize: 60/);
- assert.match(backend,/path:\['\/\.netlify\/functions\/omnicpq-assistant','\/\.netlify\/functions\/omnicpq-demo-assistant'\]/);
+ assert.doesNotMatch(backend,/config\s*=\s*\{\s*path:/);
+ assert.match(backend,/assistantRoute\(req.url\)/);
+});
+
+test('actual dispatcher distinguishes the fixed demo URL and rejects bad/obsolete aliases',()=>{
+ const route=personalFactory().route,base='https://www.mdlxdcc.org/.netlify/functions/omnicpq-assistant';
+ assert.equal(route(base),'PERSONAL');
+ assert.equal(route(base+'?omnicpq_demo=local-v1'),'DEMO');
+ for(const value of [base+'?omnicpq_demo=wrong',base+'?omnicpq_demo=local-v1&extra=1',base+'?omnicpq_demo=local-v1&omnicpq_demo=local-v1','https://www.mdlxdcc.org/wrong?omnicpq_demo=local-v1','https://www.mdlxdcc.org/.netlify/functions/omnicpq-demo-assistant','not a URL'])assert.equal(route(value),'INVALID_DEMO');
 });

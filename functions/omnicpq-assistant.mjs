@@ -171,9 +171,22 @@ export function makeHandler({ accessFactory = authenticateOmni, knowledgeFactory
     return new Response(stream, { headers: { ...headers, 'Content-Type': 'text/event-stream; charset=utf-8', 'X-Accel-Buffering': 'no' } });
   };
 }
+// The protected demo uses the existing physical function, with a closed discriminator.
+// A missing/invalid discriminator never upgrades a demo request into personal authority.
+export function assistantRoute(url){
+  try {
+    const target=new URL(url);
+    if(target.pathname.endsWith('/omnicpq-demo-assistant'))return 'INVALID_DEMO';
+    if(target.searchParams.has('omnicpq_demo')){
+      if(target.pathname!=='/.netlify/functions/omnicpq-assistant'||target.searchParams.size!==1||target.searchParams.get('omnicpq_demo')!=='local-v1')return 'INVALID_DEMO';
+      return 'DEMO';
+    }
+    return 'PERSONAL';
+  } catch { return 'INVALID_DEMO'; }
+}
 const requestGate={seen:new Map(),active:new Set()};
 const personalHandler=makeHandler({requestGate}),demoHandler=makeDemoHandler({requestGate});
-export default function dispatch(req,context){return new URL(req.url).pathname==='/.netlify/functions/omnicpq-demo-assistant'?demoHandler(req,context):personalHandler(req,context);}
-export const config = { path:['/.netlify/functions/omnicpq-assistant','/.netlify/functions/omnicpq-demo-assistant'], rateLimit: { windowLimit: 12, windowSize: 60, aggregateBy: ['ip', 'domain'] } };
+export default function dispatch(req,context){const route=assistantRoute(req.url);return route==='DEMO'?demoHandler(req,context):route==='PERSONAL'?personalHandler(req,context):failure('DEMO_ROUTE_INVALID',400);}
+export const config = { rateLimit: { windowLimit: 12, windowSize: 60, aggregateBy: ['ip', 'domain'] } };
 
 
