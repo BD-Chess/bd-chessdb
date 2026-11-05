@@ -30,12 +30,14 @@ test('final protected PWA bytes pass integrity; fresh install and explicit old-w
   }
 });
 test('live byte verification includes HTML, worker, manifest and downloads; a provider URL rewrite cannot pass',async()=>{
-  let altered=false;const fetcher=async value=>{
-    const name=new URL(value).pathname.slice('/omnicpq/'.length);let bytes=await readFile('public/OmniCPQ/'+name);
-    if(altered && name==='index.html')bytes=Buffer.concat([bytes,Buffer.from('PROVIDER_REWRITE')]);
+  let altered=false;const observed=new Set();const fetcher=async value=>{
+    const name=new URL(value).pathname.slice('/omnicpq/'.length);observed.add(name);let bytes=await readFile('public/OmniCPQ/'+name);
+    if(altered===name)bytes=Buffer.concat([bytes,Buffer.from('PROVIDER_REWRITE')]);
     return new Response(bytes);
   };
   const result=await verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher});
-  assert.equal(result.status,'PASS');assert.equal(result.shell_files,Object.keys(JSON.parse(await readFile('public/OmniCPQ/shell-integrity.json','utf8')).files).length);assert.equal(result.public_files_checked,result.shell_files+5);
-  altered=true;await assert.rejects(verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher}),/live shell differs.*index.html/);
+  assert.equal(result.status,'PASS');assert.equal(result.shell_files,Object.keys(JSON.parse(await readFile('public/OmniCPQ/shell-integrity.json','utf8')).files).length);assert.equal(result.public_files_checked,result.shell_files+7);
+  assert(observed.has('AI_za_OmniCPQ_DEMO_v1.zip'));assert(observed.has('demo-extension-integrity.json'));
+  altered='index.html';await assert.rejects(verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher}),/live shell differs.*index.html/);
+  for(const name of ['AI_za_OmniCPQ_DEMO_v1.zip','demo-extension-integrity.json']){altered=name;await assert.rejects(verifyLiveShell('https://example.test','public/OmniCPQ',{fetcher}),e=>e.message.includes('live shell differs')&&e.message.endsWith(name));}
 });
