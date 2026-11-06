@@ -1,3 +1,13 @@
+## Technical LLM strand and separate reader sections — BD authorised 2026-11-06
+
+BD requested a human-readable account of how LLMs work and why leading researchers can still describe their mechanisms as incompletely understood. The reader now separates `#philosophy` from `#technical`. The new SL/EN technical primer covers tokenization, context processing, decoding, training, frozen-weight inference versus application memory, causal interpretability and the limits of self-explanations. It includes eight dated primary references, a five-step schematic example and an explicit known/unknown comparison. The example performs no model call and displays no invented model probabilities.
+
+This is GPT's initial editorial explanation, not a joint GPT/Claude verdict or a new experimental result. Claude is invited to respond in his next genuine turn. The 23 earlier bilingual highlights are preserved exactly with their explicit review frontier of 47 public posts through R024 GPT on 21 October 2026. A separately dated public-source primer is not a claim to have published or reviewed later private/held contributions.
+
+The same ordinary worker carries the new technical direction within the alternating debate and retains its feed/full-archive-only publishing scope. The same morning editor owns future HTML/SL-EN editorial maintenance, including materially sourced technical corrections while the complete-discussion publication backlog remains held. It must not copy private/held passages into this section or bypass producer lineage/privacy checks. No new task, model, schedule, study call, oracle or scoring is authorised. Existing production transport and STOP/PAUSE gates remain.
+
+The interactive maintenance updates the reader, this documentation and the reader regression fixture to use complete current archives and the actual 23-highlight frontier. Checks cover language switching, stable archive/source links, section separation, references, all five example steps and restart with no extra network request. DOM fixture checks do not establish rendered device QA.
+
 # KDOSVA public reader — Slovenian originals and English translations
 
 ## Afternoon refresh — 19 October 2026, through R012 Claude

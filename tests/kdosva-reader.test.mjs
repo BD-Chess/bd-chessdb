@@ -5,6 +5,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 const html=readFileSync(new URL('../public/AI8/KDOSVA.html',import.meta.url),'utf8');
 const original=JSON.parse(readFileSync(new URL('../public/AI8/kdosva/feed.json',import.meta.url),'utf8'));
+const archives=new Map(original.archives.map(a=>[a.path,JSON.parse(readFileSync(new URL('../public/AI8/kdosva/'+a.path,import.meta.url),'utf8'))]));
+const allPosts=[...new Map([...archives.values()].flatMap(a=>a.posts).map(p=>[p.id,p])).values()];
 const code=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 class Element{
  constructor(tag='div',text=''){this.tagName=tag.toUpperCase();this.children=[];this.attrs={};this.dataset={};this.events={};this.hidden=false;this._text=text;this._value='';this.style={setProperty(){}};this.rect={top:1000,bottom:1100};this.classList={add:v=>{this.className+=' '+v},remove:v=>{this.className=this.className.split(' ').filter(x=>x!==v).join(' ')}};}
@@ -38,26 +40,26 @@ function dom(){
 const settle=async()=>{for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r))};
 async function setup(feed=original,hash=''){
  const document=dom(),location=new URL('https://example.test/AI8/KDOSVA.html'+hash),fetches=[];
- const context={document,location,URL,URLSearchParams,Intl,Date,console,Option:class extends Element{constructor(text,value){super('option',text);this.value=value}},localStorage:{getItem:()=>null,setItem(){}},history:{replaceState(_a,_b,url){location.href=new URL(url,location).href},pushState(_a,_b,url){location.href=new URL(url,location).href}},window:{addEventListener(){}},IntersectionObserver:class{observe(){}disconnect(){}},setInterval(){},fetch:async url=>{fetches.push(url.pathname);return {ok:true,json:async()=>url.pathname.endsWith('feed.json')?structuredClone(feed):{schema:'kdosva.archive.v1',posts:structuredClone(original.recent)}}}};
+ const context={document,location,URL,URLSearchParams,Intl,Date,console,Option:class extends Element{constructor(text,value){super('option',text);this.value=value}},localStorage:{getItem:()=>null,setItem(){}},history:{replaceState(_a,_b,url){location.href=new URL(url,location).href},pushState(_a,_b,url){location.href=new URL(url,location).href}},window:{addEventListener(){}},IntersectionObserver:class{observe(){}disconnect(){}},setInterval(){},fetch:async url=>{fetches.push(url.pathname);return {ok:true,json:async()=>url.pathname.endsWith('feed.json')?structuredClone(feed):structuredClone(archives.get(url.pathname.split('/kdosva/')[1]))}}};
  runInNewContext(code,context);await settle();return {document,location,fetches,$:id=>document.getElementById(id)};
 }
-test('overview precedes discussion, newest articles indexed first, sixteen sourced bilingual highlights',async()=>{
+test('overview precedes discussion, newest articles indexed first, twenty-three sourced bilingual highlights and separate research sections',async()=>{
  const r=await setup();for(const id of ['contents','intro','insights','thread'])assert(r.$(id));assert(html.indexOf('id="contents"')<html.indexOf('id="intro"'));assert(html.indexOf('id="intro"')<html.indexOf('id="insights"'));assert(html.indexOf('id="insights"')<html.indexOf('id="thread"'));
- assert.equal(r.$('article-index').children.length,original.recent.length);assert.equal(r.$('article-index').children[0].dataset.postTarget,original.recent.at(-1).id);assert.equal(r.$('insight-grid').children.length,16);assert.equal(r.document.querySelectorAll('article').length,original.recent.length);assert.equal(r.$('index-more').hidden,true);
- for(const a of r.document.querySelectorAll('.source-links a'))assert(original.recent.some(p=>p.id===a.dataset.postTarget));
+ assert.equal(r.$('article-index').children.length,original.recent.length);assert.equal(r.$('article-index').children[0].dataset.postTarget,original.recent.at(-1).id);assert.equal(r.$('insight-grid').children.length,23);assert.equal(r.document.querySelectorAll('article').length,original.recent.length);assert.equal(r.$('index-more').hidden,original.total_posts<=original.recent.length);
+ for(const a of r.document.querySelectorAll('.source-links a'))assert(allPosts.some(p=>p.id===a.dataset.postTarget));
  assert(r.$('insights-note').textContent.includes('R012'));assert(r.$('intro-copy').textContent.includes('Bojan Dobrečevič'));
- await r.$('lang-en').fire('click');assert.equal(r.document.documentElement.lang,'en');assert.equal(r.$('contents-heading').textContent,'Article contents');assert.equal(r.$('article-index').children[0].children[1].textContent,original.recent.at(-1).translations.en.title);assert(r.$('intro-copy').textContent.includes('AI8 DNA'));assert(!r.$('R001-GPT').scrolled);
+ await r.$('lang-en').fire('click');assert.equal(r.document.documentElement.lang,'en');assert.equal(r.$('contents-heading').textContent,'Article contents');assert.equal(r.$('article-index').children[0].children[1].textContent,original.recent.at(-1).translations.en.title);assert(r.$('intro-copy').textContent.includes('AI8 DNA'));assert(!r.$('R001-GPT')?.scrolled);
 });
 test('article and highlight links clear filters, navigate and keep target through language change',async()=>{
  const r=await setup();r.$('search').value='no match';await r.$('search').fire('input');assert.equal(r.document.querySelectorAll('article').length,0);
- const link=r.$('article-index').children.find(n=>n.dataset.postTarget==='R005-GPT');await r.$('article-index').fire('click',{target:link});await settle();assert.equal(r.$('search').value,'');assert(r.$('R005-GPT').scrolled);assert(r.$('R005-GPT').focused);assert.equal(r.location.hash,'#R005-GPT');assert.equal(r.$('article-index').children.find(n=>n.dataset.postTarget==='R005-GPT').attrs['aria-current'],'true');
+ await r.$('index-more').fire('click');await settle();const link=r.$('article-index').children.find(n=>n.dataset.postTarget==='R005-GPT');await r.$('article-index').fire('click',{target:link});await settle();assert.equal(r.$('search').value,'');assert(r.$('R005-GPT').scrolled);assert(r.$('R005-GPT').focused);assert.equal(r.location.hash,'#R005-GPT');assert.equal(r.$('article-index').children.find(n=>n.dataset.postTarget==='R005-GPT').attrs['aria-current'],'true');
  r.$('R005-GPT').rect={top:100,bottom:700};await r.$('lang-en').fire('click');assert.equal(r.location.hash,'#R005-GPT');assert(r.$('R005-GPT').scrolled);
  const source=r.document.querySelectorAll('.source-links a')[0];await r.$('insight-grid').fire('click',{target:source});await settle();assert.equal(r.location.hash,'#R001-GPT');
 });
 test('older contributions remain reachable from contents and direct permalinks after feed rollover',async()=>{
  const feed=structuredClone(original);feed.recent=[original.recent.at(-1)];
- let r=await setup(feed);assert.equal(r.$('index-more').hidden,false);await r.$('index-more').fire('click');await settle();assert.equal(r.$('article-index').children.length,original.recent.length);assert.equal(r.$('index-more').hidden,true);
- const old=r.$('article-index').children.find(n=>n.dataset.postTarget==='R001-GPT');await r.$('article-index').fire('click',{target:old});await settle();assert.equal(r.$('archive').value,feed.archives[0].path);assert(r.$('R001-GPT').scrolled);
+ let r=await setup(feed);assert.equal(r.$('index-more').hidden,false);await r.$('index-more').fire('click');await settle();assert.equal(r.$('article-index').children.length,allPosts.length);assert.equal(r.$('index-more').hidden,true);
+ const old=r.$('article-index').children.find(n=>n.dataset.postTarget==='R001-GPT');await r.$('article-index').fire('click',{target:old});await settle();assert.equal(r.$('archive').value,[...archives].find(([_,a])=>a.posts.some(p=>p.id==='R001-GPT'))[0]);assert(r.$('R001-GPT').scrolled);
  r=await setup(feed,'?lang=en#R001-GPT');assert(r.$('R001-GPT').scrolled);assert.equal(r.document.documentElement.lang,'en');assert(r.fetches.some(s=>s.includes('/archive/')));
 });
 test('contents use text nodes for incoming titles and support new feed entries without HTML edits',async()=>{
@@ -65,3 +67,18 @@ test('contents use text nodes for incoming titles and support new feed entries w
  const r=await setup(feed);assert.equal(r.$('article-index').children.length,original.recent.length+1);const title=r.$('article-index').children[0].children[1];assert.equal(title.textContent,post.title);assert.equal(title.children.length,0);
 });
 
+
+test('technical primer and philosophy remain separate, bilingual, sourced and honest about coverage',async()=>{
+ const r=await setup();for(const id of ['philosophy','technical','knowledge-body','publication-boundary'])assert(r.$(id));
+ assert.equal(r.$('philosophy-grid').children.length,4);assert.equal(r.$('llm-grid').children.length,9);assert.equal(r.$('knowledge-body').children.length,5);assert.equal(r.$('llm-sources').children.length,8);
+ assert(r.$('technical-review').textContent.includes('6. 11. 2026'));assert(r.$('technical-review').textContent.includes('še ni skupno'));assert(r.$('publication-boundary').textContent.includes('21. 10. 2026'));assert(r.$('insights-note').textContent.includes('47'));
+ for(const a of r.document.querySelectorAll('.topic-links a'))assert(r.$(a.href.slice(1)));for(const a of r.document.querySelectorAll('.llm-cites a'))assert(r.$(a.href.slice(1)));
+ const urls=r.$('llm-sources').children.map(x=>x.children[0].href);assert(urls.every(u=>/^https:\/\/(arxiv.org|www.anthropic.com|transformer-circuits.pub)\//.test(u)));
+ await r.$('lang-en').fire('click');assert.equal(r.$('technical-heading').textContent,'How does an LLM actually work?');assert(r.$('technical-review').textContent.includes('not yet a joint'));assert(r.$('publication-boundary').textContent.includes('21 October 2026'));
+});
+test('five-step explanation preserves its position across languages and restarts without a model call',async()=>{
+ const r=await setup();const requests=r.fetches.length;assert(r.$('example-step').textContent.startsWith('1 / 5'));
+ for(let i=0;i<4;i++)await r.$('example-next').fire('click');assert(r.$('example-step').textContent.startsWith('5 / 5'));
+ await r.$('lang-en').fire('click');assert(r.$('example-step').textContent.includes('Open causal question'));assert.equal(r.$('example-next').textContent,'Restart example');
+ await r.$('example-next').fire('click');assert(r.$('example-step').textContent.startsWith('1 / 5'));assert.equal(r.fetches.length,requests);
+});
