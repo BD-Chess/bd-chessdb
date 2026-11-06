@@ -33,7 +33,7 @@ export function validateAction(action) {
   return true;
 }
 const cap = Object.freeze({
-  schema:'omnicpq.gui.capabilities.v2',protocol:PROTOCOL,apiRevision:3,workerVersion:'1.2.7',observation:true,targetedRead:true,cancel:true,
+  schema:'omnicpq.gui.capabilities.v2',protocol:PROTOCOL,apiRevision:3,workerVersion:'1.2.8',observation:true,targetedRead:true,cancel:true,
   pointer:['click','doubleClick','hover','contextClick','scroll','drag','ensureVisible'],keyboard:['key','fill','focus'],
   forms:['fill','check','selectNative','upload'],execution:'CDP_WHEN_ALLOWED',
   frames:'VISIBLE_SAME_ORIGIN',trustedCDP:'probe_required',maxBatchActions:1,
@@ -130,7 +130,7 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
       let cdpAvailable=false;
       try {const t=await attach(tab.id);if(t){cdpAvailable=true;await api.debugger.detach(t);}}catch{cdpAvailable=false;}
       const pair={cpqTabId:tab.id,assistantTabId:host.id,origin,scope:message.scope,token:crypto.randomUUID(),
-        expiresAt:now()+30*60_000,identity:host.identity||'legacy-unbound',cdpAvailable,allowWrites:message.allowWrites,attempted:[],lastObserved:null,paused:false,
+        expiresAt:now()+3*24*60*60_000,identity:host.identity||'legacy-unbound',cdpAvailable,allowWrites:message.allowWrites,attempted:[],lastObserved:null,paused:false,
         pairingVerification:liveHost.url===undefined?'VERIFIED_EXTERNAL_SENDER_URL_METADATA_WITHHELD':'VERIFIED_EXTERNAL_SENDER_AND_LIVE_URL'};
       await api.storage.session.set({guiPair:pair});
       return {ok:true,protocol:PROTOCOL,pairingVerification:pair.pairingVerification,capabilities:{...cap,cdpAvailable,allowWrites:pair.allowWrites},expiresAt:pair.expiresAt};
@@ -233,7 +233,7 @@ export function makeGuiBridgeHandler(api,now=()=>Date.now()){
           status:result.method==='ALREADY_MATCHES'?'ALREADY_MATCHES':'DISPATCHED',method:result.method,
           target:{id:a.targetId,label:prepared.label,operation:a.operation},risk:prepared.risk,beforeRevision:a.revision,
           afterRevision:after.observation.revision,documentKey:after.observation.documentKey,
-          approvalSource:message.approvalSource==='EXPLICIT_USER_GOAL'&&message.humanApproved?'EXPLICIT_USER_GOAL':message.humanApproved?'EXPLICIT_ACTION':'USER_GOAL',workerVersion:'1.2.7',apiRevision:3,
+          approvalSource:message.approvalSource==='EXPLICIT_USER_GOAL'&&message.humanApproved?'EXPLICIT_USER_GOAL':message.humanApproved?'EXPLICIT_ACTION':'USER_GOAL',workerVersion:'1.2.8',apiRevision:3,
           outcome},observation:{...after.observation,capabilities:{...cap,cdpAvailable:current.cdpAvailable,allowWrites:current.allowWrites}}};
       }catch{return fail('CPQ_ACTION_OUTCOME_UNKNOWN');}
       finally{if(debuggerTarget)try{await api.debugger.detach(debuggerTarget);}catch{}}

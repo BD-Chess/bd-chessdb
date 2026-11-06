@@ -21,7 +21,7 @@ export function makeBridgeHandler(api,now=()=>Date.now()) {
       // Prove actual browser access without persistent host permissions.
       const probe=await api.scripting.executeScript({target:{tabId:target.id,frameIds:[0]},world:'ISOLATED',func:cpqPage,args:[{type:'observe',scope:message.scope,origin}]});
       if(!probe.find(r=>r.frameId===0)?.result?.ok)return fail('BRIDGE_PERMISSION_REQUIRED');
-      const pair={targetTabId:target.id,assistantTabId:host.id,origin,scope:message.scope,token:crypto.randomUUID(),expiresAt:now()+30*60_000};
+      const pair={targetTabId:target.id,assistantTabId:host.id,origin,scope:message.scope,token:crypto.randomUUID(),expiresAt:now()+3*24*60*60_000};
       await api.storage.session.set({pair});return {ok:true,expiresAt:pair.expiresAt};
     }
     if(!assistantUrl(sender.url) || sender.frameId!==0 || !Number.isInteger(sender.tab?.id) || sender.tab.incognito)return fail('BRIDGE_SENDER_NOT_ALLOWED');
