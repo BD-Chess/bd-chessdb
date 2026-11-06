@@ -43,7 +43,7 @@ for(const [name,url,allowed] of matrix){
 
 test('manifest preserves existing browser permissions',()=>{
  const candidate=JSON.parse(readFileSync(new URL('../../public/OmniCPQ/extension/manifest.json',import.meta.url),'utf8'));
- assert.equal(candidate.version,'1.2.7');
+ assert.equal(candidate.version,'1.2.8');
  assert.deepEqual(candidate.permissions,['activeTab','scripting','storage','debugger']);
  assert.equal(candidate.host_permissions,undefined);
  assert.deepEqual(candidate.externally_connectable.matches,['https://www.mdlxdcc.org/*']);
