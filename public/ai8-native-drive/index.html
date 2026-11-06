@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>AI8 Native Drive</title>
+<meta name="description" content="BD’s private native rclone integration for AI8 Google Drive coordination and control status.">
+<link rel="canonical" href="https://www.mdlxdcc.org/ai8-native-drive/">
+<style>
+:root { color-scheme: light; --ink: #17263a; --muted: #526174; --link: #15558d; --line: #d2dce8; --paper: #fff; --ground: #f3f6fa; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: clamp(1rem, .96rem + .2vw, 1.125rem); line-height: 1.7; }
+.wrap { width: min(78ch, calc(100% - 2rem)); margin-inline: auto; }
+header { padding-block: 1.5rem; }
+nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .95rem; }
+a { color: var(--link); text-underline-offset: .2em; text-decoration-thickness: .08em; }
+a:hover { text-decoration-thickness: .15em; }
+a[aria-current="page"] { color: var(--ink); font-weight: 700; }
+a:focus-visible { outline: 3px solid #b15b0c; outline-offset: 4px; border-radius: 2px; }
+.skip { position: absolute; left: 1rem; top: .5rem; padding: .5rem .75rem; background: var(--paper); transform: translateY(-200%); }
+.skip:focus { transform: translateY(0); }
+main { padding: clamp(1.25rem, 4vw, 2.75rem); margin-bottom: 2rem; background: var(--paper); border: 1px solid var(--line); border-radius: 1rem; }
+h1, h2 { line-height: 1.25; letter-spacing: -.02em; overflow-wrap: anywhere; }
+h1 { font-size: clamp(2rem, 5vw, 2.75rem); margin: 0 0 1.5rem; }
+h2 { font-size: clamp(1.3rem, 3vw, 1.65rem); margin: 2rem 0 1rem; }
+p, ul { margin-block: 0 1.25rem; }
+li + li { margin-top: .5rem; }
+ul { padding-inline-start: 1.4rem; }
+code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .87em; background: #edf2f7; padding: .12em .3em; border-radius: .25rem; overflow-wrap: anywhere; }
+article > :last-child { margin-bottom: 0; }
+.reviewed { color: var(--muted); font-size: .95em; }
+@media (max-width: 30rem) { .wrap { width: calc(100% - 1rem); } header { padding: 1rem .5rem; } main { border-radius: .65rem; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print { body { background: #fff; font-size: 11pt; } .wrap { width: 100%; max-width: none; } header, .skip { display: none; } main { margin: 0; padding: 0; border: 0; } a { color: inherit; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="wrap">
+<nav aria-label="Document navigation">
+<a href="/ai8-native-drive/" aria-current="page">App home</a>
+<a href="/ai8-native-drive/privacy/">Privacy</a>
+<a href="https://www.mdlxdcc.org/">Back to MDL×DCC.org</a>
+</nav>
+</header>
+<main id="content" class="wrap">
+<article>
+<h1>AI8 Native Drive</h1>
+
+<p>AI8 Native Drive is BD&#x27;s private desktop integration between the AI8 workspace and Google Drive. It runs on the owner&#x27;s Linux machine using rclone and the Desktop OAuth client <strong>AI8 Razer — rclone</strong>. There is no public signup or multi-user service.</p>
+
+<p>The current integration:</p>
+
+<ul>
+<li>checks a designated AI8 coordination folder for notice metadata and routing headers;</li>
+<li>keeps local cursors, delivery records and diagnostic receipts for continuity;</li>
+<li>reads and updates a designated Drive heartbeat file with selected host and service status.</li>
+</ul>
+
+<p>The app requests the full Google Drive scope, <code>https://www.googleapis.com/auth/drive</code>, which permits viewing and managing all files in the authorized account. Current background routines use narrower, designated AI8 routes and files; those code restrictions do not narrow the OAuth permission itself. See <a href="https://developers.google.com/workspace/drive/api/guides/api-specific-auth">Google&#x27;s scope description</a>.</p>
+
+<p>Drive polling and heartbeat code do not call a model or run an arena. A watcher transition can queue a fixed local status prompt to an existing CLI agent session. Owner-authorized assistant review can separately read files and send selected context to the assistant provider.</p>
+
+<p>This native OAuth client is separate from Google Drive connections inside Codex, Claude or other connected plugins. Those connections have their own authorization and data practices.</p>
+
+<p><a href="/ai8-native-drive/privacy/">Privacy notice</a> · <a href="https://www.mdlxdcc.org/">BD&#x27;s existing public site and contact</a></p>
+</article>
+</main>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>AI8 Native Drive — privacy notice</title>
+<meta name="description" content="How the private AI8 native rclone integration accesses Google Drive, stores continuity records and supports owner control.">
+<link rel="canonical" href="https://www.mdlxdcc.org/ai8-native-drive/privacy/">
+<style>
+:root { color-scheme: light; --ink: #17263a; --muted: #526174; --link: #15558d; --line: #d2dce8; --paper: #fff; --ground: #f3f6fa; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: clamp(1rem, .96rem + .2vw, 1.125rem); line-height: 1.7; }
+.wrap { width: min(78ch, calc(100% - 2rem)); margin-inline: auto; }
+header { padding-block: 1.5rem; }
+nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .95rem; }
+a { color: var(--link); text-underline-offset: .2em; text-decoration-thickness: .08em; }
+a:hover { text-decoration-thickness: .15em; }
+a[aria-current="page"] { color: var(--ink); font-weight: 700; }
+a:focus-visible { outline: 3px solid #b15b0c; outline-offset: 4px; border-radius: 2px; }
+.skip { position: absolute; left: 1rem; top: .5rem; padding: .5rem .75rem; background: var(--paper); transform: translateY(-200%); }
+.skip:focus { transform: translateY(0); }
+main { padding: clamp(1.25rem, 4vw, 2.75rem); margin-bottom: 2rem; background: var(--paper); border: 1px solid var(--line); border-radius: 1rem; }
+h1, h2 { line-height: 1.25; letter-spacing: -.02em; overflow-wrap: anywhere; }
+h1 { font-size: clamp(2rem, 5vw, 2.75rem); margin: 0 0 1.5rem; }
+h2 { font-size: clamp(1.3rem, 3vw, 1.65rem); margin: 2rem 0 1rem; }
+p, ul { margin-block: 0 1.25rem; }
+li + li { margin-top: .5rem; }
+ul { padding-inline-start: 1.4rem; }
+code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .87em; background: #edf2f7; padding: .12em .3em; border-radius: .25rem; overflow-wrap: anywhere; }
+article > :last-child { margin-bottom: 0; }
+.reviewed { color: var(--muted); font-size: .95em; }
+@media (max-width: 30rem) { .wrap { width: calc(100% - 1rem); } header { padding: 1rem .5rem; } main { border-radius: .65rem; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print { body { background: #fff; font-size: 11pt; } .wrap { width: 100%; max-width: none; } header, .skip { display: none; } main { margin: 0; padding: 0; border: 0; } a { color: inherit; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="wrap">
+<nav aria-label="Document navigation">
+<a href="/ai8-native-drive/">App home</a>
+<a href="/ai8-native-drive/privacy/" aria-current="page">Privacy</a>
+<a href="https://www.mdlxdcc.org/">Back to MDL×DCC.org</a>
+</nav>
+</header>
+<main id="content" class="wrap">
+<article>
+<h1>AI8 Native Drive — privacy notice</h1>
+
+<p class="reviewed">Reviewed against the native setup on 6 November 2026.</p>
+
+<p>AI8 Native Drive is a private, single-user integration operated by BD. This notice covers the native rclone Desktop OAuth client <strong>AI8 Razer — rclone</strong> and its current AI8 Drive routines. It does not cover separate Codex or Claude connected plugins, website features, or all future AI8 capabilities.</p>
+
+<h2>Google authorization and information accessed</h2>
+
+<p>The native client requests <code>https://www.googleapis.com/auth/drive</code>, which allows viewing and managing all Drive files in the authorized account. The current routines use designated AI8 files and a coordination folder, but the granted permission is broader than those runtime restrictions. <a href="https://developers.google.com/workspace/drive/api/guides/api-specific-auth">Google describes the scope here</a>.</p>
+
+<p>The watcher reads file identifiers, names, sizes, modification times and owner metadata. For eligible changed notices, it also reads up to the first 4,096 bytes to inspect routing information. A short notice can fit entirely within that prefix. The watcher stores metadata and derived routing hints rather than exporting the raw notice body into its queued prompt.</p>
+
+<p>The heartbeat routine reads and updates an existing Drive control file. The uploaded information includes selected host, service and role delivery status, timestamps, counts and continuity references.</p>
+
+<h2>Purpose, storage and data flow</h2>
+
+<p>This information supports the owner&#x27;s AI8 coordination, delivery review, status reporting and recovery continuity. Local records include cursors, file revision hashes, metadata, sender and recipient hints, delivery acknowledgments and diagnostic receipts.</p>
+
+<p>Google processes the authorized API requests and stores the Drive files. Native OAuth authorization is held in the machine&#x27;s rclone configuration. OAuth/client secrets, private signing keys, bus tokens, mail bodies and notice bodies are excluded from the selected local health projection.</p>
+
+<p>If the owner enables the optional GitHub continuity mirror, a copy of the selected heartbeat is stored in the owner’s private GitHub repository. GitHub then processes and stores that copy under its own policies.</p>
+
+<p>The native watcher can queue a fixed local status prompt to an existing CLI agent session. Remote notice text is not inserted into that prompt. During separately authorized review, the owner or a CLI assistant can retrieve document or notice content. Material supplied as assistant context may be processed by that assistant&#x27;s external provider under its applicable settings and policies. This notice does not claim that all AI8 data stays on the machine.</p>
+
+<p>The current native Drive polling and heartbeat routines do not themselves call models or run arenas. Research model and arena execution are outside this integration&#x27;s current enabled scope.</p>
+
+<p>The native integration has no advertising or analytics component. Its Google data is used for the owner&#x27;s AI8 workflow. Separate Google, assistant-provider and connected-plugin services have their own data practices.</p>
+
+<h2>Retention and owner control</h2>
+
+<p>The continuity workflow preserves local cursors and receipts for review and recovery. No fixed automatic deletion period has been established; retention and cleanup are controlled by the owner.</p>
+
+<p>The owner can stop the local routines and <a href="https://support.google.com/accounts/answer/13533235">review or remove the app&#x27;s Google Account access</a>. Removing access does not itself erase existing Drive files, local records or material already provided to a separate service. Those copies require separate owner-controlled review and cleanup.</p>
+
+<h2>Operator and contact</h2>
+
+<p>The operator is BD. The operator&#x27;s existing public contact is listed on <a href="https://www.mdlxdcc.org/">MDL×DCC.org</a>. This app has no public account registration.</p>
+</article>
+</main>
+</body>
+</html>
