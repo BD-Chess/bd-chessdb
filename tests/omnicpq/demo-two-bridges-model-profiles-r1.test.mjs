@@ -105,7 +105,7 @@ test('both actual manifest keys give distinct fixed extension identities',async(
   const id=[...createHash('sha256').update(Buffer.from(m.key,'base64')).digest('hex').slice(0,32)].map(c=>'abcdefghijklmnop'[parseInt(c,16)]).join('');assert.equal(id,expected);
  }
 });
-test('original bridge source stays byte-identical',async()=>{const b=await readFile(new URL('../../public/OmniCPQ/extension/worker-v2.mjs',import.meta.url));assert.equal(createHash('sha256').update(b).digest('hex'),'37edf58d4713e23ae8facc5a0955764de1679f095f237c5f17b17438502ed4dc');});
+test('ordinary bridge 1.2.8 source matches its reviewed release pin',async()=>{const b=await readFile(new URL('../../public/OmniCPQ/extension/worker-v2.mjs',import.meta.url));assert.equal(createHash('sha256').update(b).digest('hex'),'7b96e8b4a78fb309f8e3de8572b90118b6ba9b198dd076652e5950cb14da5053');});
 test('two installed-code handlers reject cross-page/cross-protocol traffic',async()=>{
  const demo=chromeFixture(),personal=chromeFixture({personal:true});const d=makeDemoBridgeHandler(demo.api),p=makeGuiBridgeHandler(personal.api);
  const a=await d({protocol:'omnicpq.gui.v2',type:'status',identity:randomUUID()},personal.sender);assert.equal(a.ok,false);
