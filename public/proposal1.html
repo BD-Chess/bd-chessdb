@@ -404,7 +404,7 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
       root.dataset.theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
       syncTheme();
       function setFont(value) {
-        const n = Math.round(Math.max(.8, Math.min(1.5, value)) * 10) / 10;
+        const n = Math.round(Math.max(.8, Math.min(1.5, value)) * 100) / 100;
         root.style.fontSize = Math.round(n * 100) + '%';
         document.getElementById('font-value').textContent = Math.round(n * 100) + '%';
         document.getElementById('font-down').disabled = n <= .8;
@@ -413,8 +413,8 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
       }
       const storedFont = Number(get('mdlxdcc-font'));
       setFont(storedFont >= .8 && storedFont <= 1.5 ? storedFont : 1);
-      document.getElementById('font-down').addEventListener('click', () => setFont(parseFloat(root.style.fontSize) / 100 - .1));
-      document.getElementById('font-up').addEventListener('click', () => setFont(parseFloat(root.style.fontSize) / 100 + .1));
+      document.getElementById('font-down').addEventListener('click', () => setFont(parseFloat(root.style.fontSize) / 100 - .05));
+      document.getElementById('font-up').addEventListener('click', () => setFont(parseFloat(root.style.fontSize) / 100 + .05));
       document.getElementById('font-value').addEventListener('click', () => setFont(1));
       menu.addEventListener('toggle', () => menuTrigger.setAttribute('aria-expanded', String(menu.open)));
       menu.querySelector('.menu-links').addEventListener('click', event => {
