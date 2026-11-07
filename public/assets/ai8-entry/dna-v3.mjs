@@ -32,8 +32,9 @@ function setLang(next,persist = true) {
   lang=next;root.lang=lang;
   $('#dna-text-label').textContent=t('Nazivi','Text on/off');
   if(persist){save('mdlxdcc-lang',lang);save('mdlxdcc-locale-v1',JSON.stringify({lang,source:'manual',at:Date.now()}));save('bdPortraitLang',lang);}
-  origin.setAttribute('aria-label',t('AI8 DNA · raziskuj, išči, nastavitve','AI8 DNA · explore, search, settings'));
-  $('#dna-instructions').textContent=t('S tipko Tab raziskuj točke verige. Enter odpre opis in povezavo. Escape zapre opis. Prva točka vsebuje iskanje in nastavitve.','Use Tab to explore the strand. Enter opens a description and link. Escape closes it. The first point contains search and settings.');
+  origin.setAttribute('aria-label',t('AI8 DNA · glavna stran','AI8 DNA · home page'));
+  origin.title=t('Klik odpre glavno stran','Click to open the home page');
+  $('#dna-instructions').textContent=t('Približaj se točki za opis. Klik ali Enter odpre stran. Klik na vrhnjo točko vrne na glavno stran. Na dotik prvi dotik odpre opis, drugi stran. Iskanje in nastavitve odpre oznaka nad opisom ali Ctrl+K. Escape zapre opis.','Approach a point for its description. Click or Enter opens the page. The top point returns home. On touch, tap once for the description and again to open the page. Use the label above a description or Ctrl+K for search and settings. Escape closes the description.');
   $('#panel-close').setAttribute('aria-label',t('Zapri','Close'));$('#panel-overline').setAttribute('aria-label',t('AI8 DNA · iskanje in nastavitve','AI8 DNA · search and settings'));$('#panel-overline').title=t('AI8 DNA · iskanje in nastavitve','AI8 DNA · search and settings');
   for(const item of items){buttons.get(item.id)?.setAttribute('aria-label',item.title+' · '+groupName(item));}
   if(active){fillPanel(active);positionPanel();}
@@ -212,7 +213,7 @@ function fillPanel(id){
   const item=items.find(p=>p.id===id);if(!item)return;
   const kind=KINDS[item.kind];$('#panel-overline').textContent=groupName(item)+(kind?' / '+t(...kind):'');$('#panel-title').textContent=item.title;
   body.append(el('p',item[lang]||item.en||item.sl));
-  const a=link('',item.url,'project-cta');a.append(el('span',t('Odpri projekt','Explore project')),el('span','↗'));body.append(a);
+  const a=link('',item.url,'project-cta');a.append(el('span',t('Odpri stran','Open page')),el('span','↗'));body.append(a);
   const related=(item.related||[]).map(x=>items.find(p=>p.id===x)).filter(Boolean);
   if(related.length){const wrap=el('div',undefined,'related');wrap.append(el('span',t('Povezano v verigi','Connected in the strand'),'related-label'));for(const other of related){const b=el('button',other.title);b.type='button';b.addEventListener('click',()=>goTo(other.id));wrap.append(b);}body.append(wrap);}
   body.append(el('span',item.url,'project-path'));
@@ -261,8 +262,15 @@ document.addEventListener('click',e=>{
   const hit=e.detail===0&&target?{id:target===origin?'origin':target.dataset.project,btn:target}:nearestPoint(e.clientX,e.clientY,lastInput==='touch'?28:36);
   if(!hit){closePanel(false);return;}
   e.preventDefault();suppressedHover=null;
-  if(active===hit.id&&pinned){suppressedHover=active;closePanel(true);return;}
   const source=lastInput==='touch'?'touch':e.detail===0?'keyboard':'pointer';
+  if(hit.id==='origin'){location.assign('/index.html');return;}
+  // Mouse and keyboard open the same destination as the popup link.
+  // Touch keeps a first-tap preview; tapping that point again opens its page.
+  if(source!=='touch'||active===hit.id){
+    const item=items.find(item=>item.id===hit.id),url=safeURL(item?.url);
+    if(url)location.assign(url);
+    return;
+  }
   openPanel(hit.id,hit.btn,true,source);
   if(source!=='pointer')$('#panel-close').focus({preventScroll:true});
 });
