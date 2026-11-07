@@ -14,9 +14,9 @@
 .dna-guide-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 12px}
 .dna-guide-title .dna-text-toggle{flex:none;font-size:.7rem}
 .dna-text-toggle[hidden]{display:none}
-/* The eight selected entrances stay recognisable before hover. */
-.dna-node.featured{--radius:5px}
-.dna-node.featured::before{content:"";position:absolute;inset:12px;border:1px solid var(--node);border-radius:50%;box-shadow:0 0 12px color-mix(in srgb,var(--node),transparent 60%);opacity:.6;pointer-events:none;transition:opacity .18s}
-.dna-node.featured .node-label{opacity:.7;font-weight:600}
-.dna-node.featured:is(.is-near,:focus-visible,[aria-expanded=true])::before{opacity:1}
-.dna-node.featured:is(.is-near,:focus-visible,[aria-expanded=true]) .node-label{opacity:1}
+/* The Codex selection and BD's additional DNA highlights share a quiet ring. */
+.dna-node:is(.featured,.dna-top){--radius:5px}
+.dna-node:is(.featured,.dna-top)::before{content:"";position:absolute;inset:12px;border:1px solid var(--node);border-radius:50%;box-shadow:0 0 12px color-mix(in srgb,var(--node),transparent 60%);opacity:.6;pointer-events:none;transition:opacity .18s}
+.dna-node:is(.featured,.dna-top) .node-label{opacity:.7;font-weight:600}
+.dna-node:is(.featured,.dna-top):is(.is-near,:focus-visible,[aria-expanded=true])::before{opacity:1}
+.dna-node:is(.featured,.dna-top):is(.is-near,:focus-visible,[aria-expanded=true]) .node-label{opacity:1}
