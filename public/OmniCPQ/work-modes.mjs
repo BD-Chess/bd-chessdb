@@ -4,7 +4,8 @@ export const WORK_MODES = Object.freeze([
   {mode:'jira',short:'Zahteve',symbol:'02',purpose:'Od poslovne potrebe do sledljivega osnutka.'},
   {mode:'model',short:'Modeliranje',symbol:'03',purpose:'Zasnova PLM modela, pravil in odvisnosti.'},
   {mode:'work',short:'OmniCPQ',symbol:'04',purpose:'Delo v pravem dokumentu in postavki.'},
-  {mode:'plm',short:'Testiranje',symbol:'05',purpose:'E2E od zahteve do dokaza; vključuje PLM teste.'}
+  {mode:'plm',short:'Testiranje',symbol:'05',purpose:'E2E od zahteve do dokaza; vključuje PLM teste.'},
+  {mode:'learning',short:'AI učenje',symbol:'06',purpose:'Preizkusi pomočnika, zberi dokaze in predlagaj izboljšave.',ownerOnly:true}
 ]);
 export const MODE_ALIASES=Object.freeze({CPQ_HELP:'work',PLM_TESTS:'plm',JIRA_REQUIREMENT:'jira',GUIDE:'guide',PLM_MODELING:'model',E2E_TESTS:'plm',requirements:'jira',modeling:'model',testing:'plm',omnicpq:'work'});
 export function normalizeMode(value,fallback='guide'){
@@ -16,7 +17,8 @@ export function normalizeWorkspace(value={}){
   for(const [key,max] of Object.entries(CONTEXT_FIELDS))result[key]=typeof value?.[key]==='string'?value[key].slice(0,max):'';
   return result;
 }
-export const MODE_CONTRACT=`En pomočnik, pet načinov: Vodič → Zahteve → Modeliranje → OmniCPQ → Testiranje.
+export const MODE_CONTRACT=`En pomočnik, šest načinov: Vodič → Zahteve → Modeliranje → OmniCPQ → Testiranje → AI učenje.
+AI učenje je lastniški tester pomočnika z ločenimi omejitvami, dokazi in pregledom predlogov; ni samodejno treniranje uteži ali sprejem poslovnih pravil.
 Stare CPQ_HELP/PLM_TESTS/JIRA_REQUIREMENT obravnavaj združljivo. Testiranje je E2E in vključuje PLM teste.
 Ob menjavi načina ohrani storitev, zahtevo, model/verzijo, dokument/postavko, potrjene odločitve in odprta vprašanja. Že razrešenega ne sprašuj ponovno. Uporabniški zapis odločitve ni odobritev poslovne akcije.
 Vodič loči splošno razlago, potrjeno TS pravilo, datirani podatek, predlog in neznanko. Navedi celotno vidno pot ali URL vira in odločilni odsek. VPI/VPN/VPS ter SD-WAN/SD-WAN Lite ostanejo različne storitve.

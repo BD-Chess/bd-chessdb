@@ -1,10 +1,10 @@
 // Only this application's reviewed, hash-verified shell. No API/auth/CPQ interception.
-const RELEASE = 'c57383775487987f67a0';
-const APP_VERSION = '1.9.3-cpq-evidence-r1';
+const RELEASE = '108f7d9062fe40664818';
+const APP_VERSION = '1.10.0-ai-learning-r1';
 const ROOT = new URL('./', self.registration.scope);
 const PREFIX = 'omnicpq-shell:' + ROOT.pathname + ':';
 const CACHE = PREFIX + RELEASE;
-const FILES = ["index.html","app.css","app.mjs","core.mjs","version.mjs","lifecycle-validation.mjs","prompts.mjs","starters.mjs","work-modes.mjs","experience.mjs","tour.mjs","presentation.html","presentation.mjs","browser-bridge.mjs","browser-bridge-v2.mjs","auto-connect.mjs","agent-session.mjs","browser-help.html","manifest.webmanifest","model-profiles.mjs","demo/index.html","demo/app.mjs","demo/style.css","extension-demo/privacy.mjs","demo-help.html","icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png","icons/favicon-32.png","icons/original.png"];
+const FILES = ["index.html","app.css","app.mjs","core.mjs","version.mjs","lifecycle-validation.mjs","prompts.mjs","starters.mjs","work-modes.mjs","experience.mjs","tour.mjs","presentation.html","presentation.mjs","browser-bridge.mjs","browser-bridge-v2.mjs","auto-connect.mjs","agent-session.mjs","browser-help.html","manifest.webmanifest","model-profiles.mjs","ai-learning-contract.mjs","ai-learning.mjs","demo/index.html","demo/app.mjs","demo/style.css","extension-demo/privacy.mjs","demo-help.html","icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png","icons/favicon-32.png","icons/original.png"];
 const PATHS = new Map(FILES.map(name => [new URL(name, ROOT).pathname, name]));
 PATHS.set(ROOT.pathname, 'index.html');
 PATHS.set(new URL('browser-help',ROOT).pathname,'browser-help.html');

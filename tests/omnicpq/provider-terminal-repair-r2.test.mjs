@@ -291,6 +291,7 @@ const backendImports = [
   "import {normalizeMode,normalizeWorkspace,CONTEXT_FIELDS} from '../public/OmniCPQ/work-modes.mjs';",
   "import {MODEL_PROFILES as profiles,DEFAULT_PROFILE,modelProfile} from '../public/OmniCPQ/model-profiles.mjs';",
   "import {makeDemoHandler} from './lib/omnicpq/demo-assistant.mjs';",
+  "import {makeLearningHandler,learningRoute,learningPayloadFactory} from './lib/omnicpq/ai-learning.mjs';",
 ];
 function loadBackend(provider) {
   let source = backendSource.replace(/\r\n/g, '\n');

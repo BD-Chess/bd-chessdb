@@ -32,15 +32,15 @@ async function appHarness(){
   w.eval(code+'\nwindow.app={state,setMode,getContext,bodyForInput,localWrite,experience};');await w.boot;
   return {dom,w,$,app:w.app,posts:()=>posts};
 }
-test('five ordered modes retain the same service, draft, multiline decisions, model, document and conversation without model requests',async()=>{
+test('six ordered modes retain the same service, draft, multiline decisions, model, document and conversation without model requests',async()=>{
   const h=await appHarness();try{
-    assert.deepEqual([...h.$('mode-nav').querySelectorAll('button')].map(b=>b.textContent.replace(/^\d+/,'')),['Vodič','Zahteve','Modeliranje','OmniCPQ','Testiranje']);
+    assert.deepEqual([...h.$('mode-nav').querySelectorAll('button')].map(b=>b.textContent.replace(/^\d+/,'')),['Vodič','Zahteve','Modeliranje','OmniCPQ','Testiranje','AI učenje']);
     h.$('service').value='VPI';h.$('message').value='UNSAVED_DRAFT';h.$('shared-decisions').value='A  B\nC';h.$('shared-model').value='MODEL_V1';h.$('shared-documentItem').value='DOC_ITEM';h.app.state.messages.push({role:'user',content:'ORIGINAL_QUESTION'});
     const before=h.app.bodyForInput();for(const mode of WORK_MODES){h.$('mode-nav').querySelector(`[data-mode="${mode.mode}"]`).click();assert.equal(h.app.state.mode,mode.mode);assert.equal(h.$('message').value,'UNSAVED_DRAFT');assert.equal(h.$('service').value,'VPI');assert.equal(h.app.getContext().workspace.decisions,'A  B\nC');assert.equal(h.app.state.messages.length,1);}
     assert.equal(h.posts(),0);assert.equal(h.app.bodyForInput().context.workspace.model,'MODEL_V1');assert.equal(h.app.bodyForInput().context.workspace.documentItem,'DOC_ITEM');
     h.app.state.persist=true;h.app.localWrite();const stored=JSON.parse(h.w.localStorage.getItem('omnicpq:workspace:v1'));assert.equal(stored.context.workspace.decisions,'A  B\nC');
     assert.notEqual(core.canonicalInput(before),core.canonicalInput({...before,context:{...before.context,workspace:{...before.context.workspace,decisions:'changed'}}}));
-  }finally{h.dom.window.close();}
+  }finally{h.w.dispatchEvent(new h.w.Event('pagehide'));h.dom.window.close();}
 });
 test('public author explanation restores focus and makes zero AI/CPQ requests; all original prompts remain usable',async()=>{
   const h=await appHarness();try{

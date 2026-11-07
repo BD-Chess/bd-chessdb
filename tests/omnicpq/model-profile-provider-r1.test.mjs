@@ -15,7 +15,7 @@ const problem=(code,status=503)=>Object.assign(Error(code),{code,status});
 const deny=()=>{throw Error('SYNTHETIC_NATIVE_DEPENDENCY_DENIED');};
 function personalFactory(){
  let source=backend.replace(/\r\n/g,'\n');
- const imports=source.match(/^import [^\n]+;\n/gm);assert.equal(imports.length,11);
+ const imports=source.match(/^import [^\n]+;\n/gm);assert.equal(imports.length,12);
  source=source.replace(/^import [^\n]+;\n/gm,'');
  const boundary='\nconst requestGate={seen:new Map(),active:new Set()};';assert.equal(source.split(boundary).length,2);
  source=source.split(boundary)[0].replaceAll('export function ','function ');

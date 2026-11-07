@@ -1,3 +1,4 @@
+export {createLearningUI} from '../../public/OmniCPQ/ai-learning.mjs';
 export {createAutoConnector} from '../../public/OmniCPQ/auto-connect.mjs';
 export {createExperience} from '../../public/OmniCPQ/experience.mjs';
 export {normalizeMode,normalizeWorkspace,CONTEXT_FIELDS} from '../../public/OmniCPQ/work-modes.mjs';

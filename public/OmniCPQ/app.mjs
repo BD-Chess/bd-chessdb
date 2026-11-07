@@ -6,6 +6,7 @@ import { STARTERS, STARTER_VERSION, WORK_MODES, ADDITIONAL_STARTERS } from './st
 import { createBrowserBridge, navigationProposal as guiProposal, cpqLocation } from './browser-bridge-v2.mjs';
 import {createBrowserBridge as createLegacyBridge,navigationProposal as legacyProposal} from './browser-bridge.mjs';
 import {createAutoConnector} from './auto-connect.mjs';
+import {createLearningUI} from './ai-learning.mjs';
 import {createAgentRun,runLimit,actionSignature,recoveryKind,explicitGoalGrant,goalGrantCovers,configuredChoiceGuard,continuationMessage,conversationForModel} from './agent-session.mjs';
 
 const $ = id => document.getElementById(id);
@@ -66,7 +67,7 @@ const state = { mode: 'work', messages: [], comparisons: [], busy: false, ready:
   capture: null, frozen: null, profile: 'careful', promptId: null, persist: false, localSaveFailed: false, health: null, controller: null, otherTiming: null, role: null, accountId: null,
   browserConnected: false, browserObservation: null, browserStop: false, browserPaused: false, guiCheckpoint: null, agentRun:null, pendingDraft: null, release: null,
   comparisonPartner: 'copilot', partnerInputs: {}, browserIncludeChoice: null, browserAutoChoice: null, browserPreviewChoice: false };
-let installEvent, registration, accessEpoch = 0, experience, browserConnectionEpoch=0, browserPairToken=null, browserChoiceEpoch=0;
+let installEvent, registration, accessEpoch = 0, experience, learningUI, browserConnectionEpoch=0, browserPairToken=null, browserChoiceEpoch=0;
 const autoConnector=createAutoConnector({eligible:()=>state.ownerVerified&&state.role==='owner',available:()=>!state.busy,
   visible:()=>document.visibilityState!=='hidden',online:()=>navigator.onLine,
   schedule:(fn,ms)=>window.setTimeout(fn,ms),unschedule:id=>window.clearTimeout(id),
@@ -178,6 +179,8 @@ async function listDemos() {
 }
 function ownerAccess(verified) {
   state.ownerVerified = verified;
+  if(typeof learningUI!=='undefined')learningUI?.setAccess(verified&&state.role==='owner');
+  for(const button of $('mode-nav').children)if(button.dataset.mode==='learning'){button.disabled=!verified||state.role!=='owner';button.title=button.disabled?'Na voljo lastniku':'AI preizkuša pomočnika in pripravi predloge izboljšav.';}
   experience?.setAccess(verified && state.role==='owner');
   $('workspace').hidden = !verified; $('composer').hidden = !verified; $('composer-shell').hidden = !verified; $('access-gate').hidden = verified;
   $('demo-owner').hidden = !verified || state.role !== 'owner';
@@ -239,7 +242,9 @@ function automaticStageGoal(run, observation) {
   return /^(?:odpri|nadaljuj|uredi|pojdi|izberi|klikni|pritisni|vnesi|nastavi|spremeni|konfiguriraj|ustvari|dodaj|odstrani|shrani|oddaj|izbrisi|preklici|storniraj|premakni|oznaci|izpolni|nalozi|povecaj|zmanjsaj|open|continue|edit|go|select|click|press|enter|set|change|configure|create|add|remove|save|submit|delete|cancel|scroll|check|fill|upload)\b/.test(goal);
 }
 function setMode(mode) {
-  mode=normalizeMode(mode);state.mode = mode; $('mode-badge').textContent = WORK_MODES.find(p => p.mode === mode).short;
+  mode=normalizeMode(mode);if(mode==='learning'&&(!state.ownerVerified||state.role!=='owner'))mode='guide';
+  if(typeof learningUI!=='undefined'){if(mode==='learning')void learningUI?.open();else learningUI?.hide();}
+  $('composer-shell').hidden=!state.ownerVerified||mode==='learning';state.mode = mode; $('mode-badge').textContent = WORK_MODES.find(p => p.mode === mode).short;
   for (const button of $('mode-nav').children) { button.classList.toggle('active', button.dataset.mode === mode); button.setAttribute('aria-pressed', String(button.dataset.mode === mode)); }
   showWorkspaceStatus();
 }
@@ -1143,6 +1148,8 @@ async function executeBrowserNavigation(proposal,epoch,guided=false) {
 
 async function send(event, browserRun = null) {
   event?.preventDefault(); if (state.busy) return;
+  if(state.mode==='learning'){if(typeof learningUI!=='undefined')void learningUI?.open();return;}
+  if(typeof learningUI!=='undefined'&&learningUI?.isBusy()){notice('Najprej počakaj na zaključek ali ustavi trenutni preizkus AI učenja.');return;}
   if (!browserRun && experience?.handleCommand($('message').value)) return;
   if (!navigator.onLine) { notice('Brez povezave. Vprašanje ostane osnutek; pozneje ga pošlji sam.'); return; }
   if (!state.ready) { notice('Pomočnik še ni dosegljiv. Preveri dostop v nastavitvah.'); return; }
@@ -1360,6 +1367,7 @@ async function installWorker() {
 }
 
 experience=createExperience({document,window,authorized:()=>state.ownerVerified&&state.role==='owner'&&!state.busy,setMode:mode=>{setMode(mode);localWrite();},setDraft:text=>setDraft(text,state.mode),notice});
+learningUI=createLearningUI({document,window,authorized:()=>state.ownerVerified&&state.role==='owner',canStart:()=>state.ready&&!state.busy,account:()=>state.accountId,notice});
 initCards(); ownerAccess(false);watchViewportInsets();
 try {
   const prefs = JSON.parse(localStorage.getItem(PREFS) || '{}');
