@@ -1,3 +1,4 @@
+import {MODEL_PROFILES as profiles,DEFAULT_PROFILE,modelProfile} from '../../public/OmniCPQ/model-profiles.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -164,10 +165,13 @@ function backend(){
     "import { instructions } from './lib/omnicpq/instructions.mjs';",
     "import { callOpenAI } from './lib/omnicpq/provider.mjs';",
     "import { validateBrowser, starterMetadata, allowedStarter } from './lib/omnicpq/browser.mjs';",
-    "import {normalizeMode,normalizeWorkspace,CONTEXT_FIELDS} from '../public/OmniCPQ/work-modes.mjs';"
+    "import {normalizeMode,normalizeWorkspace,CONTEXT_FIELDS} from '../public/OmniCPQ/work-modes.mjs';",
+    "import {MODEL_PROFILES as profiles,DEFAULT_PROFILE,modelProfile} from '../public/OmniCPQ/model-profiles.mjs';",
+    "import {makeDemoHandler} from './lib/omnicpq/demo-assistant.mjs';",
+    "import {makeLearningHandler,learningRoute,learningPayloadFactory} from './lib/omnicpq/ai-learning.mjs';"
   ]);
-  assert.equal(code.split('export default makeHandler();').length,2);code=code.replace('export default makeHandler();','');
-  const scope=vm.createContext({randomUUID,createHash,APP_VERSION,SKILL:syntheticSkill,ADAPTER_DELTA,error:(code,status=503)=>Object.assign(Error(code),{code,status}),
+  const initializer='\nconst requestGate={seen:new Map(),active:new Set()};';assert.equal(code.split(initializer).length,2);code=code.split(initializer)[0];
+  const scope=vm.createContext({randomUUID,createHash,profiles,DEFAULT_PROFILE,modelProfile,APP_VERSION,SKILL:syntheticSkill,ADAPTER_DELTA,error:(code,status=503)=>Object.assign(Error(code),{code,status}),
     makeDeliveryMetadata:api.makeDeliveryMetadata,instructions:api.instructions,authenticateOmni:deny,demoBudget:deny,loadKnowledge:deny,callOpenAI:deny,
     validateBrowser:()=>null,starterMetadata:{version:'SYNTHETIC'},allowedStarter:()=>false,...modes,
     Netlify:{env:{get:key=>key==='OMNICPQ_MODEL'?'gpt-6-luna':undefined}},process:{env:new Proxy({},{get:deny})},fetch:deny,
@@ -176,17 +180,18 @@ function backend(){
   vm.runInContext(stripExports(code)+'\nglobalThis.handlerApi={makeHandler,validateBody,buildPayload};',scope);return scope.handlerApi;
 }
 test('V19 actual health and SSE metadata report delivery separately without provider/config/auth changes',async()=>{
-  const b=backend(),k=createMemoryRetriever();let mockTransportCalls=0;
+  const b=backend(),k=createMemoryRetriever();let mockTransportCalls=0,expectedProfile='fast';
   const handler=b.makeHandler({accessFactory:async()=>({id:'SYNTHETIC_OWNER',role:'owner'}),knowledgeFactory:async()=>k,enabled:true,
     budgetFactory:()=>({reserve:async()=>({id:'SYNTHETIC_HOLD'}),settle:async()=>({status:'SYNTHETIC'})}),
-    transport:async({payload,onText})=>{mockTransportCalls++;assert.equal(payload.model,'gpt-6-luna');assert.equal(payload.max_output_tokens,6000);assert.equal(payload.store,false);onText('SYNTHETIC_TRANSPORT_NOT_MODEL_REPLY');return{usage:{inputTokens:1,outputTokens:1}};}});
+    transport:async({payload,onText})=>{mockTransportCalls++;assert.equal(payload.model,modelProfile(expectedProfile).model);assert.equal(payload.reasoning.effort,modelProfile(expectedProfile).reasoning);assert.equal(payload.max_output_tokens,6000);assert.equal(payload.store,false);onText('SYNTHETIC_TRANSPORT_NOT_MODEL_REPLY');return{usage:{inputTokens:1,outputTokens:1}};}});
   const health=await (await handler(new Request('https://example.test/.netlify/functions/omnicpq-assistant'))).json();
   assert.equal(health.deliveryRelease.delivery_version,'v19');assert.equal(health.version,APP_VERSION);assert.equal(health.skill.release,'v16');assert.equal(health.skill.version,'v0.1.6');assert.equal(mockTransportCalls,0);
   for(const profile of ['fast','careful']){
+    expectedProfile=profile;
     const body={message:'Katero verzijo pomočnika uporabljam?',mode:'guide',profile,clientRequestId:randomUUID(),context:{text:''},history:[],service:'SDWAN'};
     const response=await handler(new Request('https://example.test/.netlify/functions/omnicpq-assistant',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}));
     const events=(await response.text()).split('\n').filter(l=>l.startsWith('data: ')).map(l=>JSON.parse(l.slice(6)));
-    const meta=events.find(e=>e.type==='meta');assert(meta);assert.equal(meta.deliveryRelease.release_id,'OmniCPQ-v19-20261103');assert.equal(meta.skill.release,'v16');assert.equal(meta.requestedReasoning,profile==='fast'?'low':'high');assert.equal(meta.observedModel,'UNKNOWN');assert(events.some(e=>e.type==='done'));
+    const meta=events.find(e=>e.type==='meta');assert(meta);assert.equal(meta.deliveryRelease.release_id,'OmniCPQ-v19-20261103');assert.equal(meta.skill.release,'v16');assert.equal(meta.requestedReasoning,modelProfile(profile).reasoning);assert.equal(meta.observedModel,'UNKNOWN');assert(events.some(e=>e.type==='done'),JSON.stringify(events.map(e=>({type:e.type,code:e.code,partial:e.partial}))));
   }
   assert.equal(mockTransportCalls,2,'Two source-free mocks, zero actual provider calls');
   const unauthorized=b.makeHandler({accessFactory:async()=>{throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});},knowledgeFactory:deny,enabled:true});
