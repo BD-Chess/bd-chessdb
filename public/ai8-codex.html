@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="sl" data-lang="sl" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="AI8 Codex — zgoščen, interaktiven zapis orodij, raziskav in domišljije BD × AI Lab. Vsaka povezava odpre novo plast.">
+  <meta name="theme-color" content="#f4f1e9">
+  <meta name="color-scheme" content="light dark">
+  <title>AI8 Codex · BD × AI Lab</title>
+  <link rel="canonical" href="https://www.mdlxdcc.org/ai8-codex.html">
+  <meta property="og:title" content="AI8 Codex · BD × AI Lab">
+  <meta property="og:description" content="A compact, interactive record of tools, research and imagination. Explore the connections.">
+  <meta property="og:url" content="https://www.mdlxdcc.org/ai8-codex.html">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23203632'/%3E%3Cg fill='none' stroke='%23bed2ab' stroke-width='2'%3E%3Cpath d='M32 8 53 44H11ZM11 20h42L32 56Z'/%3E%3Ccircle cx='32' cy='32' r='6'/%3E%3C/g%3E%3C/svg%3E">
+  <script>try{const r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),f=Number(localStorage.getItem('mdlxdcc-font'));if(t==='light'||t==='dark')r.dataset.theme=t;if(f>=.8&&f<=1.5)r.style.setProperty('--scale',f)}catch(_){}</script>
+<script id="mdlxdcc-locale">/* Existing MDLxDCC locale contract: manual > saved > SI country hint > English. */
+(function(){
+'use strict';
+if(window.MDLxDCCLocale)return;
+const root=document.documentElement,KEY='mdlxdcc-locale-v1',LEGACY='mdlxdcc-lang',COOKIE='mdlxdcc_locale',listeners=new Set();
+let selection=null,generation=0,controller=null;
+const valid=x=>x==='en'||x==='sl';
+const get=k=>{try{return localStorage.getItem(k);}catch(_){return null;}};
+function parse(v){try{const x=JSON.parse(v);return x&&valid(x.lang)&&['manual','geo'].includes(x.source)&&Number.isFinite(x.at)&&x.at>=0?{lang:x.lang,source:x.source,at:x.at}:null;}catch(_){return null;}}
+function cookie(){try{const x=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));return x?parse(decodeURIComponent(x.slice(COOKIE.length+1))):null;}catch(_){return null;}}
+function read(){const l=parse(get(KEY)),c=cookie();let v=!l?c:!c?l:c.at>l.at?c:l;const old=get(LEGACY);if(valid(old)&&(!v||(v.lang!==old&&(!c||(l&&l.at>=c.at)))))v={lang:old,source:'manual',at:Date.now()};return v;}
+function persist(){if(!selection)return;const data=JSON.stringify(selection);try{localStorage.setItem(LEGACY,selection.lang);localStorage.setItem('bdPortraitLang',selection.lang);localStorage.setItem(KEY,data);}catch(_){}try{if(!/^https?:$/.test(location.protocol))return;const h=location.hostname.toLowerCase(),d=h==='mdlxdcc.org'||h==='www.mdlxdcc.org'?'; Domain=mdlxdcc.org':'';document.cookie=COOKIE+'='+encodeURIComponent(data)+'; Path=/; Max-Age=31536000; SameSite=Lax'+d+(location.protocol==='https:'?'; Secure':'');}catch(_){}}
+const current=()=>selection?selection.lang:'en';
+function apply(){root.lang=current();root.dataset.lang=current();root.dataset.localeSource=selection?selection.source:'fallback';listeners.forEach(fn=>{try{fn(current());}catch(_){}});window.dispatchEvent(new CustomEvent('mdlxdcc:language',{detail:{lang:current(),source:root.dataset.localeSource}}));}
+function choose(lang){if(!valid(lang))return;generation++;if(controller)controller.abort();selection={lang,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};persist();apply();}
+function subscribe(fn){if(typeof fn!=='function')return()=>{};listeners.add(fn);fn(current());return()=>listeners.delete(fn);}
+function refresh(){const n=read();if(n&&(!selection||n.at>selection.at||n.lang!==selection.lang)){generation++;if(controller)controller.abort();selection=n;persist();apply();}}
+selection=read();try{const q=new URLSearchParams(location.search).get('lang');if(valid(q))selection={lang:q,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};}catch(_){}
+window.MDLxDCCLocale=Object.freeze({current,choose,subscribe,refresh,version:'1.0'});root.classList.add('js');if(selection)persist();apply();
+window.addEventListener('storage',e=>{if([KEY,LEGACY,null].includes(e.key))refresh();});window.addEventListener('pageshow',refresh);window.addEventListener('focus',refresh);
+if(!selection&&/^https?:$/.test(location.protocol)&&typeof fetch==='function'){
+const start=generation;controller=typeof AbortController==='function'?new AbortController():null;let expired=false;
+const timeout=setTimeout(()=>{expired=true;if(controller)controller.abort();},2200);
+fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',headers:{Accept:'application/json'},...(controller?{signal:controller.signal}:{})}).then(r=>{if(!r.ok||!(r.headers.get('content-type')||'').includes('application/json'))throw Error('No country response');return r.json();}).then(d=>{if(expired||generation!==start||selection||!d||!valid(d.language))return;selection=read()||{lang:d.language,source:'geo',at:Date.now()};persist();apply();}).catch(()=>{}).finally(()=>clearTimeout(timeout));
+}
+})();</script>
+  <link rel="stylesheet" href="./assets/ai8-entry/codex.css">
+  <script type="module" src="./assets/ai8-entry/codex.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#projects"><span class="sl">Na projekte</span><span class="en">Skip to projects</span></a>
+  <div class="page">
+    <header class="masthead">
+      <a class="brand" href="./index.html" aria-label="BD × AI Lab · domov / home">BD <span>×</span> AI <small>LAB</small></a>
+      <span class="edition">AI8 CODEX</span>
+      <button class="settings-button" id="settings-open" type="button" aria-label="Nastavitve / Settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6m6 4v6"/></svg></button>
+    </header>
+
+    <main>
+      <section class="opening" aria-labelledby="page-title">
+        <div class="opening-copy">
+          <p class="overline"><span class="sl">Orodja · raziskave · domišljija</span><span class="en">Tools · research · imagination</span></p>
+          <h1 id="page-title"><span class="sl">Sledi <em>povezavam.</em></span><span class="en">Follow the <em>connections.</em></span></h1>
+          <p class="invitation"><span class="sl">Postoj na znaku. Odpri idejo.</span><span class="en">Pause on a symbol. Open an idea.</span><span class="touch-hint sl"> Dotakni se za več.</span><span class="touch-hint en"> Tap to explore.</span></p>
+        </div>
+        <div class="idea-map" aria-label="MDL · DCC · AI8">
+          <svg class="geometry" viewBox="0 0 300 180" aria-hidden="true"><g id="geometry-petals"></g><circle cx="150" cy="90" r="65" class="geometry-circle"/><path d="M30 90h240M150 13v154" class="geometry-axis"/><circle cx="150" cy="90" r="3" class="geometry-core"/></svg>
+          <button class="term term-mdl" data-term="mdl" type="button" aria-haspopup="dialog">MDL<span class="term-dot"></span></button>
+          <button class="term term-dcc" data-term="dcc" type="button" aria-haspopup="dialog"><span class="term-dot"></span>DCC</button>
+          <button class="term term-ai8" data-term="ai8" type="button" aria-haspopup="dialog">AI8<span class="term-dot"></span></button>
+        </div>
+      </section>
+
+      <section class="project-section" id="projects" aria-label="Izbrani projekti / Selected projects">
+        <div class="section-rule"><span class="sl">Izbrani zapisi</span><span class="en">Selected records</span><span class="section-index">01 — 08</span></div>
+        <div class="project-grid" id="project-grid"></div>
+        <noscript><p>Projekti / Projects: <a href="/Trip/">TripOpti</a> · <a href="/crp/mdlxdcc">MDL×DCC</a> · <a href="https://chessbest.org/">ChessBest</a> · <a href="/S/">Sudoku</a> · <a href="/AI8/">AI8</a> · <a href="/8zMaterials.html">8zMaterials</a> · <a href="/8Z/8zip.html">8zip</a>. <a href="/index-atlas.html">Atlas — celotna zbirka / full collection</a>.</p></noscript>
+      </section>
+
+      <section class="related-section" aria-label="Nadaljnje povezave / Further connections">
+        <span class="section-label"><span class="sl">Še niti</span><span class="en">More threads</span></span>
+        <div class="thread-links" id="thread-links"></div>
+      </section>
+
+      <details class="catalogue" id="catalogue">
+        <summary><span><span class="sl">Celoten zapis</span><span class="en">The complete record</span><span class="catalogue-count" id="catalogue-count"></span></span><span class="expand-sign" aria-hidden="true"></span></summary>
+        <div class="catalogue-body">
+          <label class="search-label" for="catalogue-search"><span class="sl">Išči po vseh vezeh, tudi po zaprtih razdelkih.</span><span class="en">Search every connection, including closed sections.</span></label>
+          <div class="search-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="catalogue-search" type="search" autocomplete="off" spellcheck="false" placeholder="Projekt, pojem, povezava …" aria-describedby="catalogue-status"></div>
+          <p class="catalogue-status" id="catalogue-status" role="status" aria-live="polite"></p>
+          <div id="catalogue-groups"></div>
+          <a class="atlas-link" href="./index-atlas.html"><span class="sl">Odpri Atlas</span><span class="en">Open the Atlas</span><span aria-hidden="true">↗</span></a>
+        </div>
+      </details>
+    </main>
+
+    <footer class="footer"><a href="./index.html">MDL×DCC.org</a><a class="dna-link" href="./ai8-dna.html"><svg viewBox="0 0 22 30" aria-hidden="true"><path d="M5 2c0 13 12 13 12 26M17 2C17 15 5 15 5 28M6 5h10M8 10h6M8 20h6M6 25h10"/></svg>AI8 DNA<span aria-hidden="true">↗</span></a></footer>
+  </div>
+
+  <section class="reveal" id="reveal" role="dialog" aria-modal="false" aria-labelledby="reveal-title" aria-describedby="reveal-description" hidden>
+    <div class="reveal-top"><span id="reveal-kind" class="overline"></span><button class="reveal-close" id="reveal-close" type="button" aria-label="Zapri / Close">×</button></div>
+    <h2 id="reveal-title"></h2><p id="reveal-description"></p>
+    <nav class="reveal-related" id="reveal-related" aria-label="Sorodne povezave / Related connections"></nav>
+    <a class="reveal-link" id="reveal-link"><span class="sl">Odpri zapis</span><span class="en">Open the record</span><span aria-hidden="true">↗</span></a>
+  </section>
+
+  <dialog class="settings" id="settings" aria-labelledby="settings-title">
+    <div class="settings-top"><h2 id="settings-title"><span class="sl">Nastavitve</span><span class="en">Settings</span></h2><button class="reveal-close" id="settings-close" type="button" aria-label="Zapri / Close">×</button></div>
+    <div class="setting-row"><span><span class="sl">Jezik</span><span class="en">Language</span></span><div class="controls"><button type="button" data-language="sl">SL</button><button type="button" data-language="en">EN</button></div></div>
+    <div class="setting-row"><span><span class="sl">Tema</span><span class="en">Theme</span></span><button type="button" id="theme-switch" class="theme-switch">◐</button></div>
+    <div class="setting-row"><span><span class="sl">Besedilo</span><span class="en">Text</span></span><div class="controls"><button type="button" id="font-down" aria-label="Manjše besedilo / Smaller text">A−</button><button type="button" id="font-reset" aria-label="Ponastavi velikost / Reset size">100%</button><button type="button" id="font-up" aria-label="Večje besedilo / Larger text">A+</button></div></div>
+    <nav class="entry-links" aria-label="Vstopne strani / Entrances"><a href="./index.html"><span class="sl">Domov</span><span class="en">Home</span></a><a href="./index-search.html"><span class="sl">Metoda</span><span class="en">Method</span></a><a href="./index-atlas.html">Atlas</a><a href="./index-todo.html"><span class="sl">Zdaj in potem</span><span class="en">Now & next</span></a><a href="./index-intro.html"><span class="sl">Predstavitev</span><span class="en">Introduction</span></a><a href="./proposal1.html"><span class="sl">Odkrij</span><span class="en">Discover</span></a><a href="./ai8-dna.html">AI8 DNA</a></nav>
+  </dialog>
+</body>
+</html>
