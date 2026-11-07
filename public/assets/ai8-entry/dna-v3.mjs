@@ -1,4 +1,4 @@
-import {CURATED, GROUPS, loadCatalogue} from './catalog.mjs';
+import {CURATED, GROUPS, loadCatalogue} from './featured-catalog.mjs';
 import {textEnabled} from './text-setting.mjs';
 
 const $ = s => document.querySelector(s), root = document.documentElement;
@@ -14,8 +14,7 @@ if (!['sl','en'].includes(lang)) lang = 'en';
 let scale = Number(read('mdlxdcc-font','1'));if(!(scale>=.8&&scale<=1.5))scale=1;
 root.style.setProperty('--scale',scale);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-const currentEntrance=entries=>entries.map(item=>item.id==='ai8-dna'?{...item,url:'/ai8-dna-v3.html'}:item);
-let paused = read('ai8-dna-current-paused') === 'true', items = currentEntrance(CURATED), complete = false;
+let paused = read('ai8-dna-current-paused') === 'true', items = [...CURATED], complete = false;
 let active = null, pinned = false, opener = null, hoverTimer, closeTimer, ignoreFocus = false;
 let interaction = null, lastInput = 'keyboard', pendingHover = null, closeReason = null, nearNode = null, suppressedHover = null;
 let width = document.documentElement.clientWidth, height = innerHeight, frame = 0;
@@ -36,7 +35,7 @@ function setLang(next,persist = true) {
   origin.title=t('Klik odpre glavno stran','Click to open the home page');
   $('#dna-instructions').textContent=t('Približaj se točki za opis. Klik ali Enter odpre stran. Klik na vrhnjo točko vrne na glavno stran. Na dotik prvi dotik odpre opis, drugi stran. Iskanje in nastavitve odpre oznaka nad opisom ali Ctrl+K. Escape zapre opis.','Approach a point for its description. Click or Enter opens the page. The top point returns home. On touch, tap once for the description and again to open the page. Use the label above a description or Ctrl+K for search and settings. Escape closes the description.');
   $('#panel-close').setAttribute('aria-label',t('Zapri','Close'));$('#panel-overline').setAttribute('aria-label',t('AI8 DNA · iskanje in nastavitve','AI8 DNA · search and settings'));$('#panel-overline').title=t('AI8 DNA · iskanje in nastavitve','AI8 DNA · search and settings');
-  for(const item of items){buttons.get(item.id)?.setAttribute('aria-label',item.title+' · '+groupName(item));}
+  for(const item of items){buttons.get(item.id)?.setAttribute('aria-label',item.title+' · '+groupName(item)+(item.featured?' · '+t('Izbrani projekt','Featured project'):''));}
   if(active){fillPanel(active);positionPanel();}
 }
 
@@ -90,7 +89,7 @@ function renderNodes(){
       btn.style.setProperty('--node',GROUPS[item.group]?.color||palette[i%palette.length]);btn.style.setProperty('--delay',(-(i*3.73)%13)+'s');
       bindNode(btn,item.id);buttons.set(item.id,btn);nodes.append(btn);observer.observe(btn);
     }
-    btn.setAttribute('aria-label',item.title+' · '+groupName(item));
+    btn.setAttribute('aria-label',item.title+' · '+groupName(item)+(item.featured?' · '+t('Izbrani projekt','Featured project'):''));
     const p=nodePosition(i);btn.style.left=p.x+'px';btn.style.top=p.y+'px';
     const left=p.x<p.centre;btn.classList.toggle('label-left',left);btn.style.setProperty('--label-width',Math.max(12,Math.min(220,(left?p.x-26:width-p.x-26)/1.5))+'px');
   });
@@ -285,7 +284,7 @@ reduced.addEventListener('change',()=>{applyMotion();const motion=body.querySele
 document.addEventListener('visibilitychange',()=>{if(document.hidden)root.classList.add('paused');else applyMotion();});
 setLang(lang,!!queryLang);applyMotion();renderNodes();
 loadCatalogue().then(result=>{
-  items=currentEntrance(result.items);complete=result.complete;renderNodes();
+  items=result.items;complete=result.complete;renderNodes();
   if(active==='origin'){
     const count=body.querySelector('.origin-count');
     if(count)count.textContent=items.length+' '+t('povezav','connections')+' · '+(complete?t('javna zbirka','public collection'):t('izbor projektov','selected projects'));

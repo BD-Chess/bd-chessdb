@@ -1,4 +1,4 @@
-import {CURATED, GROUPS, GLOSSARY, loadCatalogue} from './catalog.mjs';
+import {CURATED, GROUPS, GLOSSARY, loadCatalogue, RESEARCH_ONLY_IDS} from './featured-catalog.mjs';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], root=document.documentElement;
 const read=(k,f)=>{try{return localStorage.getItem(k)||f}catch{return f}},save=(k,v)=>{try{localStorage.setItem(k,String(v))}catch{}};
@@ -20,6 +20,8 @@ function art(id){
   if(id==='chessbest')return wrap('<g class="subtle"><path d="M49 14h82v82H49ZM49 34.5h82M49 55h82M49 75.5h82M69.5 14v82M90 14v82M110.5 14v82"/><path d="M49 14h20.5v20.5H49ZM90 14h20.5v20.5H90ZM69.5 34.5H90V55H69.5ZM110.5 34.5H131V55h-20.5ZM49 55h20.5v20.5H49ZM90 55h20.5v20.5H90ZM69.5 75.5H90V96H69.5ZM110.5 75.5H131V96h-20.5Z" class="solid" opacity=".22"/></g><path d="M75 80h35M77 75h30c-4-8-5-12-3-19 4-15-1-24-13-28l-2-8-6 9-14 14 2 10 11-4 8-9c1 15-14 17-13 35Z" stroke-width="1.8" fill="var(--bg)"/><circle cx="83" cy="36" r="1.5" class="solid"/>');
   if(id==='sudoku'){let s='<rect x="49.5" y="14.5" width="81" height="81"/>';for(let i=1;i<9;i++)s+=`<path d="M${49.5+i*9} 14.5v81M49.5 ${14.5+i*9}h81" stroke-width="${i%3?'.4':'1.15'}" opacity="${i%3?'.4':'1'}"/>`;return wrap(s+'<g style="font-size:8px"><text x="54" y="19" style="font-size:8px">5</text><text x="72" y="37" style="font-size:8px">9</text><text x="108" y="19" style="font-size:8px">1</text><text x="90" y="55" style="font-size:8px">5</text><text x="63" y="73" style="font-size:8px">8</text><text x="117" y="82" style="font-size:8px">4</text><text x="99" y="91" style="font-size:8px">6</text></g>')}
   if(id==='ai8'){let s='<circle cx="90" cy="55" r="37" stroke-dasharray="1 5" class="subtle"/>';for(let i=0;i<8;i++){let a=i*Math.PI/4,x=90+Math.cos(a)*37,y=55+Math.sin(a)*37;s+=`<path d="M90 55 ${x} ${y}" class="subtle"/><circle cx="${x}" cy="${y}" r="4"/>`}return wrap(s+'<circle cx="90" cy="55" r="11"/><circle cx="90" cy="55" r="2" class="solid"/>')}
+  if(id==='nara')return wrap('<path d="M90 35C76 25 57 23 39 28v55c19-5 37-3 51 7 14-10 32-12 51-7V28c-18-5-37-3-51 7v55" stroke-width="1.5"/><path d="M49 44c11-2 23 0 31 5M49 57c11-2 23 0 31 5M101 61c10-4 19-5 29-3M101 73c10-4 19-5 29-3" class="subtle"/><path d="m116 32 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z"/><circle cx="68" cy="73" r="3" class="solid"/>');
+  if(id==='flip4m'){let s='<rect x="55" y="17" width="70" height="76" rx="4"/>';for(let row=0;row<4;row++)for(let col=0;col<4;col++)s+=`<circle cx="${67+col*15}" cy="${31+row*16}" r="4.5"${row===col?' class="solid"':' class="subtle"'}/>`;return wrap(s+'<path d="M43 35c-14 8-14 29 0 39m-8-1 8 1-1-8M137 75c14-8 14-29 0-39m8 1-8-1 1 8"/>')}
   if(id==='materials')return wrap('<path d="m90 13 36 21v42L90 97 54 76V34ZM54 34l36 21 36-21M90 55v42M90 13v42M54 76l36-21 36 21"/><path d="m72 24 36 21v42M108 24 72 45v42M54 55l36 21 36-21" class="subtle"/><g class="solid"><circle cx="90" cy="13" r="2.3"/><circle cx="126" cy="34" r="2.3"/><circle cx="126" cy="76" r="2.3"/><circle cx="90" cy="97" r="2.3"/><circle cx="54" cy="76" r="2.3"/><circle cx="54" cy="34" r="2.3"/><circle cx="90" cy="55" r="2.8"/></g>');
   if(id==='8zip'){let s='';for(let j=0;j<6;j++){s+=`<path d="M28 ${25+j*12}h${24+(j%3)*11}" opacity="${.35+j*.1}"/>`;s+=`<path d="M120 ${32+j*9}h28"/>`}return wrap(s+'<path d="M77 55h24m-6-6 6 6-6 6"/><path d="M115 19h38v72h-38Z" class="subtle"/>')}
   if(id==='human-middle')return wrap('<circle cx="90" cy="52" r="39" class="subtle"/><ellipse cx="90" cy="52" rx="20" ry="39"/><path d="M51 52h78M57 31h66M57 73h66" class="subtle"/><circle cx="90" cy="44" r="5" fill="var(--bg)"/><path d="M90 51v24m-12-16 12-6 12 6M90 75l-7 17m7-17 7 17" stroke-width="1.7"/>');
@@ -65,7 +67,7 @@ function renderProjects(){
     b.append(top,illustration,node('span','tile-title',p.title),node('span','tile-group',groupName(p)));bindReveal(b,p);grid.append(b);
   });
   const threads=$('#thread-links');threads.replaceChildren();
-  CURATED.filter(p=>!p.featured && p.kind!=='entrance').slice(0,12).forEach(p=>{const b=node('button','thread-link',p.title);b.type='button';bindReveal(b,p);threads.append(b)});
+  CURATED.filter(p=>!p.featured && p.kind!=='entrance' && !RESEARCH_ONLY_IDS.includes(p.id)).slice(0,12).forEach(p=>{const b=node('button','thread-link',p.title);b.type='button';bindReveal(b,p);threads.append(b)});
 }
 function renderCatalogue(){
   const q=normal($('#catalogue-search').value.trim()),terms=q.split(/\s+/).filter(Boolean),shown=catalogue.filter(p=>terms.every(term=>normal([p.title,p.sl,p.en,p.url,p.mark,groupName(p)].join(' ')).includes(term)));
