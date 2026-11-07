@@ -158,12 +158,29 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
     @media(max-width:450px){.cards{grid-template-columns:1fr 1fr}.card{min-height:350px;padding:16px}.card-visual{height:100px;margin:7px 0 15px}.card h3{font-size:1.16rem}.card p{font-size:.85rem;line-height:1.55}.tag{font-size:.6rem;letter-spacing:.035em}.card-number{font-size:.6rem}.card-link{font-size:.8rem;padding-top:20px}.hero-actions{display:grid;grid-template-columns:1fr 1fr}.hero-actions .button-primary{grid-column:1 / -1}.hero-actions .button{gap:7px}.art-foot .sequence{gap:8px}.about-inner{padding:27px}.footer-links{gap:12px}}
     @media(max-width:330px){.cards{grid-template-columns:1fr}.card{min-height:315px}.nav a{font-size:.69rem}.brand-name{font-size:1.02rem}}
     html[data-lang="sl"] .ai8-vision .en,html[data-lang="sl"] .ai8-vision-dialog .en,html[data-lang="en"] .ai8-vision .sl,html[data-lang="en"] .ai8-vision-dialog .sl,html[data-lang="sl"] .human-middle .en,html[data-lang="sl"] .human-middle-dialog .en,html[data-lang="en"] .human-middle .sl,html[data-lang="en"] .human-middle-dialog .sl{display:none!important}
-    .legacy-doors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:25px}
-    .legacy-doors .door{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:64px;padding:15px;border:1px solid var(--line);background:var(--surface);font-size:.82rem;font-weight:700}
-    .legacy-doors .door:hover{background:var(--soft)}
     .font-tools{display:flex;align-items:center}
     .font-tools .tool{min-width:34px}
-    @media(max-width:700px){.legacy-doors{grid-template-columns:1fr 1fr}.font-tools{display:none}}
+    .site-menu{position:relative;margin-left:auto;flex:none}
+    .site-menu summary{display:grid;place-items:center;list-style:none;width:46px;height:46px;cursor:pointer;border:1px solid var(--line);border-radius:5px;color:var(--ink);background:var(--surface)}
+    .site-menu summary::-webkit-details-marker{display:none}
+    .site-menu summary:hover,.site-menu[open] summary{background:var(--soft);border-color:var(--green)}
+    .site-menu summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+    .site-menu-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:30;width:min(370px,calc(100vw - 40px));max-height:min(78vh,680px);overflow:auto;overscroll-behavior:contain;padding:22px;background:var(--surface);border:1px solid var(--line);box-shadow:0 18px 45px rgba(14,34,24,.17)}
+    .menu-heading{margin:0 0 10px;color:var(--muted);font-size:.68rem;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    .menu-links{display:grid;border-top:1px solid var(--line)}
+    .menu-links a{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:45px;padding:8px 4px;border-bottom:1px solid var(--line);font-size:.91rem;font-weight:600}
+    .menu-links a:hover{color:var(--green)}
+    .menu-links a[aria-current="page"]{color:var(--green)}
+    .menu-links a span:last-child{color:var(--muted);font-weight:400}
+    .menu-settings{margin-top:24px}
+    .menu-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;border-top:1px solid var(--line);font-size:.84rem}
+    .menu-setting:last-child{border-bottom:1px solid var(--line)}
+    .site-menu .font-tools,.menu-language{display:flex;align-items:center;gap:2px}
+    .site-menu .tool{min-width:40px;height:40px}
+    .site-menu .tool:disabled{opacity:.4;cursor:not-allowed}
+    .menu-theme{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font-size:.77rem;cursor:pointer}
+    .menu-theme:hover{background:var(--soft)}
+    @media(max-width:700px){.topbar-inner{padding:13px 0;flex-wrap:nowrap;min-height:76px}.site-menu-panel{padding:18px}.site-menu .font-tools{display:flex}}
     @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
   </style>
 </head>
@@ -172,18 +189,25 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
   <header class="topbar">
     <div class="wrap topbar-inner">
       <div class="brand"><button class="brand-home" id="guide-brand-toggle" type="button" aria-expanded="false" aria-controls="guide-panel" aria-label="MDL×DCC — odpri ali skrij vodnika"><span class="brand-name">MDL<span class="multiply">×</span>DCC</span></button><span class="brand-sub"><a href="./Start/index.html">BD</a><span class="brand-times" aria-hidden="true">×</span><button id="guide-toggle" type="button" aria-expanded="false" aria-controls="guide-panel" aria-label="AI — odpri ali skrij vodnika">AI</button><button id="guide-lab" type="button" aria-haspopup="dialog" aria-controls="ai8-vision-dialog">LAB</button></span></div>
-      <nav class="nav" aria-label="Glavna navigacija" data-aria-sl="Glavna navigacija" data-aria-en="Main navigation">
-        <a href="#odkrij" data-sl="Odkrij" data-en="Discover">Odkrij</a>
-        <a href="#metoda" data-sl="Kako deluje" data-en="The method">Kako deluje</a>
-        <a href="#raziskuj" data-sl="Razišči" data-en="Explore">Razišči</a>
-        <a href="#bojan" data-sl="O Bojanu" data-en="About Bojan">O Bojanu</a>
-      </nav>
-      <div class="tools" role="group" aria-label="Jezik in videz" data-aria-sl="Jezik in videz" data-aria-en="Language and appearance">
-        <div class="font-tools" role="group" aria-label="Velikost besedila" data-aria-sl="Velikost besedila" data-aria-en="Text size"><button class="tool" id="font-down" type="button" aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button><button class="tool" id="font-value" type="button" aria-label="Ponastavi velikost besedila" data-aria-sl="Ponastavi velikost besedila" data-aria-en="Reset text size">100%</button><button class="tool" id="font-up" type="button" aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button></div>
-        <button class="tool theme-tool" type="button" id="theme" aria-pressed="false" aria-label="Preklopi svetlo ali temno temo" data-aria-sl="Preklopi svetlo ali temno temo" data-aria-en="Toggle light or dark theme" title="Svetla / temna tema"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M10 3a7 7 0 0 0 0 14z" fill="currentColor"/></svg></button>
-        <button class="tool" type="button" data-lang="sl" aria-pressed="true" aria-label="Slovenščina">SL</button>
-        <button class="tool" type="button" data-lang="en" aria-pressed="false" aria-label="English">EN</button>
-      </div>
+      <details class="site-menu" id="site-menu">
+        <summary id="site-menu-trigger" aria-label="Meni" data-aria-sl="Meni" data-aria-en="Menu" aria-controls="site-menu-panel" aria-expanded="false" title="Meni"><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary>
+        <div class="site-menu-panel" id="site-menu-panel">
+          <p class="menu-heading" id="menu-pages-label" data-sl="Strani" data-en="Pages">Strani</p>
+          <nav class="menu-links" id="original-grid" aria-labelledby="menu-pages-label">
+            <a class="door" href="#top" aria-current="page"><span data-sl="Začetna · Odkrij" data-en="Home · Discover">Začetna · Odkrij</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="index-search.html"><span data-sl="Metoda" data-en="The method">Metoda</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="index-atlas.html"><span data-sl="Atlas" data-en="Atlas">Atlas</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="index-todo.html"><span data-sl="Zdaj in potem" data-en="Now & next">Zdaj in potem</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="index-intro.html"><span data-sl="Predstavitev" data-en="Overview">Predstavitev</span><span aria-hidden="true">↗</span></a>
+          </nav>
+          <section class="menu-settings" aria-labelledby="menu-settings-label">
+            <p class="menu-heading" id="menu-settings-label" data-sl="Nastavitve" data-en="Settings">Nastavitve</p>
+            <div class="menu-setting"><span data-sl="Jezik" data-en="Language">Jezik</span><div class="menu-language" role="group" aria-label="Jezik" data-aria-sl="Jezik" data-aria-en="Language"><button class="tool" type="button" data-lang="sl" aria-pressed="true" aria-label="Slovenščina">SL</button><button class="tool" type="button" data-lang="en" aria-pressed="false" aria-label="English">EN</button></div></div>
+            <div class="menu-setting"><span data-sl="Velikost besedila" data-en="Text size">Velikost besedila</span><div class="font-tools" role="group" aria-label="Velikost besedila" data-aria-sl="Velikost besedila" data-aria-en="Text size"><button class="tool" id="font-down" type="button" aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button><button class="tool" id="font-value" type="button" aria-label="Ponastavi velikost besedila" data-aria-sl="Ponastavi velikost besedila" data-aria-en="Reset text size">100%</button><button class="tool" id="font-up" type="button" aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button></div></div>
+            <div class="menu-setting"><span data-sl="Tema" data-en="Theme">Tema</span><button class="menu-theme" type="button" id="theme" aria-pressed="false" aria-label="Preklopi svetlo ali temno temo" data-aria-sl="Preklopi svetlo ali temno temo" data-aria-en="Toggle light or dark theme" title="Svetla / temna tema"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M10 3a7 7 0 0 0 0 14z" fill="currentColor"/></svg><span id="theme-label">Svetla</span></button></div>
+          </section>
+        </div>
+      </details>
     </div>
   </header>
 
@@ -333,8 +357,6 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
 </section>
 <dialog class="human-middle-dialog" id="human-middle-dialog" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="human-middle-title" data-revision="20261009-r17"></dialog>
     </div>
-    <section class="section wrap section-top" aria-labelledby="original-title"><p class="eyebrow" data-sl="Znane poti" data-en="Familiar paths">Znane poti</p><h2 id="original-title"><span data-sl="Štirje vhodi" data-en="Four ways in">Štirje vhodi</span><em>.</em></h2><div class="legacy-doors" id="original-grid"><a class="door" href="index-search.html"><span data-sl="Metoda in dokazi" data-en="Method and evidence">Metoda in dokazi</span><span aria-hidden="true">↗</span></a><a class="door" href="index-atlas.html"><span data-sl="Celoten atlas" data-en="The full atlas">Celoten atlas</span><span aria-hidden="true">↗</span></a><a class="door" href="index-todo.html"><span data-sl="Delovna miza" data-en="The workbench">Delovna miza</span><span aria-hidden="true">↗</span></a><a class="door" href="index-intro.html"><span data-sl="Uvod" data-en="Introduction">Uvod</span><span aria-hidden="true">↗</span></a></div></section>
-
     <section class="about wrap" id="bojan" aria-labelledby="about-title">
       <div class="about-inner">
         <div class="about-mark"><p class="eyebrow" data-sl="Človek za vprašanji" data-en="The human behind the questions">Človek za vprašanji</p><div class="monogram" aria-hidden="true">BD<span style="font-size:.45em;vertical-align:top;letter-spacing:0">×AI</span></div></div>
@@ -351,6 +373,13 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
       const root = document.documentElement;
       const get = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
       const put = (key, value) => { try { localStorage.setItem(key, value); } catch (_) {} };
+      const menu = document.getElementById('site-menu');
+      const menuTrigger = document.getElementById('site-menu-trigger');
+      function syncTheme() {
+        const dark = root.dataset.theme === 'dark';
+        document.getElementById('theme').setAttribute('aria-pressed', String(dark));
+        document.getElementById('theme-label').textContent = root.lang === 'sl' ? (dark ? 'Temna' : 'Svetla') : (dark ? 'Dark' : 'Light');
+      }
       function setLanguage(lang) {
         root.lang = lang;
         document.querySelectorAll('[data-sl][data-en]').forEach(el => { el.textContent = el.dataset[lang]; });
@@ -359,22 +388,26 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
         document.title = lang === 'sl' ? 'MDL×DCC — Manj opiše več' : 'MDL×DCC — Less describes more';
         document.querySelector('meta[name="description"]').content = lang === 'sl' ? 'Ideje, raziskave, igre in orodja, ki jih Bojan razvija skupaj z umetno inteligenco.' : 'Ideas, research, games and tools developed by Bojan together with artificial intelligence.';
         document.getElementById('theme').title = lang === 'sl' ? 'Svetla / temna tema' : 'Light / dark theme';
+        menuTrigger.title = lang === 'sl' ? 'Meni' : 'Menu';
+        syncTheme();
       }
       document.querySelectorAll('button[data-lang]').forEach(button => button.addEventListener('click', () => window.MDLxDCCLocale.choose(button.dataset.lang)));
       window.MDLxDCCLocale.subscribe(setLanguage);
       document.getElementById('theme').addEventListener('click', () => {
         const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
         root.dataset.theme = next;
-        document.getElementById('theme').setAttribute('aria-pressed', String(next === 'dark'));
+        syncTheme();
         put('mdlxdcc-theme', next);
       });
       const savedTheme = get('mdlxdcc-theme');
       root.dataset.theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
-      document.getElementById('theme').setAttribute('aria-pressed', String(savedTheme === 'dark'));
+      syncTheme();
       function setFont(value) {
-        const n = Math.max(.8, Math.min(1.5, value));
+        const n = Math.round(Math.max(.8, Math.min(1.5, value)) * 10) / 10;
         root.style.fontSize = Math.round(n * 100) + '%';
         document.getElementById('font-value').textContent = Math.round(n * 100) + '%';
+        document.getElementById('font-down').disabled = n <= .8;
+        document.getElementById('font-up').disabled = n >= 1.5;
         put('mdlxdcc-font', String(n));
       }
       const storedFont = Number(get('mdlxdcc-font'));
@@ -382,6 +415,20 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
       document.getElementById('font-down').addEventListener('click', () => setFont(parseFloat(root.style.fontSize) / 100 - .1));
       document.getElementById('font-up').addEventListener('click', () => setFont(parseFloat(root.style.fontSize) / 100 + .1));
       document.getElementById('font-value').addEventListener('click', () => setFont(1));
+      menu.addEventListener('toggle', () => menuTrigger.setAttribute('aria-expanded', String(menu.open)));
+      menu.querySelector('.menu-links').addEventListener('click', event => {
+        if (event.target.closest('a')) menu.open = false;
+      });
+      document.addEventListener('click', event => {
+        if (menu.open && !menu.contains(event.target)) menu.open = false;
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && menu.open) {
+          event.preventDefault();
+          menu.open = false;
+          menuTrigger.focus();
+        }
+      });
     })();
   </script>
 <script src="./assets/human-middle/v5/human-middle-series-r1.js?v=20261009-r18"></script>
