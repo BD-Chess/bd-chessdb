@@ -14,7 +14,7 @@ async function ready(page, url) {
   const response = await page.goto(url, { waitUntil: 'networkidle' });
   assert(response && response.ok(), 'Start document is reachable');
   await page.waitForSelector('#bd-start-proposal[data-ready="true"]');
-  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261101-start-r4');
+  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261107-start-r5');
 }
 async function state(page) { return page.evaluate(k => JSON.parse(localStorage.getItem(k)), key); }
 async function open(page, id) { if (!await page.locator(id).evaluate(el => el.open)) await page.locator(id + ' > summary').click(); }
@@ -250,6 +250,43 @@ async function newsIntegrity(browser, engine, url) {
   await context.close();
   results.push({name:engine+'-news-integrity',status:'PASS',checks:['hash mismatch rejected','news remains reachable']});
 }
+// R5: wide and 4K windows use their width; below 1600px the R2 layout stays.
+async function wideLayout(browser, engine, url) {
+  const box = el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width }; };
+  for (const [width, height, columns] of [[1440, 1000, 1], [1863, 2101, 2], [3816, 2101, 3]]) {
+    const name = engine + '-wide-' + width;
+    const context = await browser.newContext({ viewport: { width, height }, timezoneId: 'Europe/Ljubljana', locale: 'sl-SI', colorScheme: 'dark' });
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await ready(page, url);
+    if (!await page.locator('.bs-category').evaluateAll(groups => groups.every(group => group.open))) await page.locator('#bs-open-groups').click();
+    await fit(page, name);
+    const app = await page.locator('#bd-start-proposal').evaluate(box);
+    const plans = await page.locator('#bs-plans-panel').evaluate(box);
+    const news = await page.locator('#bs-live-news-panel').evaluate(box);
+    const day = await page.locator('.bs-personal').evaluate(box);
+    const groupColumns = await page.locator('.bs-category').evaluateAll(groups => new Set(groups.map(group => Math.round(group.getBoundingClientRect().left))).size);
+    if (columns === 1) {
+      assert(app.width <= 1320, name + ': the 1260px R2 column is kept below 1600px');
+      assert(news.top >= plans.bottom, name + ': news stays below the directory');
+      assert.equal(groupColumns, 1, name + ': one directory column');
+    } else {
+      assert(app.width >= width - 1, name + ': the page uses the whole window width');
+      assert(news.left >= plans.right && news.top < plans.bottom, name + ': news sits beside the directory');
+      assert.equal(groupColumns, columns, name + ': directory groups side by side');
+      if (columns === 3) assert(day.left >= news.right && Math.abs(day.top - plans.top) < 2, name + ': Moj dan has its own column');
+      else assert(Math.abs(day.left - news.left) < 2 && day.top > news.bottom, name + ': Moj dan stacks in the right column');
+      // Each column fills independently: the tall directory adds no gaps between the right-column panels.
+      const stack = await page.locator(columns === 3 ? '.bs-work > :not(#bs-plans-panel)' : '.bs-work > :not(#bs-plans-panel), .bs-personal').evaluateAll(els => els.filter(el => el.getClientRects().length).map(el => { const r = el.getBoundingClientRect(); return [r.top, r.bottom]; }).sort((a, b) => a[0] - b[0]));
+      for (let i = 1; i < stack.length; i++) assert(stack[i][0] - stack[i - 1][1] <= 24, name + ': right column has no stretched rows ' + JSON.stringify(stack));
+    }
+    await page.screenshot({ path: path.join(evidence, name + '.png'), fullPage: true });
+    assert.deepEqual(errors, [], name + ': no page errors');
+    await context.close();
+  }
+  results.push({ name: engine + '-wide-layout', status: 'PASS', checks: ['1440 keeps the R2 column', '1863 two columns, groups side by side', '3816 three columns', 'independent column stacking', 'no horizontal overflow'] });
+}
 (async () => {
   let server;
   let url = process.env.START_QA_URL;
@@ -268,7 +305,7 @@ async function newsIntegrity(browser, engine, url) {
   try {
     for (const [engine, type] of Object.entries({ chromium, webkit })) {
       const browser = await type.launch({ headless: true });
-      try { await suite(browser, engine, url, false); await suite(browser, engine, url, true); await storageFailures(browser, engine, url); await newsIntegrity(browser, engine, url); }
+      try { await suite(browser, engine, url, false); await suite(browser, engine, url, true); await storageFailures(browser, engine, url); await newsIntegrity(browser, engine, url); await wideLayout(browser, engine, url); }
       finally { await browser.close(); }
     }
     console.log('BD_START_BROWSER_PASS', JSON.stringify(results));

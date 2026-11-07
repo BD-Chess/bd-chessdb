@@ -252,3 +252,26 @@ body{margin:0;background:light-dark(#f4f3ee,#101718)}
 @media(max-width:700px){#bd-start-proposal .bs-layout{grid-template-columns:1fr;gap:22px}#bd-start-proposal .bs-pin-order{grid-template-columns:1fr}#bd-start-proposal .bs-personal .bs-market-strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:590px){#bd-start-proposal .bs-settings .bs-toolbar{width:auto;justify-content:flex-start}#bd-start-proposal .bs-settings .bs-modes{justify-content:flex-start}#bd-start-proposal .bs-category-links{padding:0 12px 12px;grid-template-columns:repeat(2,minmax(0,1fr))}#bd-start-proposal .bs-category-links .bs-shortcut{align-items:center;flex-direction:row;text-align:left}#bd-start-proposal .bs-category>summary{padding:11px 13px}#bd-start-proposal .bs-pin{min-height:80px}#bd-start-proposal .bs-pin-add{align-items:stretch}#bd-start-proposal .bs-pin-add label{width:100%}}
 @media(max-width:380px){#bd-start-proposal .bs-category-links{grid-template-columns:1fr}}
+
+/* BD Start R5 (2026-11-07): wide and 4K windows use their width instead of a
+   1260px column. Below 1600px the R2 layout above is unchanged. From 1600px the
+   directory takes the left two thirds with its groups side by side, and the
+   other panels stack in the right column, in document order. From 2400px "Moj
+   dan" gets a third column. Each column fills independently: the directory and
+   "Moj dan" span every row, and the last 1fr row absorbs their extra height. */
+@media(min-width:1600px){
+  #bd-start-proposal{max-width:3840px;padding:28px clamp(30px,2.2vw,84px) 30px;box-sizing:border-box}
+  #bd-start-proposal .bs-layout{grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:repeat(4,auto) 1fr;gap:10px 24px}
+  #bd-start-proposal .bs-work{display:contents}
+  #bd-start-proposal .bs-work>*,#bd-start-proposal .bs-personal{grid-column:2}
+  #bd-start-proposal .bs-work>#bs-plans-panel{grid-column:1;grid-row:1/-1}
+  #bd-start-proposal .bs-work>.bs-panel,#bd-start-proposal .bs-work>.bs-more{margin:0}
+  #bd-start-proposal #bs-categories{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,calc(250px + var(--bs-type)*15)),1fr))}
+  /* Row lines stay continuous; the left shadow draws the column dividers and is clipped at the panel edge. */
+  #bd-start-proposal .bs-category{box-shadow:-1px 0 0 var(--bs-line)}
+  #bd-start-proposal .bs-shortcuts{grid-template-columns:repeat(auto-fill,minmax(min(100%,calc(var(--bs-type)*12)),1fr))}
+}
+@media(min-width:2400px){
+  #bd-start-proposal .bs-layout{grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);column-gap:28px}
+  #bd-start-proposal .bs-personal{grid-column:3;grid-row:1/-1}
+}

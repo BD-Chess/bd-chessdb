@@ -13,4 +13,11 @@ favorites heading and a searchable research-directory entry. These are static
 navigation additions outside the eight personal pins; no saved favorites,
 exports, notes or localStorage records are migrated or overwritten.
 
+BD's November 7 request (R5) makes wide and 4K windows use their width
+instead of a 1260px column. From 1600px the directory takes the left two
+thirds with its groups side by side, and personal links, AI8 News, more and
+Moj dan stack on the right; from 2400px Moj dan gets a third column. The
+number of directory columns follows the text size. Below 1600px the layout
+is unchanged. This is CSS only: no stored data, links or behavior change.
+
 Verification: `node --test tests/start-state-r2.test.cjs` and `NODE_PATH=/path/to/playwright/node_modules node tests/start-app-browser.cjs` from repository root. The browser suite covers Chromium and WebKit at desktop and mobile sizes, news integrity, favorites and search, data migration, CRUD, import/export, unsafe URLs, storage failures and concurrent tabs. For the current production publication process, see `docs/NETLIFY_DEPLOYMENT.md`; the historical one-shot Start release remains retired.
