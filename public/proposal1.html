@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <!-- HERO_TRIPTYCH_R2_20260917: the original interactive hero is preserved in index-original-20261107.html. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <!-- ROOT PWA v4: internal pages stay in the app; offline caching remains landing-only. -->
+<script id="mdlxdcc-pwa-entry-alias">(function(){'use strict';if(!/^https?:$/.test(location.protocol)||!location.pathname.endsWith('/'))return;try{const entry=new URL('index.html',location.href);history.replaceState(history.state,'',entry.pathname+location.search+location.hash);}catch(_){}})();</script>
+<meta name="mdlxdcc-pwa-release" content="root-20261024-r6">
+<link rel="manifest" href="./manifest.webmanifest?v=root-20261024-r6">
+<link rel="apple-touch-icon" href="./PWA/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MDL×DCC">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- ROOT PWA v2 END -->
+  <script id="mdlxdcc-locale">/* Existing MDLxDCC locale contract: manual > saved > SI country hint > English. */
+(function(){
+'use strict';
+if(window.MDLxDCCLocale)return;
+const root=document.documentElement,KEY='mdlxdcc-locale-v1',LEGACY='mdlxdcc-lang',COOKIE='mdlxdcc_locale',listeners=new Set();
+let selection=null,generation=0,controller=null;
+const valid=x=>x==='en'||x==='sl';
+const get=k=>{try{return localStorage.getItem(k);}catch(_){return null;}};
+function parse(v){try{const x=JSON.parse(v);return x&&valid(x.lang)&&['manual','geo'].includes(x.source)&&Number.isFinite(x.at)&&x.at>=0?{lang:x.lang,source:x.source,at:x.at}:null;}catch(_){return null;}}
+function cookie(){try{const x=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));return x?parse(decodeURIComponent(x.slice(COOKIE.length+1))):null;}catch(_){return null;}}
+function read(){const l=parse(get(KEY)),c=cookie();let v=!l?c:!c?l:c.at>l.at?c:l;const old=get(LEGACY);if(valid(old)&&(!v||(v.lang!==old&&(!c||(l&&l.at>=c.at)))))v={lang:old,source:'manual',at:Date.now()};return v;}
+function persist(){if(!selection)return;const data=JSON.stringify(selection);try{localStorage.setItem(LEGACY,selection.lang);localStorage.setItem('bdPortraitLang',selection.lang);localStorage.setItem(KEY,data);}catch(_){}try{if(!/^https?:$/.test(location.protocol))return;const h=location.hostname.toLowerCase(),d=h==='mdlxdcc.org'||h==='www.mdlxdcc.org'?'; Domain=mdlxdcc.org':'';document.cookie=COOKIE+'='+encodeURIComponent(data)+'; Path=/; Max-Age=31536000; SameSite=Lax'+d+(location.protocol==='https:'?'; Secure':'');}catch(_){}}
+const current=()=>selection?selection.lang:'en';
+function apply(){root.lang=current();root.dataset.lang=current();root.dataset.localeSource=selection?selection.source:'fallback';listeners.forEach(fn=>{try{fn(current());}catch(_){}});window.dispatchEvent(new CustomEvent('mdlxdcc:language',{detail:{lang:current(),source:root.dataset.localeSource}}));}
+function choose(lang){if(!valid(lang))return;generation++;if(controller)controller.abort();selection={lang,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};persist();apply();}
+function subscribe(fn){if(typeof fn!=='function')return()=>{};listeners.add(fn);fn(current());return()=>listeners.delete(fn);}
+function refresh(){const n=read();if(n&&(!selection||n.at>selection.at||n.lang!==selection.lang)){generation++;if(controller)controller.abort();selection=n;persist();apply();}}
+selection=read();try{const q=new URLSearchParams(location.search).get('lang');if(valid(q))selection={lang:q,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};}catch(_){}
+window.MDLxDCCLocale=Object.freeze({current,choose,subscribe,refresh,version:'1.0'});root.classList.add('js');if(selection)persist();apply();
+window.addEventListener('storage',e=>{if([KEY,LEGACY,null].includes(e.key))refresh();});window.addEventListener('pageshow',refresh);window.addEventListener('focus',refresh);
+if(!selection&&/^https?:$/.test(location.protocol)&&typeof fetch==='function'){
+const start=generation;controller=typeof AbortController==='function'?new AbortController():null;let expired=false;
+const timeout=setTimeout(()=>{expired=true;if(controller)controller.abort();},2200);
+fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',headers:{Accept:'application/json'},...(controller?{signal:controller.signal}:{})}).then(r=>{if(!r.ok||!(r.headers.get('content-type')||'').includes('application/json'))throw Error('No country response');return r.json();}).then(d=>{if(expired||generation!==start||selection||!d||!valid(d.language))return;selection=read()||{lang:d.language,source:'geo',at:Date.now()};persist();apply();}).catch(()=>{}).finally(()=>clearTimeout(timeout));
+}
+})();</script>
+  <link rel="canonical" href="https://www.mdlxdcc.org/proposal1.html">
+  <meta property="og:type" content="website"><meta property="og:site_name" content="MDLxDCC.org"><meta property="og:title" content="MDL×DCC — Less describes more."><meta property="og:description" content="Ideas, research, games and tools by BD × AI Lab."><meta property="og:url" content="https://www.mdlxdcc.org/proposal1.html">
+  <meta name="description" content="Ideje, raziskave, igre in orodja, ki jih Bojan razvija skupaj z umetno inteligenco.">
+  <title>MDL×DCC — Manj opiše več</title>
+  <link rel="stylesheet" href="./assets/human-middle/v5/human-middle-family-r1.css?v=20261009-r17">
+  <link rel="stylesheet" href="./assets/ai8-vision/r2/vision-r4.css?v=20261004-r4">
+  <link rel="stylesheet" href="./assets/mdlxdcc-guide/guide.css?v=20261022-nav1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231b3a30'/%3E%3Cg fill='none' stroke='%23d8e7cd' stroke-width='2'%3E%3Cellipse cx='32' cy='32' rx='12' ry='24' transform='rotate(45 32 32)'/%3E%3Cellipse cx='32' cy='32' rx='12' ry='24' transform='rotate(-45 32 32)'/%3E%3C/g%3E%3C/svg%3E">
+  <style>
+    :root{color-scheme:light;--paper:#f5f3eb;--surface:#fbfaf5;--ink:#1c3932;--muted:#63746c;--line:#cbd4c8;--green:#386a49;--green-deep:#214b35;--soft:#e7ece0;--accent:#b5713e;--gold:#d8bd85;--header:rgba(245,243,235,.94);--shadow:0 12px 35px rgba(28,57,50,.055);--bg:var(--paper);--accent2:var(--green);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:100%;scroll-behavior:smooth}
+    :root[data-theme="dark"]{color-scheme:dark;--paper:#101b18;--surface:#172622;--ink:#e4ede1;--muted:#a8b9ac;--line:#3c5045;--green:#b0d0ae;--green-deep:#d7ebd0;--soft:#23392e;--accent:#e6a673;--gold:#d8bd85;--header:rgba(16,27,24,.95);--shadow:0 12px 35px rgba(0,0,0,.16)}
+    *,*::before,*::after{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.55}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit;color:inherit}
+    button,a{-webkit-tap-highlight-color:transparent}
+    :focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:3px}
+    .skip{position:fixed;z-index:100;top:8px;left:8px;background:var(--ink);color:var(--paper);padding:10px 15px;transform:translateY(-160%)}
+    .skip:focus{transform:translateY(0)}
+    .wrap{width:min(100% - 64px,1280px);margin-inline:auto}
+    .topbar{position:relative;z-index:5;background:var(--header)}
+    .topbar-inner{min-height:88px;display:flex;align-items:center;gap:28px;border-bottom:1px solid var(--line)}
+    .brand{display:inline-flex;align-items:center;white-space:nowrap;gap:17px;min-height:44px}
+    .brand-home{min-height:44px;padding:0;border:0;background:transparent;color:var(--ink);cursor:pointer}.brand-sub{display:flex;align-items:center;gap:5px}.brand-sub a,.brand-sub button{min-height:44px;display:inline-flex;align-items:center;color:inherit}.brand-sub button{border:0;background:transparent;padding:0;cursor:pointer;font-size:inherit;font-weight:inherit;letter-spacing:inherit}.brand-name{font-size:1.27rem;font-weight:800;letter-spacing:-.07em;line-height:1}
+    .brand-name .multiply{color:var(--green)}
+    .brand-sub{border-left:1px solid var(--line);padding-left:17px;color:var(--muted);font-size:.64rem;font-weight:700;letter-spacing:.19em;text-transform:uppercase}
+    .nav{margin-left:auto;display:flex;align-items:center;gap:29px}
+    .nav a{display:inline-flex;align-items:center;min-height:44px;font-size:.83rem;font-weight:600;color:var(--muted);transition:color .2s}
+    .nav a:hover{color:var(--ink)}
+    .tools{display:flex;align-items:center;gap:4px;border-left:1px solid var(--line);padding-left:19px}
+    .tool{min-width:40px;height:42px;display:inline-grid;place-items:center;border:0;background:transparent;color:var(--muted);cursor:pointer;border-radius:8px;font-size:.76rem;font-weight:650}
+    .tool:hover{background:var(--soft);color:var(--ink)}
+    .tool[aria-pressed="true"]{background:var(--soft);color:var(--ink)}
+    .theme-tool{font-size:1rem;margin-right:4px}
+    main{overflow:hidden}
+    .eyebrow{display:flex;align-items:center;gap:12px;margin:0;color:var(--green);font-size:.69rem;font-weight:750;letter-spacing:.18em;text-transform:uppercase;line-height:1.4}
+    .eyebrow:before{content:"";width:24px;height:1px;background:currentColor;flex:none}
+    .hero{display:grid;grid-template-columns:1.08fr .92fr;align-items:center;gap:clamp(35px,6vw,92px);padding-top:clamp(66px,8vw,116px);padding-bottom:clamp(72px,8vw,112px)}
+    .hero-copy{max-width:680px}
+    h1{font-size:clamp(4rem,7.5vw,7.6rem);font-weight:600;line-height:.92;letter-spacing:-.075em;margin:28px 0 27px}
+    h1 em{font-family:Georgia,"Times New Roman",serif;font-weight:400;color:var(--green);letter-spacing:-.07em}
+    .hero-description{max-width:540px;margin:0;font-size:clamp(1.13rem,1.65vw,1.36rem);line-height:1.65;color:var(--muted)}
+    .hero-description strong{color:var(--ink);font-weight:650}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:34px}
+    .button{min-height:52px;display:inline-flex;align-items:center;justify-content:center;gap:14px;padding:13px 19px;border:1px solid var(--line);border-radius:4px;font-size:.84rem;font-weight:700;transition:transform .2s,border-color .2s,background .2s}
+    .button:hover{transform:translateY(-2px);border-color:var(--green)}
+    .button-primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+    .button-primary:hover{background:var(--green-deep);border-color:var(--green-deep)}
+    .arrow{font-size:1.05rem;font-weight:400;line-height:1}
+    .hero-note{display:flex;align-items:center;gap:10px;margin:29px 0 0;color:var(--muted);font-size:.72rem;letter-spacing:.015em}
+    .hero-note .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+    .hero-art{position:relative;min-width:0;aspect-ratio:1/1;max-height:530px;display:flex;flex-direction:column;justify-content:space-between;background:var(--soft);border:1px solid var(--line);padding:26px;overflow:hidden}
+    .art-head,.art-foot{position:relative;z-index:1;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--green);font-size:.65rem;font-weight:750;letter-spacing:.16em;text-transform:uppercase}
+    .art-head span:last-child,.art-foot span:last-child{color:var(--muted);font-weight:500;letter-spacing:.04em}
+    .hero-art svg{position:absolute;inset:12%;width:76%;height:76%;color:var(--green);overflow:visible}
+    .hero-art .fine{opacity:.32}.hero-art .orbit{opacity:.7}.hero-art .orbit-light{opacity:.38}
+    .art-foot{align-items:flex-end;font-size:.61rem}
+    .art-foot .sequence{display:flex;gap:14px;flex-wrap:wrap}
+    .section{padding:90px 0}
+    .section-top{border-top:1px solid var(--line)}
+    .section-heading{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:38px}
+    h2{font-weight:550;font-size:clamp(2.35rem,4.7vw,4.5rem);line-height:1.03;letter-spacing:-.055em;margin:17px 0 0}
+    h2 em,.editorial-title em{font-family:Georgia,"Times New Roman",serif;color:var(--green);font-weight:400;letter-spacing:-.055em}
+    .section-intro{max-width:390px;margin:0;color:var(--muted);font-size:.96rem;line-height:1.7}
+    .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+    .card{min-width:0;display:flex;flex-direction:column;min-height:405px;padding:23px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface);transition:background .2s}
+    .card:hover{background:var(--soft)}
+    .card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .tag{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:.59rem;font-weight:800;line-height:1.3;letter-spacing:.12em;text-transform:uppercase}
+    .tag:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+    .tag.idea{color:var(--accent)}
+    .card-number{color:var(--muted);font-size:.68rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .card-visual{height:145px;display:grid;place-items:center;color:var(--green);margin:8px 0 14px}
+    .card-visual svg{width:100%;height:100%;max-width:210px;overflow:visible}
+    .card h3{font-size:1.38rem;line-height:1.15;letter-spacing:-.035em;margin:0 0 10px;font-weight:650}
+    .card p{margin:0;color:var(--muted);font-size:.85rem;line-height:1.65}
+    .card-link{margin-top:auto;padding-top:24px;font-size:.79rem;font-weight:750;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .card-link .arrow{transition:transform .2s}.card:hover .card-link .arrow{transform:translate(3px,-3px)}
+    .all-link{display:inline-flex;align-items:center;gap:12px;margin-top:25px;min-height:44px;color:var(--green);font-size:.84rem;font-weight:750}
+    .all-link:hover{text-decoration:underline;text-underline-offset:5px}
+    .method{background:#1c3932;color:#f5f3eb}
+    .method .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(50px,9vw,140px);align-items:start}
+    .method .eyebrow{color:#b8d0b0}
+    .method h2{max-width:590px}.method h2 em{color:#b9d1b1}
+    .method-copy{margin:23px 0 0;max-width:490px;color:#cad8cc;font-size:1rem;line-height:1.75}
+    .steps{border-top:1px solid rgba(229,238,224,.28)}
+    .step{display:grid;grid-template-columns:42px 1fr;gap:16px;padding:24px 0;border-bottom:1px solid rgba(229,238,224,.2)}
+    .step-num{padding-top:4px;color:#b9d1b1;font-size:.69rem;letter-spacing:.12em}
+    .step h3{font-size:1.08rem;margin:0 0 4px;letter-spacing:-.02em}
+    .step p{margin:0;color:#c2d2c5;font-size:.88rem;line-height:1.65}
+    .method .text-link{color:#d7e8d3;border-bottom:1px solid #88ac88;padding-bottom:5px;display:inline-flex;gap:15px;margin-top:29px;font-size:.83rem;font-weight:700}
+    .explore-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(42px,8vw,120px)}
+    .explore-intro{max-width:500px;color:var(--muted);font-size:1rem;line-height:1.75;margin:22px 0 0}
+    .list{border-top:1px solid var(--line)}
+    .list a{display:grid;grid-template-columns:35px 1fr auto;gap:13px;align-items:center;min-height:87px;padding:17px 0;border-bottom:1px solid var(--line)}
+    .list a:hover .list-title{color:var(--green)}
+    .list-num{font-size:.67rem;color:var(--muted);letter-spacing:.12em}
+    .list-title{display:block;font-size:1.05rem;letter-spacing:-.02em;font-weight:700;transition:color .2s}
+    .list-copy{display:block;font-size:.77rem;color:var(--muted);margin-top:2px}
+    .list .arrow{color:var(--green)}
+    .about{padding:0 0 100px}
+    .about-inner{display:grid;grid-template-columns:1fr 1.2fr;gap:60px;background:var(--soft);border:1px solid var(--line);padding:clamp(30px,5vw,65px)}
+    .about-mark{display:flex;flex-direction:column;justify-content:space-between;gap:25px}
+    .monogram{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:clamp(4rem,8vw,8rem);letter-spacing:-.11em;line-height:1;color:var(--green)}
+    .about-copy{max-width:600px}.about-copy h2{font-size:clamp(2rem,3.5vw,3.3rem)}
+    .about-copy p{color:var(--muted);font-size:.98rem;line-height:1.8;margin:19px 0 0}
+    .about-copy .button{margin-top:25px;background:var(--surface)}
+    footer{border-top:1px solid var(--line);padding:29px 0 36px}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    .footer-brand{font-size:.88rem;font-weight:800;letter-spacing:-.04em}
+    .footer-links{display:flex;align-items:center;gap:24px;flex-wrap:wrap;color:var(--muted);font-size:.76rem}
+    .footer-links a{display:inline-flex;align-items:center;min-height:44px}.footer-links a:hover{color:var(--ink)}
+    @media(max-width:1000px){.nav{gap:18px}.brand-sub{display:flex;border:0;padding-left:0}.brand-sub a,.brand-sub .brand-times,.brand-sub #guide-lab{display:none}.brand-sub button{padding:0 6px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.card{min-height:380px}.hero{gap:40px}.hero-art{padding:20px}}
+    @media(max-width:700px){.brand{flex-direction:row;align-items:center;gap:4px;min-width:0}.brand .brand-home{min-height:44px}.brand .brand-sub{align-items:center;min-height:44px}.brand .brand-sub button{min-height:44px;padding:0 5px}.wrap{width:min(100% - 40px,1280px)}.topbar-inner{min-height:76px;gap:10px;flex-wrap:wrap;padding:13px 0 0}.brand{min-height:40px}.brand-name{font-size:1.17rem}.tools{margin-left:auto;border:0;padding:0}.tool{min-width:38px;height:40px}.nav{order:3;width:100%;margin:0;justify-content:space-between;gap:10px;border-top:1px solid var(--line)}.nav a{min-height:43px;font-size:.76rem}.hero{grid-template-columns:1fr;gap:35px;padding-top:65px;padding-bottom:68px}h1{font-size:clamp(4.2rem,15vw,6.1rem);margin:22px 0 24px}.hero-description{font-size:1.08rem}.hero-actions{margin-top:27px}.button{min-height:49px;padding:12px 15px;font-size:.8rem}.hero-note{margin-top:22px}.hero-art{width:100%;max-height:430px;aspect-ratio:1.1}.hero-art svg{inset:9% 16%;width:68%;height:82%}.section{padding:67px 0}.section-heading{display:block;margin-bottom:27px}.section-intro{margin-top:15px}.method .wrap,.explore-grid,.about-inner{grid-template-columns:1fr;gap:40px}.about{padding-bottom:68px}.about-inner{gap:25px}.about-mark{gap:20px}.monogram{font-size:5rem}.footer-inner{align-items:flex-start}.footer-links{gap:15px}}
+    @media(max-width:450px){.cards{grid-template-columns:1fr 1fr}.card{min-height:350px;padding:16px}.card-visual{height:100px;margin:7px 0 15px}.card h3{font-size:1.16rem}.card p{font-size:.85rem;line-height:1.55}.tag{font-size:.6rem;letter-spacing:.035em}.card-number{font-size:.6rem}.card-link{font-size:.8rem;padding-top:20px}.hero-actions{display:grid;grid-template-columns:1fr 1fr}.hero-actions .button-primary{grid-column:1 / -1}.hero-actions .button{gap:7px}.art-foot .sequence{gap:8px}.about-inner{padding:27px}.footer-links{gap:12px}}
+    @media(max-width:330px){.cards{grid-template-columns:1fr}.card{min-height:315px}.nav a{font-size:.69rem}.brand-name{font-size:1.02rem}}
+    html[data-lang="sl"] .ai8-vision .en,html[data-lang="sl"] .ai8-vision-dialog .en,html[data-lang="en"] .ai8-vision .sl,html[data-lang="en"] .ai8-vision-dialog .sl,html[data-lang="sl"] .human-middle .en,html[data-lang="sl"] .human-middle-dialog .en,html[data-lang="en"] .human-middle .sl,html[data-lang="en"] .human-middle-dialog .sl{display:none!important}
+    .font-tools{display:flex;align-items:center}
+    .font-tools .tool{min-width:34px}
+    .site-menu{position:relative;margin-left:auto;flex:none}
+    .site-menu summary{display:grid;place-items:center;list-style:none;width:46px;height:46px;cursor:pointer;border:1px solid var(--line);border-radius:5px;color:var(--ink);background:var(--surface)}
+    .site-menu summary::-webkit-details-marker{display:none}
+    .site-menu summary:hover,.site-menu[open] summary{background:var(--soft);border-color:var(--green)}
+    .site-menu summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+    .site-menu-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:30;width:min(370px,calc(100vw - 40px));max-height:min(78vh,680px);overflow:auto;overscroll-behavior:contain;padding:22px;background:var(--surface);border:1px solid var(--line);box-shadow:0 18px 45px rgba(14,34,24,.17)}
+    .menu-heading{margin:0 0 10px;color:var(--muted);font-size:.68rem;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    .menu-links{display:grid;border-top:1px solid var(--line)}
+    .menu-links a{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:45px;padding:8px 4px;border-bottom:1px solid var(--line);font-size:.91rem;font-weight:600}
+    .menu-links a:hover{color:var(--green)}
+    .menu-links a[aria-current="page"]{color:var(--green)}
+    .menu-links a span:last-child{color:var(--muted);font-weight:400}
+    .menu-settings{margin-top:24px}
+    .menu-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;border-top:1px solid var(--line);font-size:.84rem}
+    .menu-setting:last-child{border-bottom:1px solid var(--line)}
+    .site-menu .font-tools,.menu-language{display:flex;align-items:center;gap:2px}
+    .site-menu .tool{min-width:40px;height:40px}
+    .site-menu .tool:disabled{opacity:.4;cursor:not-allowed}
+    .menu-theme{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font-size:.77rem;cursor:pointer}
+    .menu-theme:hover{background:var(--soft)}
+    @media(max-width:700px){.topbar-inner{padding:13px 0;flex-wrap:nowrap;min-height:76px}.site-menu-panel{padding:18px}.site-menu .font-tools{display:flex}}
+    @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main" data-sl="Preskoči na vsebino" data-en="Skip to content">Preskoči na vsebino</a>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand"><button class="brand-home" id="guide-brand-toggle" type="button" aria-expanded="false" aria-controls="guide-panel" aria-label="MDL×DCC — odpri ali skrij vodnika"><span class="brand-name">MDL<span class="multiply">×</span>DCC</span></button><span class="brand-sub"><a href="./Start/index.html">BD</a><span class="brand-times" aria-hidden="true">×</span><button id="guide-toggle" type="button" aria-expanded="false" aria-controls="guide-panel" aria-label="AI — odpri ali skrij vodnika">AI</button><button id="guide-lab" type="button" aria-haspopup="dialog" aria-controls="ai8-vision-dialog">LAB</button></span></div>
+      <details class="site-menu" id="site-menu">
+        <summary id="site-menu-trigger" aria-label="Meni" data-aria-sl="Meni" data-aria-en="Menu" aria-controls="site-menu-panel" aria-expanded="false" title="Meni"><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary>
+        <div class="site-menu-panel" id="site-menu-panel">
+          <p class="menu-heading" id="menu-pages-label" data-sl="Strani" data-en="Pages">Strani</p>
+          <nav class="menu-links" id="original-grid" aria-labelledby="menu-pages-label">
+            <a href="./index.html"><span data-sl="Glavna stran" data-en="Home">Glavna stran</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="#top" aria-current="page"><span data-sl="Odkrij" data-en="Discover">Odkrij</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="index-search.html"><span data-sl="Metoda" data-en="The method">Metoda</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="index-atlas.html"><span data-sl="Atlas" data-en="Atlas">Atlas</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="index-todo.html"><span data-sl="Zdaj in potem" data-en="Now & next">Zdaj in potem</span><span aria-hidden="true">↗</span></a>
+            <a class="door" href="index-intro.html"><span data-sl="Predstavitev" data-en="Overview">Predstavitev</span><span aria-hidden="true">↗</span></a>
+          </nav>
+          <section class="menu-settings" aria-labelledby="menu-settings-label">
+            <p class="menu-heading" id="menu-settings-label" data-sl="Nastavitve" data-en="Settings">Nastavitve</p>
+            <div class="menu-setting"><span data-sl="Jezik" data-en="Language">Jezik</span><div class="menu-language" role="group" aria-label="Jezik" data-aria-sl="Jezik" data-aria-en="Language"><button class="tool" type="button" data-lang="sl" aria-pressed="true" aria-label="Slovenščina">SL</button><button class="tool" type="button" data-lang="en" aria-pressed="false" aria-label="English">EN</button></div></div>
+            <div class="menu-setting"><span data-sl="Velikost besedila" data-en="Text size">Velikost besedila</span><div class="font-tools" role="group" aria-label="Velikost besedila" data-aria-sl="Velikost besedila" data-aria-en="Text size"><button class="tool" id="font-down" type="button" aria-label="Manjše besedilo" data-aria-sl="Manjše besedilo" data-aria-en="Smaller text">A−</button><button class="tool" id="font-value" type="button" aria-label="Ponastavi velikost besedila" data-aria-sl="Ponastavi velikost besedila" data-aria-en="Reset text size">100%</button><button class="tool" id="font-up" type="button" aria-label="Večje besedilo" data-aria-sl="Večje besedilo" data-aria-en="Larger text">A+</button></div></div>
+            <div class="menu-setting"><span data-sl="Tema" data-en="Theme">Tema</span><button class="menu-theme" type="button" id="theme" aria-pressed="false" aria-label="Preklopi svetlo ali temno temo" data-aria-sl="Preklopi svetlo ali temno temo" data-aria-en="Toggle light or dark theme" title="Svetla / temna tema"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M10 3a7 7 0 0 0 0 14z" fill="currentColor"/></svg><span id="theme-label">Svetla</span></button></div>
+          </section>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <div id="guide-page">
+  <main id="main">
+    <section class="hero wrap" id="top" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow" data-sl="Samostojne misli. Skupna radovednost." data-en="Independent minds. Shared curiosity.">Samostojne misli. Skupna radovednost.</p>
+        <h1 id="hero-title"><span data-sl="Manj" data-en="Less">Manj</span><br><em data-sl="opiše" data-en="describes">opiše</em> <span data-sl="več." data-en="more.">več.</span></h1>
+        <p class="hero-description"><span data-sl="Ideje, raziskave, igre in orodja, ki jih" data-en="Ideas, research, games and tools that">Ideje, raziskave, igre in orodja, ki jih</span> <strong data-sl="Bojan" data-en="Bojan">Bojan</strong> <span data-sl="razvija skupaj z umetno inteligenco." data-en="develops together with artificial intelligence.">razvija skupaj z umetno inteligenco.</span></p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#odkrij"><span data-sl="Preizkusi in odkrij" data-en="Try and discover">Preizkusi in odkrij</span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="button" href="#raziskuj"><span data-sl="Razišči ideje" data-en="Explore ideas">Razišči ideje</span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="button" href="#bojan"><span data-sl="O Bojanu" data-en="About Bojan">O Bojanu</span><span class="arrow" aria-hidden="true">↗</span></a>
+        </div>
+        <p class="hero-note"><span class="dot" aria-hidden="true"></span><span data-sl="Človeška vprašanja. Odprte poti raziskovanja." data-en="Human questions. Open paths of exploration.">Človeška vprašanja. Odprte poti raziskovanja.</span></p>
+      </div>
+      <div class="hero-art" role="img" aria-label="Shematski prikaz treh povezanih poti raziskovanja" data-aria-sl="Shematski prikaz treh povezanih poti raziskovanja" data-aria-en="Schematic illustration of three connected paths of exploration">
+        <div class="art-head"><span data-sl="Iz vprašanja v odkritje" data-en="From question to discovery">Iz vprašanja v odkritje</span><span>BD × AI LAB</span></div>
+        <svg viewBox="0 0 400 400" fill="none" aria-hidden="true">
+          <circle class="fine" cx="200" cy="200" r="163" stroke="currentColor" stroke-width=".7"/>
+          <circle class="fine" cx="200" cy="200" r="125" stroke="currentColor" stroke-width=".7" stroke-dasharray="2 7"/>
+          <path class="fine" d="M200 20v360M20 200h360" stroke="currentColor" stroke-width=".65"/>
+          <ellipse class="orbit" cx="200" cy="200" rx="68" ry="153" transform="rotate(45 200 200)" stroke="currentColor" stroke-width="1.4"/>
+          <ellipse class="orbit" cx="200" cy="200" rx="68" ry="153" transform="rotate(-45 200 200)" stroke="currentColor" stroke-width="1.4"/>
+          <ellipse class="orbit-light" cx="200" cy="200" rx="68" ry="153" transform="rotate(90 200 200)" stroke="currentColor" stroke-width="1.1"/>
+          <ellipse class="orbit-light" cx="200" cy="200" rx="42" ry="128" transform="rotate(45 200 200)" stroke="currentColor" stroke-width=".7"/>
+          <ellipse class="orbit-light" cx="200" cy="200" rx="42" ry="128" transform="rotate(-45 200 200)" stroke="currentColor" stroke-width=".7"/>
+          <circle cx="200" cy="200" r="7" fill="currentColor"/><circle cx="200" cy="200" r="15" stroke="currentColor" stroke-width=".8" opacity=".5"/>
+          <circle cx="97" cy="100" r="4" fill="currentColor"/><circle cx="303" cy="100" r="4" fill="currentColor"/><circle cx="48" cy="200" r="4" fill="currentColor"/>
+          <path d="M188 38h24M188 362h24M38 188v24M362 188v24" stroke="currentColor" stroke-width="1" opacity=".55"/>
+        </svg>
+        <div class="art-foot"><div class="sequence"><span data-sl="01 Ideja" data-en="01 Idea">01 Ideja</span><span data-sl="02 Preizkus" data-en="02 Test">02 Preizkus</span><span data-sl="03 Učenje" data-en="03 Learn">03 Učenje</span></div><span data-sl="Shematski prikaz" data-en="Illustration">Shematski prikaz</span></div>
+      </div>
+    </section>
+
+    <section class="section section-top wrap" id="odkrij" aria-labelledby="discover-title">
+      <div class="section-heading">
+        <div><p class="eyebrow" data-sl="Začni tukaj" data-en="Start here">Začni tukaj</p><h2 id="discover-title"><span data-sl="Iz idej v" data-en="From ideas to">Iz idej v</span> <em data-sl="izkušnjo." data-en="experience.">izkušnjo.</em></h2></div>
+        <p class="section-intro" data-sl="Nekaj lahko preizkusiš takoj. Nekaj se šele raziskuje. Izberi, kar te zanima." data-en="Some things are ready to try. Others are still being explored. Choose what interests you.">Nekaj lahko preizkusiš takoj. Nekaj se šele raziskuje. Izberi, kar te zanima.</p>
+      </div>
+      <div class="cards">
+        <a class="card" href="https://www.mdlxdcc.org/trip/">
+          <div class="card-top"><span class="tag" data-sl="Delujoče orodje" data-en="Working tool">Delujoče orodje</span><span class="card-number">01 / 04</span></div>
+          <div class="card-visual" aria-hidden="true"><svg viewBox="0 0 210 145" fill="none"><path d="M22 106C52 104 37 50 75 59S107 108 140 75 170 43 188 38" stroke="currentColor" stroke-width="1.7"/><path d="M22 106C52 104 37 50 75 59S107 108 140 75 170 43 188 38" stroke="currentColor" stroke-width="9" opacity=".07"/><circle cx="22" cy="106" r="6" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/><circle cx="75" cy="59" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/><circle cx="140" cy="75" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/><circle cx="188" cy="38" r="7" fill="currentColor"/><path d="M15 126h180" stroke="currentColor" opacity=".2"/></svg></div>
+          <h3>TripOpti</h3><p data-sl="Poišči boljši vrstni red postankov za svojo pot." data-en="Find a better order for the stops on your trip.">Poišči boljši vrstni red postankov za svojo pot.</p>
+          <div class="card-link"><span data-sl="Načrtuj pot" data-en="Plan a trip">Načrtuj pot</span><span class="arrow" aria-hidden="true">↗</span></div>
+        </a>
+        <a class="card" href="https://www.mdlxdcc.org/s/">
+          <div class="card-top"><span class="tag" data-sl="Igra" data-en="Game">Igra</span><span class="card-number">02 / 04</span></div>
+          <div class="card-visual" aria-hidden="true"><svg viewBox="0 0 210 145" fill="none"><rect x="51" y="16" width="108" height="108" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M87 16v108M123 16v108M51 52h108M51 88h108" stroke="currentColor" stroke-width=".9" opacity=".7"/><g fill="currentColor" font-family="Georgia,serif" font-size="20" text-anchor="middle"><text x="69" y="41">8</text><text x="141" y="41">2</text><text x="105" y="78">5</text><text x="69" y="113">1</text><text x="141" y="113">7</text></g><circle cx="105" cy="34" r="2" fill="currentColor" opacity=".45"/><circle cx="141" cy="70" r="2" fill="currentColor" opacity=".45"/></svg></div>
+          <h3>Sudoku</h3><p data-sl="Zaigraj in odkrij raziskovanje v ozadju ugank." data-en="Play and discover the research behind the puzzles.">Zaigraj in odkrij raziskovanje v ozadju ugank.</p>
+          <div class="card-link"><span data-sl="Zaigraj" data-en="Play Sudoku">Zaigraj</span><span class="arrow" aria-hidden="true">↗</span></div>
+        </a>
+        <a class="card" href="https://www.mdlxdcc.org/crp/8z_mdlxdcc">
+          <div class="card-top"><span class="tag" data-sl="Raziskava" data-en="Research">Raziskava</span><span class="card-number">03 / 04</span></div>
+          <div class="card-visual" aria-hidden="true"><svg viewBox="0 0 210 145" fill="none"><circle cx="105" cy="72" r="46" stroke="currentColor" opacity=".25"/><ellipse cx="105" cy="72" rx="28" ry="57" transform="rotate(45 105 72)" stroke="currentColor" stroke-width="1.3"/><ellipse cx="105" cy="72" rx="28" ry="57" transform="rotate(-45 105 72)" stroke="currentColor" stroke-width="1.3"/><circle cx="105" cy="72" r="4" fill="currentColor"/><path d="M35 72h20M155 72h20" stroke="currentColor" opacity=".45"/></svg></div>
+          <h3>MDL×DCC</h3><p data-sl="Kaj če bi lahko izboljšali tudi način iskanja rešitev?" data-en="What if we could improve how we search for solutions?">Kaj če bi lahko izboljšali tudi način iskanja rešitev?</p>
+          <div class="card-link"><span data-sl="Spoznaj metodo" data-en="Explore the method">Spoznaj metodo</span><span class="arrow" aria-hidden="true">↗</span></div>
+        </a>
+        <a class="card" href="https://www.mdlxdcc.org/crp/hth">
+          <div class="card-top"><span class="tag idea" data-sl="Zamisel za test" data-en="Concept to test">Zamisel za test</span><span class="card-number">04 / 04</span></div>
+          <div class="card-visual" aria-hidden="true"><svg viewBox="0 0 210 145" fill="none"><path d="M20 57c13-6 25-6 38 0s25 6 38 0 25-6 38 0 25 6 38 0 20-5 25-4M20 68c13-6 25-6 38 0s25 6 38 0 25-6 38 0 25 6 38 0 20-5 25-4" stroke="currentColor" opacity=".4"/><path d="M33 96h45l12-18h40l14 18h34M90 78V45h40v33M105 45V28h10v17" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M105 59h10m-5-5v10" stroke="currentColor" stroke-width="1.2"/><circle cx="54" cy="96" r="3" fill="currentColor"/><circle cx="156" cy="96" r="3" fill="currentColor"/></svg></div>
+          <h3>HTH</h3><p data-sl="Zamisel za uporabo energije vode in njen prvi preizkus." data-en="An idea for using the energy of water, and its first test.">Zamisel za uporabo energije vode in njen prvi preizkus.</p>
+          <div class="card-link"><span data-sl="Razišči zamisel" data-en="Explore the idea">Razišči zamisel</span><span class="arrow" aria-hidden="true">↗</span></div>
+        </a>
+      </div>
+      <a class="all-link" href="https://www.mdlxdcc.org/index-atlas"><span data-sl="Vsi projekti in področja" data-en="All projects and fields">Vsi projekti in področja</span><span class="arrow" aria-hidden="true">↗</span></a>
+    </section>
+
+    <section class="section method" id="metoda" aria-labelledby="method-title">
+      <div class="wrap">
+        <div><p class="eyebrow" data-sl="Kako nastaja" data-en="How it takes shape">Kako nastaja</p><h2 id="method-title"><span data-sl="Dobra vprašanja." data-en="Good questions.">Dobra vprašanja.</span><br><em data-sl="Še boljši preizkusi." data-en="Better tests.">Še boljši preizkusi.</em></h2><p class="method-copy" data-sl="Delo se začne z vprašanjem ali zamislijo. Človek in različni modeli jo raziskujejo, izzivajo in poskušajo prevesti v nekaj, kar je mogoče preveriti." data-en="The work begins with a question or an idea. A human and different models explore it, challenge it, and try to turn it into something that can be tested.">Delo se začne z vprašanjem ali zamislijo. Človek in različni modeli jo raziskujejo, izzivajo in poskušajo prevesti v nekaj, kar je mogoče preveriti.</p><a class="text-link" href="https://www.mdlxdcc.org/w/"><span data-sl="Več o načinu dela" data-en="More about the work">Več o načinu dela</span><span aria-hidden="true">↗</span></a></div>
+        <div class="steps">
+          <div class="step"><span class="step-num">01</span><div><h3 data-sl="Ideja" data-en="An idea">Ideja</h3><p data-sl="Vprašanje, povezava ali problem, ki ga je vredno raziskati." data-en="A question, a connection, or a problem worth exploring.">Vprašanje, povezava ali problem, ki ga je vredno raziskati.</p></div></div>
+          <div class="step"><span class="step-num">02</span><div><h3 data-sl="Preizkus" data-en="A test">Preizkus</h3><p data-sl="Več pogledov, praktični poskusi in jasna merila." data-en="Different perspectives, practical experiments, and clear criteria.">Več pogledov, praktični poskusi in jasna merila.</p></div></div>
+          <div class="step"><span class="step-num">03</span><div><h3 data-sl="Naslednji korak" data-en="The next step">Naslednji korak</h3><p data-sl="Ohranimo, kar smo se naučili, in odkrito povemo, kaj ostaja neznano." data-en="Keep what we learned and be open about what remains unknown.">Ohranimo, kar smo se naučili, in odkrito povemo, kaj ostaja neznano.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap" id="raziskuj" aria-labelledby="explore-title">
+      <div class="explore-grid">
+        <div><p class="eyebrow" data-sl="Več poti, veliko vprašanj" data-en="Many paths, many questions">Več poti, veliko vprašanj</p><h2 id="explore-title"><span data-sl="Radovednost nima" data-en="Curiosity has">Radovednost nima</span><br><em data-sl="ene same poti." data-en="more than one path.">ene same poti.</em></h2><p class="explore-intro" data-sl="Od uporabnih aplikacij in računalniškega iskanja do izumov, zavesti in domišljijskih svetov. Vsako področje ima svoje vprašanje in svojo stopnjo raziskanosti." data-en="From useful applications and computational search to inventions, consciousness, and imagined worlds. Each field has its own questions and its own stage of exploration.">Od uporabnih aplikacij in računalniškega iskanja do izumov, zavesti in domišljijskih svetov. Vsako področje ima svoje vprašanje in svojo stopnjo raziskanosti.</p></div>
+        <div class="list">
+          <a href="https://www.mdlxdcc.org/index-atlas#demos"><span class="list-num">01</span><span><span class="list-title" data-sl="Orodja in igre" data-en="Tools and games">Orodja in igre</span><span class="list-copy" data-sl="Trip, šah, Sudoku, križanke in več" data-en="Trip, chess, Sudoku, crosswords and more">Trip, šah, Sudoku, križanke in več</span></span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a href="https://www.mdlxdcc.org/crp/"><span class="list-num">02</span><span><span class="list-title" data-sl="Raziskave in metode" data-en="Research and methods">Raziskave in metode</span><span class="list-copy" data-sl="MDL×DCC, AI8, 8Z in raziskovalne arene" data-en="MDL×DCC, AI8, 8Z and research arenas">MDL×DCC, AI8, 8Z in raziskovalne arene</span></span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a href="https://www.mdlxdcc.org/crp/top100i"><span class="list-num">03</span><span><span class="list-title" data-sl="Izumi in zamisli" data-en="Inventions and ideas">Izumi in zamisli</span><span class="list-copy" data-sl="Fizični koncepti in poti do preizkusa" data-en="Physical concepts and paths to testing">Fizični koncepti in poti do preizkusa</span></span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a href="https://www.mdlxdcc.org/nara/"><span class="list-num">04</span><span><span class="list-title" data-sl="Zgodbe in domišljija" data-en="Stories and imagination">Zgodbe in domišljija</span><span class="list-copy" data-sl="Drugačen način odpiranja vprašanj" data-en="Another way to open up questions">Drugačen način odpiranja vprašanj</span></span><span class="arrow" aria-hidden="true">↗</span></a>
+          <a href="https://www.mdlxdcc.org/index-atlas"><span class="list-num">05</span><span><span class="list-title" data-sl="Celoten atlas" data-en="The complete atlas">Celoten atlas</span><span class="list-copy" data-sl="Vse poti, projekti in arhiv" data-en="All paths, projects, and the archive">Vse poti, projekti in arhiv</span></span><span class="arrow" aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap">
+<!-- AI8_LAB_VISION_20260929 -->
+<section class="ai8-vision" aria-labelledby="ai8-vision-title">
+<button class="ai8-vision-card" id="ai8-vision-open" type="button" aria-haspopup="dialog" aria-controls="ai8-vision-dialog">
+<span class="ai8-vision-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M5 23 12 16l5 4 10-12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 8h6v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="23" r="2" fill="currentColor"/><circle cx="12" cy="16" r="2" fill="currentColor"/><circle cx="17" cy="20" r="2" fill="currentColor"/></svg></span>
+<span class="ai8-vision-copy">
+<span class="ai8-vision-kicker">AI8 LAB · VISION</span>
+<strong id="ai8-vision-title"><span class="en" lang="en">From projects to a living lab.</span><span class="sl" lang="sl">Od projektov do živega laboratorija.</span></strong>
+<small><span class="en" lang="en">See the path from today’s BD × AI workflow toward a lab that improves projects — and itself.</span><span class="sl" lang="sl">Poglej pot od današnjega BD × AI dela do laboratorija, ki izboljšuje projekte — in samega sebe.</span></small>
+</span>
+<span class="ai8-vision-arrow" aria-hidden="true">↗︎</span>
+</button>
+</section>
+<dialog class="ai8-vision-dialog" id="ai8-vision-dialog" aria-labelledby="ai8-vision-dialog-title" data-revision="20260929-r2">
+<div class="ai8-vision-dialog-inner">
+<div class="ai8-vision-dialog-top"><div><span class="ai8-vision-kicker">BD × AI LAB / AI8</span><h2 id="ai8-vision-dialog-title"><span class="en" lang="en">Growth through time</span><span class="sl" lang="sl">Rast skozi čas</span></h2></div><div class="ai8-vision-dialog-actions"><div class="ai8-vision-controls-group"><div class="ai8-vision-font-buttons" role="group" aria-label="Text size / Velikost besedila"><button class="ai8-vision-control" id="ai8-vision-font-down" type="button" aria-label="Smaller text">A−</button><button class="ai8-vision-control ai8-vision-font-value" id="ai8-vision-font-value" type="button" aria-label="Reset text size to 100%">100%</button><button class="ai8-vision-control" id="ai8-vision-font-up" type="button" aria-label="Larger text">A+</button></div><button class="ai8-vision-control ai8-vision-theme-icon" id="ai8-vision-theme-toggle" type="button" aria-label="Switch color theme">◐</button><div class="ai8-vision-languages" role="group" aria-label="Language / Jezik"><button class="ai8-vision-control" type="button" data-vision-lang="en" aria-label="English">EN</button><button class="ai8-vision-control" type="button" data-vision-lang="sl" aria-label="Slovenščina">SL</button></div></div><button class="ai8-vision-close" id="ai8-vision-close" type="button" aria-label="Close">×</button></div></div>
+<div id="ai8-vision-scroll">
+<p id="ai8-vision-status" role="status" aria-live="polite"></p>
+<figure><a id="ai8-vision-image-link" href="./assets/ai8-lab-growth-20260929.webp?v=f7951a0f1596" target="_blank" rel="noopener"><img id="ai8-vision-image" hidden alt="AI8 Lab roadmap" decoding="async"></a></figure>
+<div class="ai8-vision-caption"><span><span class="en" lang="en">An illustrative path and potential — not a measured growth forecast.</span><span class="sl" lang="sl">Ilustrativna razvojna pot in potencial — ne izmerjena napoved rasti.</span></span><span><a id="ai8-vision-full-link" href="./assets/ai8-lab-growth-20260929.webp?v=f7951a0f1596" target="_blank" rel="noopener"><span class="en" lang="en">Full image ↗</span><span class="sl" lang="sl">Cela slika ↗</span></a> · <a href="./AI8/"><span class="en" lang="en">Explore AI8 →</span><span class="sl" lang="sl">Razišči AI8 →</span></a> · <a href="./assets/ai8-lab-growth-20260929.webp?v=f7951a0f1596" target="_blank" rel="noopener"><span class="en" lang="en">Original · SL</span><span class="sl" lang="sl">Izvirnik · SL</span></a></span></div>
+<details id="ai8-vision-transcript"><summary><span class="en" lang="en">Read as text</span><span class="sl" lang="sl">Preberi kot besedilo</span></summary><div class="sl" lang="sl"><ol><li><strong>Danes</strong>BD + GPT + Claude vodimo projekte. TSP, Sudoku, ChessBest, Trip in splet. BD povezuje delo med sejami.</li><li><strong>Prvi WL runtime</strong>Python na HOME in WORK. Inbox ukazi, rezultati na Drive. LE_START / LE_CHECK 8zCockpit kot izvajalec.</li><li><strong>Povezan laboratorij</strong>GPT / Claude kot arhitekta. Codex in Claude Code kot delavca. Spomin, pogovori in dokazila. Več hostov, manj ročnega prenosa.</li><li><strong>Projektni multiplikator</strong>Nove arene in orodja. TSP → Trip prenosi. ChessBest: Top Picks in DCC. Gradnja → testi → izboljšava.</li><li><strong>Živ AI8 Lab</strong>Usklajuje delo med gradniki. Predlaga, gradi, testira, izboljšuje. Razvija projekte in sebe. BD ostaja partner in usmerjevalec.</li></ol><p>Dve zanki. Skupno učenje. Naloga → Izvedba → Dokazi → Analiza → Izboljšava → Nov tek. Boljši projekti ↔ Boljši način dela laboratorija.</p></div><div class="en" lang="en"><ol><li><strong>Today</strong>BD + GPT + Claude lead projects. TSP, Sudoku, ChessBest, Trip and the web. BD connects the work across sessions.</li><li><strong>First WL runtime</strong>Python on HOME and WORK. Inbox commands, results on Drive. LE_START / LE_CHECK 8zCockpit as the executor.</li><li><strong>Connected laboratory</strong>GPT / Claude as architects. Codex and Claude Code as workers. Memory, dialogue and evidence. More hosts, less manual handover.</li><li><strong>Project multiplier</strong>New arenas and tools. TSP → Trip ports. ChessBest: Top Picks and DCC. Build → test → improve.</li><li><strong>Living AI8 Lab</strong>Coordinates work across components. Proposes, builds, tests, improves. Develops projects and itself. BD remains a partner and guide.</li></ol><p>Two loops. Shared learning. Task → Execute → Evidence → Analyse → Improve → Next run. Better projects ↔ A better way for the Lab to work.</p></div></details>
+</div></div></dialog>
+    </div>
+
+    <div class="wrap">
+<section class="human-middle human-middle-family" aria-labelledby="human-middle-banner-title">
+<div class="hm-unified-banner">
+<header class="hm-family-heading">
+<span class="human-middle-kicker">BD × AI LAB</span>
+<h2 id="human-middle-banner-title"><span class="en" lang="en">Human in the Middle</span><span class="sl" lang="sl">Človek na sredini</span></h2>
+<p><span class="en" lang="en">Exploring space, time and information — through human questions.</span><span class="sl" lang="sl">Raziskovanje prostora, časa in informacij — skozi človeška vprašanja.</span></p>
+<p class="hm-scale-note"><span class="en" lang="en">To elementary particles, we can be as unimaginably large as the Sun, a galaxy or even the universe is to us. Reverse the view: magnify the microscopic world within us by these ratios, and its tiny distances stretch to interplanetary scales.</span><span class="sl" lang="sl">Za elementarne delce smo lahko tako nepredstavljivo veliki, kot so za nas Sonce, galaksija ali celo vesolje. Obrnimo pogled: če mikrosvet v nas povečamo v teh razmerjih, se njegove drobne razdalje raztegnejo do medplanetarnih meril.</span></p>
+</header>
+<div class="hm-family-buttons" role="group" aria-label="Human in the Middle / Človek na sredini">
+<button class="hm-family-entry" id="human-middle-open" data-hm-open-series="space" type="button" aria-haspopup="dialog" aria-controls="human-middle-dialog">
+<span class="hm-entry-label"><span class="en" lang="en">Space</span><span class="sl" lang="sl">Prostor</span><span aria-hidden="true">↗</span></span>
+<span class="hm-series-status" data-hm-series-status="space" data-pending="false"><span class="en" lang="en">9 images</span><span class="sl" lang="sl">9 slik</span></span>
+</button>
+<button class="hm-family-entry" id="human-middle-time-open" data-hm-open-series="time" type="button" aria-haspopup="dialog" aria-controls="human-middle-dialog">
+<span class="hm-entry-label"><span class="en" lang="en">Time</span><span class="sl" lang="sl">Čas</span><span aria-hidden="true">↗</span></span>
+<span class="hm-series-status" data-hm-series-status="time" data-pending="false"><span class="en" lang="en">9 images</span><span class="sl" lang="sl">9 slik</span></span>
+</button>
+<button class="hm-family-entry" id="human-middle-information-open" data-hm-open-series="information" type="button" aria-haspopup="dialog" aria-controls="human-middle-dialog">
+<span class="hm-entry-label"><span class="en" lang="en">Information</span><span class="sl" lang="sl">Informacija</span><span aria-hidden="true">↗</span></span>
+<span class="hm-series-status" data-hm-series-status="information" data-pending="false"><span class="en" lang="en">9 images</span><span class="sl" lang="sl">9 slik</span></span>
+</button>
+<button class="hm-family-entry hm-family-entry-questions" id="human-middle-questions-open" data-hm-open-series="questions" type="button" aria-haspopup="dialog" aria-controls="human-middle-dialog">
+<span class="hm-entry-label"><span class="en" lang="en">Questions</span><span class="sl" lang="sl">Vprašanja</span><span aria-hidden="true">↗</span></span>
+<span class="hm-series-status" data-hm-series-status="questions" data-pending="false"><span class="en" lang="en">Bonus image</span><span class="sl" lang="sl">Bonus slika</span></span>
+</button>
+</div>
+</div>
+</section>
+<dialog class="human-middle-dialog" id="human-middle-dialog" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="human-middle-title" data-revision="20261009-r17"></dialog>
+    </div>
+    <section class="about wrap" id="bojan" aria-labelledby="about-title">
+      <div class="about-inner">
+        <div class="about-mark"><p class="eyebrow" data-sl="Človek za vprašanji" data-en="The human behind the questions">Človek za vprašanji</p><div class="monogram" aria-hidden="true">BD<span style="font-size:.45em;vertical-align:top;letter-spacing:0">×AI</span></div></div>
+        <div class="about-copy"><h2 id="about-title"><span data-sl="Radovednost je" data-en="Curiosity is">Radovednost je</span> <em data-sl="začetek." data-en="the beginning.">začetek.</em></h2><p data-sl="Sem Bojan. Zanimajo me povezave med področji in vprašanja, ki jih še ne razumemo dovolj dobro. Skupaj z AI jih spreminjam v orodja, raziskave in nove možnosti za preizkus." data-en="I’m Bojan. I’m curious about connections between fields and questions we do not yet understand well enough. Together with AI, I turn them into tools, research, and new opportunities to test ideas.">Sem Bojan. Zanimajo me povezave med področji in vprašanja, ki jih še ne razumemo dovolj dobro. Skupaj z AI jih spreminjam v orodja, raziskave in nove možnosti za preizkus.</p><a class="button" href="https://www.mdlxdcc.org/w/"><span data-sl="Spoznaj moje delo" data-en="Explore my work">Spoznaj moje delo</span><span class="arrow" aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap footer-inner"><div><div class="footer-brand">MDL×DCC <span style="font-weight:400;color:var(--muted)">· BD × AI Lab</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:5px" data-sl="Samostojne misli. Skupna radovednost." data-en="Independent minds. Shared curiosity.">Samostojne misli. Skupna radovednost.</div></div><nav class="footer-links" aria-label="Povezave v nogi" data-aria-sl="Povezave v nogi" data-aria-en="Footer links"><a href="https://www.mdlxdcc.org/index-atlas" data-sl="Atlas" data-en="Atlas">Atlas</a><a href="https://www.mdlxdcc.org/index-todo" data-sl="Delovna miza" data-en="Workbench">Delovna miza</a><a href="https://www.mdlxdcc.org/c/" data-sl="Kontinuiteta" data-en="Continuity">Kontinuiteta</a><a href="./index.html" data-sl="Glavna stran" data-en="Home">Glavna stran</a><a href="mailto:bd@siol.net" data-sl="Piši ↗" data-en="Say hello ↗">Piši ↗</a></nav></div></footer>
+
+  </div>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const get = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
+      const put = (key, value) => { try { localStorage.setItem(key, value); } catch (_) {} };
+      const menu = document.getElementById('site-menu');
+      const menuTrigger = document.getElementById('site-menu-trigger');
+      function syncTheme() {
+        const dark = root.dataset.theme === 'dark';
+        document.getElementById('theme').setAttribute('aria-pressed', String(dark));
+        document.getElementById('theme-label').textContent = root.lang === 'sl' ? (dark ? 'Temna' : 'Svetla') : (dark ? 'Dark' : 'Light');
+      }
+      function setLanguage(lang) {
+        root.lang = lang;
+        document.querySelectorAll('[data-sl][data-en]').forEach(el => { el.textContent = el.dataset[lang]; });
+        document.querySelectorAll('[data-aria-sl][data-aria-en]').forEach(el => { el.setAttribute('aria-label', el.dataset['aria' + (lang === 'sl' ? 'Sl' : 'En')]); });
+        document.querySelectorAll('button[data-lang]').forEach(el => el.setAttribute('aria-pressed', String(el.dataset.lang === lang)));
+        document.title = lang === 'sl' ? 'MDL×DCC — Manj opiše več' : 'MDL×DCC — Less describes more';
+        document.querySelector('meta[name="description"]').content = lang === 'sl' ? 'Ideje, raziskave, igre in orodja, ki jih Bojan razvija skupaj z umetno inteligenco.' : 'Ideas, research, games and tools developed by Bojan together with artificial intelligence.';
+        document.getElementById('theme').title = lang === 'sl' ? 'Svetla / temna tema' : 'Light / dark theme';
+        menuTrigger.title = lang === 'sl' ? 'Meni' : 'Menu';
+        syncTheme();
+      }
+      document.querySelectorAll('button[data-lang]').forEach(button => button.addEventListener('click', () => window.MDLxDCCLocale.choose(button.dataset.lang)));
+      window.MDLxDCCLocale.subscribe(setLanguage);
+      document.getElementById('theme').addEventListener('click', () => {
+        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        syncTheme();
+        put('mdlxdcc-theme', next);
+      });
+      const savedTheme = get('mdlxdcc-theme');
+      root.dataset.theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
+      syncTheme();
+      function setFont(value) {
+        const n = Math.round(Math.max(.8, Math.min(1.5, value)) * 10) / 10;
+        root.style.fontSize = Math.round(n * 100) + '%';
+        document.getElementById('font-value').textContent = Math.round(n * 100) + '%';
+        document.getElementById('font-down').disabled = n <= .8;
+        document.getElementById('font-up').disabled = n >= 1.5;
+        put('mdlxdcc-font', String(n));
+      }
+      const storedFont = Number(get('mdlxdcc-font'));
+      setFont(storedFont >= .8 && storedFont <= 1.5 ? storedFont : 1);
+      document.getElementById('font-down').addEventListener('click', () => setFont(parseFloat(root.style.fontSize) / 100 - .1));
+      document.getElementById('font-up').addEventListener('click', () => setFont(parseFloat(root.style.fontSize) / 100 + .1));
+      document.getElementById('font-value').addEventListener('click', () => setFont(1));
+      menu.addEventListener('toggle', () => menuTrigger.setAttribute('aria-expanded', String(menu.open)));
+      menu.querySelector('.menu-links').addEventListener('click', event => {
+        if (event.target.closest('a')) menu.open = false;
+      });
+      document.addEventListener('click', event => {
+        if (menu.open && !menu.contains(event.target)) menu.open = false;
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && menu.open) {
+          event.preventDefault();
+          menu.open = false;
+          menuTrigger.focus();
+        }
+      });
+    })();
+  </script>
+<script src="./assets/human-middle/v5/human-middle-series-r1.js?v=20261009-r18"></script>
+  <script src="./assets/human-middle/v5/human-middle-explanations-r1.js?v=20261009-r16"></script>
+  <script id="human-middle-script" src="./assets/human-middle/v5/human-middle-r13-family.js?v=20261009-r18"></script>
+  <script id="ai8-lab-vision-script" src="./assets/ai8-vision/r2/vision-r4.js?v=20261004-r4"></script>
+  <script src="./pwa.js?v=root-20261024-r6" defer></script>
+<!-- One persistent chat and scene frame. Toggling AI never recreates them. -->
+<aside id="guide-panel" aria-labelledby="guide-title" hidden>
+ <div class="guide-head"><div><strong id="guide-title" data-guide-text="title">MDL×DCC Guide</strong><small id="guide-subtitle" data-guide-text="subtitle">Public guide</small></div><div id="guide-provider" class="guide-provider" role="group" aria-label="Choose the next assistant"><button id="guide-provider-gpt" type="button" aria-pressed="true">GPT</button><button id="guide-provider-claude" type="button" aria-pressed="false">Claude</button></div><button id="guide-close" class="guide-icon" type="button" aria-label="Hide chat">×</button></div>
+ <div class="guide-account"><div><span id="guide-account-label"></span><small id="guide-usage"></small></div><button id="guide-account-action" class="guide-button" type="button">Sign in</button></div>
+ <form id="guide-auth" class="guide-auth" hidden>
+  <strong id="guide-auth-title" data-guide-text="loginTitle">Sign in to ask GPT or Claude</strong><p data-guide-text="loginInfo">Your question stays ready. The public tour is also available without signing in.</p>
+  <label><span data-guide-text="email">Email</span><input id="guide-email" type="email" autocomplete="username" maxlength="254" required></label>
+  <label><span data-guide-text="password">Password</span><input id="guide-password" type="password" autocomplete="current-password" maxlength="256" required></label>
+  <p id="guide-auth-error" class="guide-error" role="status" hidden></p>
+  <button id="guide-auth-submit" class="guide-button" type="submit" data-guide-text="login">Sign in</button>
+  <button id="guide-auth-mode" type="button" data-guide-text="registerChoice">Create an account</button><button id="guide-auth-cancel" type="button" data-guide-text="cancelLogin">Back to chat</button>
+  <small data-guide-text="budgetInfo">Visitors share a $100 monthly API budget. BD is outside that quota.</small>
+ </form>
+ <div id="guide-messages" role="log" aria-live="polite" aria-relevant="additions" aria-busy="false">
+  <div class="guide-welcome"><div class="guide-star" aria-hidden="true">✳</div><h2 data-guide-text="welcome">What are you curious about?</h2><p data-guide-text="intro">Explore the projects, ask for an explanation, or take a guided tour.</p><div class="guide-suggestions"><button id="guide-start-tour" type="button" data-guide-text="glance">Start glance →</button><button id="guide-projects" type="button" data-guide-text="projects">What is MDL×DCC?</button><button id="guide-dgte" type="button" data-guide-text="dgte">DGTE: electricity in €?</button></div></div>
+ </div>
+ <div id="guide-busy" role="status" hidden></div>
+ <div id="guide-tour" hidden><div id="guide-tour-status"></div><div class="guide-tour-actions"><button class="guide-button" id="guide-back" type="button" data-guide-text="back">Back</button><button class="guide-button" id="guide-pause" type="button" data-guide-text="pause">Pause</button><button class="guide-button" id="guide-stop" type="button" data-guide-text="stop">Finish</button><button class="guide-button" id="guide-next" type="button" data-guide-text="next">Next · n</button></div></div>
+ <form class="guide-compose" id="guide-form"><div class="guide-input-wrap"><textarea id="guide-input" rows="1" maxlength="4000" aria-label="Ask about a project" placeholder="Ask about a project …"></textarea><button id="guide-send" type="submit" aria-label="Send">↑</button></div><p id="guide-privacy" class="guide-fine" data-guide-text="fine">One shared conversation in this tab. The selected provider processes your question and conversation. Check answers against their sources.</p></form>
+</aside>
+<section id="guide-stage" aria-label="Project page" hidden><div class="guide-stage-head"><button id="guide-home" type="button" data-guide-text="home">Back to landing</button><span id="guide-page-title"></span><a id="guide-page-external" href="./index-atlas.html" target="_blank" rel="noopener noreferrer" aria-label="Open page in a tab">↗</a></div><iframe id="guide-frame" title="MDL×DCC project" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-popups" referrerpolicy="same-origin"></iframe></section>
+<script type="module" src="./assets/mdlxdcc-guide/guide.js?v=20261022-nav1"></script>
+
+</body>
+</html>
