@@ -139,7 +139,7 @@ const previewRefresher=createLocalPreviewRefresher({
   now:()=>performance.now(),schedule:(fn,ms)=>window.setTimeout(fn,ms),unschedule:id=>window.clearTimeout(id),intervalMs:30000,focusDelayMs:100
 });
 const element = (tag, className, text) => { const e = document.createElement(tag); if (className) e.className = className; if (text !== undefined) e.textContent = text; return e; };
-function notice(text, source = '') { const box=$('notice'); box.textContent=text; box.hidden=!text; if(box.dataset)box.dataset.noticeSource=source; }
+function notice(text, source = '') { const box=$('notice'); box.textContent=text; box.hidden=!text; if(box.dataset){box.dataset.noticeSource=source;box.dataset.noticeRevision=String((Number(box.dataset.noticeRevision)||0)+1);} }
 const problems = {
   DEMO_INVITATION_REQUIRED: 'Za demo odpri prejeto povabilo ali vnesi njegovo kodo.', DEMO_IP_UNAVAILABLE: 'IP-ja ni mogoče varno potrditi. Demo dostop je zadržan.',
   DEMO_IP_CHANGED: 'Demo je vezan na IP ob prvi aktivaciji. Za drugo omrežje potrebuješ novo povabilo.', DEMO_EXPIRED: 'Veljavnost demo dostopa je potekla.', DEMO_REVOKED: 'Demo dostop je preklican.', DEMO_LIMIT: 'Dosežena je meja demo porabe; novega API klica ne izvedemo.',
@@ -741,12 +741,12 @@ function applyBrowserObservation(captured) {
 
 async function connectBrowser(automatic=false) {
   if (!state.ownerVerified || state.role!=='owner' || state.busy) return;
-  const epoch=accessEpoch, choiceEpoch=browserChoiceEpoch;let connectionEpoch=browserConnectionEpoch;
+  const epoch=accessEpoch, choiceEpoch=browserChoiceEpoch, noticeRevision=$('notice').dataset?.noticeRevision;let connectionEpoch=browserConnectionEpoch;
   try {
     const handshake = await browserBridge.connect();
     if (epoch !== accessEpoch || !state.ownerVerified) { await browserBridge.disconnect(); return; }
     if (connectionEpoch!==browserConnectionEpoch) return;
-    if ($('experimental-gui').checked && handshake.capabilities?.cdpAvailable !== true) notice('Povezan le bralni del; CDP upravljanje miške/tipkovnice v Edge ni potrjeno.','cpq-connection');
+    if ($('notice').dataset?.noticeRevision===noticeRevision && $('experimental-gui').checked && handshake.capabilities?.cdpAvailable !== true) notice('Povezan le bralni del; CDP upravljanje miške/tipkovnice v Edge ni potrjeno.','cpq-connection');
     const newPair=browserPairToken!==handshake.token, fresh=newPair||!state.browserConnected||!state.browserObservation;
     if(newPair)connectionEpoch=++browserConnectionEpoch;
     if(fresh){
@@ -772,10 +772,10 @@ async function connectBrowser(automatic=false) {
     syncBrowserIncludeControl();
     $('browser-auto').disabled=cpqLocation(o.url)?.environment!=='STAGE'||!$('experimental-gui').checked;
     $('browser-setup').open=false; showWorkspaceStatus();
-    if(fresh)notice('CPQ povezava je potrjena. Pripravljeno za tvoj STAGE cilj.','cpq-connection');
+    if(fresh&&$('notice').dataset?.noticeRevision===noticeRevision)notice('CPQ povezava je potrjena. Pripravljeno za tvoj STAGE cilj.','cpq-connection');
   } catch(e) {
     if(BRIDGE_CONNECTION_FAILURES.has(e?.message)&&epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified)browserUnavailable(e);
-    if(!automatic&&epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified)notice(browserProblem(e),'cpq-connection');if(automatic)throw e;
+    if(!automatic&&epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified&&$('notice').dataset?.noticeRevision===noticeRevision)notice(browserProblem(e),'cpq-connection');if(automatic)throw e;
   }
 }
 function stageGoalText(value, stripPrefix = true) {

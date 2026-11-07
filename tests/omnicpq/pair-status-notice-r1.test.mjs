@@ -108,3 +108,21 @@ test('PAIR_NOTICE stale manual rejection preserves newer owner notice',async()=>
  assert.equal(f.$('notice').textContent,'SYNTHETIC_NEW_OWNER_STATE');assert.equal(f.state.browserConnected,false);
  assert.equal(f.calls.observe,0);
 });
+
+test('PAIR_NOTICE late successful connect preserves newer unrelated notice in same owner epoch',async()=>{
+ const f=noticeFixture();let release;f.bridge.observe=()=>new Promise(r=>release=r);
+ const pending=f.connect(false);await flush();assert.equal(typeof release,'function');
+ f.context.notice('saved draft','other');release(observation());await pending;
+ assert.equal(f.$('notice').textContent,'saved draft');assert.equal(f.state.browserConnected,true);
+});
+test('PAIR_NOTICE late manual failure preserves newer unrelated notice in same owner epoch',async()=>{
+ const f=noticeFixture();let reject;f.bridge.connect=()=>new Promise((_,r)=>reject=r);
+ const pending=f.connect(false);await flush();f.context.notice('saved draft','other');
+ reject(Error('BRIDGE_TIMEOUT'));await pending;
+ assert.equal(f.$('notice').textContent,'saved draft');assert.equal(f.state.browserConnected,false);
+});
+test('PAIR_NOTICE read-only capability warning survives generic fresh success',async()=>{
+ const f=noticeFixture();f.bridge.connect=async()=>({token:'synthetic-read-only',capabilities:{cdpAvailable:false}});
+ await f.connect(false);assert.equal(f.state.browserConnected,true);
+ assert.match(f.$('notice').textContent,/CDP/);assert.notEqual(f.$('notice').textContent,PAIR_SUCCESS);
+});
