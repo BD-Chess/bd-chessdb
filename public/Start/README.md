@@ -22,8 +22,9 @@ is unchanged. This is CSS only: no stored data, links or behavior change.
 
 R6 (also November 7) adjusts the wide layout only: AI8 News is not shown,
 because BD reads news on a separate NEWS desktop; "Vreme & promet" moves under
-"Moje povezave"; it and "Moj koledar" open on every visit. Closing one of them
-lasts until the next visit. The stored open state of both panels is never
+"Moje povezave"; it, "Moj koledar" and (R8, November 8) "Prostor za misel"
+open on every visit. Closing one of them lasts until the next visit. The
+stored open state of these panels is never
 changed by the wide layout, so narrower windows and phones keep what the
 visitor chose. A narrower window restores the R2 places.
 
