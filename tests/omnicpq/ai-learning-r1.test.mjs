@@ -217,3 +217,33 @@ test('AI_LEARNING leaving the mode invalidates a late capability response',async
  const opening=h.ui.open();await ready;h.ui.hide();gate();await opening;
  assert.equal(h.node('ai-learning-panel').hidden,true);assert.equal(h.node('learning-status').textContent,before);assert.equal(f.calls.length,0);
 });
+
+for(const [role,readToHold] of [['assistant',2],['tester',4]])test('AI_LEARNING STOP barrier wins overlapping check before '+role+' commit across handlers',async()=>{
+ const f=fixture();let entered,release,armed=false,n=0;
+ const gate=new Promise(r=>entered=r),originalGet=f.store.get,originalPut=f.store.put;
+ f.store.put=async(k,v)=>{const ok=await originalPut(k,v);if(ok&&k.includes('/event/')&&v.action==='step')armed=true;return ok;};
+ f.store.get=async k=>{const seen=await originalGet(k);if(armed&&k.endsWith('/stop')&&++n===readToHold){entered();await new Promise(r=>release=r);}return seen;};
+ const s=await f.begin('api',{maxTests:1}),pending=f.send({action:'step',runId:s.runId,revision:0});await gate;
+ const remote=makeLearningHandler({...f.deps,controllers:new Map()});
+ const stopped=await (await remote(f.request({action:'stop',runId:s.runId}),context)).json();
+ const atStop=f.calls.length;release();const result=await pending;
+ assert.equal(stopped.state.status,'STOPPED');assert.equal(f.calls.length,atStop,'No uncommitted provider role may start after acknowledged STOP');
+ assert.equal(result.data.state.status,'STOPPED');
+});
+
+test('AI_LEARNING prior dispatch commit is reported as possibly in flight after remote STOP',async()=>{
+ const f=fixture();let entered,release,armed=true;const gate=new Promise(r=>entered=r),put=f.store.put;
+ f.store.put=async(k,v)=>{const ok=await put(k,v);if(ok&&armed&&k.endsWith('/dispatch/0/assistant')&&v.state==='COMMITTED'){armed=false;entered();await new Promise(r=>release=r);}return ok;};
+ const s=await f.begin('api',{maxTests:1}),pending=f.send({action:'step',runId:s.runId,revision:0});await gate;
+ const remote=makeLearningHandler({...f.deps,controllers:new Map()});
+ const stopped=await (await remote(f.request({action:'stop',runId:s.runId}),context)).json();assert.equal(f.calls.length,0);
+ assert.equal(stopped.state.status,'STOPPED');assert.equal(stopped.state.stopBarrierClosed,true);assert.equal(stopped.state.stopCommittedCalls,1);
+ release();const result=await pending;assert.equal(f.calls.length,1);assert.equal(result.data.state.status,'STOPPED');assert.equal(f.map.size>0,true);
+});
+test('AI_LEARNING failed STOP barrier never acknowledges STOPPED and blocks another step',async()=>{
+ const f=fixture(),s=await f.begin('api',{maxTests:1}),put=f.store.put;
+ f.store.put=async(k,v)=>{if(k.endsWith('/dispatch/0/tester')&&v.state==='STOP_BARRIER')throw Object.assign(Error(),{code:'STORAGE_UNAVAILABLE'});return put(k,v);};
+ const stopped=await f.send({action:'stop',runId:s.runId});assert.equal(stopped.data.ok,false);assert.equal(stopped.data.state,undefined);
+ const status=await f.send({action:'status',runId:s.runId});assert.equal(status.data.state.status,'STOPPING');assert.equal(status.data.state.stopBarrierClosed,false);
+ assert.equal((await f.send({action:'step',runId:s.runId,revision:0})).data.error.code,'LEARNING_STOPPED');assert.equal(f.calls.length,0);
+});

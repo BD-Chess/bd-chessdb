@@ -2,7 +2,7 @@ import {LEARNING_PROTOCOL,TESTER_PROFILE,casesFor} from './ai-learning-contract.
 import {uuid,digest} from './core.mjs';
 const ENDPOINT='/.netlify/functions/omnicpq-assistant?omnicpq_learning=control-v1';
 const TERMINAL=['STOPPED','COMPLETE','BLOCKED','EXPIRED'];
-const WORDS={RUNNING:'Poteka',PAUSED:'Pavza',STOPPED:'Ustavljeno',COMPLETE:'Končano',BLOCKED:'Zadržano',EXPIRED:'Čas je potekel'};
+const WORDS={RUNNING:'Poteka',PAUSED:'Pavza',STOPPED:'Ustavljeno',STOPPING:'Ustavljanje še ni potrjeno',COMPLETE:'Končano',BLOCKED:'Zadržano',EXPIRED:'Čas je potekel'};
 const ERRORS={AUTH_REQUIRED:'Prijava je potekla. Najprej ponovno potrdi dostop.',OWNER_REQUIRED:'AI učenje je na voljo preverjenemu lastniku.',LEARNING_CONFLICT:'Stanje se je spremenilo. Preveri shranjeno stanje pred nadaljevanjem.',LEARNING_UNCERTAIN:'Izid prejšnjega koraka ni potrjen. Koraka ne ponavljamo samodejno.',LEARNING_BUDGET:'Preostali proračun ne zadošča za celoten naslednji preizkus.',LEARNING_TIME:'Dosežena je časovna meja.',LEARNING_STOPPED:'Ta cikel je trajno ustavljen.',LEARNING_PAUSED:'Cikel je na pavzi.',LEARNING_VERSION_CHANGED:'Različica pomočnika se je spremenila. Za nov preizkus začni nov cikel.',AI_UNAVAILABLE:'Modelni API še ni dosegljiv. Vgrajeni preizkusi so ločena možnost.',MODEL_UNAVAILABLE:'Zahtevani model ni dosegljiv; drugega ne uporabimo.',MODEL_PROFILE_UNAVAILABLE:'Zahtevana nastavitev modela ni podprta; druge ne uporabimo.',STORAGE_UNAVAILABLE:'Trajnega zapisa ni mogoče potrditi. Novih preizkusov ne zaženemo.',RATE_LIMITED:'Dosežena je omejitev zahtev. Samodejnega ponavljanja ni.',LEARNING_NOT_FOUND:'Shranjeni cikel ni dosegljiv za to prijavo.',LEARNING_LIMIT:'Dosežena je meja dogodkov tega cikla.'};
 const money=n=>'$'+(Number.isSafeInteger(n)?n/1e9:0).toFixed(4);
 export function reportMarkdown(s,sha=''){
@@ -50,7 +50,7 @@ export function createLearningUI({document:doc,window:win,authorized,canStart=()
   const running=state?.status==='RUNNING'&&!paused;
   $('learning-start').disabled=!allowed()||starting||inflight||looping||!canStart()||Boolean(runId&&!state)||Boolean(state&&!TERMINAL.includes(state.status))||(kind==='api'&&(!capability?.apiAvailable||!$('learning-cost-ack').checked));
   $('learning-pause').disabled=!allowed()||!state||state.status!=='RUNNING'||paused;
-  $('learning-resume').disabled=!allowed()||!state||TERMINAL.includes(state.status)||inflight||looping||!canStart();
+  $('learning-resume').disabled=!allowed()||!state||TERMINAL.includes(state.status)||state.status==='STOPPING'||inflight||looping||!canStart();
   $('learning-stop').disabled=!allowed()||!state||TERMINAL.includes(state.status);
   $('learning-refresh').disabled=!allowed()||!runId;
   for(const id of ['learning-export-json','learning-export-md'])$(id).disabled=!allowed()||!state;
@@ -116,7 +116,7 @@ export function createLearningUI({document:doc,window:win,authorized,canStart=()
  }
  async function stop(){
   if(!allowed()||!runId)return;paused=true;const token=epoch;
-  try{const v=await request('stop');adopt(v.state,token);controller?.abort();status('Cikel je trajno ustavljen. Že odposlanega modelnega klica ni mogoče razglasiti za neizvedenega; rezervacija ostane v evidenci.');}
+  try{const v=await request('stop');adopt(v.state,token);controller?.abort();status('Cikel je trajno ustavljen. Klic, katerega začetek je bil potrjen pred ustavitvijo, se lahko še odpošlje ali zaključi; rezervirana poraba ostane v evidenci.');}
   catch(e){status(problem(e));}render();
  }
  async function exportReport(format){

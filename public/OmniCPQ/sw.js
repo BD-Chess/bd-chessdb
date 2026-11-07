@@ -1,5 +1,5 @@
 // Only this application's reviewed, hash-verified shell. No API/auth/CPQ interception.
-const RELEASE = '8f01b97d54fa22720fee';
+const RELEASE = 'aa643f75ead76ae87ae6';
 const APP_VERSION = '1.10.0-ai-learning-r1';
 const ROOT = new URL('./', self.registration.scope);
 const PREFIX = 'omnicpq-shell:' + ROOT.pathname + ':';

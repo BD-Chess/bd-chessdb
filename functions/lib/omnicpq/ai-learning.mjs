@@ -71,13 +71,14 @@ async function readRun(store,prefix,runId,owner,now){
   }else paused=e.action==='pause';
   events.push(e);chain=hash(e);
  }
- const stopped=await store.get(prefix+'/stop');
- if(stopped&&(!record(stopped)||stopped.runId!==runId))throw issue('LEARNING_UNCERTAIN',503);
+ const stopRequested=await store.get(prefix+'/stop-request'),stopped=await store.get(prefix+'/stop');
+ if(stopRequested&&(!record(stopRequested)||stopRequested.schema!==LEARNING_PROTOCOL||stopRequested.runId!==runId))throw issue('LEARNING_UNCERTAIN',503);
+ if(stopped&&(!record(stopped)||stopped.runId!==runId||stopped.barrierClosed!==true||!Number.isSafeInteger(stopped.committedCalls)||stopped.committedCalls<0||stopped.committedCalls>h.maxCalls))throw issue('LEARNING_UNCERTAIN',503);
  const counts=Object.fromEntries(statuses.map(s=>[s,results.filter(r=>r.status===s).length+(s==='NOT_RUN'?h.maxTests-results.length:0)]));
  const versionChanged=h.appVersion!==APP_VERSION||h.catalogVersion!==LEARNING_CATALOG_VERSION;
- const status=stopped?'STOPPED':versionChanged?'BLOCKED':now>=h.expiresAt?'EXPIRED':blocked?'BLOCKED':results.length===h.maxTests&&!pending?'COMPLETE':paused?'PAUSED':'RUNNING';
+ const status=stopped?'STOPPED':stopRequested?'STOPPING':versionChanged?'BLOCKED':now>=h.expiresAt?'EXPIRED':blocked?'BLOCKED':results.length===h.maxTests&&!pending?'COMPLETE':paused?'PAUSED':'RUNNING';
  if(cost>h.budgetNanoUSD||calls>h.maxCalls)throw issue('LEARNING_UNCERTAIN',503);
- return {header:h,events,chain,summary:{schema:LEARNING_PROTOCOL,runId,kind:h.kind,profile:h.profile,appVersion:h.appVersion,catalogVersion:h.catalogVersion,skillVersion:h.skillVersion,bridgeVersion:'NOT_USED',status,reason:versionChanged?'LEARNING_VERSION_CHANGED':null,revision:events.length,pending,results,counts,completed:results.filter(x=>!['NOT_RUN','BLOCKED'].includes(x.status)).length,total:h.maxTests,reservedCalls:calls,maxCalls:h.maxCalls,reservedNanoUSD:cost,budgetNanoUSD:h.budgetNanoUSD,createdAt:h.createdAt,expiresAt:h.expiresAt,nextTest:casesFor(h.kind)[results.length]?.title||null,actualCPQ:'NOT_RUN',knowledgeAdmission:'PROPOSED_ONLY',proposals:results.map(proposalFor).filter(Boolean)}};
+ return {header:h,events,chain,summary:{schema:LEARNING_PROTOCOL,runId,kind:h.kind,profile:h.profile,appVersion:h.appVersion,catalogVersion:h.catalogVersion,skillVersion:h.skillVersion,bridgeVersion:'NOT_USED',status,reason:versionChanged?'LEARNING_VERSION_CHANGED':null,revision:events.length,pending,results,counts,completed:results.filter(x=>!['NOT_RUN','BLOCKED'].includes(x.status)).length,total:h.maxTests,reservedCalls:calls,maxCalls:h.maxCalls,reservedNanoUSD:cost,budgetNanoUSD:h.budgetNanoUSD,createdAt:h.createdAt,expiresAt:h.expiresAt,nextTest:casesFor(h.kind)[results.length]?.title||null,actualCPQ:'NOT_RUN',knowledgeAdmission:'PROPOSED_ONLY',stopBarrierClosed:stopped?.barrierClosed===true,stopCommittedCalls:stopped?.committedCalls??0,dispatchRule:'NO_NEW_UNCOMMITTED_DISPATCH; PRIOR_COMMITTED_MAY_START_OR_FINISH',proposals:results.map(proposalFor).filter(Boolean)}};
 }
 async function bodyJSON(req){
  if(!req.headers.get('content-type')?.toLowerCase().startsWith('application/json'))throw issue('LEARNING_INVALID',415);
@@ -125,11 +126,24 @@ export function makeLearningHandler({auth=authenticateOmni,storeFactory=learning
    let run=await readRun(store,prefix,b.runId,owner,now());
    if(b.action==='status'||b.action==='export')return await ownerJSON({ok:true,state:run.summary,...(b.action==='export'?{report:{...run.summary,reportKind:'SYNTHETIC_ONLY_NOT_CPQ_ACCEPTANCE',automaticInstallation:false}}:{})});
    if(b.action==='stop'){
-    const stop={schema:LEARNING_PROTOCOL,runId:b.runId,stoppedAt:now()};await store.put(prefix+'/stop',stop);
-    controllers.get(prefix)?.abort();return await ownerJSON({ok:true,state:(await readRun(store,prefix,b.runId,owner,now())).summary});
+    if(run.summary.status==='STOPPED')return await ownerJSON({ok:true,state:run.summary});
+    await store.put(prefix+'/stop-request',{schema:LEARNING_PROTOCOL,runId:b.runId,at:now()});
+    controllers.get(prefix)?.abort();let committedCalls=0;
+    // Same create-only key linearizes each role's dispatch commit against STOP.
+    // A pre-STOP commit may still reach the external API; this is not provider cancellation.
+    if(run.header.kind==='api')for(let index=0;index<run.header.maxTests;index++)for(const role of ['assistant','tester']){
+     const key=prefix+'/dispatch/'+index+'/'+role;
+     if(!await store.put(key,{schema:LEARNING_PROTOCOL,runId:b.runId,index,role,state:'STOP_BARRIER'})){
+      const existing=await store.get(key);
+      if(!record(existing)||existing.schema!==LEARNING_PROTOCOL||existing.runId!==b.runId||existing.index!==index||existing.role!==role||!['STOP_BARRIER','COMMITTED'].includes(existing.state))throw issue('LEARNING_UNCERTAIN',503);
+      if(existing.state==='COMMITTED')committedCalls++;
+     }
+    }
+    await store.put(prefix+'/stop',{schema:LEARNING_PROTOCOL,runId:b.runId,stoppedAt:now(),barrierClosed:true,committedCalls});
+    return await ownerJSON({ok:true,state:(await readRun(store,prefix,b.runId,owner,now())).summary});
    }
    if(!Number.isSafeInteger(b.revision)||b.revision!==run.summary.revision)throw issue('LEARNING_CONFLICT',409);
-   if(['STOPPED','EXPIRED','COMPLETE','BLOCKED'].includes(run.summary.status))throw issue(run.summary.status==='STOPPED'?'LEARNING_STOPPED':run.summary.status==='EXPIRED'?'LEARNING_TIME':'LEARNING_UNCERTAIN',409);
+   if(['STOPPED','STOPPING','EXPIRED','COMPLETE','BLOCKED'].includes(run.summary.status))throw issue(['STOPPED','STOPPING'].includes(run.summary.status)?'LEARNING_STOPPED':run.summary.status==='EXPIRED'?'LEARNING_TIME':'LEARNING_UNCERTAIN',409);
    if(run.events.length>=LEARNING_LIMITS.events)throw issue('LEARNING_LIMIT',409);
    if(b.action==='pause'||b.action==='resume'){
     if((b.action==='pause'&&run.summary.status==='PAUSED')||(b.action==='resume'&&run.summary.status==='RUNNING'))return await ownerJSON({ok:true,state:run.summary});
@@ -153,7 +167,7 @@ export function makeLearningHandler({auth=authenticateOmni,storeFactory=learning
    if(!await store.put(prefix+'/event/'+seq,event))throw issue('LEARNING_CONFLICT',409);
    const abort=new AbortController();controllers.set(prefix,abort);const onAbort=()=>abort.abort();req.signal.addEventListener('abort',onAbort,{once:true});if(req.signal.aborted)abort.abort();
    let timedOut=false;const timer=setTimeout(()=>{timedOut=true;abort.abort();},Math.min(timeoutMs,Math.max(1,run.header.expiresAt-now())));
-   async function guard(){const current=await auth(req,context);if(current?.role!=='owner'||current.id!==actor.id)throw issue('OWNER_REQUIRED',403);if(abort.signal.aborted)throw issue(timedOut?'TIMEOUT':'CANCELLED',499);if(now()>=run.header.expiresAt)throw issue('LEARNING_TIME',409);if(await store.get(prefix+'/stop'))throw issue('LEARNING_STOPPED',409);}
+   async function guard(){const current=await auth(req,context);if(current?.role!=='owner'||current.id!==actor.id)throw issue('OWNER_REQUIRED',403);if(abort.signal.aborted)throw issue(timedOut?'TIMEOUT':'CANCELLED',499);if(now()>=run.header.expiresAt)throw issue('LEARNING_TIME',409);if(await store.get(prefix+'/stop-request')||await store.get(prefix+'/stop'))throw issue('LEARNING_STOPPED',409);}
    const work=async()=>{
     let result,calls=[];
     try{
@@ -161,8 +175,14 @@ export function makeLearningHandler({auth=authenticateOmni,storeFactory=learning
      if(run.header.kind==='code')result=runCodeCase(test.id);
      else{
       async function invoke(p,label){
-       await guard();let text='',identity=null;const reserved=maximumCharge(p);
-       const audit={role:label,requestedModel:p.model,requestedReasoning:p.reasoning.effort,observedModel:'UNKNOWN',observedReasoning:'UNKNOWN',usage:{status:'UNKNOWN_RESERVED',upperNanoUSD:reserved}};calls.push(audit);
+       await guard();
+       const dispatchKey=prefix+'/dispatch/'+event.index+'/'+label;
+       if(!await store.put(dispatchKey,{schema:LEARNING_PROTOCOL,runId:b.runId,index:event.index,role:label,state:'COMMITTED',intentHash:hash(event),at:now()})){
+        const existing=await store.get(dispatchKey);throw issue(existing?.state==='STOP_BARRIER'?'LEARNING_STOPPED':'LEARNING_UNCERTAIN',409);
+       }
+       let text='',identity=null;const reserved=maximumCharge(p);
+       const audit={role:label,requestedModel:p.model,requestedReasoning:p.reasoning.effort,observedModel:'UNKNOWN',observedReasoning:'UNKNOWN',dispatch:'COMMITTED_NOT_PROVIDER_ACK',usage:{status:'UNKNOWN_RESERVED',upperNanoUSD:reserved}};calls.push(audit);
+       if(abort.signal.aborted)throw issue(timedOut?'TIMEOUT':'CANCELLED',499);
        const final=await transport({payload:p,signal:abort.signal,onIdentity:i=>{identity=i;},onText:s=>{if(typeof s!=='string'||text.length+s.length>12000){abort.abort();throw issue('OUTPUT_LIMIT',503);}text+=s;}});
        await guard();audit.usage=usageCost(final.usage,p.model,reserved);const observedModel=final.model||identity?.model,observedReasoning=final.reasoning||identity?.reasoning;
        audit.observedModel=typeof observedModel==='string'&&/^gpt-6(?:\.1)?-(?:terra|luna)(?:-[0-9]{4}-[0-9]{2}-[0-9]{2})?$/.test(observedModel)?observedModel:'UNKNOWN';audit.observedReasoning=['max','high','medium'].includes(observedReasoning)?observedReasoning:'UNKNOWN';
