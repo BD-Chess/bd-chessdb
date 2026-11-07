@@ -5,68 +5,39 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0d141b">
-  <meta name="description" content="Ground News za pregled novic. AI8 pogled za ločeni analizi GPT in Claude. Arhiv dosedanjih izdaj AI8 News.">
-  <title>AI8 News · novice in dva pogleda</title>
-  <link rel="stylesheet" href="news-hub.css?v=20261107-r1">
-  <script src="news-hub.js?v=20261107-r1" defer></script>
+  <meta name="description" content="Ground News v bralniku AI8 News z ločenima analizama GPT in Claude ter arhivom dosedanjih izdaj.">
+  <title>AI8 News · Ground News in dva pogleda</title>
+  <link rel="stylesheet" href="news-hub.css?v=20261107-r2">
+  <script src="news-hub.js?v=20261107-r2" defer></script>
 </head>
 <body>
-  <a class="skip" href="#main">Preskoči na vsebino</a>
-  <header class="site-header wrap">
-    <a class="brand" href="./" aria-label="AI8 News — začetek"><span class="brand-mark" aria-hidden="true">↔</span><span>AI8 <strong>NEWS</strong></span></a>
-    <nav aria-label="Glavna navigacija"><a href="#ai8-view">AI8 pogled</a><a href="archive.html">Arhiv</a><a href="../Start/">Start ↗</a></nav>
+  <a class="skip" href="#main">Preskoči na novice</a>
+  <header id="news-toolbar" class="toolbar">
+    <div class="navigation-row">
+      <a class="brand" href="./" aria-label="AI8 News — začetek"><span aria-hidden="true">↔</span> AI8 <strong>NEWS</strong></a>
+      <label class="url-field" for="ai8-url"><span class="sr-only">Povezava do novice</span><input id="ai8-url" type="url" value="https://ground.news/" maxlength="2048" inputmode="url" autocomplete="off" spellcheck="false" required aria-label="Povezava do novice" placeholder="Prilepi povezavo do članka …"></label>
+      <button id="ai8-load" type="button" class="load-button">Odpri / pridobi</button>
+      <button id="ai8-current" type="button" title="Z dodatkom zajemi trenutno odprto zgodbo v Ground News">Trenutna novica</button>
+    </div>
+    <div class="actions-row">
+      <div class="analysis-actions" aria-label="Izberi analizo"><button id="ai8-gpt" type="button" class="gpt-button" disabled>GPT analiza</button><button id="ai8-claude" type="button" class="claude-button" disabled>Claude analiza</button><button id="ai8-analyze" type="button" class="both-button" disabled>Obe analizi</button></div>
+      <nav class="tools" aria-label="Pogledi in povezava"><button id="ai8-reader" type="button" aria-pressed="false">Branje</button><button id="ai8-panel" type="button" aria-expanded="false" aria-controls="analysis-drawer">AI8 pogled</button><a id="archive-latest" href="archive.html">Arhiv</a><button id="ai8-setup" type="button">Povezava</button><a id="ground-external" href="https://ground.news/" target="_blank" rel="noopener noreferrer" title="Odpri Ground News posebej za prijavo ali brskanje">Ground posebej ↗</a></nav>
+    </div>
+    <div class="status-row"><span id="connection-dot" class="connection-dot" aria-hidden="true"></span><span id="connection-state">Dodatek ni povezan</span><p id="analysis-status" class="analysis-status" role="status" aria-live="polite">Brskaj po Ground News ali prilepi povezavo do članka.</p></div>
   </header>
-  <main id="main" class="wrap">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> PREBERI · PREMISLI · PRESODI</p>
-        <h1 id="hero-title">Novice in dva<br><em>neodvisna pogleda.</em></h1>
-        <p class="hero-lead">Odpri novice na Ground News. Za zgodbo, ki te zanima, pridobi ločeni analizi GPT in Claude.</p>
-        <a class="text-link" href="#ai8-view">Dodaj zgodbo za AI8 pogled <span aria-hidden="true">↓</span></a>
-      </div>
-      <a class="ground-card" href="https://ground.news/" target="_blank" rel="noopener noreferrer" aria-label="Odpri Ground News v novem zavihku">
-        <div class="ground-top"><span class="eyebrow">PREGLED NOVIC</span><span class="external-arrow" aria-hidden="true">↗</span></div>
-        <div class="ground-wordmark">Ground<span>News</span></div>
-        <p>Začni z novico.<br>Nato dodaj svoj AI8 pogled.</p>
-        <span class="ground-cta">Odpri Ground News <span aria-hidden="true">↗</span></span>
-        <span class="external-note">Odpre se dejanska stran Ground News v novem zavihku.</span>
-      </a>
-    </section>
-    <section id="ai8-view" class="analysis-section" aria-labelledby="analysis-title">
-      <div class="section-heading"><div><p class="eyebrow">TVOJA IZBRANA ZGODBA</p><h2 id="analysis-title">AI8 pogled</h2></div><p>Dve ločeni mnenji.<br>Presoja ostane tvoja.</p></div>
-      <div class="analysis-layout">
-        <div class="input-panel">
-          <div class="form-row">
-            <label for="ai8-kind">Kaj boš dodal?<select id="ai8-kind"><option value="ground-summary">Povzetek z Ground News</option><option value="article">Besedilo članka</option><option value="selection">Izbrani odlomek</option><option value="manual">Moje besedilo ali vprašanje</option></select></label>
-            <label for="ai8-title">Naslov<input id="ai8-title" type="text" maxlength="400" placeholder="Naslov zgodbe" required></label>
-          </div>
-          <label for="ai8-url">Povezava do vira<input id="ai8-url" type="url" maxlength="2048" inputmode="url" placeholder="https://ground.news/article/…" autocomplete="off" required aria-describedby="url-hint"></label>
-          <p id="url-hint" class="url-hint">Za povzetek z Ground News dodaj povezavo do zgodbe na ground.news/article/…</p>
-          <label for="ai8-text">Besedilo za analizo<textarea id="ai8-text" rows="8" maxlength="59999" placeholder="Prilepi povzetek, članek, odlomek ali svoje vprašanje …" aria-describedby="input-scope input-count"></textarea></label>
-          <div class="input-meta"><p id="input-scope">Mnenji bosta temeljili na dodanem povzetku, ne na celotnem članku.</p><span id="input-count">0 / 59.999</span></div>
-          <div class="analyze-actions"><button id="ai8-analyze" type="button" disabled>Pridobi oba pogleda <span aria-hidden="true">↗</span></button><p>GPT in Claude odgovorita vsak zase.<br>Nestrinjanje je del rezultata.</p></div>
-          <p id="analysis-status" class="analysis-status" role="status" aria-live="polite">Za analizo poveži lokalni dodatek AI8 News.</p>
-        </div>
-        <aside class="connection-panel" aria-labelledby="connection-title">
-          <div class="connection-heading"><span id="connection-dot" class="connection-dot" aria-hidden="true"></span><h3 id="connection-title">Poveži svoja agenta</h3></div>
-          <p id="connection-message">Analizo izvedeta lokalno nameščena Codex in Claude Code s tvojima prijavama. Spletna stran sama nima dostopa do njiju.</p>
-          <ol class="setup-steps"><li><span>01</span><p>Namesti dodatek <strong>AI8 News</strong> in njegov lokalni povezovalnik.</p></li><li><span>02</span><p>Prijavi se v <strong>Codex</strong> in <strong>Claude Code</strong> na tem računalniku.</p></li><li><span>03</span><p>Osveži stran in klikni <strong>Pridobi oba pogleda</strong>.</p></li></ol>
-          <a class="setup-link" href="https://github.com/BD-Chess/bd-chessdb/blob/main/integrations/ai8-news/README.md" target="_blank" rel="noopener noreferrer">Navodila za povezavo ↗</a>
-          <p class="connection-footnote">Poslano besedilo obdelata tvoji storitvi GPT in Claude. Ta stran rezultatov ne objavi in jih ne shranjuje v brskalnik.</p>
-        </aside>
-      </div>
-    </section>
-    <section id="ai8-results" class="results-section" aria-labelledby="results-title" hidden>
-      <div class="section-heading"><div><p class="eyebrow">LOČENA ODGOVORA</p><h2 id="results-title">Dva pogleda na isto zgodbo</h2></div><p id="result-time"></p></div>
-      <div class="source-panel"><p class="eyebrow">OBRAVNAVANI VIR</p><h3 id="result-title"></h3><a id="result-url" target="_blank" rel="noopener noreferrer" hidden></a><p id="result-scope"></p><details id="result-integrity" hidden><summary>Podatek o analizi</summary><p>SHA-256 dodanega vira</p><code id="result-sha"></code></details></div>
-      <div class="opinions-grid">
-        <article id="gpt-opinion" class="opinion-card gpt" aria-labelledby="gpt-title"><header><div class="voice-icon" aria-hidden="true">G</div><div><p class="eyebrow">POGLED GPT</p><h3 id="gpt-title">GPT</h3></div><span class="voice-status">Čakam na odgovor</span></header><div class="voice-body"></div></article>
-        <article id="claude-opinion" class="opinion-card claude" aria-labelledby="claude-title"><header><div class="voice-icon" aria-hidden="true">C</div><div><p class="eyebrow">POGLED CLAUDE</p><h3 id="claude-title">Claude</h3></div><span class="voice-status">Čakam na odgovor</span></header><div class="voice-body"></div></article>
-      </div>
-      <p class="result-note">To sta analizi modelov na podlagi navedenega vira. Lahko vsebujeta napake. Povzetek, mnenje in odprta vprašanja ostajajo jasno ločeni; skupna ocena resničnosti se ne izračunava.</p>
-    </section>
-    <section class="archive-section" aria-labelledby="archive-title"><div><p class="eyebrow">OHRANJENE IZDAJE</p><h2 id="archive-title">Arhiv AI8 News</h2><p>Dosedanje lastne izdaje ostajajo dostopne z izvirnimi datumi in viri. Nove lastne dnevne izdaje so v premoru.</p></div><div class="archive-actions"><a id="archive-latest" class="archive-button" href="archive.html">Odpri arhiv ↗</a><span id="archive-date">Datumi so navedeni ob posamezni izdaji.</span></div></section>
+  <main id="main" class="news-stage" tabindex="-1">
+    <iframe id="ground-frame" src="https://ground.news/" title="Ground News — novice" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    <section id="reader-view" class="reader-view" aria-label="Besedilo izbranega vira" hidden><div class="reader-paper"><p class="eyebrow">IZBRANI VIR</p><h1 id="reader-title">Izberi novico</h1><a id="reader-url" target="_blank" rel="noopener noreferrer" hidden></a><p id="reader-method" class="muted"></p><p id="reader-empty" class="reader-empty">Prilepi povezavo do članka in klikni »Odpri / pridobi«. Trenutno zgodbo v Ground News zajame gumb »Trenutna novica« prek lokalnega dodatka.</p><div id="reader-text" class="reader-text"></div></div></section>
   </main>
-  <footer class="site-footer wrap"><span class="footer-brand">AI8 <strong>NEWS</strong></span><p>Novice na Ground News. Dva pogleda prek tvojih agentov. Lastna presoja.</p><a href="../Start/">Nazaj na Start ↗</a></footer>
+  <aside id="analysis-drawer" class="analysis-drawer" aria-labelledby="drawer-title" hidden>
+    <header class="drawer-header"><div><p class="eyebrow">TVOJ AI8 POGLED</p><h2 id="drawer-title">Vir in analizi</h2></div><button id="ai8-drawer-close" type="button" aria-label="Zapri stranski pogled">×</button></header>
+    <div class="drawer-content">
+      <p id="drawer-status" class="drawer-status" hidden></p>
+      <input id="ai8-source-mode" type="hidden" value="frame">
+      <details id="source-inspector" class="source-inspector"><summary>Obravnavani vir <span id="source-mode-label">Trenutna novica v Ground News</span></summary><div class="inspector-content"><label for="ai8-kind">Vrsta besedila<select id="ai8-kind"><option value="ground-summary">Povzetek z Ground News</option><option value="article">Besedilo članka</option><option value="selection">Izbrani odlomek</option><option value="manual">Moje besedilo ali vprašanje</option></select></label><label for="ai8-title">Naslov<input id="ai8-title" type="text" maxlength="400" placeholder="Naslov zgodbe" required></label><label for="ai8-text">Besedilo za analizo<textarea id="ai8-text" rows="7" maxlength="59999" placeholder="Pridobljeno ali ročno dodano besedilo …" aria-describedby="input-scope input-count"></textarea></label><div class="input-meta"><p id="input-scope">Analiza obravnava povzetek Ground News, ne celotnega članka.</p><span id="input-count">0 / 59.999</span></div><p id="source-extraction" class="muted"></p><p id="url-hint" class="muted">Za povzetek Ground News uporabi povezavo ground.news/article/…</p></div></details>
+      <section id="ai8-results" aria-labelledby="results-title" hidden><div class="results-heading"><h3 id="results-title">Ločena pogleda</h3><p id="result-time"></p></div><div class="source-panel"><h4 id="result-title"></h4><a id="result-url" target="_blank" rel="noopener noreferrer" hidden></a><p id="result-scope"></p><details id="result-integrity" hidden><summary>Podatek o analizi</summary><p>SHA-256 obravnavanega vira</p><code id="result-sha"></code></details></div><div class="opinions-grid"><article id="gpt-opinion" class="opinion-card gpt" aria-labelledby="gpt-title"><header><span class="voice-icon" aria-hidden="true">G</span><h3 id="gpt-title">GPT</h3><span class="voice-status">Čakam na odgovor</span></header><div class="voice-body"></div></article><article id="claude-opinion" class="opinion-card claude" aria-labelledby="claude-title"><header><span class="voice-icon" aria-hidden="true">C</span><h3 id="claude-title">Claude</h3><span class="voice-status">Čakam na odgovor</span></header><div class="voice-body"></div></article></div><p class="result-note">Analizi temeljita na prikazanem viru in lahko vsebujeta napake. Mnenji ostajata ločeni, brez skupne ocene resničnosti.</p></section>
+      <details id="setup-details" class="setup-panel"><summary><span id="connection-title">Poveži svoja agenta</span></summary><div><p id="connection-message">Analizo izvedeta lokalno nameščena Codex in Claude Code s tvojima prijavama. Javna spletna stran sama nima dostopa do njiju.</p><ol><li>Namesti dodatek AI8 News in njegov lokalni povezovalnik.</li><li>Prijavi se v Codex in Claude Code na tem računalniku.</li><li>Osveži stran in izberi novico ter želeno analizo.</li></ol><a href="https://github.com/BD-Chess/bd-chessdb/blob/main/integrations/ai8-news/README.md" target="_blank" rel="noopener noreferrer">Navodila za povezavo ↗</a><p>Gumb »Trenutna novica« potrebuje dodatek za branje odprtega Ground News okvirja. Če prijava v okvirju ne uspe, uporabi »Ground posebej«.</p><p>Poslano besedilo obdelajo izbrani agenti. Ta stran rezultatov ne objavlja in jih ne shranjuje v brskalnik.</p><p>Nove lastne dnevne izdaje so v premoru. Dosedanje izdaje ostajajo v <a href="archive.html">arhivu</a>. <span id="archive-date">Datumi so navedeni ob posamezni izdaji.</span></p><a href="../Start/">Nazaj na Start ↗</a></div></details>
+    </div>
+  </aside>
 </body>
 </html>

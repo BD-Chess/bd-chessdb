@@ -22,8 +22,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Verify AI8 News gateway and local bridge without provider calls
         run: |
+          npm ci --prefix functions --ignore-scripts --no-audit --no-fund
           python3 integrations/ai8-news/native/test_host.py
           node --test integrations/ai8-news/extension/tests/*.test.mjs tests/test-ai8-news*.mjs
+          node --test tests/test-news-source.mjs
           node --check public/news/news-hub.js
       - name: Prepare protected pages for browser password managers
         shell: bash

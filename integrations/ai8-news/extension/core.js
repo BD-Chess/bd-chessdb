@@ -26,8 +26,11 @@
     if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || !url.hostname) fail('Article URL must be HTTP(S) without credentials');
     return url.href;
   }
+  function isGroundUrl(value) {
+    try { const u = new URL(value); return u.protocol === 'https:' && !u.port && u.hostname === 'ground.news' && !u.username && !u.password; } catch { return false; }
+  }
   function isGroundArticleUrl(value) {
-    try { const u = new URL(value); return u.protocol === 'https:' && !u.port && u.hostname === 'ground.news' && /^\/article\/[^/]+/.test(u.pathname) && !u.username && !u.password; } catch { return false; }
+    try { return isGroundUrl(value) && /^\/article\/[^/]+/.test(new URL(value).pathname); } catch { return false; }
   }
   function isOwnedNewsUrl(value) {
     try { const u = new URL(value); return u.protocol === 'https:' && !u.port && ['www.mdlxdcc.org', 'mdlxdcc.org'].includes(u.hostname) && /^\/news(?:\/|$)/.test(u.pathname) && !u.username && !u.password; } catch { return false; }
@@ -57,6 +60,15 @@
     if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(value)) fail('Invalid request ID');
     return value;
   }
+  function normalizeModels(value) {
+    if (value === undefined) return ['gpt', 'claude'];
+    if (!Array.isArray(value) || value.length < 1 || value.length > 2 || new Set(value).size !== value.length || value.some(x => !['gpt', 'claude'].includes(x))) fail('Invalid requested models');
+    return ['gpt', 'claude'].filter(x => value.includes(x));
+  }
+  function normalizeSourceInfo(value) {
+    if (!object(value) || Object.keys(value).some(k => !['url', 'title'].includes(k)) || !isGroundUrl(value.url)) fail('Invalid Ground source metadata');
+    return {url: cleanUrl(value.url), title: string(value.title, 500, 'source title', true).trim()};
+  }
   function analysis(value) {
     if (!object(value)) fail('Invalid analysis');
     const out = {};
@@ -82,9 +94,16 @@
     if (raw.type === 'result') {
       if (!object(raw.results) || !object(raw.article) || typeof raw.cached !== 'boolean') fail('Invalid result');
       out.results = {};
+      out.requestedModels = normalizeModels(raw.requestedModels);
+      if (raw.cachedModels !== undefined) {
+        if (!Array.isArray(raw.cachedModels) || new Set(raw.cachedModels).size !== raw.cachedModels.length || raw.cachedModels.some(x => !out.requestedModels.includes(x))) fail('Invalid cached models');
+        out.cachedModels = ['gpt', 'claude'].filter(x => raw.cachedModels.includes(x));
+      }
       for (const model of ['gpt', 'claude']) {
         const r = raw.results[model];
-        if (!object(r) || !['ok', 'error', 'timeout'].includes(r.status)) fail('Invalid model result');
+        if (!object(r) || !['ok', 'error', 'timeout', 'not-requested'].includes(r.status)) fail('Invalid model result');
+        if (out.requestedModels.includes(model) === (r.status === 'not-requested')) fail('Requested model/result mismatch');
+        if (r.status === 'not-requested' && r.analysis != null) fail('Unexpected unrequested analysis');
         out.results[model] = {status: r.status, analysis: r.analysis == null ? null : analysis(r.analysis)};
         if (r.status === 'ok' && out.results[model].analysis === null) fail('Missing successful analysis');
         if (r.error !== undefined) out.results[model].error = string(r.error, 2000, 'model error', true);
@@ -97,9 +116,10 @@
     }
     return out;
   }
-  function verifyResultBinding(message, article, sha256) {
+  function verifyResultBinding(message, article, sha256, models) {
     if (message.type !== 'result' || message.article.url !== article.url || message.article.inputKind !== article.inputKind || message.article.sha256 !== sha256) fail('Native result does not match the submitted article');
+    if (JSON.stringify(message.requestedModels) !== JSON.stringify(normalizeModels(models))) fail('Native result model selection mismatch');
     return true;
   }
-  globalThis.AI8NewsCore = Object.freeze({MAX_TEXT_CHARS, normalizeArticle, normalizeNativeMessage, verifyResultBinding, isGroundArticleUrl, isOwnedNewsUrl, truncateText, requestId});
+  globalThis.AI8NewsCore = Object.freeze({MAX_TEXT_CHARS, normalizeArticle, normalizeModels, normalizeSourceInfo, normalizeNativeMessage, verifyResultBinding, isGroundUrl, isGroundArticleUrl, isOwnedNewsUrl, truncateText, requestId});
 })();

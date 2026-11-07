@@ -18,7 +18,9 @@ import tempfile
 import threading
 from urllib.parse import urlsplit
 
-VERSION = "1"
+VERSION = "2"
+HOST_VERSION = "0.2.0"
+MODELS = ("gpt", "claude")
 MAX_MESSAGE = 262144
 MAX_TEXT = 59999
 KINDS = {"ground-summary", "article", "selection", "manual"}
@@ -67,6 +69,14 @@ def article_packet(value):
     result["inputKind"] = value["inputKind"]
     result["sha256"] = hashlib.sha256(result["text"].encode()).hexdigest()
     return result
+
+
+def models_packet(value):
+    if (not isinstance(value, list) or not 1 <= len(value) <= len(MODELS)
+            or any(not isinstance(name, str) or name not in MODELS for name in value)
+            or len(set(value)) != len(value)):
+        raise ValueError("Izberi GPT, Claude ali oba, brez ponovljenih imen.")
+    return [name for name in MODELS if name in value]
 
 
 def analysis_packet(value):
@@ -208,50 +218,120 @@ def run_reader(name, config, article, worker, timeout):
                     "error": "CLI ni vrnil veljavnega strukturiranega odgovora. Samodejne ponovitve ni bilo."}
 
 
-def analyze(config, article, request_id, emit, reader=run_reader):
+def cached_reader_result(value):
+    if not isinstance(value, dict) or value.get("status") not in {"ok", "error", "timeout"}:
+        raise ValueError("Lokalni zapis analize zahteva pregled; samodejna ponovitev je zadržana.")
+    if value["status"] == "ok":
+        analysis_packet(value.get("analysis"))
+    elif value.get("analysis") is not None:
+        raise ValueError("Lokalni zapis analize zahteva pregled; samodejna ponovitev je zadržana.")
+    return value
+
+
+def analyze(config, article, request_id, emit, reader=run_reader, models=None):
+    requested = models_packet(list(MODELS) if models is None else models)
     state = Path(config["stateDir"])
     state.mkdir(mode=0o700, parents=True, exist_ok=True)
     worker = state / "worker"; worker.mkdir(mode=0o700, exist_ok=True)
     key = hashlib.sha256(json.dumps({"version": VERSION, **article}, sort_keys=True).encode()).hexdigest()
     record = state / (key + ".json")
+    legacy_key = hashlib.sha256(json.dumps({"version": "1", **article}, sort_keys=True).encode()).hexdigest()
+    legacy = state / (legacy_key + ".json")
     with (state / "analysis.lock").open("a") as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise ValueError("Priprava druge analize še teče.")
+        job = key[:24]
+        held = "Prejšnja analiza je bila prekinjena ali je še odprta. Preveri lokalni zapis; samodejna ponovitev je zadržana."
+        data = {"version": VERSION, "state": "complete", "createdAt": utc(),
+                "updatedAt": utc(), "article": article, "jobId": job, "models": {}}
         if record.exists():
             data = json.loads(record.read_text())
-            if data.get("state") != "complete":
-                raise ValueError("Prejšnja analiza je bila prekinjena ali je še odprta. Preveri lokalni zapis; samodejna ponovitev je zadržana.")
-            emit({**data["result"], "requestId": request_id, "cached": True})
+            if (not isinstance(data, dict) or data.get("version") != VERSION
+                    or data.get("state") not in {"started", "complete"}
+                    or not isinstance(data.get("models"), dict)
+                    or any(name not in MODELS for name in data["models"])):
+                raise ValueError(held)
+        elif legacy.exists():
+            # Version changes must not bypass an old interrupted job or pay twice.
+            # The V1 source receipt is read only; any V2 extension is a new file.
+            old = json.loads(legacy.read_text())
+            if not isinstance(old, dict) or old.get("state") != "complete":
+                raise ValueError(held)
+            old_result = old.get("result")
+            if not isinstance(old_result, dict) or not isinstance(old_result.get("results"), dict):
+                raise ValueError(held)
+            for name in MODELS:
+                data["models"][name] = {
+                    "state": "complete", "result": cached_reader_result(old_result["results"].get(name)),
+                    "completedAt": old_result.get("createdAt", data["createdAt"]),
+                }
+            data["legacyRecord"] = legacy.name
+            data["createdAt"] = old_result.get("createdAt", data["createdAt"])
+            data["updatedAt"] = data["createdAt"]
+        for entry in data["models"].values():
+            if not isinstance(entry, dict) or entry.get("state") not in {"complete", "started"}:
+                raise ValueError(held)
+            if entry["state"] == "complete":
+                cached_reader_result(entry.get("result"))
+        completed = {name: entry["result"] for name, entry in data["models"].items()
+                     if entry["state"] == "complete"}
+        missing = [name for name in requested if name not in completed]
+
+        def response(cached):
+            return {"type": "result", "requestId": request_id, "jobId": job,
+                    "article": {k: v for k, v in article.items() if k != "text"},
+                    "requestedModels": requested,
+                    "results": {name: data["models"][name]["result"] if name in requested
+                                else {"status": "not-requested", "analysis": None}
+                                for name in MODELS},
+                    "cached": cached, "cachedModels": [name for name in requested if name in completed],
+                    "createdAt": data["updatedAt"]}
+
+        if not missing:
+            emit(response(True))
             return
-        job = key[:24]
-        private_json(record, {"state": "started", "createdAt": utc(), "article": article, "jobId": job})
-        emit({"type": "accepted", "requestId": request_id, "jobId": job})
-        results = {}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        # A finished subset is readable, but an uncertain reader is never retried
+        # or overlapped with a new reader automatically.
+        if any(entry["state"] == "started" for entry in data["models"].values()):
+            raise ValueError(held)
+        for name in missing:
+            data["models"][name] = {"state": "started", "startedAt": utc()}
+        data["state"] = "started"
+        data["updatedAt"] = utc()
+        # Write ahead before any model call, retaining previously completed views.
+        private_json(record, data)
+        emit({"type": "accepted", "requestId": request_id, "jobId": job,
+              "requestedModels": requested, "cachedModels": [name for name in requested if name in completed]})
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(missing)) as pool:
             futures = {}
-            for name in ("gpt", "claude"):
+            for name in missing:
                 emit({"type": "progress", "requestId": request_id, "jobId": job, "model": name, "state": "running"})
                 futures[pool.submit(reader, name, config, article, worker, config.get("timeoutSeconds", 180))] = name
             for future in concurrent.futures.as_completed(futures):
                 name = futures[future]
                 try:
-                    results[name] = future.result()
+                    result = cached_reader_result(future.result())
                 except Exception:
-                    results[name] = {"status": "error", "analysis": None, "error": "Lokalni bralnik ni uspel."}
-                emit({"type": "progress", "requestId": request_id, "jobId": job, "model": name, "state": results[name]["status"]})
-        result = {"type": "result", "jobId": job, "article": {k: v for k, v in article.items() if k != "text"},
-                  "results": results, "cached": False, "createdAt": utc()}
-        private_json(record, {"state": "complete", "article": article, "result": result})
-        emit({**result, "requestId": request_id})
+                    result = {"status": "error", "analysis": None, "error": "Lokalni bralnik ni uspel."}
+                data["models"][name] = {"state": "complete", "result": result, "completedAt": utc()}
+                data["state"] = ("started" if any(entry["state"] == "started"
+                                                 for entry in data["models"].values()) else "complete")
+                data["updatedAt"] = utc()
+                # Save each independent completion before reporting it to a page.
+                private_json(record, data)
+                emit({"type": "progress", "requestId": request_id, "jobId": job, "model": name, "state": result["status"]})
+        emit(response(False))
 
 
 def serve(config):
     origin = f'chrome-extension://{config["extensionId"]}/'
     if sys.argv[1:] != [origin]:
         raise SystemExit("Native messaging origin rejected")
-    write_message({"type": "ready", "installed": True, "nativeHostAvailable": True})
+    ready = {"type": "ready", "installed": True, "nativeHostAvailable": True,
+             "hostVersion": HOST_VERSION, "capabilities": {"modelSelection": True}}
+    write_message(ready)
     while True:
         request_id = None
         try:
@@ -264,9 +344,10 @@ def serve(config):
             if not isinstance(request_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,100}", request_id):
                 raise ValueError("Neveljaven ID zahteve.")
             if request.get("action") == "ping":
-                write_message({"type": "ready", "requestId": request_id, "installed": True, "nativeHostAvailable": True})
+                write_message({**ready, "requestId": request_id})
             elif request.get("action") == "analyze":
-                analyze(config, article_packet(request.get("article")), request_id, write_message)
+                models = models_packet(request["models"] if "models" in request else list(MODELS))
+                analyze(config, article_packet(request.get("article")), request_id, write_message, models=models)
             else:
                 raise ValueError("Neznano dejanje.")
         except (ValueError, OSError, TypeError) as exc:

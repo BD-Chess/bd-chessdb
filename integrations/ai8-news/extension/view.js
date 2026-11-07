@@ -65,6 +65,7 @@
     panel.source.textContent = `${message.article.title} · ${labels[message.article.inputKind]}`;
     for (const [model, label] of [['gpt', 'GPT / Codex'], ['claude', 'Claude']]) {
       const result = message.results[model];
+      if (result.status === 'not-requested') continue;
       const card = element(panel.document, 'section', undefined, 'model'); card.append(element(panel.document, 'h3', label));
       if (result.status !== 'ok' || !result.analysis) card.append(element(panel.document, 'p', result.error || result.status, 'error'));
       else {
