@@ -6,14 +6,15 @@
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="BD Start: novice, bližnjice, trgi, vreme, osebni koledar in beležnica na enem mestu.">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="bd-start-release" content="20261107-start-r6">
+<meta name="bd-start-release" content="20261107-start-r7">
 <title>BD Start — Tvoj svet. Na enem mestu.</title>
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <script>try{const p=JSON.parse(localStorage.getItem('bd-start-v1')||'null');if(p&&p.version===1&&p.preferences&&['light','dark'].includes(p.preferences.theme))document.documentElement.dataset.theme=p.preferences.theme;}catch(_){}</script>
-<link rel="stylesheet" href="./start.css?v=20261107-start-r6">
+<link rel="stylesheet" href="./start.css?v=20261107-start-r7">
 <script defer src="./icons.js?v=20261010-r2"></script>
 <script defer src="./state.js?v=20261101-start-r3"></script>
-<script defer src="./app.js?v=20261107-start-r6"></script>
+<script defer src="./sync.js?v=20261107-start-r7"></script>
+<script defer src="./app.js?v=20261107-start-r7"></script>
 </head><body>
 <noscript><p style="padding:20px;font:16px sans-serif">Za uporabo BD Start omogoči JavaScript. / Enable JavaScript to use BD Start.</p></noscript>
 <div id="bd-start-proposal" data-mode="overview">
@@ -24,7 +25,7 @@
       <div class="bs-control-group"><button type="button" id="bs-scale-down" class="cursor-interaction" aria-label="Smaller text">A−</button><button type="button" id="bs-scale-reset" class="cursor-interaction" aria-label="Reset text size">100%</button><button type="button" id="bs-scale-up" class="cursor-interaction" aria-label="Larger text">A+</button></div>
       <div class="bs-control-group"><button type="button" class="cursor-interaction" data-theme="dark" aria-pressed="false"><i data-lucide="moon" aria-hidden="true"></i>Dark</button><button type="button" class="cursor-interaction" data-theme="light" aria-pressed="false"><i data-lucide="sun" aria-hidden="true"></i>Light</button></div>
     </div>    <nav class="bs-modes" aria-label="View"><button type="button" class="cursor-interaction" data-mode="overview" aria-pressed="true"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span data-i18n="overview">Pregled</span></button><button type="button" class="cursor-interaction" data-mode="focus" aria-pressed="false"><i data-lucide="focus" aria-hidden="true"></i><span data-i18n="focus">Fokus</span></button><button type="button" class="cursor-interaction" data-mode="all" aria-pressed="false"><i data-lucide="rows-3" aria-hidden="true"></i><span data-i18n="all">Vse</span></button></nav><button type="button" id="bs-open-data" data-i18n="dataTitle">Podatki & nastavitve</button></details>
-  </header><div id="bs-storage-alert" class="bs-storage-alert" role="alert" hidden><span id="bs-storage-message"></span><button id="bs-reload-data" type="button" data-i18n="reloadData">Naloži shranjene podatke</button></div>
+  </header><div id="bs-storage-alert" class="bs-storage-alert" role="alert" hidden><span id="bs-storage-message"></span><button id="bs-reload-data" type="button" data-i18n="reloadData">Naloži shranjene podatke</button></div><div id="bs-sync-alert" class="bs-storage-alert bs-sync-alert" role="alert" hidden><span id="bs-sync-alert-text">Na drugi napravi so novejši podatki, ta brskalnik pa ima neposlane spremembe.</span><span class="bs-form-actions"><button id="bs-sync-take-server" type="button" class="bs-primary">Naloži novejše</button><button id="bs-sync-keep-local" type="button">Obdrži to napravo</button></span></div>
   <div class="bs-hero">
     <div><div class="bs-eyebrow" id="bs-date">10. oktober 2026</div><h1 data-i18n="welcome">Dobrodošel doma, BD.</h1><div class="bs-subtitle" data-i18n="tagline">Tvoj svet. Na enem mestu.</div></div>
     <div class="bs-clock"><strong id="bs-clock">01:12</strong><span>Europe / Ljubljana</span></div>
@@ -114,7 +115,7 @@
       </div>
     </details><details open class="bs-panel bs-wide bs-note" data-area="notes" id="bs-note-panel">
       <summary class="cursor-interaction"><i data-lucide="notebook-pen" aria-hidden="true"></i><span class="bs-panel-title" data-i18n="notes">Prostor za misel</span><span class="bs-summary-preview" id="bs-note-summary" data-i18n="blankPage">Prazen list</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
-      <div class="bs-panel-body"><textarea maxlength="100000" id="bs-note" aria-label="Try the notepad" placeholder="Zapiši misel, preden pobegne …"></textarea><div class="bs-note-bottom"><span><i data-lucide="lock-keyhole" aria-hidden="true"></i> <span id="bs-note-save-status" data-i18n="browserOnly">Shranjeno v tem brskalniku</span></span><span id="bs-note-count">0 znakov</span></div></div>
+      <div class="bs-panel-body"><textarea maxlength="100000" id="bs-note" aria-label="Try the notepad" placeholder="Zapiši misel, preden pobegne …"></textarea><div class="bs-note-bottom"><span><i data-lucide="lock-keyhole" aria-hidden="true"></i> <span id="bs-note-save-status" data-i18n="browserOnly">Shranjeno v tem brskalniku</span><span class="bs-sync-badge" data-sync-badge></span></span><span id="bs-note-count">0 znakov</span></div></div>
     </details><details class="bs-archive"><summary class="cursor-interaction" data-i18n="sampleArchive">Prejšnje vzorčne zgodbe in zaznamki</summary><details open class="bs-panel bs-wide" data-area="news" id="bs-news-panel">
       <summary class="cursor-interaction"><i data-lucide="newspaper" aria-hidden="true"></i><span class="bs-panel-title" data-i18n="oldSampleNews">Prejšnje vzorčne zgodbe</span><span class="bs-summary-preview" id="bs-news-summary">3 izbrane zgodbe</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
       <div class="bs-panel-body">
@@ -133,9 +134,10 @@
     <div class="bs-form-actions"><button id="bs-export" type="button" class="bs-primary"><i data-lucide="download" aria-hidden="true"></i><span data-i18n="exportData">Izvozi podatke</span></button><button id="bs-import" type="button"><i data-lucide="upload" aria-hidden="true"></i><span data-i18n="importData">Uvozi podatke</span></button><input type="file" id="bs-import-file" accept="application/json,.json" hidden></div>
     <div id="bs-import-review" class="bs-import-review" hidden><p id="bs-import-summary"></p><p data-i18n="importReplace">Uvoz zamenja obstoječe podatke tega brskalnika. Pred tem jih lahko izvoziš.</p><div class="bs-form-actions"><button type="button" id="bs-import-confirm" class="bs-primary" data-i18n="replaceData">Zamenjaj podatke</button><button type="button" id="bs-import-cancel" data-i18n="cancel">Prekliči</button></div></div>
     <p id="bs-data-status" role="status" class="bs-data-status"></p>
+    <section id="bs-sync" class="bs-sync" data-sync-state="off" aria-labelledby="bs-sync-title"><h3 id="bs-sync-title">Sinhronizacija med brskalniki</h3><p id="bs-sync-help">Koledar, beležka, bližnjice, povezave in zaznamki se prenašajo med tvojimi brskalniki. Šifrira jih ta brskalnik z geslom za sinhronizacijo; strežnik hrani samo šifrirano kopijo in gesla ne pozna.</p><form id="bs-sync-form" class="bs-sync-form"><label><span id="bs-sync-password-label">Geslo za sinhronizacijo</span><input id="bs-sync-password" type="password" autocomplete="current-password" minlength="8" maxlength="200" required></label><button id="bs-sync-connect" type="submit" class="bs-primary">Poveži ta brskalnik</button></form><div id="bs-sync-choice" class="bs-import-review" hidden><p id="bs-sync-choice-text"></p><div class="bs-form-actions"><button id="bs-sync-choice-primary" type="button" class="bs-primary"></button><button id="bs-sync-choice-secondary" type="button"></button><button id="bs-sync-choice-cancel" type="button"></button></div></div><div id="bs-sync-connected" class="bs-form-actions" hidden><button id="bs-sync-now" type="button">Sinhroniziraj zdaj</button><button id="bs-sync-disconnect" type="button">Prekini v tem brskalniku</button></div><p id="bs-sync-status" role="status" class="bs-data-status"></p></section>
   </div>
 </details>
-<footer class="bs-footer"><span data-i18n="prototype">Trgi in vreme · vzorčni podatki</span><span data-i18n="footerLine">Manj hrupa. Več tvojega sveta.</span></footer><div class="bs-persistence"><span id="bs-save-status" role="status">Samo v tem brskalniku</span><a href="https://www.mdlxdcc.org/">BD × AI Lab ↗</a></div>
+<footer class="bs-footer"><span data-i18n="prototype">Trgi in vreme · vzorčni podatki</span><span data-i18n="footerLine">Manj hrupa. Več tvojega sveta.</span></footer><div class="bs-persistence"><span><span id="bs-save-status" role="status">Samo v tem brskalniku</span><span class="bs-sync-badge" data-sync-badge></span></span><a href="https://www.mdlxdcc.org/">BD × AI Lab ↗</a></div>
 </div>
 </body></html>
 

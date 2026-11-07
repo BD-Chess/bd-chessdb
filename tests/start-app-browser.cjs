@@ -14,7 +14,7 @@ async function ready(page, url) {
   const response = await page.goto(url, { waitUntil: 'networkidle' });
   assert(response && response.ok(), 'Start document is reachable');
   await page.waitForSelector('#bd-start-proposal[data-ready="true"]');
-  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261107-start-r6');
+  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261107-start-r7');
 }
 async function state(page) { return page.evaluate(k => JSON.parse(localStorage.getItem(k)), key); }
 async function open(page, id) { if (!await page.locator(id).evaluate(el => el.open)) await page.locator(id + ' > summary').click(); }
@@ -322,6 +322,129 @@ async function wideLayout(browser, engine, url) {
   }
   results.push({ name: engine + '-wide-layout', status: 'PASS', checks: ['1440 keeps the R2 layout', '1863 two columns, groups side by side', '3816 three columns', 'independent column stacking', 'AI8 News hidden on wide windows', 'weather under Moje povezave', 'calendar and weather open without a stored change', 'resize restores the R2 places', 'no horizontal overflow'] });
 }
+// R7: encrypted sync between two browsers. The API is answered in the test by
+// the real handler (functions/lib/bd-start-sync.mjs) over an in-memory store,
+// so no run, local or live, ever writes to the production store.
+class MemorySyncStore {
+  constructor() { this.map = new Map(); this.n = 0; }
+  async getWithMetadata(k) { const e = this.map.get(k); return e ? { data: JSON.parse(e.value), etag: e.etag, metadata: {} } : null; }
+  async setJSON(k, v, o = {}) { const e = this.map.get(k); if ((o.onlyIfNew && e) || (o.onlyIfMatch !== undefined && (!e || e.etag !== o.onlyIfMatch))) return { modified: false }; const etag = '"' + (++this.n) + '"'; this.map.set(k, { value: JSON.stringify(v), etag }); return { modified: true, etag }; }
+  async delete(k) { this.map.delete(k); }
+  async list({ prefix = '' } = {}) { return { blobs: [...this.map.keys()].filter(k => k.startsWith(prefix)).map(key => ({ key, etag: this.map.get(key).etag })), directories: [] }; }
+}
+async function syncAcrossBrowsers(browser, engine, url) {
+  const { createStartSync } = await import(require('node:url').pathToFileURL(path.resolve('functions/lib/bd-start-sync.mjs')).href);
+  const store = new MemorySyncStore(), handle = createStartSync({ store }), offline = new Set(), contexts = [];
+  const password = 'naše skrito geslo 2026';
+  const revision = () => { const e = [...store.map.values()][0]; return e ? JSON.parse(e.value).revision : 0; };
+  async function waitRevision(n) { for (let i = 0; i < 300 && revision() < n; i++) await sleep(100); assert.equal(revision(), n, engine + ' sync: server revision ' + n); }
+  const waitState = (page, s) => page.waitForFunction(s => document.querySelector('#bs-sync').dataset.syncState === s, s, { timeout: 30000 });
+  const note = page => page.locator('#bs-note').inputValue();
+  const local = (page, k) => page.evaluate(k => localStorage.getItem(k), k);
+  async function browserFor(label, colorScheme) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, timezoneId: 'Europe/Ljubljana', locale: 'sl-SI', colorScheme });
+    contexts.push(context);
+    await context.route(/\/api\/bd-start-sync(?:\?.*)?$/, async route => {
+      if (offline.has(label)) return route.abort('internetdisconnected');
+      const r = route.request(), h = r.headers();
+      const res = await handle(new Request('https://www.mdlxdcc.org/api/bd-start-sync', { method: r.method(), headers: { 'x-bd-start-vault': h['x-bd-start-vault'] || '', 'content-type': 'application/json' }, body: ['GET', 'DELETE'].includes(r.method()) ? undefined : r.postData() }));
+      await route.fulfill({ status: res.status, contentType: 'application/json', body: await res.text() });
+    });
+    const page = await context.newPage();
+    page.errors = []; page.on('pageerror', error => page.errors.push(error.message));
+    await ready(page, url);
+    return page;
+  }
+  async function connect(page, secret) { await open(page, '#bs-data-panel'); await page.locator('#bs-sync-password').fill(secret); await page.locator('#bs-sync-connect').click(); }
+  async function syncNow(page) { await open(page, '#bs-data-panel'); await page.locator('#bs-sync-now').click(); }
+  try {
+    const a = await browserFor('a', 'light');
+    await a.locator('#bs-note').fill('Misel A');
+    await open(a, '#bs-agenda-panel');
+    await a.locator('#bs-add-event-toggle').click();
+    await a.locator('#bs-event-title').fill('Sestanek A');
+    await a.locator('#bs-event-date').fill(await a.evaluate(() => { const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Ljubljana', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date()); const x = Object.fromEntries(p.map(v => [v.type, v.value])); return x.year + '-' + x.month + '-' + x.day; }));
+    await a.locator('#bs-event-time').fill('09:15');
+    await a.locator('#bs-add-event button[type="submit"]').click();
+    await connect(a, password);
+    await waitState(a, 'choice');
+    assert.match(await a.locator('#bs-sync-choice-text').textContent(), /še ni podatkov/);
+    await a.locator('#bs-sync-choice-primary').click();
+    await waitState(a, 'synced');
+    assert.equal(revision(), 1);
+    const sealed = JSON.stringify([...store.map.values()]);
+    assert(!sealed.includes('Misel A') && !sealed.includes('Sestanek A'), engine + ' sync: the server holds ciphertext only');
+    assert.equal(await a.locator('#bs-sync-password').inputValue(), '', 'the password is not left in the page');
+    assert.match(await a.locator('.bs-persistence [data-sync-badge]').textContent(), /sinhronizirano/);
+
+    const b = await browserFor('b', 'dark');
+    await b.locator('#bs-note').fill('B lokalno');
+    await connect(b, 'napačno geslo 2026');
+    await waitState(b, 'choice');
+    await b.locator('#bs-sync-choice-cancel').click();
+    assert.equal(store.map.size, 1, engine + ' sync: a mistyped password creates nothing');
+    await connect(b, password);
+    await waitState(b, 'choice');
+    assert.match(await b.locator('#bs-sync-choice-text').textContent(), /Na strežniku so podatki/);
+    await b.locator('#bs-sync-choice-primary').click();
+    await waitState(b, 'synced');
+    assert.equal(await note(b), 'Misel A');
+    assert.match(await b.locator('#bs-upcoming').textContent(), /Sestanek A/);
+    assert.equal(await b.locator('html').getAttribute('data-theme'), 'dark', engine + ' sync: appearance stays per device');
+    assert.match(await local(b, 'bd-start-sync-backup-v1'), /B lokalno/, engine + ' sync: replaced local content is kept as a backup');
+    await b.locator('#bs-note').fill('Misel B');
+    await waitRevision(2);
+    await waitState(b, 'synced');
+
+    await a.reload({ waitUntil: 'networkidle' });
+    await a.waitForSelector('#bd-start-proposal[data-ready="true"]');
+    await waitState(a, 'synced');
+    assert.equal(await note(a), 'Misel B', engine + ' sync: the other browser gets the change on its next visit');
+    assert.equal(await a.locator('#bs-sync-form').isVisible(), false, engine + ' sync: the browser remembers the password');
+    assert.equal(await a.locator('html').getAttribute('data-theme'), 'light');
+
+    offline.add('a');
+    await a.locator('#bs-note').fill('A brez povezave');
+    await waitState(a, 'offline');
+    await b.locator('#bs-note').fill('Misel B2');
+    await waitRevision(3);
+    offline.delete('a');
+    await syncNow(a);
+    await waitState(a, 'conflict');
+    assert.equal(await a.locator('#bs-sync-alert').isVisible(), true, engine + ' sync: a conflict is shown, nothing is overwritten');
+    assert.equal(revision(), 3);
+    await a.locator('#bs-sync-take-server').click();
+    await waitState(a, 'synced');
+    assert.equal(await note(a), 'Misel B2');
+    assert.match(await local(a, 'bd-start-sync-backup-v1'), /A brez povezave/);
+
+    offline.add('a');
+    await a.locator('#bs-note').fill('A zmaga');
+    await waitState(a, 'offline');
+    await b.locator('#bs-note').fill('B izgubi');
+    await waitRevision(4);
+    offline.delete('a');
+    await syncNow(a);
+    await waitState(a, 'conflict');
+    await a.locator('#bs-sync-keep-local').click();
+    await waitRevision(5);
+    await waitState(a, 'synced');
+    await b.reload({ waitUntil: 'networkidle' });
+    await b.waitForSelector('#bd-start-proposal[data-ready="true"]');
+    await waitState(b, 'synced');
+    assert.equal(await note(b), 'A zmaga', engine + ' sync: "keep this device" wins on purpose');
+
+    await open(b, '#bs-data-panel');
+    await b.locator('#bs-sync-disconnect').click();
+    await waitState(b, 'off');
+    assert.equal(await local(b, 'bd-start-sync-v1'), null, engine + ' sync: disconnecting forgets the keys');
+    assert.equal(await note(b), 'A zmaga', engine + ' sync: disconnecting keeps the data');
+    const final = JSON.stringify([...store.map.values()]);
+    assert(!/Misel|A zmaga|B izgubi|Sestanek/.test(final), engine + ' sync: no plain text ever reached the server');
+    assert.deepEqual([...a.errors, ...b.errors], [], engine + ' sync: no page errors');
+    results.push({ name: engine + '-sync', status: 'PASS', checks: ['create on first browser', 'ciphertext only', 'mistyped password creates nothing', 'adopt server data with backup', 'appearance per device', 'remembered password', 'offline edit kept', 'conflict: load newer', 'conflict: keep this device', 'disconnect keeps data'] });
+  } finally { for (const context of contexts) await context.close(); }
+}
 (async () => {
   let server;
   let url = process.env.START_QA_URL;
@@ -340,7 +463,7 @@ async function wideLayout(browser, engine, url) {
   try {
     for (const [engine, type] of Object.entries({ chromium, webkit })) {
       const browser = await type.launch({ headless: true });
-      try { await suite(browser, engine, url, false); await suite(browser, engine, url, true); await storageFailures(browser, engine, url); await newsIntegrity(browser, engine, url); await wideLayout(browser, engine, url); }
+      try { await suite(browser, engine, url, false); await suite(browser, engine, url, true); await storageFailures(browser, engine, url); await newsIntegrity(browser, engine, url); await wideLayout(browser, engine, url); await syncAcrossBrowsers(browser, engine, url); }
       finally { await browser.close(); }
     }
     console.log('BD_START_BROWSER_PASS', JSON.stringify(results));
