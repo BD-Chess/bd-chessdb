@@ -209,3 +209,11 @@ test('AI_LEARNING owner recheck failure at start returns only a finite denial',a
  let reads=0;const f=fixture({auth:async()=>({id:'SYNTHETIC_OWNER',role:++reads===1?'owner':'demo'})});
  const r=await f.begin();assert.equal(r.response.status,403);assert.equal(r.data.error.code,'OWNER_REQUIRED');assert.equal(r.data.state,undefined);assert.equal(f.calls.length,0);
 });
+
+test('AI_LEARNING leaving the mode invalidates a late capability response',async()=>{
+ const f=fixture();let gate,entered;let armed=false;const ready=new Promise(r=>entered=r);
+ const h=await pureUIFixture(f,async opts=>{if(armed&&opts.method!=='POST'){entered();await new Promise(r=>gate=r);}});
+ const before=h.node('learning-status').textContent;armed=true;
+ const opening=h.ui.open();await ready;h.ui.hide();gate();await opening;
+ assert.equal(h.node('ai-learning-panel').hidden,true);assert.equal(h.node('learning-status').textContent,before);assert.equal(f.calls.length,0);
+});

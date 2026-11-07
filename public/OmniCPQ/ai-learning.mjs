@@ -43,6 +43,7 @@ export function createLearningUI({document:doc,window:win,authorized,canStart=()
   const result=await response.json();if(!response.ok||result.ok!==true)throw Object.assign(Error(),{code:result.error?.code||'LEARNING_UNCERTAIN'});return result;
  }
  function render(){
+  if(root.isConnected===false)return;
   root.hidden=!visible||!allowed();
   const kind=$('learning-kind').value;
   $('learning-api-options').hidden=kind!=='api';
@@ -133,21 +134,21 @@ export function createLearningUI({document:doc,window:win,authorized,canStart=()
   visible=true;paused=true;render();const token=epoch;
   try{
    const r=await win.fetch(ENDPOINT,{credentials:'same-origin',headers:{Accept:'application/json'}}),v=await r.json();
-   if(token!==epoch||!allowed())return;
+   if(token!==epoch||!allowed()||!visible)return;
    if(!r.ok||v.protocol!==LEARNING_PROTOCOL)throw Error();
    capability=v;$('learning-model').textContent='Tester: '+TESTER_PROFILE.model+' / '+TESTER_PROFILE.reasoning+' · dejanski model še UNKNOWN. Obstoječi profil pomočnika izbereš spodaj.';
    if(!runId){try{const p=JSON.parse(win.localStorage.getItem(key())||'null');if(p?.schema===LEARNING_PROTOCOL&&typeof p.runId==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(p.runId))runId=p.runId;}catch{}}
    if(runId)await refresh();else status('Izberi vrsto preizkusov in meje, nato Začni. Odpiranje tega načina ne kliče modela ali CPQ.');
-  }catch{status('Povezave s krmilnikom učenja še ni mogoče potrditi. Preizkusi niso bili zagnani.');}
-  render();
+  }catch{if(token!==epoch||!allowed()||!visible)return;status('Povezave s krmilnikom učenja še ni mogoče potrditi. Preizkusi niso bili zagnani.');}
+  if(token===epoch&&allowed()&&visible)render();
  }
- function hide(){visible=false;paused=true;if(allowed()&&state?.status==='RUNNING')void pause();render();}
+ function hide(){if(visible)epoch++;visible=false;paused=true;if(allowed()&&state?.status==='RUNNING')void pause();render();}
  function setAccess(value){access=value===true;if(!access){epoch++;paused=true;visible=false;controller?.abort();state=null;capability=null;runId=null;}render();}
  $('learning-start').onclick=start;$('learning-pause').onclick=pause;$('learning-resume').onclick=resume;$('learning-stop').onclick=stop;$('learning-refresh').onclick=refresh;
  $('learning-export-json').onclick=()=>exportReport('json');$('learning-export-md').onclick=()=>exportReport('md');
  $('learning-kind').onchange=()=>{$('learning-tests').value=$('learning-kind').value==='api'?'1':'6';$('learning-cost-ack').checked=false;render();};$('learning-cost-ack').onchange=render;
  win.addEventListener('offline',()=>{paused=true;controller?.abort();if(visible)status('Povezava je prekinjena. Po obnovi najprej preberi shranjeno stanje, brez samodejnega ponavljanja.');render();});
- win.addEventListener('pagehide',()=>{paused=true;controller?.abort();});
+ win.addEventListener('pagehide',()=>{epoch++;visible=false;paused=true;controller?.abort();});
  render();
  return {open,hide,setAccess,isBusy:()=>inflight,start,pause,resume,stop,refresh,get state(){return state;}};
 }

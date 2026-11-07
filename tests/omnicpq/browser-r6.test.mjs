@@ -170,7 +170,7 @@ test('complete synthetic PWA -> authenticated handler -> v2 action -> scoped bri
     await w.bootHealth;assert.equal(w.appTest.state.ready,true);
     assert.equal(w.document.querySelectorAll('[data-prompt]').length,14);
     for(const p of starters.STARTERS)assert(w.document.querySelector(`[data-prompt="${p.id}"]`));
-    assert.deepEqual([...w.document.getElementById('mode-nav').children].map(b=>b.dataset.mode),['guide','jira','model','work','plm']);
+    assert.deepEqual([...w.document.getElementById('mode-nav').children].map(b=>b.dataset.mode),['guide','jira','model','work','plm','learning']);
     w.document.getElementById('experimental-gui').checked=true;w.document.getElementById('experimental-gui').onchange();
     await w.appTest.connectBrowser();assert.equal(w.appTest.state.browserConnected,true);assert.equal(modelCalls,0);
     w.document.getElementById('message').value='Pokaži Suvereni oblak v obstoječem naročilu prek Naročil.';
