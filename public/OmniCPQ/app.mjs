@@ -139,7 +139,7 @@ const previewRefresher=createLocalPreviewRefresher({
   now:()=>performance.now(),schedule:(fn,ms)=>window.setTimeout(fn,ms),unschedule:id=>window.clearTimeout(id),intervalMs:30000,focusDelayMs:100
 });
 const element = (tag, className, text) => { const e = document.createElement(tag); if (className) e.className = className; if (text !== undefined) e.textContent = text; return e; };
-function notice(text) { $('notice').textContent = text; $('notice').hidden = !text; }
+function notice(text, source = '') { const box=$('notice'); box.textContent=text; box.hidden=!text; if(box.dataset)box.dataset.noticeSource=source; }
 const problems = {
   DEMO_INVITATION_REQUIRED: 'Za demo odpri prejeto povabilo ali vnesi njegovo kodo.', DEMO_IP_UNAVAILABLE: 'IP-ja ni mogoče varno potrditi. Demo dostop je zadržan.',
   DEMO_IP_CHANGED: 'Demo je vezan na IP ob prvi aktivaciji. Za drugo omrežje potrebuješ novo povabilo.', DEMO_EXPIRED: 'Veljavnost demo dostopa je potekla.', DEMO_REVOKED: 'Demo dostop je preklican.', DEMO_LIMIT: 'Dosežena je meja demo porabe; novega API klica ne izvedemo.',
@@ -667,6 +667,7 @@ function browserUnavailable(error) {
   $('browser-preview').hidden=true; $('cpq-file-tools').hidden=true;
   $('browser-observation').textContent=''; $('browser-status').textContent=browserProblem(error);
   $('browser-result').textContent='Povezava trenutno ni potrjena. Preverjanje povezave ne ponavlja CPQ dejanj.';
+  if($('notice').dataset?.noticeSource==='cpq-connection')notice(browserProblem(error),'cpq-connection');
   $('browser-setup').open=true; showWorkspaceStatus();
 }
 function disconnectBrowser(manual=false) {
@@ -677,6 +678,7 @@ function disconnectBrowser(manual=false) {
   for (const id of ['browser-include','browser-auto']) { $(id).checked = false; $(id).disabled = true; }
   $('browser-read').disabled = true; $('browser-disconnect').hidden = true; $('browser-preview').hidden = true;
   $('browser-observation').textContent = ''; $('browser-status').textContent = 'Ni povezano · priklopi izbrani CPQ zavihek za branje in klikanje.';
+  if($('notice').dataset?.noticeSource==='cpq-connection')notice('');
   showWorkspaceStatus(); browserBridge.disconnect().catch(() => {});
 }
 let browserObservationLane=null;
@@ -742,9 +744,9 @@ async function connectBrowser(automatic=false) {
   const epoch=accessEpoch, choiceEpoch=browserChoiceEpoch;let connectionEpoch=browserConnectionEpoch;
   try {
     const handshake = await browserBridge.connect();
-    if ($('experimental-gui').checked && handshake.capabilities?.cdpAvailable !== true) notice('Povezan le bralni del; CDP upravljanje miške/tipkovnice v Edge ni potrjeno.');
     if (epoch !== accessEpoch || !state.ownerVerified) { await browserBridge.disconnect(); return; }
     if (connectionEpoch!==browserConnectionEpoch) return;
+    if ($('experimental-gui').checked && handshake.capabilities?.cdpAvailable !== true) notice('Povezan le bralni del; CDP upravljanje miške/tipkovnice v Edge ni potrjeno.','cpq-connection');
     const newPair=browserPairToken!==handshake.token, fresh=newPair||!state.browserConnected||!state.browserObservation;
     if(newPair)connectionEpoch=++browserConnectionEpoch;
     if(fresh){
@@ -770,10 +772,10 @@ async function connectBrowser(automatic=false) {
     syncBrowserIncludeControl();
     $('browser-auto').disabled=cpqLocation(o.url)?.environment!=='STAGE'||!$('experimental-gui').checked;
     $('browser-setup').open=false; showWorkspaceStatus();
-    if(fresh)notice('CPQ povezava je potrjena. Pripravljeno za tvoj STAGE cilj.');
+    if(fresh)notice('CPQ povezava je potrjena. Pripravljeno za tvoj STAGE cilj.','cpq-connection');
   } catch(e) {
     if(BRIDGE_CONNECTION_FAILURES.has(e?.message)&&epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified)browserUnavailable(e);
-    if(!automatic)notice(browserProblem(e));if(automatic)throw e;
+    if(!automatic&&epoch===accessEpoch&&connectionEpoch===browserConnectionEpoch&&state.ownerVerified)notice(browserProblem(e),'cpq-connection');if(automatic)throw e;
   }
 }
 function stageGoalText(value, stripPrefix = true) {
