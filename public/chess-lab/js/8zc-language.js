@@ -80,6 +80,7 @@
 
     "Save DATA":"Shrani DATA",
     "Active Study":"Aktivna študija",
+    "Studies":"Študije",
     "Studies metadata":"Stanje študij",
     "Studies undo A":"Razveljavitev študij A",
     "Studies undo B":"Razveljavitev študij B",
