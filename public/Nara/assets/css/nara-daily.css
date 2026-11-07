@@ -136,3 +136,17 @@ html.nara-lightbox-open{overflow:hidden}
 .daily-index-rating .score-chip{display:inline-flex;align-items:center;justify-content:center;min-height:36px;min-width:42px;border:1px solid color-mix(in srgb,var(--accent) 65%,var(--line))}
 .daily-index-score-unit{font-size:.78rem;color:var(--muted)}
 @media(max-width:540px){.daily-index-item{gap:.65rem;padding:1rem}.daily-index-rating .score-chip{min-width:38px;padding:.2rem .4rem}.daily-index-score-unit{font-size:.7rem}}
+
+/* Wide screens (half or full 4K): the Daily landing fills the width with a grid of story cards
+ * instead of one 850px column. Scoped with :has() to the page whose <main> holds the Daily cards,
+ * so story, monthly, archive and log pages keep their reading width. Below 1400px nothing changes. */
+@media screen and (min-width:1400px){
+  body:has(>main>.daily-index-item){--nara-daily-cols:2;--nara-daily-width:min(100% - 4rem,1760px)}
+  body:has(>main>.daily-index-item)>.wrap{width:var(--nara-daily-width)}
+  body:has(>main>.daily-index-item) .bar-inner{max-width:none;width:var(--nara-daily-width);padding-inline:0}
+  main.wrap:has(>.daily-index-item){display:grid;grid-template-columns:repeat(var(--nara-daily-cols),minmax(0,1fr));gap:1rem 1.25rem}
+  main.wrap:has(>.daily-index-item)>:not(.daily-index-item){grid-column:1/-1}
+  main.wrap>.daily-index-item{margin:0}
+}
+@media screen and (min-width:2400px){body:has(>main>.daily-index-item){--nara-daily-cols:3;--nara-daily-width:min(100% - 6rem,2720px)}}
+@media screen and (min-width:3200px){body:has(>main>.daily-index-item){--nara-daily-cols:4;--nara-daily-width:min(100% - 6rem,3640px)}}
