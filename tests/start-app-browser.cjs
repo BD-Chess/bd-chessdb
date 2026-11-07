@@ -14,7 +14,7 @@ async function ready(page, url) {
   const response = await page.goto(url, { waitUntil: 'networkidle' });
   assert(response && response.ok(), 'Start document is reachable');
   await page.waitForSelector('#bd-start-proposal[data-ready="true"]');
-  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261107-start-r5');
+  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261107-start-r6');
 }
 async function state(page) { return page.evaluate(k => JSON.parse(localStorage.getItem(k)), key); }
 async function open(page, id) { if (!await page.locator(id).evaluate(el => el.open)) await page.locator(id + ' > summary').click(); }
@@ -250,9 +250,13 @@ async function newsIntegrity(browser, engine, url) {
   await context.close();
   results.push({name:engine+'-news-integrity',status:'PASS',checks:['hash mismatch rejected','news remains reachable']});
 }
-// R5: wide and 4K windows use their width; below 1600px the R2 layout stays.
+// R5/R6: wide and 4K windows use their width; below 1600px the R2 layout stays.
+// R6 (BD, 2026-11-07): wide windows hide AI8 News, show "Vreme & promet" under
+// "Moje povezave" and open it and the calendar without storing that state.
 async function wideLayout(browser, engine, url) {
   const box = el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width }; };
+  const stored = page => page.evaluate(k => localStorage.getItem(k), key);
+  const opened = page => page.evaluate(() => ({ agenda: document.querySelector('#bs-agenda-panel').open, weather: document.querySelector('#bs-weather-panel').open }));
   for (const [width, height, columns] of [[1440, 1000, 1], [1863, 2101, 2], [3816, 2101, 3]]) {
     const name = engine + '-wide-' + width;
     const context = await browser.newContext({ viewport: { width, height }, timezoneId: 'Europe/Ljubljana', locale: 'sl-SI', colorScheme: 'dark' });
@@ -261,31 +265,62 @@ async function wideLayout(browser, engine, url) {
     page.on('pageerror', error => errors.push(error.message));
     await ready(page, url);
     if (!await page.locator('.bs-category').evaluateAll(groups => groups.every(group => group.open))) await page.locator('#bs-open-groups').click();
+    await page.waitForFunction(k => localStorage.getItem(k), key);
     await fit(page, name);
     const app = await page.locator('#bd-start-proposal').evaluate(box);
     const plans = await page.locator('#bs-plans-panel').evaluate(box);
-    const news = await page.locator('#bs-live-news-panel').evaluate(box);
+    const links = await page.locator('#bs-links-panel').evaluate(box);
+    const weather = await page.locator('#bs-weather-panel').evaluate(box);
     const day = await page.locator('.bs-personal').evaluate(box);
     const groupColumns = await page.locator('.bs-category').evaluateAll(groups => new Set(groups.map(group => Math.round(group.getBoundingClientRect().left))).size);
+    const saved = JSON.parse(await stored(page)).preferences.openPanels;
     if (columns === 1) {
       assert(app.width <= 1320, name + ': the 1260px R2 column is kept below 1600px');
-      assert(news.top >= plans.bottom, name + ': news stays below the directory');
+      assert.equal(await page.locator('#bs-live-news-panel').isVisible(), true, name + ': AI8 News stays below 1600px');
+      assert.equal(await page.locator('.bs-personal > #bs-weather-panel').count(), 1, name + ': weather stays in Moj dan');
+      assert.deepEqual(await opened(page), { agenda: false, weather: false }, name + ': stored panel state applies');
       assert.equal(groupColumns, 1, name + ': one directory column');
     } else {
       assert(app.width >= width - 1, name + ': the page uses the whole window width');
-      assert(news.left >= plans.right && news.top < plans.bottom, name + ': news sits beside the directory');
+      assert.equal(await page.locator('#bs-live-news-panel').isVisible(), false, name + ': AI8 News is not shown');
+      assert.equal(await page.locator('#bs-links-panel + #bs-weather-panel').count(), 1, name + ': Vreme & promet follows Moje povezave');
+      assert.deepEqual(await opened(page), { agenda: true, weather: true }, name + ': calendar and weather are open');
+      assert.equal(saved['bs-agenda-panel'] || saved['bs-weather-panel'], false, name + ': the wide layout does not store its open panels');
+      assert(links.left >= plans.right && Math.abs(links.top - plans.top) < 2, name + ': the right column starts beside the directory');
+      assert(Math.abs(weather.left - links.left) < 2 && weather.top > links.bottom, name + ': weather sits under Moje povezave');
       assert.equal(groupColumns, columns, name + ': directory groups side by side');
-      if (columns === 3) assert(day.left >= news.right && Math.abs(day.top - plans.top) < 2, name + ': Moj dan has its own column');
-      else assert(Math.abs(day.left - news.left) < 2 && day.top > news.bottom, name + ': Moj dan stacks in the right column');
+      if (columns === 3) assert(day.left >= links.right && Math.abs(day.top - plans.top) < 2, name + ': Moj dan has its own column');
+      else assert(Math.abs(day.left - links.left) < 2 && day.top > weather.bottom, name + ': Moj dan stacks in the right column');
       // Each column fills independently: the tall directory adds no gaps between the right-column panels.
       const stack = await page.locator(columns === 3 ? '.bs-work > :not(#bs-plans-panel)' : '.bs-work > :not(#bs-plans-panel), .bs-personal').evaluateAll(els => els.filter(el => el.getClientRects().length).map(el => { const r = el.getBoundingClientRect(); return [r.top, r.bottom]; }).sort((a, b) => a[0] - b[0]));
       for (let i = 1; i < stack.length; i++) assert(stack[i][0] - stack[i - 1][1] <= 24, name + ': right column has no stretched rows ' + JSON.stringify(stack));
+      // Closing the calendar on a wide window lasts until the next visit and writes nothing.
+      const before = await stored(page);
+      await page.locator('#bs-agenda-panel > summary').click();
+      await sleep(150);
+      assert.equal(await page.locator('#bs-agenda-panel').evaluate(el => el.open), false, name + ': the calendar can be closed');
+      assert.equal(await stored(page), before, name + ': closing it stores nothing');
+      await page.reload({ waitUntil: 'networkidle' });
+      await page.waitForSelector('#bd-start-proposal[data-ready="true"]');
+      await sleep(150);
+      assert.deepEqual(await opened(page), { agenda: true, weather: true }, name + ': both open again on the next visit');
+      assert.equal(await stored(page), before, name + ': loading the page stores nothing');
+      if (columns === 2) {
+        // Narrowing the window restores the R2 places and the stored state, again without a write.
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        await page.waitForFunction(() => document.querySelector('.bs-personal > #bs-weather-panel') && !document.querySelector('#bs-agenda-panel').open && !document.querySelector('#bs-weather-panel').open);
+        assert.equal(await page.locator('#bs-live-news-panel').isVisible(), true, name + ': AI8 News returns in a narrower window');
+        await page.setViewportSize({ width, height });
+        await page.waitForFunction(() => document.querySelector('#bs-links-panel + #bs-weather-panel') && document.querySelector('#bs-agenda-panel').open && document.querySelector('#bs-weather-panel').open);
+        await sleep(150);
+        assert.equal(await stored(page), before, name + ': resizing stores nothing');
+      }
     }
     await page.screenshot({ path: path.join(evidence, name + '.png'), fullPage: true });
     assert.deepEqual(errors, [], name + ': no page errors');
     await context.close();
   }
-  results.push({ name: engine + '-wide-layout', status: 'PASS', checks: ['1440 keeps the R2 column', '1863 two columns, groups side by side', '3816 three columns', 'independent column stacking', 'no horizontal overflow'] });
+  results.push({ name: engine + '-wide-layout', status: 'PASS', checks: ['1440 keeps the R2 layout', '1863 two columns, groups side by side', '3816 three columns', 'independent column stacking', 'AI8 News hidden on wide windows', 'weather under Moje povezave', 'calendar and weather open without a stored change', 'resize restores the R2 places', 'no horizontal overflow'] });
 }
 (async () => {
   let server;
