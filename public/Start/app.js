@@ -12,7 +12,7 @@
   let favoriteUrls=null,openGroups={ai:false,research:false,development:false,daily:false,travel:false,lab:false},planBeforeSearch=null;
   // R6 (BD, 2026-11-07): from 1600px "Vreme & promet" moves under "Moje povezave", and it and the calendar open.
   // wideOwn keeps the visitor's own open state of both panels while the wide layout opens them; persist() stores that, never the forced state.
-  const wideLayout=typeof matchMedia==='function'?matchMedia('(min-width:1600px)'):null,widePanels=['bs-agenda-panel','bs-weather-panel'],wideToggles=new Set(),weatherHome=document.createComment('bs-weather-home');let wideOwn=null;
+  const wideLayout=typeof matchMedia==='function'?matchMedia('(min-width:1600px)'):null,widePanels=['bs-agenda-panel','bs-weather-panel'],wideToggles=new Set(),weatherHome=document.createComment('bs-weather-home');let wideOwn=null,remoteApply=false;
   function setWidePanel(id,open){const panel=$('#'+id);if(panel.open!==open){wideToggles.add(id);panel.open=open;}}
   function applyWide(){if(!wideLayout)return;const weather=$('#bs-weather-panel'),linksPanel=$('#bs-links-panel');if(!weatherHome.parentNode)weather.before(weatherHome);
     if(wideLayout.matches){if(weather.previousElementSibling!==linksPanel)linksPanel.after(weather);if(!wideOwn){wideToggles.clear();wideOwn={};widePanels.forEach(function(id){wideOwn[id]=$('#'+id).open;setWidePanel(id,true);});}}
@@ -242,6 +242,7 @@
     $('#bs-date').textContent=new Intl.DateTimeFormat(lang==='sl'?'sl-SI':'en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Ljubljana'}).format(now);
   }
   function localize(){
+    if(window.BDStartSync)window.BDStartSync.localize();
     root.lang=lang;document.documentElement.lang=lang;document.title=lang==='sl'?'BD Start — Tvoj svet. Na enem mestu.':'BD Start — Your world. One place.';$$('[data-i18n]').forEach(function(e){e.textContent=t(e.getAttribute('data-i18n'));});pressed('button[data-lang]','data-lang',lang);
     $('#bs-search-input').placeholder=t('search');$('#bs-search-input').setAttribute('aria-label',t('search'));
     $('.bs-toolbar').setAttribute('aria-label',t('appearance'));$('#bs-city').setAttribute('aria-label',t('location'));
@@ -297,7 +298,7 @@
   function storageStatus(){const alert=$('#bs-storage-alert');alert.hidden=!storageIssue;$('#bs-storage-message').textContent=storageIssue?t(storageIssue):'';$('#bs-reload-data').hidden=storageIssue!=='changedElsewhere';$('#bs-save-status').textContent=storageIssue?t('localOnly'):lastRevision?t('browserOnly'):t('localOnly');$('#bs-note-save-status').textContent=storageIssue?t('localOnly'):t('browserOnly');}
   function persist(force){if(restoring)return false;if(protectedStorage&&!force){storageStatus();return false;}
     try{const raw=localStorage.getItem(Contract.KEY);const existing=raw&&!force?Contract.parse(raw):null;if(!force&&(existing?existing.revision||null:null)!==lastRevision){storageIssue='changedElsewhere';protectedStorage=true;storageStatus();return false;}
-      const data=Contract.normalize(snapshot());data.revision=newRevision();data.updatedAt=new Date().toISOString();localStorage.setItem(Contract.KEY,JSON.stringify(data));lastRevision=data.revision;storageIssue=null;protectedStorage=false;storageStatus();return true;
+      const data=Contract.normalize(snapshot());data.revision=newRevision();data.updatedAt=new Date().toISOString();localStorage.setItem(Contract.KEY,JSON.stringify(data));lastRevision=data.revision;storageIssue=null;protectedStorage=false;storageStatus();if(!remoteApply&&window.BDStartSync)window.BDStartSync.changed();return true;
     }catch(_){storageIssue='saveUnavailable';storageStatus();return false;}
   }
   function applyState(data){restoring=true;const p=data.preferences;lang=p.lang;linkGroup=p.linkGroup;newsGroup=p.newsGroup;selectedDate=p.calendarDate;year=Number(p.calendarMonth.slice(0,4));month=Number(p.calendarMonth.slice(5))-1;favoriteUrls=p.favoriteUrls?p.favoriteUrls.slice():defaultFavorites();openGroups=p.openGroups?Object.assign({},p.openGroups):{ai:false,research:false,development:false,daily:false,travel:false,lab:false};planBeforeSearch=null;root.dataset.theme=p.theme;document.documentElement.dataset.theme=p.theme;root.dataset.mode=p.mode;changeScale(p.scale);$('#bs-city').value=p.city;$('#bs-note').value=data.notes;$('#bs-event-date').value=selectedDate;
@@ -309,6 +310,10 @@
   if(initial)applyState(initial);else{pressed('button[data-theme]','data-theme',initialTheme);localize();changeScale(100);setTimeout(function(){restoring=false;root.dataset.ready='true';},0);}
   Contract.panels.forEach(function(id){$('#'+id).addEventListener('toggle',function(){if(wideToggles.delete(id)||(wideOwn&&widePanels.includes(id)))return;if(id==='bs-plans-panel'&&query())return;persist();});});
   applyWide();if(wideLayout)wideLayout.addEventListener('change',applyWide);
+  // R7 sync (sync.js): server content passes the same validation as an import before it replaces local content.
+  function applySynced(data){const next=Contract.normalize(data);remoteApply=true;applyState(next);setTimeout(function(){persist();remoteApply=false;},0);}
+  window.BDStartApp=Object.freeze({snapshot:function(){return Contract.normalize(snapshot());},lang:function(){return lang;},stale:function(){return protectedStorage;},applySynced:applySynced});
+  if(window.BDStartSync)window.BDStartSync.start(window.BDStartApp);
   window.addEventListener('storage',function(e){if(e.key===Contract.KEY){storageIssue='changedElsewhere';protectedStorage=true;storageStatus();}});
   $('#bs-reload-data').addEventListener('click',function(){try{const data=Contract.parse(localStorage.getItem(Contract.KEY));lastRevision=data.revision||null;storageIssue=null;protectedStorage=false;applyState(data);}catch(_){storageIssue='invalidStored';protectedStorage=true;storageStatus();}});
   function dataStatus(key,error){$('#bs-data-status').textContent=t(key);$('#bs-data-status').classList.toggle('bs-error',!!error);}
