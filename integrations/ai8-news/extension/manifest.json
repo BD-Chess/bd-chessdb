@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "AI8 view",
+  "version": "0.1.0",
+  "description": "Ločeni mnenji GPT in Claude za izbrano novico prek lokalnega AI8 hosta.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAk8YVMJd40KIwTHB2mOWQqvmej/cyubJGe2HPljFmBQvUI3W9PqxXdX75s1idEX3Sgm/wMY10ds8ZwcLC7io6fJLNEpYPXhhiSH/icnvYWaBprzxlp58YdGcp6UoonBHa5D3n8ZdEu7r2H656c7WtS6boCTKsBjcEpWhhlPUxY7WAYbqW54GwnOFdgeq2qc8y/P33ruReqe+x6Q0a2tHqbnC0Mrs7yAEQgp51+Ap6oYvfoRpsMCxdaa8gnqRTQ3f5TgtgdSeR3l9oSHR4ISJQAtgqZdk0uXp5h/ol6m9CAXFwRqA3fcMYLkn/CTfaoPc5LBI6rsq1abjz/xqjXLgZbwIDAQAB",
+  "permissions": [
+    "nativeMessaging",
+    "activeTab",
+    "contextMenus",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://ground.news/*",
+    "https://www.mdlxdcc.org/news",
+    "https://www.mdlxdcc.org/news/*",
+    "https://mdlxdcc.org/news",
+    "https://mdlxdcc.org/news/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "AI8 view"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://ground.news/*",
+        "https://www.mdlxdcc.org/news",
+        "https://www.mdlxdcc.org/news/*",
+        "https://mdlxdcc.org/news",
+        "https://mdlxdcc.org/news/*"
+      ],
+      "js": [
+        "core.js",
+        "view.js",
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src 'none'"
+  }
+}

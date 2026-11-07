@@ -55,6 +55,11 @@ jobs:
         run: |
           npm ci --ignore-scripts
           npm ci --prefix functions --no-audit --no-fund
+      - name: Verify AI8 News gateway and local bridge without provider calls
+        run: |
+          python3 integrations/ai8-news/native/test_host.py
+          node --test integrations/ai8-news/extension/tests/*.test.mjs tests/test-ai8-news*.mjs
+          node --check public/news/news-hub.js
       - name: Reproduce generated OmniCPQ assets and verify the application
         run: |
           node scripts/omnicpq/materialize-icons.mjs
