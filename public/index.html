@@ -46,6 +46,8 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
   <meta name="description" content="Ideje, raziskave, igre in orodja, ki jih Bojan razvija skupaj z umetno inteligenco.">
   <title>MDL×DCC — Manj opiše več</title>
   <link rel="stylesheet" href="./assets/human-middle/v5/human-middle-family-r1.css?v=20261009-r17">
+  <link rel="stylesheet" href="./assets/ai8-vision/r2/vision-r4.css?v=20261004-r4">
+  <link rel="stylesheet" href="./assets/mdlxdcc-guide/guide.css?v=20261022-nav1">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231b3a30'/%3E%3Cg fill='none' stroke='%23d8e7cd' stroke-width='2'%3E%3Cellipse cx='32' cy='32' rx='12' ry='24' transform='rotate(45 32 32)'/%3E%3Cellipse cx='32' cy='32' rx='12' ry='24' transform='rotate(-45 32 32)'/%3E%3C/g%3E%3C/svg%3E">
   <style>
     :root{color-scheme:light;--paper:#f5f3eb;--surface:#fbfaf5;--ink:#1c3932;--muted:#63746c;--line:#cbd4c8;--green:#386a49;--green-deep:#214b35;--soft:#e7ece0;--accent:#b5713e;--gold:#d8bd85;--header:rgba(245,243,235,.94);--shadow:0 12px 35px rgba(28,57,50,.055);--bg:var(--paper);--accent2:var(--green);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:100%;scroll-behavior:smooth}
@@ -62,7 +64,7 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
     .topbar{position:relative;z-index:5;background:var(--header)}
     .topbar-inner{min-height:88px;display:flex;align-items:center;gap:28px;border-bottom:1px solid var(--line)}
     .brand{display:inline-flex;align-items:center;white-space:nowrap;gap:17px;min-height:44px}
-    .brand-name{font-size:1.27rem;font-weight:800;letter-spacing:-.07em;line-height:1}
+    .brand-home{min-height:44px;padding:0;border:0;background:transparent;color:var(--ink);cursor:pointer}.brand-sub{display:flex;align-items:center;gap:5px}.brand-sub a,.brand-sub button{min-height:44px;display:inline-flex;align-items:center;color:inherit}.brand-sub button{border:0;background:transparent;padding:0;cursor:pointer;font-size:inherit;font-weight:inherit;letter-spacing:inherit}.brand-name{font-size:1.27rem;font-weight:800;letter-spacing:-.07em;line-height:1}
     .brand-name .multiply{color:var(--green)}
     .brand-sub{border-left:1px solid var(--line);padding-left:17px;color:var(--muted);font-size:.64rem;font-weight:700;letter-spacing:.19em;text-transform:uppercase}
     .nav{margin-left:auto;display:flex;align-items:center;gap:29px}
@@ -151,11 +153,11 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
     .footer-brand{font-size:.88rem;font-weight:800;letter-spacing:-.04em}
     .footer-links{display:flex;align-items:center;gap:24px;flex-wrap:wrap;color:var(--muted);font-size:.76rem}
     .footer-links a{display:inline-flex;align-items:center;min-height:44px}.footer-links a:hover{color:var(--ink)}
-    @media(max-width:1000px){.nav{gap:18px}.brand-sub{display:none}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.card{min-height:380px}.hero{gap:40px}.hero-art{padding:20px}}
-    @media(max-width:700px){.wrap{width:min(100% - 40px,1280px)}.topbar-inner{min-height:76px;gap:10px;flex-wrap:wrap;padding:13px 0 0}.brand{min-height:40px}.brand-name{font-size:1.17rem}.tools{margin-left:auto;border:0;padding:0}.tool{min-width:38px;height:40px}.nav{order:3;width:100%;margin:0;justify-content:space-between;gap:10px;border-top:1px solid var(--line)}.nav a{min-height:43px;font-size:.76rem}.hero{grid-template-columns:1fr;gap:35px;padding-top:65px;padding-bottom:68px}h1{font-size:clamp(4.2rem,15vw,6.1rem);margin:22px 0 24px}.hero-description{font-size:1.08rem}.hero-actions{margin-top:27px}.button{min-height:49px;padding:12px 15px;font-size:.8rem}.hero-note{margin-top:22px}.hero-art{width:100%;max-height:430px;aspect-ratio:1.1}.hero-art svg{inset:9% 16%;width:68%;height:82%}.section{padding:67px 0}.section-heading{display:block;margin-bottom:27px}.section-intro{margin-top:15px}.method .wrap,.explore-grid,.about-inner{grid-template-columns:1fr;gap:40px}.about{padding-bottom:68px}.about-inner{gap:25px}.about-mark{gap:20px}.monogram{font-size:5rem}.footer-inner{align-items:flex-start}.footer-links{gap:15px}}
+    @media(max-width:1000px){.nav{gap:18px}.brand-sub{display:flex;border:0;padding-left:0}.brand-sub a,.brand-sub .brand-times,.brand-sub #guide-lab{display:none}.brand-sub button{padding:0 6px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.card{min-height:380px}.hero{gap:40px}.hero-art{padding:20px}}
+    @media(max-width:700px){.brand{flex-direction:row;align-items:center;gap:4px;min-width:0}.brand .brand-home{min-height:44px}.brand .brand-sub{align-items:center;min-height:44px}.brand .brand-sub button{min-height:44px;padding:0 5px}.wrap{width:min(100% - 40px,1280px)}.topbar-inner{min-height:76px;gap:10px;flex-wrap:wrap;padding:13px 0 0}.brand{min-height:40px}.brand-name{font-size:1.17rem}.tools{margin-left:auto;border:0;padding:0}.tool{min-width:38px;height:40px}.nav{order:3;width:100%;margin:0;justify-content:space-between;gap:10px;border-top:1px solid var(--line)}.nav a{min-height:43px;font-size:.76rem}.hero{grid-template-columns:1fr;gap:35px;padding-top:65px;padding-bottom:68px}h1{font-size:clamp(4.2rem,15vw,6.1rem);margin:22px 0 24px}.hero-description{font-size:1.08rem}.hero-actions{margin-top:27px}.button{min-height:49px;padding:12px 15px;font-size:.8rem}.hero-note{margin-top:22px}.hero-art{width:100%;max-height:430px;aspect-ratio:1.1}.hero-art svg{inset:9% 16%;width:68%;height:82%}.section{padding:67px 0}.section-heading{display:block;margin-bottom:27px}.section-intro{margin-top:15px}.method .wrap,.explore-grid,.about-inner{grid-template-columns:1fr;gap:40px}.about{padding-bottom:68px}.about-inner{gap:25px}.about-mark{gap:20px}.monogram{font-size:5rem}.footer-inner{align-items:flex-start}.footer-links{gap:15px}}
     @media(max-width:450px){.cards{grid-template-columns:1fr 1fr}.card{min-height:350px;padding:16px}.card-visual{height:100px;margin:7px 0 15px}.card h3{font-size:1.16rem}.card p{font-size:.85rem;line-height:1.55}.tag{font-size:.6rem;letter-spacing:.035em}.card-number{font-size:.6rem}.card-link{font-size:.8rem;padding-top:20px}.hero-actions{display:grid;grid-template-columns:1fr 1fr}.hero-actions .button-primary{grid-column:1 / -1}.hero-actions .button{gap:7px}.art-foot .sequence{gap:8px}.about-inner{padding:27px}.footer-links{gap:12px}}
     @media(max-width:330px){.cards{grid-template-columns:1fr}.card{min-height:315px}.nav a{font-size:.69rem}.brand-name{font-size:1.02rem}}
-    html[data-lang="sl"] .human-middle .en,html[data-lang="sl"] .human-middle-dialog .en,html[data-lang="en"] .human-middle .sl,html[data-lang="en"] .human-middle-dialog .sl{display:none!important}
+    html[data-lang="sl"] .ai8-vision .en,html[data-lang="sl"] .ai8-vision-dialog .en,html[data-lang="en"] .ai8-vision .sl,html[data-lang="en"] .ai8-vision-dialog .sl,html[data-lang="sl"] .human-middle .en,html[data-lang="sl"] .human-middle-dialog .en,html[data-lang="en"] .human-middle .sl,html[data-lang="en"] .human-middle-dialog .sl{display:none!important}
     .legacy-doors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:25px}
     .legacy-doors .door{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:64px;padding:15px;border:1px solid var(--line);background:var(--surface);font-size:.82rem;font-weight:700}
     .legacy-doors .door:hover{background:var(--soft)}
@@ -169,9 +171,7 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
   <a class="skip" href="#main" data-sl="Preskoči na vsebino" data-en="Skip to content">Preskoči na vsebino</a>
   <header class="topbar">
     <div class="wrap topbar-inner">
-      <a class="brand" href="#top" aria-label="MDL×DCC, domača stran" data-aria-sl="MDL×DCC, domača stran" data-aria-en="MDL×DCC, home">
-        <span class="brand-name">MDL<span class="multiply">×</span>DCC</span><span class="brand-sub">BD × AI Lab</span>
-      </a>
+      <div class="brand"><button class="brand-home" id="guide-brand-toggle" type="button" aria-expanded="false" aria-controls="guide-panel" aria-label="MDL×DCC — odpri ali skrij vodnika"><span class="brand-name">MDL<span class="multiply">×</span>DCC</span></button><span class="brand-sub"><a href="./Start/index.html">BD</a><span class="brand-times" aria-hidden="true">×</span><button id="guide-toggle" type="button" aria-expanded="false" aria-controls="guide-panel" aria-label="AI — odpri ali skrij vodnika">AI</button><button id="guide-lab" type="button" aria-haspopup="dialog" aria-controls="ai8-vision-dialog">LAB</button></span></div>
       <nav class="nav" aria-label="Glavna navigacija" data-aria-sl="Glavna navigacija" data-aria-en="Main navigation">
         <a href="#odkrij" data-sl="Odkrij" data-en="Discover">Odkrij</a>
         <a href="#metoda" data-sl="Kako deluje" data-en="The method">Kako deluje</a>
@@ -187,6 +187,7 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
     </div>
   </header>
 
+  <div id="guide-page">
   <main id="main">
     <section class="hero wrap" id="top" aria-labelledby="hero-title">
       <div class="hero-copy">
@@ -278,6 +279,30 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
     </section>
 
     <div class="wrap">
+<!-- AI8_LAB_VISION_20260929 -->
+<section class="ai8-vision" aria-labelledby="ai8-vision-title">
+<button class="ai8-vision-card" id="ai8-vision-open" type="button" aria-haspopup="dialog" aria-controls="ai8-vision-dialog">
+<span class="ai8-vision-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M5 23 12 16l5 4 10-12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 8h6v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="23" r="2" fill="currentColor"/><circle cx="12" cy="16" r="2" fill="currentColor"/><circle cx="17" cy="20" r="2" fill="currentColor"/></svg></span>
+<span class="ai8-vision-copy">
+<span class="ai8-vision-kicker">AI8 LAB · VISION</span>
+<strong id="ai8-vision-title"><span class="en" lang="en">From projects to a living lab.</span><span class="sl" lang="sl">Od projektov do živega laboratorija.</span></strong>
+<small><span class="en" lang="en">See the path from today’s BD × AI workflow toward a lab that improves projects — and itself.</span><span class="sl" lang="sl">Poglej pot od današnjega BD × AI dela do laboratorija, ki izboljšuje projekte — in samega sebe.</span></small>
+</span>
+<span class="ai8-vision-arrow" aria-hidden="true">↗︎</span>
+</button>
+</section>
+<dialog class="ai8-vision-dialog" id="ai8-vision-dialog" aria-labelledby="ai8-vision-dialog-title" data-revision="20260929-r2">
+<div class="ai8-vision-dialog-inner">
+<div class="ai8-vision-dialog-top"><div><span class="ai8-vision-kicker">BD × AI LAB / AI8</span><h2 id="ai8-vision-dialog-title"><span class="en" lang="en">Growth through time</span><span class="sl" lang="sl">Rast skozi čas</span></h2></div><div class="ai8-vision-dialog-actions"><div class="ai8-vision-controls-group"><div class="ai8-vision-font-buttons" role="group" aria-label="Text size / Velikost besedila"><button class="ai8-vision-control" id="ai8-vision-font-down" type="button" aria-label="Smaller text">A−</button><button class="ai8-vision-control ai8-vision-font-value" id="ai8-vision-font-value" type="button" aria-label="Reset text size to 100%">100%</button><button class="ai8-vision-control" id="ai8-vision-font-up" type="button" aria-label="Larger text">A+</button></div><button class="ai8-vision-control ai8-vision-theme-icon" id="ai8-vision-theme-toggle" type="button" aria-label="Switch color theme">◐</button><div class="ai8-vision-languages" role="group" aria-label="Language / Jezik"><button class="ai8-vision-control" type="button" data-vision-lang="en" aria-label="English">EN</button><button class="ai8-vision-control" type="button" data-vision-lang="sl" aria-label="Slovenščina">SL</button></div></div><button class="ai8-vision-close" id="ai8-vision-close" type="button" aria-label="Close">×</button></div></div>
+<div id="ai8-vision-scroll">
+<p id="ai8-vision-status" role="status" aria-live="polite"></p>
+<figure><a id="ai8-vision-image-link" href="./assets/ai8-lab-growth-20260929.webp?v=f7951a0f1596" target="_blank" rel="noopener"><img id="ai8-vision-image" hidden alt="AI8 Lab roadmap" decoding="async"></a></figure>
+<div class="ai8-vision-caption"><span><span class="en" lang="en">An illustrative path and potential — not a measured growth forecast.</span><span class="sl" lang="sl">Ilustrativna razvojna pot in potencial — ne izmerjena napoved rasti.</span></span><span><a id="ai8-vision-full-link" href="./assets/ai8-lab-growth-20260929.webp?v=f7951a0f1596" target="_blank" rel="noopener"><span class="en" lang="en">Full image ↗</span><span class="sl" lang="sl">Cela slika ↗</span></a> · <a href="./AI8/"><span class="en" lang="en">Explore AI8 →</span><span class="sl" lang="sl">Razišči AI8 →</span></a> · <a href="./assets/ai8-lab-growth-20260929.webp?v=f7951a0f1596" target="_blank" rel="noopener"><span class="en" lang="en">Original · SL</span><span class="sl" lang="sl">Izvirnik · SL</span></a></span></div>
+<details id="ai8-vision-transcript"><summary><span class="en" lang="en">Read as text</span><span class="sl" lang="sl">Preberi kot besedilo</span></summary><div class="sl" lang="sl"><ol><li><strong>Danes</strong>BD + GPT + Claude vodimo projekte. TSP, Sudoku, ChessBest, Trip in splet. BD povezuje delo med sejami.</li><li><strong>Prvi WL runtime</strong>Python na HOME in WORK. Inbox ukazi, rezultati na Drive. LE_START / LE_CHECK 8zCockpit kot izvajalec.</li><li><strong>Povezan laboratorij</strong>GPT / Claude kot arhitekta. Codex in Claude Code kot delavca. Spomin, pogovori in dokazila. Več hostov, manj ročnega prenosa.</li><li><strong>Projektni multiplikator</strong>Nove arene in orodja. TSP → Trip prenosi. ChessBest: Top Picks in DCC. Gradnja → testi → izboljšava.</li><li><strong>Živ AI8 Lab</strong>Usklajuje delo med gradniki. Predlaga, gradi, testira, izboljšuje. Razvija projekte in sebe. BD ostaja partner in usmerjevalec.</li></ol><p>Dve zanki. Skupno učenje. Naloga → Izvedba → Dokazi → Analiza → Izboljšava → Nov tek. Boljši projekti ↔ Boljši način dela laboratorija.</p></div><div class="en" lang="en"><ol><li><strong>Today</strong>BD + GPT + Claude lead projects. TSP, Sudoku, ChessBest, Trip and the web. BD connects the work across sessions.</li><li><strong>First WL runtime</strong>Python on HOME and WORK. Inbox commands, results on Drive. LE_START / LE_CHECK 8zCockpit as the executor.</li><li><strong>Connected laboratory</strong>GPT / Claude as architects. Codex and Claude Code as workers. Memory, dialogue and evidence. More hosts, less manual handover.</li><li><strong>Project multiplier</strong>New arenas and tools. TSP → Trip ports. ChessBest: Top Picks and DCC. Build → test → improve.</li><li><strong>Living AI8 Lab</strong>Coordinates work across components. Proposes, builds, tests, improves. Develops projects and itself. BD remains a partner and guide.</li></ol><p>Two loops. Shared learning. Task → Execute → Evidence → Analyse → Improve → Next run. Better projects ↔ A better way for the Lab to work.</p></div></details>
+</div></div></dialog>
+    </div>
+
+    <div class="wrap">
 <section class="human-middle human-middle-family" aria-labelledby="human-middle-banner-title">
 <div class="hm-unified-banner">
 <header class="hm-family-heading">
@@ -320,6 +345,7 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
 
   <footer><div class="wrap footer-inner"><div><div class="footer-brand">MDL×DCC <span style="font-weight:400;color:var(--muted)">· BD × AI Lab</span></div><div style="font-size:.72rem;color:var(--muted);margin-top:5px" data-sl="Samostojne misli. Skupna radovednost." data-en="Independent minds. Shared curiosity.">Samostojne misli. Skupna radovednost.</div></div><nav class="footer-links" aria-label="Povezave v nogi" data-aria-sl="Povezave v nogi" data-aria-en="Footer links"><a href="https://www.mdlxdcc.org/index-atlas" data-sl="Atlas" data-en="Atlas">Atlas</a><a href="https://www.mdlxdcc.org/index-todo" data-sl="Delovna miza" data-en="Workbench">Delovna miza</a><a href="https://www.mdlxdcc.org/c/" data-sl="Kontinuiteta" data-en="Continuity">Kontinuiteta</a><a href="index-original-20261107.html" data-sl="Prejšnja naslovnica" data-en="Previous homepage">Prejšnja naslovnica</a><a href="mailto:bd@siol.net" data-sl="Piši ↗" data-en="Say hello ↗">Piši ↗</a></nav></div></footer>
 
+  </div>
   <script>
     (() => {
       const root = document.documentElement;
@@ -343,7 +369,7 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
         put('mdlxdcc-theme', next);
       });
       const savedTheme = get('mdlxdcc-theme');
-      if (savedTheme === 'dark' || savedTheme === 'light') root.dataset.theme = savedTheme;
+      root.dataset.theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
       document.getElementById('theme').setAttribute('aria-pressed', String(savedTheme === 'dark'));
       function setFont(value) {
         const n = Math.max(.8, Math.min(1.5, value));
@@ -361,6 +387,30 @@ fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',he
 <script src="./assets/human-middle/v5/human-middle-series-r1.js?v=20261009-r18"></script>
   <script src="./assets/human-middle/v5/human-middle-explanations-r1.js?v=20261009-r16"></script>
   <script id="human-middle-script" src="./assets/human-middle/v5/human-middle-r13-family.js?v=20261009-r18"></script>
+  <script id="ai8-lab-vision-script" src="./assets/ai8-vision/r2/vision-r4.js?v=20261004-r4"></script>
   <script src="./pwa.js?v=root-20261024-r6" defer></script>
+<!-- One persistent chat and scene frame. Toggling AI never recreates them. -->
+<aside id="guide-panel" aria-labelledby="guide-title" hidden>
+ <div class="guide-head"><div><strong id="guide-title" data-guide-text="title">MDL×DCC Guide</strong><small id="guide-subtitle" data-guide-text="subtitle">Public guide</small></div><div id="guide-provider" class="guide-provider" role="group" aria-label="Choose the next assistant"><button id="guide-provider-gpt" type="button" aria-pressed="true">GPT</button><button id="guide-provider-claude" type="button" aria-pressed="false">Claude</button></div><button id="guide-close" class="guide-icon" type="button" aria-label="Hide chat">×</button></div>
+ <div class="guide-account"><div><span id="guide-account-label"></span><small id="guide-usage"></small></div><button id="guide-account-action" class="guide-button" type="button">Sign in</button></div>
+ <form id="guide-auth" class="guide-auth" hidden>
+  <strong id="guide-auth-title" data-guide-text="loginTitle">Sign in to ask GPT or Claude</strong><p data-guide-text="loginInfo">Your question stays ready. The public tour is also available without signing in.</p>
+  <label><span data-guide-text="email">Email</span><input id="guide-email" type="email" autocomplete="username" maxlength="254" required></label>
+  <label><span data-guide-text="password">Password</span><input id="guide-password" type="password" autocomplete="current-password" maxlength="256" required></label>
+  <p id="guide-auth-error" class="guide-error" role="status" hidden></p>
+  <button id="guide-auth-submit" class="guide-button" type="submit" data-guide-text="login">Sign in</button>
+  <button id="guide-auth-mode" type="button" data-guide-text="registerChoice">Create an account</button><button id="guide-auth-cancel" type="button" data-guide-text="cancelLogin">Back to chat</button>
+  <small data-guide-text="budgetInfo">Visitors share a $100 monthly API budget. BD is outside that quota.</small>
+ </form>
+ <div id="guide-messages" role="log" aria-live="polite" aria-relevant="additions" aria-busy="false">
+  <div class="guide-welcome"><div class="guide-star" aria-hidden="true">✳</div><h2 data-guide-text="welcome">What are you curious about?</h2><p data-guide-text="intro">Explore the projects, ask for an explanation, or take a guided tour.</p><div class="guide-suggestions"><button id="guide-start-tour" type="button" data-guide-text="glance">Start glance →</button><button id="guide-projects" type="button" data-guide-text="projects">What is MDL×DCC?</button><button id="guide-dgte" type="button" data-guide-text="dgte">DGTE: electricity in €?</button></div></div>
+ </div>
+ <div id="guide-busy" role="status" hidden></div>
+ <div id="guide-tour" hidden><div id="guide-tour-status"></div><div class="guide-tour-actions"><button class="guide-button" id="guide-back" type="button" data-guide-text="back">Back</button><button class="guide-button" id="guide-pause" type="button" data-guide-text="pause">Pause</button><button class="guide-button" id="guide-stop" type="button" data-guide-text="stop">Finish</button><button class="guide-button" id="guide-next" type="button" data-guide-text="next">Next · n</button></div></div>
+ <form class="guide-compose" id="guide-form"><div class="guide-input-wrap"><textarea id="guide-input" rows="1" maxlength="4000" aria-label="Ask about a project" placeholder="Ask about a project …"></textarea><button id="guide-send" type="submit" aria-label="Send">↑</button></div><p id="guide-privacy" class="guide-fine" data-guide-text="fine">One shared conversation in this tab. The selected provider processes your question and conversation. Check answers against their sources.</p></form>
+</aside>
+<section id="guide-stage" aria-label="Project page" hidden><div class="guide-stage-head"><button id="guide-home" type="button" data-guide-text="home">Back to landing</button><span id="guide-page-title"></span><a id="guide-page-external" href="./index-atlas.html" target="_blank" rel="noopener noreferrer" aria-label="Open page in a tab">↗</a></div><iframe id="guide-frame" title="MDL×DCC project" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-popups" referrerpolicy="same-origin"></iframe></section>
+<script type="module" src="./assets/mdlxdcc-guide/guide.js?v=20261022-nav1"></script>
+
 </body>
 </html>
