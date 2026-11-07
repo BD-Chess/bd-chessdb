@@ -195,12 +195,65 @@ function storyEntry(r,translations,daily,root=null){
   const images=loadIllustrations(root,r,t,{nonBlocking:true});
   return '<details class="archive-item'+(daily?' daily-item':'')+'" id="'+r.id+'"><summary><time datetime="'+r.date+'">'+r.date+'</time><span class="story-summary-title"><strong>'+localizedText(r.title,t?.title)+'</strong>'+revisionLabel(r.revision)+scoreChip(r,root)+'</span></summary><div class="inside">'+revisionNotice(r.revision)+(loadReaderRatings(root)?ratingMarkup(readerRating(root,r.id)):'')+formatDayLinks(root,r.date)+'<p class="lede">'+localizedText(r.deck,t?.deck)+'</p><p class="meta">'+bi('Published','Objavljeno')+' '+esc(r.published_at)+' · <a href="'+href+'">'+(daily?bi('Permanent archive link','Trajna povezava v arhiv'):bi('Permanent link','Trajna povezava'))+'</a></p>'+storyContent(r,t,images)+'</div></details>'+scoreDialog(r,t,root);
 }
+/* Wide-screen Daily calendar (BD, 2026-11-07): one month grid per published month. A day shows its story count and
+ * selected story; hovering or focusing it lists every story of that day. It is rendered after the cards, which stay the
+ * narrow-screen list (CSS shows one or the other), so card order and markup are unchanged. */
+const CAL_MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CAL_MONTHS_SL=['Januar','Februar','Marec','April','Maj','Junij','Julij','Avgust','September','Oktober','November','December'];
+const CAL_MONTHS_SL_OF=['januarja','februarja','marca','aprila','maja','junija','julija','avgusta','septembra','oktobra','novembra','decembra'];
+const CAL_DAYS_EN=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const CAL_DAYS_SL=['Ponedeljek','Torek','Sreda','Četrtek','Petek','Sobota','Nedelja'];
+const CAL_DOW_EN=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const CAL_DOW_SL=['pon','tor','sre','čet','pet','sob','ned'];
+const slForm=(n,f)=>{const m=n%100;return m===1?f[0]:m===2?f[1]:m===3||m===4?f[2]:f[3]};
+const calStories=n=>bi(n+(n===1?' story':' stories'),n+' '+slForm(n,['zgodba','zgodbi','zgodbe','zgodb']));
+const calDays=n=>bi(n+(n===1?' day':' days'),n+' '+slForm(n,['dan','dneva','dnevi','dni']));
+function calScore(root,id,fallback){const r=readerRating(root,id);return r?ratingNumber(r.combined):Number.isFinite(fallback)?ratingNumber(fallback):''}
+/** The selected story first, then the day's other published stories from the publisher's day manifest. */
+function calendarDayStories(root,r,translations){
+  const t=translations[r.id]??r.translation_sl;
+  const stories=[{href:dailyStoryHref(root,r),en:dailyDisplayTitle(r.title,'en'),sl:t?.title?dailyDisplayTitle(t.title,'sl'):null,score:calScore(root,r.id,r.literary_score?.display),featured:true}];
+  const n=root?path.join(root,'public/Nara'):null,dayFile=n?path.join(n,'daily/days',r.date+'.json'):null;
+  if(!dayFile||!fs.existsSync(dayFile))return stories;
+  const day=JSON.parse(fs.readFileSync(dayFile,'utf8'));
+  assert(day.schema==='nara.daily.day.v1'&&day.date===r.date&&Array.isArray(day.instances),'Daily calendar day manifest');
+  for(const x of day.instances){
+    if(x.instance===day.featured_instance)continue;
+    assert(/^S[123]$/.test(x.instance)&&text(x.title,180),'Daily calendar companion story');
+    const id=r.id+':'+x.instance,edition='Nara-AI-'+r.date+'-'+x.instance+'-format-R1.html';
+    const tp=path.join(n,'daily/translations/sl',r.date,x.instance+'.json');
+    const sl=fs.existsSync(tp)?JSON.parse(fs.readFileSync(tp,'utf8')).title:null;
+    stories.push({href:fs.existsSync(path.join(n,edition))?edition:'Nara-AI-'+r.date.slice(0,7)+'.html#'+id,en:dailyDisplayTitle(x.title,'en'),sl:text(sl,180)?dailyDisplayTitle(sl,'sl'):null,score:calScore(root,id,x.display),featured:false});
+  }
+  return stories;
+}
+function calendarMonth(ym,days,lastDate){
+  const y=Number(ym.slice(0,4)),m=Number(ym.slice(5,7)),length=new Date(Date.UTC(y,m,0)).getUTCDate(),lead=(new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7;
+  let storyCount=0;const cells=[];
+  for(let i=0;i<lead;i++)cells.push('<div class="cal-blank" aria-hidden="true"></div>');
+  for(let d=1;d<=length;d++){
+    const date=ym+'-'+String(d).padStart(2,'0'),dow=(lead+d-1)%7,stories=days.get(date);
+    if(!stories){cells.push('<div class="cal-day '+(date>lastDate?'cal-day--future':'cal-day--empty')+'" data-dow="'+(dow+1)+'"><span class="cal-date">'+d+'</span></div>');continue}
+    storyCount+=stories.length;
+    const f=stories[0],count=calStories(stories.length);
+    const when=bi(CAL_DAYS_EN[dow]+', '+d+' '+CAL_MONTHS_EN[m-1]+' '+y,CAL_DAYS_SL[dow]+', '+d+'. '+CAL_MONTHS_SL_OF[m-1]+' '+y);
+    const list=stories.map(s=>'<li><a href="'+esc(s.href)+'"'+(s.featured?' class="cal-featured"':'')+'><span class="cal-pop-title">'+(s.featured?'<span class="cal-star" aria-hidden="true">★</span><span class="cal-sr">'+bi('Selected story: ','Izbrana zgodba: ')+'</span>':'')+localizedText(s.en,s.sl)+'</span>'+(s.score?'<span class="cal-pop-score">'+esc(s.score)+'</span>':'')+'</a></li>').join('');
+    cells.push('<div class="cal-day cal-day--stories" data-dow="'+(dow+1)+'" data-count="'+stories.length+'"><a class="cal-day-link" href="'+esc(f.href)+'"><span class="cal-day-top"><span class="cal-date">'+d+'</span><span class="cal-count">'+count+'</span></span><span class="cal-title">'+localizedText(f.en,f.sl)+'</span>'+(f.score?'<span class="cal-score">'+esc(f.score)+'</span>':'')+'</a><div class="cal-pop"><p class="cal-pop-date">'+when+' · '+count+'</p><ul>'+list+'</ul></div></div>');
+  }
+  const head=CAL_DOW_EN.map((en,i)=>'<div class="cal-dow" aria-hidden="true">'+bi(en,CAL_DOW_SL[i])+'</div>').join('');
+  return '<section class="cal-month" id="cal-'+ym+'" aria-labelledby="cal-'+ym+'-title"><h2 class="cal-month-title" id="cal-'+ym+'-title">'+bi(CAL_MONTHS_EN[m-1]+' '+y,CAL_MONTHS_SL[m-1]+' '+y)+' <span class="cal-month-count">'+calStories(storyCount)+' · '+calDays(days.size)+'</span> <a class="cal-month-link" href="Nara-AI-'+ym+'.html">'+bi('Month archive','Arhiv meseca')+'</a></h2><div class="cal-grid">'+head+cells.join('')+'</div></section>';
+}
+function dailyCalendar(records,translations,root){
+  const months=new Map();
+  for(const r of records){const ym=r.date.slice(0,7);if(!months.has(ym))months.set(ym,new Map());months.get(ym).set(r.date,calendarDayStories(root,r,translations))}
+  return '\n<section class="daily-calendar"'+aria('Story calendar','Koledar zgodb')+'><p class="cal-hint">'+bi('Point at a day to list all of its stories; click a title to read it.','Z miško pokaži na dan za vse njegove zgodbe; klik na naslov odpre zgodbo.')+'</p>'+[...months.keys()].map(ym=>calendarMonth(ym,months.get(ym),records[0].date)).join('')+'</section>';
+}
 export function latestPage(input,month,translations={},root=null){
   const records=(Array.isArray(input)?[...input]:(input?[input]:[])).sort((a,b)=>b.date.localeCompare(a.date));
   assert(new Set(records.map(r=>r.date)).size===records.length,'Daily requires one selected story per date');
   const header='<header class="masthead"><div class="eyebrow">'+bi('Nightly Illuminara fiction · one story each published day','Večerne Illuminarine zgodbe · po ena zgodba vsak dan z objavo')+'</div><h1>'+bi('Illuminara Daily','Illuminara · dnevne zgodbe')+'</h1><p class="lede">'+bi('One selected story per day. Reader scores and the other stories are available in the archive.','Ena izbrana zgodba na dan. Bralske ocene in druge zgodbe so na voljo v arhivu.')+'</p>'+tools+'</header>';
   const empty='<section class="notice"><h2>'+bi('The first story is not published yet.','Prva zgodba še ni objavljena.')+'</h2><p>'+bi('This reading lane is ready for the first completed GPT ↔ Claude cycle. Stories are released only after selection, editorial work and a reviewed final close.','Ta bralna zbirka je pripravljena na prvi zaključeni cikel GPT ↔ Claude. Zgodbe objavimo šele po izboru, uredniškem delu in pregledu končne različice.')+'</p></section><nav class="end-nav"><a href="Nara-AI-'+month+'.html">'+bi("This month's archive",'Arhiv tega meseca')+'</a><a href="Nara-AI-log.html">'+bi('Follow the editorial log','Spremljaj uredniški dnevnik')+'</a><a href="index.html">'+bi('Read the illustrated collection','Preberi ilustrirano zbirko')+'</a></nav>';
-  return shell('Daily stories','Nara-AI-daily.html',header+(records.length?records.map(r=>storyEntry(r,translations,true,root)).join('\n'):empty),'daily',true);
+  return shell('Daily stories','Nara-AI-daily.html',header+(records.length?records.map(r=>storyEntry(r,translations,true,root)).join('\n')+dailyCalendar(records,translations,root):empty),'daily',true);
 }
 export function monthlyPage(month,records,translations={},root=null){
   assert(/^\d{4}-(0[1-9]|1[0-2])$/.test(month),'invalid month');

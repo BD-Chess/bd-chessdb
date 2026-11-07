@@ -137,16 +137,55 @@ html.nara-lightbox-open{overflow:hidden}
 .daily-index-score-unit{font-size:.78rem;color:var(--muted)}
 @media(max-width:540px){.daily-index-item{gap:.65rem;padding:1rem}.daily-index-rating .score-chip{min-width:38px;padding:.2rem .4rem}.daily-index-score-unit{font-size:.7rem}}
 
-/* Wide screens (half or full 4K): the Daily landing fills the width with a grid of story cards
- * instead of one 850px column. Scoped with :has() to the page whose <main> holds the Daily cards,
- * so story, monthly, archive and log pages keep their reading width. Below 1400px nothing changes. */
+/* Wide screens (half or full 4K): the Daily landing uses the width instead of one 850px column. Scoped with :has()
+ * to the page whose <main> holds the Daily cards, so story, monthly, archive and log pages keep their reading width.
+ * Below 1400px nothing changes: the calendar stays hidden and the cards are the list. */
+.daily-calendar{display:none}
 @media screen and (min-width:1400px){
   body:has(>main>.daily-index-item){--nara-daily-cols:2;--nara-daily-width:min(100% - 4rem,1760px)}
   body:has(>main>.daily-index-item)>.wrap{width:var(--nara-daily-width)}
   body:has(>main>.daily-index-item) .bar-inner{max-width:none;width:var(--nara-daily-width);padding-inline:0}
-  main.wrap:has(>.daily-index-item){display:grid;grid-template-columns:repeat(var(--nara-daily-cols),minmax(0,1fr));gap:1rem 1.25rem}
-  main.wrap:has(>.daily-index-item)>:not(.daily-index-item){grid-column:1/-1}
-  main.wrap>.daily-index-item{margin:0}
+  /* Card grid: the fallback for a Daily page rendered without the calendar. */
+  main.wrap:has(>.daily-index-item):not(:has(>.daily-calendar)){display:grid;grid-template-columns:repeat(var(--nara-daily-cols),minmax(0,1fr));gap:1rem 1.25rem}
+  main.wrap:has(>.daily-index-item):not(:has(>.daily-calendar))>:not(.daily-index-item){grid-column:1/-1}
+  main.wrap:not(:has(>.daily-calendar))>.daily-index-item{margin:0}
+  /* Calendar replaces the cards: one month per row, two side by side in a full 4K window. */
+  main.wrap:has(>.daily-calendar)>.daily-index-item{display:none}
+  .daily-calendar{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,1500px),1fr));gap:2.6rem 3rem;margin:2rem 0 1rem}
 }
+.cal-hint{grid-column:1/-1;margin:0 0 -1.4rem;font-size:.9rem;color:var(--muted)}
+.cal-month-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem 1.1rem;margin:0 0 .9rem;font-size:2rem}
+.cal-month-count{font:600 .9rem/1.4 system-ui,sans-serif;color:var(--muted)}
+.cal-month-link{margin-left:auto;font:500 .9rem/1.4 system-ui,sans-serif}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.55rem}
+.cal-dow{padding:0 .3rem .15rem;font:700 .74rem/1.3 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cal-day{position:relative;min-height:7.4rem;border:1px solid var(--line);border-radius:.65rem}
+.cal-day--stories{background:var(--panel)}
+.cal-day--stories:hover,.cal-day--stories:focus-within{border-color:var(--accent)}
+.cal-day--empty,.cal-day--future{padding:.5rem .7rem;border-style:dashed}
+.cal-day--empty .cal-date{opacity:.55}
+.cal-day--future{opacity:.35}
+.cal-day-link{display:flex;flex-direction:column;gap:.35rem;height:100%;padding:.5rem .7rem .6rem;border-radius:inherit;color:var(--ink);text-decoration:none}
+.cal-day-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.cal-date{font:650 1.15rem/1.2 system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.cal-count{padding:.08rem .5rem;border:1px solid color-mix(in srgb,var(--accent) 60%,var(--line));border-radius:999px;font:700 .72rem/1.4 system-ui,sans-serif;color:var(--accent);white-space:nowrap}
+.cal-day--stories[data-count="1"] .cal-count{border-color:var(--line);color:var(--muted)}
+.cal-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-family:Georgia,"Times New Roman",serif;font-size:1.02rem;line-height:1.32;color:var(--accent)}
+.cal-day-link:hover .cal-title{text-decoration:underline}
+.cal-score{margin-top:auto;font:700 .8rem/1.2 system-ui,sans-serif;color:var(--muted);font-variant-numeric:tabular-nums}
+/* A day's stories: shown while the pointer is on the day (or focus is inside it); overlaps the day's bottom edge so
+ * moving from the day into the list keeps it open. Weekend columns open to the left to stay on screen. */
+.cal-pop{display:none;position:absolute;z-index:10;top:calc(100% - 3px);left:-1px;width:max(calc(100% + 2px),24rem);max-width:min(32rem,90vw);padding:.75rem .85rem .85rem;background:var(--panel);border:1px solid var(--accent);border-radius:.65rem;box-shadow:0 18px 48px rgba(0,0,0,.5)}
+.cal-day[data-dow="6"]>.cal-pop,.cal-day[data-dow="7"]>.cal-pop{left:auto;right:-1px}
+.cal-day:hover>.cal-pop,.cal-day:focus-within>.cal-pop{display:block}
+.cal-pop-date{margin:0 0 .45rem;font:600 .8rem/1.4 system-ui,sans-serif;color:var(--muted)}
+.cal-pop ul{list-style:none;margin:0;padding:0}
+.cal-pop a{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.4rem .55rem;border-radius:.45rem;color:var(--ink);text-decoration:none}
+.cal-pop a:hover,.cal-pop a:focus-visible{background:color-mix(in srgb,var(--accent) 14%,var(--panel))}
+.cal-pop-title{font-family:Georgia,"Times New Roman",serif;font-size:1.05rem;line-height:1.35}
+.cal-featured .cal-pop-title{color:var(--accent)}
+.cal-star{margin-right:.35rem;color:var(--accent)}
+.cal-pop-score{flex-shrink:0;font:700 .85rem/1.3 system-ui,sans-serif;color:var(--muted);font-variant-numeric:tabular-nums}
+.cal-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media screen and (min-width:2400px){body:has(>main>.daily-index-item){--nara-daily-cols:3;--nara-daily-width:min(100% - 6rem,2720px)}}
 @media screen and (min-width:3200px){body:has(>main>.daily-index-item){--nara-daily-cols:4;--nara-daily-width:min(100% - 6rem,3640px)}}

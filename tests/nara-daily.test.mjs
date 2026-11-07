@@ -254,3 +254,27 @@ test('approved R3 illustrations stay in the monthly story while Daily links to t
   assert.throws(()=>monthlyPage('2026-10',[r],translations,root),/source hash mismatch/);
 });
 
+test('Daily calendar after the cards: weekday grid, story counts and every story of a day',t=>{
+ const root=temp(t),n=path.join(root,'public/Nara'),files=['daily/days/2026-10-09.json',...['S1','S2','S3'].flatMap(instance=>['daily/records/2026-10-09/'+instance+'.json','daily/translations/sl/2026-10-09/'+instance+'.json'])];
+ for(const file of files){fs.mkdirSync(path.dirname(path.join(n,file)),{recursive:true});fs.copyFileSync(path.join(editionRoot,'public/Nara',file),path.join(n,file));}
+ const source=JSON.parse(fs.readFileSync(path.join(n,'daily/records/2026-10-09/S1.json'),'utf8')),featured={...source,schema:'nara.daily.record.v1',id:'NARA-D-2026-10-09'};
+ const html=latestPage([record('2026-10-20','2026-10-20T20:00:00Z'),featured],'2026-10',{},root);
+ const start=html.indexOf('<section class="daily-calendar"');
+ assert.ok(start>html.lastIndexOf('class="notice daily-index-item"'),'calendar follows the cards');
+ const cards=html.slice(0,start),cal=html.slice(start,html.indexOf('</main>'));
+ assert.equal((cal.match(/class="cal-month"/g)||[]).length,1);
+ assert.equal((cal.match(/class="cal-blank"/g)||[]).length,3,'1 October 2026 is a Thursday');
+ assert.equal((cal.match(/class="cal-day cal-day--empty"/g)||[]).length,18);
+ assert.equal((cal.match(/class="cal-day cal-day--future"/g)||[]).length,11);
+ assert.match(cal,/data-dow="5" data-count="3"><a class="cal-day-link" href="Nara-AI-2026-10-09-S1-format-R1.html"><span class="cal-day-top"><span class="cal-date">9<\/span>/);
+ assert.match(cal,/data-dow="2" data-count="1"><a class="cal-day-link" href="Nara-AI-2026-10.html#NARA-D-2026-10-20"><span class="cal-day-top"><span class="cal-date">20<\/span>/);
+ const day9=cal.slice(cal.indexOf('data-count="3"'),cal.indexOf('</ul>',cal.indexOf('data-count="3"')));
+ assert.equal((day9.match(/<li>/g)||[]).length,3);
+ assert.match(day9,/<ul><li><a href="Nara-AI-2026-10-09-S1-format-R1.html" class="cal-featured">/,'selected story first');
+ for(const instance of ['S2','S3']){
+  assert.ok(day9.includes('href="Nara-AI-2026-10.html#NARA-D-2026-10-09:'+instance+'"'),'calendar lists '+instance);
+  assert.ok(!cards.includes('NARA-D-2026-10-09:'+instance),'cards keep only the winner');
+ }
+ for(const s of ['>3 stories<','>3 zgodbe<','>1 story<','>1 zgodba<','>4 stories<','>4 zgodbe<','>2 days<','>2 dneva<'])assert.ok(cal.includes(s),s);
+ assert.ok(!cal.includes(source.scenes[0].paragraphs[0]),'no story prose in the calendar');
+});
