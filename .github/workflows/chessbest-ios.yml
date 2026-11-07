@@ -1,0 +1,85 @@
+name: ChessBest iOS candidate
+on:
+  push:
+    branches: [feat/chessbest-ios-r2-20260928]
+    tags: ['chessbest-native-check-*', 'chessbest-testflight-*']
+    paths: ['apps/chessbest-mobile/**', '.github/workflows/chessbest-ios.yml']
+permissions:
+  contents: read
+concurrency:
+  group: chessbest-ios-${{ github.ref }}
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+    working-directory: apps/chessbest-mobile
+jobs:
+  narrow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build && npm run verify:package && npm run test:narrow
+      - run: python3 -m unittest discover -s test -p 'test_ios_ci.py' -v
+  native-verify:
+    # A distinct fresh tag is created ONLY after BD's Luna/Max CONTINUE_TESTS gate.
+    if: startsWith(github.ref, 'refs/tags/chessbest-native-check-') || startsWith(github.ref, 'refs/tags/chessbest-testflight-')
+    needs: narrow
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund && npm run sync && npm run verify:package
+      - run: bash scripts/ios_cloud.sh verify
+      - name: Preserve first failure and successful simulator evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: chessbest-native-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/chessbest-evidence/
+          if-no-files-found: warn
+          retention-days: 7
+  testflight:
+    needs: [narrow, native-verify]
+    if: github.repository == 'BD-Chess/bd-chessdb' && startsWith(github.ref, 'refs/tags/chessbest-testflight-')
+    runs-on: macos-26
+    timeout-minutes: 20
+    environment:
+      name: chessbest-testflight
+    env:
+      IOS_TEAM_ID: ${{ vars.IOS_TEAM_ID }}
+      IOS_APPROVED_SHA: ${{ vars.IOS_APPROVED_SHA }}
+      IOS_UPLOAD_ENABLED: ${{ vars.IOS_UPLOAD_ENABLED }}
+      IOS_BUILD_NUMBER: ${{ vars.IOS_BUILD_NUMBER }}
+      CHESSBEST_TESTED_SHA: ${{ vars.CHESSBEST_TESTED_SHA }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Exact candidate, fresh Chess tag, explicit upload gate
+        run: python3 scripts/ios_ci.py guard
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund && npm run sync && npm run verify:package
+      - name: Sign and attempt upload once
+        env:
+          IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+          IOS_DISTRIBUTION_P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}
+          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: bash scripts/ios_cloud.sh testflight
+      # Signing artifacts, credentials and complete logs are never uploaded.
