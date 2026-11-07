@@ -40,24 +40,34 @@
   }
   function visibleText(node) {
     if (!node || node.closest('[hidden],[aria-hidden="true"],nav,footer,script,style')) return '';
-    return (node.innerText || node.textContent || '').trim();
+    if (typeof node.getClientRects === 'function' && !node.getClientRects().length) return '';
+    if (typeof getComputedStyle === 'function') {
+      const style = getComputedStyle(node);
+      if (style.display === 'none' || ['hidden', 'collapse'].includes(style.visibility)) return '';
+    }
+    return (typeof node.innerText === 'string' ? node.innerText : node.textContent || '').trim();
   }
   function captureGround() {
     if (!C.isGroundArticleUrl(location.href)) throw Error('Na strani založnika označite besedilo in v meniju izberite AI8 view.');
     const title = visibleText(document.querySelector('h1'));
-    const selectors = ['[data-testid="ground-summary"]', '[data-testid="article-summary"]', '#ground-summary', '[data-ground-summary]'];
-    let text = selectors.map(s => visibleText(document.querySelector(s))).find(Boolean);
-    if (!text) {
-      // Conservative fallback: visible introduction before the publisher coverage list.
-      const main = document.querySelector('main') || document.body;
-      text = visibleText(main);
-      const start = title ? text.indexOf(title) : -1;
-      if (start < 0) throw Error('Povzetka ni mogoče zanesljivo prebrati. Označite želeno besedilo in uporabite meni AI8 view.');
-      text = text.slice(start + title.length).trim();
-      const boundary = /(?:\n|^)(?:\d+\s+Articles|Read Full Article|Coverage Details|Total News Sources|Bias Distribution)(?:\n|$)/i.exec(text);
-      if (!boundary) throw Error('Povzetka ni mogoče zanesljivo ločiti od virov. Označite ga in uporabite meni AI8 view.');
-      text = text.slice(0, boundary.index).trim();
-    }
+    // Public Ground article markup: a header bullet list with a nearby Ground AI
+    // attribution. Publisher cards repeat #article-summary and are never input.
+    const summaries = [...document.querySelectorAll('main article ul.list-disc')].map(list => {
+      if (list.closest('#article-summary') || !visibleText(list)) return null;
+      let header = list.parentElement;
+      while (header && header.tagName !== 'ARTICLE' && header.style?.gridArea !== 'header') header = header.parentElement;
+      if (!header || header.style?.gridArea !== 'header') return null;
+      const textBlock = list.parentElement;
+      const summaryBlock = textBlock?.parentElement;
+      if (!summaryBlock || ![...summaryBlock.children].some(sibling =>
+        sibling !== textBlock && /\bInsights by Ground AI\b/.test(visibleText(sibling)))) return null;
+      const items = [...list.children];
+      if (!items.length || items.some(item => item.tagName !== 'LI')) return null;
+      const bullets = items.map(visibleText).filter(Boolean);
+      return bullets.length ? bullets.join('\n') : null;
+    }).filter(Boolean);
+    if (summaries.length !== 1) throw Error('Povzetka ni mogoče zanesljivo prepoznati. Označite želeno besedilo in uporabite meni AI8 view.');
+    const text = summaries[0];
     if (text.length < 40) throw Error('Povzetek je prekratek. Označite želeno besedilo in uporabite meni AI8 view.');
     return C.normalizeArticle({url: location.href, title: C.truncateText(title || document.title, 500), text: C.truncateText(text), inputKind: 'ground-summary', capturedAt: new Date().toISOString()});
   }

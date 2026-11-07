@@ -217,3 +217,108 @@ test('Ground landing injection mounts article button after SPA navigation', () =
   location.href = 'https://ground.news/article/another-story'; mutation(); assert.equal(buttons[0].hidden, false);
   assert.equal(f.runtimeMessages.filter(m => m.type === 'analyze').length, 0);
 });
+
+// Minimal structural DOM fixture matching the public Ground article header, with
+// invented text. No live article content, browser profile or model calls needed.
+class GroundNode extends Node {
+  constructor(tag, attributes = {}, text = '') {
+    super(tag); this.attributes = attributes; this._text = text; this.parentElement = null;
+    this.style = {gridArea: /grid-area\s*:\s*([^;]+)/.exec(attributes.style || '')?.[1]?.trim()};
+    this.display = 'block'; this.visibility = 'visible';
+  }
+  append(...children) { for (const child of children) child.parentElement = this; super.append(...children); }
+  closest(selector) {
+    let node = this;
+    while (node) {
+      if (selector === '#article-summary' && node.attributes.id === 'article-summary') return node;
+      if (selector !== '#article-summary' && (node.hidden || 'hidden' in node.attributes || node.attributes['aria-hidden'] === 'true' || ['NAV', 'FOOTER', 'SCRIPT', 'STYLE'].includes(node.tagName))) return node;
+      node = node.parentElement;
+    }
+    return null;
+  }
+  getClientRects() {
+    let node = this;
+    while (node) { if (node.display === 'none') return []; node = node.parentElement; }
+    return [{}];
+  }
+  get innerText() { return this.textContent; }
+}
+function groundFixture({style = 'grid-area:header'} = {}) {
+  const document = new Document();
+  const main = new GroundNode('main'); const story = new GroundNode('article');
+  const header = new GroundNode('div', {style}); const title = new GroundNode('h1', {}, 'A small public example');
+  main.append(story); story.append(header); header.append(title); document.body.append(main);
+  const nodes = () => { const found = []; const walk = n => { found.push(n); n.children.forEach(walk); }; walk(main); return found; };
+  document.querySelector = selector => { assert.equal(selector, 'h1'); return title; };
+  document.querySelectorAll = selector => {
+    assert.equal(selector, 'main article ul.list-disc');
+    return nodes().filter(n => n.tagName === 'UL' && (n.attributes.class || '').split(/\s+/).includes('list-disc'));
+  };
+  function summary({parent = header, attributed = true, text = ['A local library opened a reading room this week.', 'The report leaves its long term funding unclear.'], hidden = false} = {}) {
+    const block = new GroundNode('div'); const textBlock = new GroundNode('div');
+    const list = new GroundNode('ul', {class: 'list-outside list-disc'}); list.hidden = hidden;
+    for (const bullet of text) list.append(new GroundNode('li', {}, bullet));
+    const attribution = new GroundNode('div', {}, attributed ? 'Insights by Ground AI' : 'Other page information');
+    textBlock.append(list); block.append(textBlock, attribution); parent.append(block);
+    return {block, textBlock, list, attribution};
+  }
+  const f = chromeFixture();
+  const ctx = context({document, window: {postMessage() { throw Error('Ground must not receive private result broadcasts'); }}, location: new URL('https://ground.news/article/a-small-example'), chrome: f.chrome,
+    getComputedStyle: node => ({display: node.display || 'block', visibility: node.visibility || 'visible'}), MutationObserver: class {observe() {}}});
+  function click() {
+    for (const name of ['core.js', 'view.js', 'content.js']) vm.runInContext(source(name), ctx);
+    f.chrome.runtime.onMessage.emit({channel: 'ai8-news', type: 'native', payload: {type: 'ready', installed: true, nativeHostAvailable: true}}, {id: extensionId});
+    document.created.find(n => n.tagName === 'BUTTON' && n.textContent === 'AI8 view').fire('click', {isTrusted: true});
+    return f.runtimeMessages.filter(m => m.type === 'analyze');
+  }
+  return {document, main, story, header, title, summary, click};
+}
+test('real Ground header structure captures only attributed direct summary bullets', () => {
+  for (const style of ['grid-area:header', 'grid-area: header;']) {
+    const f = groundFixture({style}); const s = f.summary();
+    const linked = new GroundNode('a', {}, ' More context.'); s.list.children[0].append(linked);
+    f.header.append(new GroundNode('div', {}, 'Bias Comparison · 21 Articles · Read Full Article'));
+    // Actual publisher cards repeat this ID. Even a matching list inside the
+    // header must never become the selected summary.
+    for (let i = 0; i < 2; i++) { const card = new GroundNode('div', {id: 'article-summary'}); f.header.append(card); f.summary({parent: card}); }
+    const outside = new GroundNode('section'); f.story.append(outside); f.summary({parent: outside});
+    const calls = f.click(); assert.equal(calls.length, 1);
+    assert.equal(calls[0].article.text, 'A local library opened a reading room this week. More context.\nThe report leaves its long term funding unclear.');
+    assert.equal(calls[0].article.inputKind, 'ground-summary');
+    assert.equal(calls[0].article.title, 'A small public example');
+  }
+});
+test('ambiguous Ground summaries fail closed and offer explicit selection', () => {
+  const f = groundFixture(); f.summary(); f.summary();
+  assert.equal(f.click().length, 0);
+  assert.ok(f.document.created.some(n => /Označite želeno besedilo/.test(n.textContent)));
+});
+test('Ground capture rejects missing, hidden or unrelated Ground AI attribution', () => {
+  for (const mode of ['missing', 'hidden', 'css-hidden', 'unrelated']) {
+    const f = groundFixture(); const s = f.summary({attributed: mode !== 'missing' && mode !== 'unrelated'});
+    if (mode === 'hidden') s.attribution.hidden = true;
+    if (mode === 'css-hidden') s.attribution.visibility = 'hidden';
+    if (mode === 'unrelated') f.header.append(new GroundNode('div', {}, 'Insights by Ground AI'));
+    assert.equal(f.click().length, 0, mode);
+  }
+});
+test('hidden Ground summary variants are excluded from unique candidate count', () => {
+  const f = groundFixture(); const good = f.summary(); f.summary({hidden: true});
+  const cssHidden = f.summary(); cssHidden.block.display = 'none';
+  assert.equal(f.click()[0].article.text, good.list.children.map(n => n.textContent).join('\n'));
+});
+test('unrecognized Ground pages never fall back to whole-page metadata', () => {
+  const f = groundFixture();
+  f.main.append(new GroundNode('div', {'data-testid': 'ground-summary'}, 'A plausible but unrecognized page summary which is not trusted.'));
+  f.main.append(new GroundNode('div', {}, 'A small public example\nEntire page metadata and unrelated text.\n21 Articles\nRead Full Article'));
+  assert.equal(f.click().length, 0);
+  assert.ok(f.document.created.some(n => /Označite želeno besedilo/.test(n.textContent)));
+});
+test('Ground summaries require direct LI children and enough actual text', () => {
+  for (const mode of ['wrapper', 'short', 'empty-rendered']) {
+    const f = groundFixture(); const s = f.summary({text: mode === 'short' ? ['Too short.'] : undefined});
+    if (mode === 'wrapper') s.list.append(new GroundNode('div', {}, 'Unexpected wrapper text'));
+    if (mode === 'empty-rendered') Object.defineProperty(s.list, 'innerText', {value: ''});
+    assert.equal(f.click().length, 0, mode);
+  }
+});
