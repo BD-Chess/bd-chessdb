@@ -10,9 +10,9 @@
   let selectedDate=todayISO(),year=Number(selectedDate.slice(0,4)),month=Number(selectedDate.slice(5,7))-1;
   let manageLinks=false,editingLink=null,pendingImport=null,restoring=true,storageIssue=null,lastRevision=null,protectedStorage=false;
   let favoriteUrls=null,openGroups={ai:false,research:false,development:false,daily:false,travel:false,lab:false},planBeforeSearch=null;
-  // R6 (BD, 2026-11-07): from 1600px "Vreme & promet" moves under "Moje povezave", and it and the calendar open.
+  // R6 (BD, 2026-11-07): from 1600px "Vreme & promet" moves under "Moje povezave"; it, the calendar and (R8) "Prostor za misel" open.
   // wideOwn keeps the visitor's own open state of both panels while the wide layout opens them; persist() stores that, never the forced state.
-  const wideLayout=typeof matchMedia==='function'?matchMedia('(min-width:1600px)'):null,widePanels=['bs-agenda-panel','bs-weather-panel'],wideToggles=new Set(),weatherHome=document.createComment('bs-weather-home');let wideOwn=null,remoteApply=false;
+  const wideLayout=typeof matchMedia==='function'?matchMedia('(min-width:1600px)'):null,widePanels=['bs-agenda-panel','bs-weather-panel','bs-note-panel'],wideToggles=new Set(),weatherHome=document.createComment('bs-weather-home');let wideOwn=null,remoteApply=false;
   function setWidePanel(id,open){const panel=$('#'+id);if(panel.open!==open){wideToggles.add(id);panel.open=open;}}
   function applyWide(){if(!wideLayout)return;const weather=$('#bs-weather-panel'),linksPanel=$('#bs-links-panel');if(!weatherHome.parentNode)weather.before(weatherHome);
     if(wideLayout.matches){if(weather.previousElementSibling!==linksPanel)linksPanel.after(weather);if(!wideOwn){wideToggles.clear();wideOwn={};widePanels.forEach(function(id){wideOwn[id]=$('#'+id).open;setWidePanel(id,true);});}}
