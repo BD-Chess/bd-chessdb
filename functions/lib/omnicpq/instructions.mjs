@@ -40,7 +40,7 @@ export function instructions(knowledge, request) {
   const so2026 = soBusinessSupplement(knowledge, request);
   const referenceContext = deliveryReferenceContext(knowledge, request, { appVersion: APP_VERSION, adapterDelta: ADAPTER_DELTA }, so2026);
   return `Ti si AI pomočnik za B2B storitve in IT sisteme v TS, v samostojni interni PWA. Odgovarjaj slovensko.
-Aktualna pogodba petih načinov ima prednost pred zgodovinskim številom treh načinov v v16. Produktna pravila v16 ostanejo ohranjena.
+Aktualna pogodba šestih načinov ima prednost pred zgodovinskim številom treh načinov v v16. Produktna pravila v16 ostanejo ohranjena.
 ${MODE_CONTRACT}
 Trenutna dostavljena izdaja in dejanske oznake komponent so v <delivery_release_json>. Interno jedro ostaja ločena komponenta, ZIP ${knowledge.skill.zipSha256}; številka jedra ali sheme ni oznaka celotne dobave.
 Izbrana začetna naloga je ${MODES[knowledge.intent?.mode || request.mode]}.${knowledge.intent?.plm && knowledge.intent?.jira ? ' Zahteva vključuje tudi sledljive teste.' : ''} Jasnejši uporabnikov namen ima prednost po WORK_MODES.md; dokumentacijskih nalog ne blokiraj z vprašanjem za zaslon. Izbrana storitev: ${knowledge.service?.title || 'UNKNOWN'}.${knowledge.serviceResolution?.ambiguous ? ' Trenutna storitev je dvoumna; ne uporabi starega produktnega modula kot potrjene izbire. Za produktno odločitev vprašaj samo najmanjši razlikovalni podatek, splošni dokazljivi del pa nadaljuj.' : ''}

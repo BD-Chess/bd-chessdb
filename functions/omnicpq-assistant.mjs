@@ -9,6 +9,7 @@ import { validateBrowser, starterMetadata, allowedStarter } from './lib/omnicpq/
 import {normalizeMode,normalizeWorkspace,CONTEXT_FIELDS} from '../public/OmniCPQ/work-modes.mjs';
 import {MODEL_PROFILES as profiles,DEFAULT_PROFILE,modelProfile} from '../public/OmniCPQ/model-profiles.mjs';
 import {makeDemoHandler} from './lib/omnicpq/demo-assistant.mjs';
+import {makeLearningHandler,learningRoute,learningPayloadFactory} from './lib/omnicpq/ai-learning.mjs';
 
 const env = key => globalThis.Netlify?.env?.get(key) ?? process.env[key];
 const headers = { 'Cache-Control': 'no-store, private', 'X-Content-Type-Options': 'nosniff', 'Vary': 'Cookie, Origin' };
@@ -31,6 +32,7 @@ export function validateBody(body) {
   if (!body || typeof body.message !== 'string' || !body.message.trim() || body.message.length > 16000) throw error('INVALID_MESSAGE', 400);
   if (['model', 'provider', 'reasoning', 'role', 'apiKey', 'knowledgeUrl', 'knowledgePath'].some(k => k in body)) throw error('SERVER_CONFIGURATION_ONLY', 400);
   const mode = normalizeMode(body.mode || 'work',null), profile = body.profile === undefined ? DEFAULT_PROFILE : body.profile;
+  if(mode==='learning')throw error('LEARNING_CONTROL_REQUIRED',400);
   if (!mode || typeof profile !== 'string' || !Object.hasOwn(profiles, profile)) throw error('INVALID_MODE', 400);
   if (!/^[a-f0-9-]{36}$/i.test(body.clientRequestId || '')) throw error('INVALID_REQUEST_ID', 400);
   const history = (Array.isArray(body.history) ? body.history : []).slice(-16).map(m => {
@@ -185,8 +187,8 @@ export function assistantRoute(url){
   } catch { return 'INVALID_DEMO'; }
 }
 const requestGate={seen:new Map(),active:new Set()};
-const personalHandler=makeHandler({requestGate}),demoHandler=makeDemoHandler({requestGate});
-export default function dispatch(req,context){const route=assistantRoute(req.url);return route==='DEMO'?demoHandler(req,context):route==='PERSONAL'?personalHandler(req,context):failure('DEMO_ROUTE_INVALID',400);}
+const personalHandler=makeHandler({requestGate}),demoHandler=makeDemoHandler({requestGate}),learningHandler=makeLearningHandler({payloadFactory:learningPayloadFactory(buildPayload)});
+export default function dispatch(req,context){const learning=learningRoute(req.url);if(learning)return learning==='LEARNING'?learningHandler(req,context):failure('LEARNING_ROUTE_INVALID',400);const route=assistantRoute(req.url);return route==='DEMO'?demoHandler(req,context):route==='PERSONAL'?personalHandler(req,context):failure('DEMO_ROUTE_INVALID',400);}
 export const config = { rateLimit: { windowLimit: 12, windowSize: 60, aggregateBy: ['ip', 'domain'] } };
 
 

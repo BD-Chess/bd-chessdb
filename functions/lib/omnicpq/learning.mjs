@@ -33,8 +33,8 @@ function recordHTML(record){
 export function enrichGuide(item,learning=null){
   let html=item.bytes.toString('utf8');
   html=html.replace(/<title>[\s\S]*?<\/title>/,'<title>Vodič za B2B storitve v TS · v18</title>')
-    .replace('<strong>3</strong><span>načini uporabe pomočnika','<strong>5</strong><span>načini uporabe pomočnika');
-  const modes='<section id="pet-nacinov"><h2>Pet načinov · en pomočnik</h2><p>Vodič → Zahteve → Modeliranje → OmniCPQ → Testiranje E2E. PLM testi so sestavni del Testiranja. Storitev, zahteva, model, dokument/postavka in razrešene odločitve ostanejo v istem pogovoru. Stari trije vsebinski pozivi so ohranjeni z združljivo preslikavo.</p></section>';
+    .replace('<strong>3</strong><span>načini uporabe pomočnika','<strong>6</strong><span>načini uporabe pomočnika');
+  const modes='<section id="pet-nacinov"><h2>Šest načinov · en pomočnik</h2><p>Vodič → Zahteve → Modeliranje → OmniCPQ → Testiranje E2E → AI učenje. AI učenje je lastniški tester pomočnika; prva izdaja uporablja izmišljene primere, ne živega CPQ. PLM testi so sestavni del Testiranja. Storitev, zahteva, model, dokument/postavka in razrešene odločitve ostanejo v istem pogovoru. Stari trije vsebinski pozivi so ohranjeni z združljivo preslikavo.</p></section>';
   html=html.replace('</main>',modes+'</main>');
   if(learning)for(const record of learning.records){
     const start=html.indexOf(`id="${record.id}"`);if(start<0)throw Error('LEARNING_CARD_MISSING');
