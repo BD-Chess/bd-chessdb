@@ -1,0 +1,111 @@
+name: 8zSudoku iOS cloud build
+
+# Push supports this draft PR without putting a dispatcher on main.
+# TestFlight is ONLY a deliberate tag + protected environment + exact-SHA approval.
+on:
+  push:
+    branches: [feat/8zsudoku-mobile]
+    tags: ['8zsudoku-testflight-*']
+    paths:
+      - 'apps/sudoku-mobile/**'
+      - '.github/workflows/8zsudoku-ios.yml'
+      - '!apps/sudoku-mobile/docs/**'
+      - '!apps/sudoku-mobile/README.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 8zsudoku-ios-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+    working-directory: apps/sudoku-mobile
+
+jobs:
+  verify:
+    if: github.repository == 'BD-Chess/bd-chessdb'
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Signing-helper regression tests (synthetic, no Apple credentials)
+        run: |
+          python3 -m venv "$RUNNER_TEMP/8zsudoku-test-venv"
+          source "$RUNNER_TEMP/8zsudoku-test-venv/bin/activate"
+          python -m pip install --disable-pip-version-check cryptography==46.0.4
+          python -m unittest discover -s test -p 'test_ios_ci.py' -v
+      - name: Locked dependencies and verified offline game
+        run: |
+          node --version
+          npm ci
+          npm run verify:donor
+          npm run build
+          npx --no-install cap sync ios
+          npm test
+      - name: Xcode compile and simulator install / launch / relaunch
+        run: bash scripts/ios_cloud.sh verify
+      - name: Small simulator screenshot only (no IPA, profiles, or keys)
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: 8zsudoku-simulator-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/8zsudoku-evidence/simulator.png
+          if-no-files-found: error
+          retention-days: 3
+      - name: Verification boundary
+        if: always()
+        run: |
+          echo '## 8zSudoku iOS verification' >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Consult individual step results. Simulator launch is not physical-iPhone gameplay acceptance.' >> "$GITHUB_STEP_SUMMARY"
+
+  testflight:
+    needs: verify
+    if: github.repository == 'BD-Chess/bd-chessdb' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/8zsudoku-testflight-')
+    runs-on: macos-26
+    timeout-minutes: 30
+    environment:
+      name: 8zsudoku-testflight
+    env:
+      IOS_TEAM_ID: ${{ vars.IOS_TEAM_ID }}
+      IOS_APPROVED_SHA: ${{ vars.IOS_APPROVED_SHA }}
+      IOS_UPLOAD_ENABLED: ${{ vars.IOS_UPLOAD_ENABLED }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Exact approved commit, tag and opt-in gate (no signing secrets)
+        run: python3 scripts/ios_ci.py guard
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Rebuild from the same locked source before exposing credentials
+        run: |
+          npm ci
+          npm run verify:donor
+          npm run build
+          npx --no-install cap sync ios
+          npm test
+      - name: Sign, validate and upload exactly once to App Store Connect
+        env:
+          IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+          IOS_DISTRIBUTION_P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}
+          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: bash scripts/ios_cloud.sh testflight
+      - name: Remove temporary signing files even after cancellation
+        if: always()
+        run: |
+          # EXIT trap restores the keychain search list and removes imported profiles.
+          # GitHub-hosted runner is disposable; no secret-bearing artifacts are uploaded.
+          find "$RUNNER_TEMP" -maxdepth 1 -type d -name '8zsudoku-ios.*' -exec rm -rf {} +
