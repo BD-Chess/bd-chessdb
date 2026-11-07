@@ -238,7 +238,7 @@ test('AI_LEARNING prior dispatch commit is reported as possibly in flight after 
  const remote=makeLearningHandler({...f.deps,controllers:new Map()});
  const stopped=await (await remote(f.request({action:'stop',runId:s.runId}),context)).json();assert.equal(f.calls.length,0);
  assert.equal(stopped.state.status,'STOPPED');assert.equal(stopped.state.stopBarrierClosed,true);assert.equal(stopped.state.stopCommittedCalls,1);
- release();const result=await pending;assert.equal(f.calls.length,1);assert.equal(result.data.state.status,'STOPPED');assert.equal(f.map.size>0,true);
+ release();const result=await pending;assert(f.calls.length<=1,'Earlier commit remains a conservative 0..1 possible call, never replayed');assert.equal(result.data.state.status,'STOPPED');assert.equal(f.map.size>0,true);
 });
 test('AI_LEARNING failed STOP barrier never acknowledges STOPPED and blocks another step',async()=>{
  const f=fixture(),s=await f.begin('api',{maxTests:1}),put=f.store.put;
@@ -246,4 +246,27 @@ test('AI_LEARNING failed STOP barrier never acknowledges STOPPED and blocks anot
  const stopped=await f.send({action:'stop',runId:s.runId});assert.equal(stopped.data.ok,false);assert.equal(stopped.data.state,undefined);
  const status=await f.send({action:'status',runId:s.runId});assert.equal(status.data.state.status,'STOPPING');assert.equal(status.data.state.stopBarrierClosed,false);
  assert.equal((await f.send({action:'step',runId:s.runId,revision:0})).data.error.code,'LEARNING_STOPPED');assert.equal(f.calls.length,0);
+});
+
+test('AI_LEARNING STOPPING with failed barrier and overlapping old request read prevents new call',async()=>{
+ const f=fixture();let entered,release,armed=false,n=0;const gate=new Promise(r=>entered=r),get=f.store.get,put=f.store.put;
+ f.store.get=async k=>{const observed=await get(k);if(armed&&k.endsWith('/stop-request')&&++n===2){entered();await new Promise(r=>release=r);}return observed;};
+ f.store.put=async(k,v)=>{if(k.endsWith('/dispatch/0/assistant')&&v.state==='STOP_BARRIER')throw Object.assign(Error(),{code:'STORAGE_UNAVAILABLE',status:503});const ok=await put(k,v);if(ok&&k.includes('/event/')&&v.action==='step')armed=true;return ok;};
+ const s=await f.begin('api',{maxTests:1}),pending=f.send({action:'step',runId:s.runId,revision:0});await gate;
+ const remote=makeLearningHandler({...f.deps,controllers:new Map()});
+ const stopResponse=await remote(f.request({action:'stop',runId:s.runId}),context),stop=await stopResponse.json();
+ const status=await (await remote(f.request({action:'status',runId:s.runId}),context)).json();const before=f.calls.length;
+ release();const result=await pending;
+ assert.equal(stopResponse.status,503);assert.equal(stop.state,undefined);assert.equal(status.state.status,'STOPPING');assert.equal(before,0);assert.equal(f.calls.length,0,'No new call when STOP request predates dispatch commit, even if barrier persistence failed');assert.equal(result.data.state.status,'STOPPING');
+});
+
+test('AI_LEARNING prior commit before final overlapping check can remain possibly dispatched after STOP',async()=>{
+ const f=fixture();let entered,release,held=false,committed=false;const gate=new Promise(r=>entered=r),get=f.store.get,put=f.store.put;
+ f.store.put=async(k,v)=>{const ok=await put(k,v);if(ok&&k.endsWith('/dispatch/0/assistant')&&v.state==='COMMITTED')committed=true;return ok;};
+ f.store.get=async k=>{const snap=await get(k);if(committed&&!held&&k.endsWith('/stop')){held=true;entered();await new Promise(r=>release=r);}return snap;};
+ const s=await f.begin('api',{maxTests:1}),pending=f.send({action:'step',runId:s.runId,revision:0});await gate;
+ const remote=makeLearningHandler({...f.deps,controllers:new Map()});
+ const stopped=await (await remote(f.request({action:'stop',runId:s.runId}),context)).json();
+ assert.equal(stopped.state.stopCommittedCalls,1);assert.equal(f.calls.length,0);
+ release();const result=await pending;assert.equal(f.calls.length,1);assert.equal(result.data.state.status,'STOPPED');assert(result.data.state.reservedNanoUSD>0);
 });

@@ -180,6 +180,8 @@ export function makeLearningHandler({auth=authenticateOmni,storeFactory=learning
        if(!await store.put(dispatchKey,{schema:LEARNING_PROTOCOL,runId:b.runId,index:event.index,role:label,state:'COMMITTED',intentHash:hash(event),at:now()})){
         const existing=await store.get(dispatchKey);throw issue(existing?.state==='STOP_BARRIER'?'LEARNING_STOPPED':'LEARNING_UNCERTAIN',409);
        }
+       // This read begins after the committed slot: a prior STOP request must be visible even if a barrier write failed.
+       await guard();
        let text='',identity=null;const reserved=maximumCharge(p);
        const audit={role:label,requestedModel:p.model,requestedReasoning:p.reasoning.effort,observedModel:'UNKNOWN',observedReasoning:'UNKNOWN',dispatch:'COMMITTED_NOT_PROVIDER_ACK',usage:{status:'UNKNOWN_RESERVED',upperNanoUSD:reserved}};calls.push(audit);
        if(abort.signal.aborted)throw issue(timedOut?'TIMEOUT':'CANCELLED',499);

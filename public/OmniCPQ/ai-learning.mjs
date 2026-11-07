@@ -7,7 +7,7 @@ const ERRORS={AUTH_REQUIRED:'Prijava je potekla. Najprej ponovno potrdi dostop.'
 const money=n=>'$'+(Number.isSafeInteger(n)?n/1e9:0).toFixed(4);
 export function reportMarkdown(s,sha=''){
  return '# AI učenje — poročilo\n\n'+
-  ['Cikel: '+s.runId,'Različica pomočnika: '+s.appVersion,'Katalog: '+s.catalogVersion,'Način: '+(s.kind==='api'?'AI tester nad izmišljenimi primeri':'Vgrajeni preizkusi kode'),'Stanje: '+s.status,'Rezervirana zgornja poraba: '+money(s.reservedNanoUSD)+' / '+money(s.budgetNanoUSD),'Dejanski CPQ: NOT_RUN','Prevzem znanja: PROPOSED_ONLY; nič ni samodejno nameščeno.',sha?'SHA-256 JSON poročila: '+sha:''].filter(Boolean).join('\n\n')+
+  ['Cikel: '+s.runId,'Različica pomočnika: '+s.appVersion,'Katalog: '+s.catalogVersion,'Način: '+(s.kind==='api'?'AI tester nad izmišljenimi primeri':'Vgrajeni preizkusi kode'),'Stanje: '+s.status,'Rezervirana zgornja poraba: '+money(s.reservedNanoUSD)+' / '+money(s.budgetNanoUSD),'Zaprtje prihodnjih klicev ob ustavitvi: '+(s.stopBarrierClosed?'POTRJENO':'NI_POTRJENO_ALI_NI_ZAHTEVANO'),'Predhodno zavezani klici ob ustavitvi: '+(s.stopCommittedCalls??0)+' (ni dokaz odpošiljanja ali računa)','Dejanski CPQ: NOT_RUN','Prevzem znanja: PROPOSED_ONLY; nič ni samodejno nameščeno.',sha?'SHA-256 JSON poročila: '+sha:''].filter(Boolean).join('\n\n')+
   '\n\n| Preizkus | Rezultat | Razlog |\n|---|---|---|\n'+s.results.map(r=>'| '+r.title+' | '+r.status+' | '+r.reason+' |').join('\n')+
   '\n\nPASS tukaj velja samo za navedeni sintetični preizkus. Ni dokaz poslovnega učinka, shranitve ali ponovnega odprtja v CPQ. Predlogi so za pregled graditelja in ločen sprejem v HTML ter Copilot.\n';
 }
