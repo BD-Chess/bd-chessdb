@@ -5,6 +5,8 @@ export const DNA_TOP_PAGES = Object.freeze([
   {url: '/crp/AC-WFP.html', label: 'AC-WFP'},
   {url: '/BD/BD_CCH_Consciousness_Field.html', label: 'CFH'},
   {url: '/crp/DGTE.html', label: 'DGTE'},
+  {url: '/crp/HTH.html', label: 'HTH'},
+  {url: '/BD/BD_8ZRP.html', label: '8Z-RP / TSP'},
   {url: '/crp/SORA.html', label: 'SORA'},
   {url: '/AI8/live/', label: 'AI8 Live'}
 ]);
