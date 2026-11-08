@@ -59,10 +59,10 @@ function validateTranslation(t,record,date,instance){
   return t;
 }
 
-function validateInstanceRecord(r,date,instance){
+export function validateInstanceRecord(r,date,instance){
   assert(r&&r.schema==='nara.daily.instance_record.v1','instance record schema');
   assert(r.id===instanceId(date,instance)&&r.day_id===`NARA-D-${date}`&&r.date===date&&r.instance===instance,'instance record identity');
-  const allowed=['schema','id','day_id','date','instance','published_at','closed_at','title','deck','shape','scenes','critic_line','content_sha256','literary_score','translation_sl'];
+  const allowed=['schema','id','day_id','date','instance','published_at','closed_at','title','deck','shape','scenes','critic_line','content_sha256','literary_score','translation_sl','late_publication'];
   assert(Object.keys(r).every(k=>allowed.includes(k)),'unexpected instance field');
   assert(text(r.closed_at,40)&&Number.isFinite(Date.parse(r.closed_at)),'closed_at');
   const legacy={...r,schema:'nara.daily.record.v1',id:`NARA-D-${date}`};

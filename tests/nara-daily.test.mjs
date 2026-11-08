@@ -278,3 +278,47 @@ test('Daily calendar after the cards: weekday grid, story counts and every story
  for(const s of ['>3 stories<','>3 zgodbe<','>1 story<','>1 zgodba<','>4 stories<','>4 zgodbe<','>2 days<','>2 dneva<'])assert.ok(cal.includes(s),s);
  assert.ok(!cal.includes(source.scenes[0].paragraphs[0]),'no story prose in the calendar');
 });
+
+test('late publication: only a BD decision allows a later publication date; a same-model close must be a recorded stand-in',()=>{
+  const late={decided_by:'BD',decided_on:'2026-10-08',reason:'Published later by BD decision.',reason_sl:'Objavljeno naknadno po odločitvi BD.'};
+  const r=record('2026-10-06','2026-10-08T10:00:00Z');
+  assert.throws(()=>validateRecord(r),/wrong local date/);
+  assert.equal(validateRecord({...r,late_publication:late}).date,'2026-10-06');
+  assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_by:'GPT'}}),/BD decision/);
+  assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_on:'2026-10-07'}}),/wrong local date/);
+  assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_on:'2026-10-06'}}),/decision date/);
+  const l=logRecord('2026-10-06');
+  assert.throws(()=>validateLog({...l,critic:'GPT'}),/independent/);
+  assert.equal(validateLog({...l,critic:'GPT',stand_in_for:'CLAUDE'}).stand_in_for,'CLAUDE');
+  assert.throws(()=>validateLog({...l,stand_in_for:'CLAUDE'}),/stand-in/);
+  assert.ok(logPage([{...l,critic:'GPT',stand_in_for:'CLAUDE'}]).includes('selected and edited, standing in for Claude'));
+  assert.ok(!logPage([l]).includes('standing in'));
+});
+
+test('late publication publishes a held day once, on the decision date, with its note and without a reader score',async t=>{
+  const {publishLate}=await import('../scripts/nara-daily-late.mjs');
+  const root=temp(t);
+  for(const date of ['2026-10-20','2026-10-22']){const r=record(date,date+'T20:00:00Z');publish(root,r,logRecord(date),new Date(r.published_at))}
+  const date='2026-10-21',id='NARA-D-2026-10-21:S1',at='2026-10-23T09:00:00Z',base=record(date,at),tr=translationSl(base);
+  const late={decided_by:'BD',decided_on:'2026-10-23',reason:'Published later by BD decision; no reader score yet.',reason_sl:'Objavljeno naknadno po odločitvi BD; bralske ocene še ni.'};
+  const translation={schema:'nara.daily.translation.v1',story_id:id,date,language:'sl',translated_by:'GPT',source_content_sha256:base.content_sha256,title:tr.title,deck:tr.deck,shape:tr.shape,scenes:tr.scenes,critic_line:tr.critic_line,content_sha256:tr.content_sha256};
+  const rec={schema:'nara.daily.instance_record.v1',id,day_id:'NARA-D-'+date,date,instance:'S1',published_at:at,closed_at:date+'T06:00:00Z',title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes,critic_line:base.critic_line,content_sha256:base.content_sha256,translation_sl:translation,late_publication:late};
+  const log={schema:'nara.daily.instance_log.v1',id:id+'-LOG',story_id:id,day_id:'NARA-D-'+date,date,instance:'S1',title:base.title,proposer:'GPT',selector:'GPT',author:'GPT',critic:'GPT',stand_in_for:'CLAUDE',
+    rounds:[{actor:'GPT',stage:'STORY_SELECTION',summary:'Selected.'},{actor:'GPT',stage:'AUTHOR_FINAL',summary:'Final.'},{actor:'GPT',stage:'CRITIC_CLOSE',summary:'Closed.'}],final_critic_line:base.critic_line};
+  const candidates=logRecord(date).candidates.map((c,i)=>i===2?{...c,title:base.title}:c);
+  const batch={schema:'nara.daily.late_publish.v1',date,published_at:at,late_publication:late,featured_instance:'S1',candidates,selection:{title:base.title,reason:'Clear conflict.',risk:'Easy ending.'},instances:[{instance:'S1',record:rec,log}]};
+  assert.throws(()=>publishLate(root,batch,new Date('2026-10-24T09:00:00Z')),/decision date/);
+  assert.throws(()=>publishLate(root,{...batch,instances:[{instance:'S1',record:rec,log:{...log,evaluation:{}}}]},new Date('2026-10-23T10:00:00Z')),/no reader evaluation/);
+  assert.equal(publishLate(root,batch,new Date('2026-10-23T10:00:00Z')).status,'LOCAL_LATE_PUBLICATION_READY');
+  const {n,records}=loadRecords(root);
+  assert.deepEqual(records.map(r=>r.date),['2026-10-22','2026-10-21','2026-10-20']);
+  const day=JSON.parse(fs.readFileSync(path.join(n,'daily/days/2026-10-21.json'),'utf8'));
+  assert.equal(day.instances[0].combined,null);assert.equal(day.late_publication.decided_by,'BD');
+  const daily=fs.readFileSync(path.join(n,'Nara-AI-daily.html'),'utf8');
+  assert.ok(daily.includes('href="Nara-AI-2026-10-21-S1-story.html"'),'card links the story page');
+  const month=fs.readFileSync(path.join(n,'Nara-AI-2026-10.html'),'utf8'),at22=month.indexOf('id="NARA-D-2026-10-22"'),at21=month.indexOf('id="NARA-D-2026-10-21"'),at20=month.indexOf('id="NARA-D-2026-10-20"');
+  assert.ok(at22<at21&&at21<at20,'monthly order');assert.ok(month.includes('late-publication-note'));
+  assert.ok(fs.readFileSync(path.join(n,'Nara-AI-2026-10-21-S1-story.html'),'utf8').includes('Objavljeno naknadno'));
+  assert.ok(fs.readFileSync(path.join(n,'Nara-AI-log.html'),'utf8').includes('standing in for Claude'));
+  assert.throws(()=>publishLate(root,batch,new Date('2026-10-23T11:00:00Z')),/already published/);
+});
