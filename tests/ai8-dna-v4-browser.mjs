@@ -20,6 +20,21 @@ const errors=report.errors;
 async function context(options){const c=await browser.newContext({...options,serviceWorkers:'block'});await c.route('**/*',r=>{if(new URL(r.request().url()).origin!==base){report.externalRequests.push(r.request().url());return r.abort();}return r.continue();});c.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));return c;}
 async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length>480);}
 async function guide(p){await p.keyboard.press('Control+k');await p.locator('#dna-search').waitFor({state:'visible'});}
+async function categoryLayout(page,width){
+ const state=await page.evaluate(()=>{
+  const points=[...document.querySelectorAll('.dna-node .nucleus')].map(e=>e.getBoundingClientRect());
+  const labels=[...document.querySelectorAll('.section-label')];
+  const collisions=labels.filter(e=>{const r=e.getBoundingClientRect();return points.some(p=>r.right>p.left&&r.left<p.right&&r.bottom>p.top&&r.top<p.bottom);}).length;
+  const note=document.querySelector('.section-note:not([hidden])'),r=note.getBoundingClientRect(),v=visualViewport;
+  return {collisions,noteInside:r.left>=v.offsetLeft&&r.top>=v.offsetTop&&r.right<=v.offsetLeft+v.width&&r.bottom<=v.offsetTop+v.height,
+   title:parseFloat(getComputedStyle(labels[0]).fontSize),count:parseFloat(getComputedStyle(labels[0].querySelector('small')).fontSize),root:parseFloat(getComputedStyle(document.documentElement).fontSize)};
+ });
+ assert.equal(state.collisions,0,width+' compact category labels clear nuclei');
+ assert.equal(state.noteInside,true,width+' explanation remains in the visible viewport');
+ assert.ok(state.title>state.count*1.5,'central title is larger than small details');
+ if(width<=600)assert.ok(Math.abs(state.count-state.root*.5)<.01,'preserve mobile .5rem count size');
+}
+
 try{
  const desktop=await context({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),p=await desktop.newPage();
  await p.goto(base+'/ai8-dna-v4?lang=en');await ready(p);
@@ -55,12 +70,12 @@ try{
   await m.touchscreen.tap(8,8); // outside closes the persistent explanation
   assert.equal(await label.getAttribute('aria-expanded'),'false');await label.tap();
   await m.evaluate(()=>scrollBy(0,20));assert.equal(await label.getAttribute('aria-expanded'),'true','touch highlight persists on scroll');
-  const overlap=await m.evaluate(()=>{const notes=[...document.querySelectorAll('.section-note:not([hidden])')].map(e=>e.getBoundingClientRect());return [...document.querySelectorAll('.dna-node .nucleus')].filter(e=>{const r=e.getBoundingClientRect();return notes.some(n=>r.right>n.left&&r.left<n.right&&r.bottom>n.top&&r.top<n.bottom);}).length;});assert.equal(overlap,0,width+' category explanation clears nuclei');
+  await categoryLayout(m,width);
   await m.screenshot({path:out+'/touch-'+width+'-cfh.png'});await label.tap();assert.equal(await label.getAttribute('aria-expanded'),'false','second tap toggles off');
   await guide(m);await m.locator('[aria-label="English"]').click();assert.equal(await m.locator('html').getAttribute('lang'),'en');await m.locator('[data-dna-text]').uncheck();assert.equal(await m.locator('html').evaluate(e=>e.classList.contains('dna-text-off')),true);await m.locator('[data-dna-text]').check();
   for(let i=0;i<10;i++)await m.locator('[aria-label="Larger text"]').click();
   await m.keyboard.press('Escape');const enlarged=m.locator('.section-label[data-section=cfh]').first();await enlarged.scrollIntoViewIfNeeded();await enlarged.tap();
-  const clear=await m.evaluate(()=>{const n=document.querySelector('.section-note:not([hidden])').getBoundingClientRect();return [...document.querySelectorAll('.dna-node .nucleus')].every(e=>{const r=e.getBoundingClientRect();return r.right<=n.left||r.left>=n.right||r.bottom<=n.top||r.top>=n.bottom;});});assert.equal(clear,true,width+' enlarged explanation clears nuclei');await m.screenshot({path:out+'/touch-'+width+'-large-text.png'});await enlarged.tap();await guide(m);
+  await categoryLayout(m,width);await m.screenshot({path:out+'/touch-'+width+'-large-text.png'});await enlarged.tap();await guide(m);
 
   await m.locator('#dna-search').fill('TripOpti');await m.locator('#dna-results button').first().tap();await m.keyboard.press('Escape');
   const node=m.locator('.dna-node[data-section=apps][data-record=tripopti]');await node.tap();assert.equal(await m.locator('#panel-title').textContent(),'TripOpti');await node.tap();await m.waitForURL(base+'/Trip/');

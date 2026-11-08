@@ -40,18 +40,29 @@ export function classify(entries) {
     return {...item,category,secondaryCategories:subjects.filter(id=>id!==category)};
   });
 }
-export const LOOP_HEIGHT=500, FIRST_Y=144, PER_LOOP=12;
-export function buildStrand(items, height=LOOP_HEIGHT) {
+// Match the archived strand's pitch and opening phase. Its upper partial
+// opening keeps the first three featured anchors at their original heights.
+export const LOOP_HEIGHT=230, FIRST_Y=144, PER_LOOP=8;
+export const FIRST_CROSS=FIRST_Y+(Math.PI/2-.62)*460/(Math.PI*2);
+export function buildStrand(items) {
   const instances=[],loops=[];
+  let cursor=FIRST_CROSS;
   for(const section of SECTIONS){
-    const records=section.id==='top'?FEATURED_IDS.map(id=>items.find(p=>p.id===id)).filter(Boolean):items.filter(p=>p.category===section.id).sort((a,b)=>Number(!!b.dnaTop)-Number(!!a.dnaTop));
+    let records=section.id==='top'?FEATURED_IDS.map(id=>items.find(p=>p.id===id)).filter(Boolean):items.filter(p=>p.category===section.id).sort((a,b)=>Number(!!b.dnaTop)-Number(!!a.dnaTop));
+    const count=records.length;
+    if(section.id==='top'){
+      loops.push({section:'top',start:FIRST_Y-42,end:FIRST_CROSS,centre:0,label:false,count,part:0,total:1});
+      records.slice(0,3).forEach((project,i)=>instances.push({id:`top:${project.id}`,project,section:'top',y:FIRST_Y+i*24,side:i%2}));
+      records=records.slice(3);
+    }
     const total=Math.ceil(records.length/PER_LOOP);
     for(let part=0;part<total;part++){
-      const start=FIRST_Y+loops.length*height;
-      const loop={section:section.id,start,end:start+height,centre:start+height/2,part:part+1,total,count:records.length};loops.push(loop);
+      const start=cursor;
+      loops.push({section:section.id,start,end:start+LOOP_HEIGHT,centre:start+LOOP_HEIGHT/2,label:true,part:part+1,total,count});
       const chunk=records.slice(part*PER_LOOP,(part+1)*PER_LOOP);
-      chunk.forEach((item,i)=>instances.push({id:`${section.id}:${item.id}`,project:item,section:section.id,y:start+56+i*(height-112)/Math.max(1,chunk.length-1),side:i%2}));
+      chunk.forEach((project,i)=>instances.push({id:`${section.id}:${project.id}`,project,section:section.id,y:start+28+i*(LOOP_HEIGHT-56)/Math.max(1,chunk.length-1),side:i%2}));
+      cursor+=LOOP_HEIGHT;
     }
   }
-  return {instances,loops,end:FIRST_Y+loops.length*height};
+  return {instances,loops,end:cursor};
 }
