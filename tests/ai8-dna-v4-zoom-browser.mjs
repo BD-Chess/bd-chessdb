@@ -44,13 +44,13 @@ async function capture(page,model,name){
   const anchors=[...document.querySelectorAll('.dna-node:not(.origin) .nucleus')].map(n=>{const r=n.getBoundingClientRect();return {id:n.parentElement.dataset.project,x:r.x+r.width/2,y:r.y+r.height/2};}).filter(visible).map(p=>({...p,error:Math.min(...lines.map(l=>distance(p,l)))}));
   const labels=[...document.querySelectorAll('.section-label')].map(n=>{const r=n.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};}).filter(visible).map(p=>{const xs=lines.filter(l=>p.y>=Math.min(l.a.y,l.b.y)&&p.y<=Math.max(l.a.y,l.b.y)).map(l=>l.a.x+(l.b.x-l.a.x)*(p.y-l.a.y)/(l.b.y-l.a.y));return {...p,error:xs.length?Math.abs(p.x-(Math.min(...xs)+Math.max(...xs))/2):Infinity};});
   const o=document.querySelector('#dna-origin').getBoundingClientRect(),origin={x:o.x+o.width/2,y:o.y+o.height/2};
-  return {visual:{scale:v.scale,left:v.offsetLeft,top:v.offsetTop,pageLeft:v.pageLeft,pageTop:v.pageTop,width:v.width,height:v.height},canvas:{position:getComputedStyle(c).position,rect:r.toJSON(),width:c.width,height:c.height},anchors,labels,originError:visible(origin)?Math.min(...all.filter(l=>l.cap).map(l=>Math.hypot(origin.x-l.a.x,origin.y-l.a.y))):null,maxError:anchors.length?Math.max(...anchors.map(p=>p.error)):null,docHeight:document.documentElement.scrollHeight};
+  return {visual:{scale:v.scale,left:v.offsetLeft,top:v.offsetTop,pageLeft:v.pageLeft,pageTop:v.pageTop,width:v.width,height:v.height},nativeScroll:{left:document.scrollingElement.scrollLeft,top:document.scrollingElement.scrollTop},canvas:{position:getComputedStyle(c).position,rect:r.toJSON(),width:c.width,height:c.height},anchors,labels,originError:visible(origin)?Math.min(...all.filter(l=>l.cap).map(l=>Math.hypot(origin.x-l.a.x,origin.y-l.a.y))):null,maxError:anchors.length?Math.max(...anchors.map(p=>p.error)):null,docHeight:document.documentElement.scrollHeight};
  });
  model.steps.push({name,...state});fs.writeFileSync(path.join(out,model.name+'-'+name+'.json'),JSON.stringify(state,null,2)+'\n');await page.screenshot({path:path.join(out,model.name+'-'+name+'.png')});
  if(name!=='real-two-contact-pinch')assert.ok(state.anchors.length>0,name+' must measure visible DOM nuclei against rendered strokes');
  if(state.anchors.length)assert.ok(state.maxError<.5,model.name+' '+name+' stroke/DOM error '+state.maxError);
  else state.measurement='No nucleus in this sampled visual tile; DOM/stroke assertions run at explicit scale 2, pan and scroll.';
- assert.ok(Math.abs(state.canvas.rect.left-state.visual.left)<.1&&Math.abs(state.canvas.rect.top-state.visual.top)<.1,'actual canvas tile follows the panned visual viewport');
+ assert.ok(Math.abs(state.canvas.rect.left+state.nativeScroll.left-state.visual.pageLeft)<.1&&Math.abs(state.canvas.rect.top+state.nativeScroll.top-state.visual.pageTop)<.1,'actual canvas tile follows the panned visual viewport');
  for(const label of state.labels)assert.ok(label.error<.5,name+' central label remains between actual backbones');
  if(state.originError!==null)assert.ok(state.originError<.01,'origin anchors the rendered top cap');
  assert.equal(state.canvas.position,'absolute');
@@ -68,6 +68,7 @@ try{
   const context=await browser.newContext({viewport:{width:393,height:852},deviceScaleFactor:3,isMobile:true,hasTouch:true,reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():(report.external.push(r.request().url()),r.abort()));await context.addInitScript(init,{safari});
   const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));await page.goto(base+'/ai8-dna-v4.html?lang=sl');await page.waitForFunction(()=>document.querySelectorAll('.dna-node').length===488);
+  if(process.env.DNA_ZOOM_LAB==='1')await page.locator('#lab-toggle').click();
   const normal=await capture(page,model,'scale-1');assert.equal(normal.visual.scale,1);
   const initial=await page.locator('#dna-canvas').evaluate(c=>c.toDataURL());
   const hash=s=>createHash('sha256').update(s).digest('hex');

@@ -10,12 +10,29 @@
   <meta property="og:title" content="AI8 DNA · BD × AI Lab">
   <meta property="og:description" content="One strand, nine sections. Explore the projects, tools, games, stories and research of BD × AI Lab.">
   <meta property="og:url" content="https://www.mdlxdcc.org/ai8-dna-v4.html">
+  <script>if(new URLSearchParams(location.search).get('mode')==='ai8-live')document.documentElement.dataset.dnaNative='true';</script>
+  <link rel="stylesheet" href="/assets/dna-lab/lab.css?v=20261108-r1">
+  <script type="module" src="/assets/dna-lab/lab.mjs?v=20261108-r1"></script>
   <link rel="icon" href="/PWA/icon-192.png">
   <link rel="stylesheet" href="/assets/ai8-entry/dna-v4.css?v=20261108-v4">
   <link rel="stylesheet" href="/assets/ai8-entry/entry-menu.css">
   <script type="module" src="/assets/ai8-entry/dna-v4.mjs?v=20261108-v4"></script>
 </head>
 <body>
+  <header id="lab-header" data-dna-lab>
+    <a href="/index.html">MDLxDCC.org</a><span aria-hidden="true">|</span><a href="/BD/index.html">BD</a><span aria-hidden="true">×</span><button id="lab-toggle" type="button" aria-expanded="false" aria-controls="lab-shell">AI Lab</button>
+  </header>
+  <section id="lab-shell" data-dna-lab aria-label="Public AI Lab guides" hidden>
+    <div class="lab-toolbar">
+      <div class="lab-tabs" role="group" aria-label="Visible guide"><button type="button" data-lab-tab="gpt" aria-pressed="true">ChatGPT</button><button type="button" data-lab-tab="claude" aria-pressed="false">Claude</button></div>
+      <button type="button" id="lab-account">Sign in</button><button type="button" id="lab-new" aria-label="New conversation" title="New conversation">New</button><button type="button" id="lab-stop" hidden>Stop</button><button type="button" id="lab-close" aria-label="Hide AI Lab">×</button>
+    </div>
+    <p id="lab-status" role="status"></p>
+    <div id="lab-panels"></div>
+    <dialog id="lab-auth" aria-labelledby="lab-auth-title">
+      <form id="lab-auth-form"><h2 id="lab-auth-title">Sign in for live discussion</h2><p>Use your existing site guide account. Public introductions are prepared; live answers use the shared visitor limits.</p><label>Email<input id="lab-email" type="email" autocomplete="username" required maxlength="254"></label><label>Password<input id="lab-password" type="password" autocomplete="current-password" required maxlength="256"></label><p id="lab-auth-error" role="alert"></p><button id="lab-auth-submit" type="submit">Sign in</button><button id="lab-auth-mode" type="button">Create account</button><button id="lab-auth-close" type="button">Cancel</button></form>
+    </dialog>
+  </section>
   <a class="skip" href="#dna-origin">AI8 DNA · navodila / explore</a>
   <canvas id="dna-canvas" aria-hidden="true"></canvas>
   <main id="dna" aria-labelledby="dna-title">
