@@ -67,7 +67,7 @@ try{
   const model={name:safari?'safari-coordinate-model':'chromium-native',safariCoordinateModel:safari,steps:[]};report.models.push(model);
   const context=await browser.newContext({viewport:{width:393,height:852},deviceScaleFactor:3,isMobile:true,hasTouch:true,reducedMotion:'reduce',serviceWorkers:'block'});
   await context.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():(report.external.push(r.request().url()),r.abort()));await context.addInitScript(init,{safari});
-  const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));await page.goto(base+'/ai8-dna-v4.html?lang=sl');await page.waitForFunction(()=>document.querySelectorAll('.dna-node').length===488);
+  const page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));await page.goto(base+'/ai8-dna-v4.html?lang=sl');await page.waitForFunction(()=>document.querySelectorAll('.dna-node').length===491);
   if(process.env.DNA_ZOOM_LAB==='1')await page.locator('#lab-toggle').click();
   const normal=await capture(page,model,'scale-1');assert.equal(normal.visual.scale,1);
   const initial=await page.locator('#dna-canvas').evaluate(c=>c.toDataURL());

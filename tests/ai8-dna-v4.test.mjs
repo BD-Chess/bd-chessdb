@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {CURATED,FEATURED_IDS,loadCatalogue} from '../public/assets/ai8-entry/featured-catalog.mjs';
 import {decorateDNA,DNA_TOP_PAGES} from '../public/assets/ai8-entry/dna-top-points.mjs';
 import {SECTIONS,classify,buildStrand} from '../public/assets/ai8-entry/dna-sections.mjs';
+import {NEW_UPDATES,normalizedTarget,selectNewRecords} from '../public/assets/ai8-entry/dna-new-points.mjs';
 const publicIndex=JSON.parse(fs.readFileSync('public/site-search-index.json'));
 async function catalogue(index=publicIndex){const fetch=globalThis.fetch;try{globalThis.fetch=async()=>({ok:true,json:async()=>index});return await loadCatalogue();}finally{globalThis.fetch=fetch;}}
 async function fullCatalogue(){return classify(decorateDNA((await catalogue()).items,{includeLive:true}));}
@@ -33,8 +34,8 @@ test('Top 8 shortcuts share records, keep stable IDs, and do not inflate catalog
  assert.deepEqual(top.map(d=>d.project.id),FEATURED_IDS);
  assert.equal(new Set(items.map(p=>p.id)).size,items.length);
  assert.equal(new Set(strand.instances.map(d=>d.id)).size,strand.instances.length);
- assert.equal(strand.instances.length,items.length+8);
- for(const d of top){const subject=strand.instances.find(n=>n.project.id===d.project.id&&n.section!=='top');assert.equal(subject.project,d.project);assert.notEqual(subject.id,d.id);}
+ assert.equal(strand.instances.length,items.length+8+selectNewRecords(items).length);
+ for(const d of top){const subject=strand.instances.find(n=>n.project.id===d.project.id&&!['top','new'].includes(n.section));assert.equal(subject.project,d.project);assert.notEqual(subject.id,d.id);}
  for(const h of DNA_TOP_PAGES)assert.ok(items.some(p=>p.url===h.url&&p.dnaTop),h.url);
 });
 test('all public entries have contiguous primary themes and retain useful source metadata',async()=>{
@@ -42,7 +43,7 @@ test('all public entries have contiguous primary themes and retain useful source
  let previous=-1;
  for(const d of strand.instances){const next=keys.indexOf(d.section);assert.ok(next>=previous);previous=next;assert.ok(d.y>0);assert.equal(d.project,items.find(p=>p.id===d.project.id));}
  for(const item of items){assert.ok(keys.includes(item.category)&&item.category!=='top');assert.ok(Array.isArray(item.secondaryCategories));assert.ok(item.url&&item.title&&item.en&&item.sl);}
- for(const loop of strand.loops){assert.equal(loop.count,loop.section==='top'?8:items.filter(p=>p.category===loop.section).length);assert.ok(strand.instances.filter(d=>d.section===loop.section&&d.y>loop.start&&d.y<loop.end).length<=12);}
+ for(const loop of strand.loops){assert.equal(loop.count,loop.section==='top'?8:loop.section==='new'?selectNewRecords(items).length:items.filter(p=>p.category===loop.section).length);assert.ok(strand.instances.filter(d=>d.section===loop.section&&d.y>loop.start&&d.y<loop.end).length<=12);}
  const category=url=>items.find(p=>p.url===url)?.category;
  for(const [url,expected] of [['/BD/BD_CCH_Consciousness_Field.html','cfh'],['/crp/AI8_Architecture.html','ai8'],['/BD/BD_AIM3.html','ai8'],['/AI8/live/','ai8'],['/crp/HTH.html','machines'],['/crp/SORA.html','machines'],['/crp/ToE.html','theories'],['/crp/AC-WFP.html','theories'],['/Nara/','stories'],['/Trip/','apps'],['/S/','games'],['/S/new/','lab']])assert.equal(category(url),expected,url);
  for(const original of CURATED){const item=items.find(p=>p.id===original.id);assert.deepEqual(item.related,original.related);assert.equal(item.group,original.group);}
@@ -53,6 +54,57 @@ test('v3 archive dependency bytes are frozen and its loader never reads the chan
  assert.match(fs.readFileSync(dir+'catalog.mjs','utf8'),/fetch\('\/assets\/ai8-entry\/archive-v3\/site-search-index.json'/);
  const html=fs.readFileSync('public/ai8-dna-v3.html','utf8');
  for(const match of html.matchAll(/(?:src|href)="(\/assets\/ai8-entry\/[^"?]+)/g))assert.ok(match[1].startsWith('/assets/ai8-entry/archive-v3/'),match[1]);
+});
+
+test('NEW is one second opening of existing, honestly dated records outside the Top 8',async()=>{
+ const items=await fullCatalogue(),strand=buildStrand(items),fresh=strand.instances.filter(d=>d.section==='new');
+ assert.deepEqual(SECTIONS.slice(0,2).map(s=>s.id),['top','new']);
+ assert.deepEqual(strand.loops.filter(l=>l.label).slice(0,2).map(l=>l.id),['top:1','new:1']);
+ assert.equal(fresh.length,2);assert.equal(strand.loops.filter(l=>l.section==='new').length,1);
+ assert.equal(strand.loops.find(l=>l.id==='top:1').end,strand.loops.find(l=>l.id==='new:1').start);
+ const top=strand.instances.filter(d=>d.section==='top');
+ for(const d of fresh){
+  assert.ok(!top.some(t=>t.project.id===d.project.id||normalizedTarget(t.project.url)===normalizedTarget(d.project.url)));
+  assert.equal(d.project,items.find(p=>p.id===d.project.id));
+  assert.equal(strand.instances.find(n=>n.project.id===d.project.id&&!['top','new'].includes(n.section)).project,d.project);
+  assert.match(d.update.date,/^\d{4}-\d{2}-\d{2}$/);
+  if(d.update.type==='featured'){
+   assert.equal(d.project.id,'bogastvo-obstoja');assert.equal(d.update.date,'2026-11-06');
+   assert.equal(d.update.source,'https://github.com/BD-Chess/bd-chessdb/commit/b951225e2b77080a36914dd5cb6588fa6b8eb6b7');
+   assert.ok(fs.readFileSync('public'+d.update.evidence,'utf8').includes('../bogastvo-obstoja/'),'dated commit adds this existing Start link');
+  }else assert.ok(fs.readFileSync('public'+d.update.evidence,'utf8').includes(d.update.date),'date exists in the cited, authored public announcement');
+  assert.ok(fs.existsSync('public'+d.project.url),'already-public destination');
+ }
+ assert.deepEqual(fresh.map(d=>d.project.id),NEW_UPDATES.map(u=>u.id));
+ assert.equal(items.length,480,'one added essay record; display shortcuts do not inflate search or catalogue counts');
+});
+
+test('the featured essay has one canonical record even when the public index adds URL variants',async()=>{
+ const baseline=await catalogue(),essay=CURATED.find(item=>item.id==='bogastvo-obstoja');
+ for(const url of ['/bogastvo-obstoja/','/bogastvo-obstoja/index.html','https://mdlxdcc.org/bogastvo-obstoja/']){
+  const result=await catalogue({...publicIndex,items:[...publicIndex.items,{url,title:'Duplicated essay metadata',priority:9999}]});
+  assert.deepEqual(result.items,baseline.items);assert.deepEqual(result.items.find(p=>p.id===essay.id),essay);
+ }
+});
+
+test('NEW excludes canonical Top 8 IDs and normalized targets, and never synthesizes records',()=>{
+ const trip={id:'tripopti',url:'/Trip/',category:'apps'},chess={id:'chessbest',url:'https://chessbest.org/',category:'games'};
+ const candidates=[
+  {id:'trip-alias',url:'https://mdlxdcc.org/Trip/index.html?source=new#route'},
+  {id:'chess-alias',url:'/index-chess.html'},
+  {id:'fresh',url:'/Fresh.html'},
+  {id:'fresh-alias',url:'https://www.mdlxdcc.org/Fresh?from=new#intro'},
+  {id:'distinct-case',url:'/TRIP/index.html'}
+ ];
+ const updates=[{id:'tripopti',url:'/renamed-trip.html'},...candidates,{id:'missing',url:'/missing.html'}];
+ const result=selectNewRecords([trip,chess,...candidates],updates);
+ assert.deepEqual(result,[candidates[2],candidates[4]]);
+ assert.equal(result[0],candidates[2],'reuse the actual record');
+ assert.equal(normalizedTarget('/ai8-dna-v4.html#guide'),normalizedTarget('https://mdlxdcc.org/ai8-dna-v4?lang=en'));
+ assert.notEqual(normalizedTarget('/TRIP/'),normalizedTarget('/Trip/'),'retain case-distinct pages');
+ assert.deepEqual(selectNewRecords([trip,chess],updates),[],'no unavailable or excluded replacement entries');
+ const many=Array.from({length:12},(_,i)=>({id:'new-'+i,url:'/new-page-'+i+'.html'}));
+ assert.equal(selectNewRecords(many,many).length,8,'a longer editorial list still occupies one opening');
 });
 test('current entry links choose v4 while explicit archive pages remain available',()=>{
  for(const file of ['index.html','proposal1.html','ai8-codex.html']){const html=fs.readFileSync('public/'+file,'utf8');assert.ok(html.includes('ai8-dna-v4.html'));assert.ok(!html.includes('ai8-dna-v3.html'));}

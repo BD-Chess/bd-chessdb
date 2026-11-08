@@ -12,7 +12,7 @@ not used to infer acronym meanings. Secondary subject matches are retained.
 Research variants can have LAB as their primary home while retaining a secondary
 subject. No classification changes a page's research status or protection.
 
-The strand has nine ordered sections. TOP 8 uses the eight `FEATURED_IDS` as
+The strand has ten ordered sections. TOP 8 uses the eight `FEATURED_IDS` as
 shortcut display instances of the same project objects. Search and page counts
 use the underlying catalogue, never the display instances. Case-distinct pages
 and unverified aliases retain the catalogue's existing independent identities.
@@ -21,6 +21,20 @@ Destination deduplication runs again after the current DNA URL mapping. The v4
 `.html` and clean URL share one destination; the curated record and ID win when
 the public index includes that destination. Case, fragments and other paths are
 retained.
+
+NEW is the second labeled ellipse, immediately after TOP 8. Its up to eight shortcuts
+reuse existing catalogue records and keep their subject homes. The editorial
+selection in `dna-new-points.mjs` currently contains two recent highlights: the
+Nov 8 DNA update and Bogastvo obstoja. The latter has one canonical shared catalogue
+record, also used in its consciousness subject home. Nov 6 is explicitly its
+Start feature date, verified by public commit `b951225e`; it is not an inferred
+essay publication date. The DNA date comes from the published Lab digest.
+These are not file modification times or an automatic current-news feed. Unavailable
+records are omitted from the fallback. Canonical IDs and normalized destinations
+exclude the current TOP 8 and duplicate NEW shortcuts. Normalization reuses verified
+catalogue aliases, retains path case, and ignores query strings, fragments and a
+final slash only for this shortcut comparison. Search and related-page navigation
+continue to open the original subject instance.
 
 Each section spans as many half turns as needed, with up to eight points per
 full opening; the original upper cap retains the first three Top 8 anchors. Labels show the whole section's page count and the opening number.
@@ -32,7 +46,14 @@ node buttons receive their current physical membership on every render. The
 three-point top cap is separate from the five-point full TOP 8 opening; its
 section counter and all eight shortcut entries remain unchanged. Larger central titles
 keep the desktop `.56rem` and mobile `.5rem` count lines small. Long explanations
-use the existing tooltip outside the compact opening and remain viewport bounded.
+sit above or below the same physical ellipse, beyond its start or end boundary,
+so its highlighted project labels remain clear. The note flips when a viewport
+edge is tight, and scrolls within the available vertical space. A fully offscreen
+ellipse, or a viewport with less than 32px outside either edge, hides its note
+until space returns; the pinned selection is retained.
+The compact CFH title also applies below 1100px, so enlarged text stays clear
+of the nuclei in the narrower native/tablet openings; its full name remains in
+the accessible label and description. Font sizes and helix geometry are unchanged.
 Text enlargement changes text without moving anchors or changing the helix pitch.
 
 The curve uses the original v3 amplitude, 460px full turn and `.62` opening phase,
@@ -55,6 +76,7 @@ node --test tests/ai8-dna-v4.test.mjs
 node tests/ai8-dna-v4-browser.mjs
 # Local-loop membership, canvas alpha and late-catalogue regression.
 node tests/ai8-dna-loop-browser.mjs
+node tests/ai8-dna-new-tooltip-browser.mjs
 node tests/ai8-dna-v4-zoom-browser.mjs
 ```
 
