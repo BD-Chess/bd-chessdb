@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Verify AI8 DNA themes, shortcuts and frozen archive
+        run: node --test tests/ai8-dna-v4.test.mjs
       - name: Verify AI8 News gateway and local bridge without provider calls
         run: |
           npm ci --prefix functions --ignore-scripts --no-audit --no-fund
