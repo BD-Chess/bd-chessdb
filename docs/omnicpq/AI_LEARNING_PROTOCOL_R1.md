@@ -23,3 +23,13 @@ Poročilo navede različice, ID cikla/testa, pričakovanje, omejeno opažanje, i
 test → ugotovitev → pregled graditelja → popravek → isti prizadeti regresijski primer → preverjena izdaja.
 Sprejeta vsebina mora imeti potrjen vir in ločeno tehnično preverbo za HTML ter Copilot. Copilot ZIP nima PWA panela ali samodejnega izvajalnika; isti protokol je uporaben pri njegovem ročnem, vnaprej omejenem preverjanju. Noben od obeh izdelkov ne sme predloga samodejno spremeniti v poslovno pravilo ali dovoljenje za dejanje.
 Masovna vsebinska analiza JSON ostaja ustavljena. Ta funkcija je ne nadaljuje. Živega CPQ, namestitve, plačljivega preizkusa ali učenja na poslovnih podatkih ni dovoljeno razglasiti za preverjeno na podlagi te kode, dokumenta ali ZIP-a.
+
+## Proračunski predogled in zadržanje (1.10.1)
+
+Pred izbirnim API zagonom lastniški predogled iz istega omejenega izračuna kot izvajalnik pokaže potrebno konservativno rezervacijo za naslednji celotni par pomočnik + tester. Predogled ne kliče modelov, ne ustvari cikla in ne pomeni dovoljenja ali računa. Če izbrana meja ne zadošča, ostane začetek zadržan in preizkusi NOT_RUN. Zagon ponovno preveri izračun; sprememba profila ali meje razveljavi predogled in zahteva novo izrecno potrditev stroškov.
+
+Če v obstoječem ciklu zmanjka proračuna za celotni naslednji par, se pred novim dispatchom ustvari nespremenljiv zapis zadržanja. Prebrano in izvoženo stanje je BLOCKED z razlogom LEARNING_BUDGET; zaslon kaže Zadržano zaradi proračuna. Dokončani rezultati in prejšnje rezervacije ostanejo, nedokončani preizkusi ostanejo NOT_RUN; zavrnjeni par ne doda rezervacije ali modelnega klica. Nadaljuj istega prenizkega limita ne ponavlja. Drugačna meja zahteva nov cikel in novo potrditev, brez samodejnega dviga. Ustavljanje/ustavitev imata prednost pred zadržanjem; negotov zapis se ne razglasi za potrjenega.
+
+Copilot pri ročnem ciklu uporabi isti vnaprejšnji pregled skupne rezervacije obeh vlog in enako zadržanje; ZIP s tem ne dobi PWA izvajalnika ali samodejnih modelnih klicev. Nova izdaja ne spreminja poslovnih pravil, Bridge ali masovne analize. Rezervacije, prikazani tokeni in cenovni stropi niso dokaz dejanskega računa.
+
+Ustavi ostane dosegljiv tudi pri proračunsko zadržanem ciklu in zapre prihodnje slote po istem protokolu. Časovni status EXPIRED ne izbriše zapisanega razloga LEARNING_BUDGET; razlog in rezervacije ostanejo v statusu ter izvozu, zaslon pa pokaže tudi potek časa. Po STOPPING/STOPPED ima prikaz ustavljanja oziroma ustavitve prednost. Nadaljuj zadržanega ali časovno poteklega cikla ne omogoči novega klica.
