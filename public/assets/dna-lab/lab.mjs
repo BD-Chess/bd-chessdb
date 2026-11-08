@@ -103,7 +103,7 @@ function initLab(){
  function setOpen(open){shell.hidden=!open;$('lab-toggle').setAttribute('aria-expanded',String(open));document.body.classList.toggle('lab-open',open);if(open){refresh();catalogue();}else $('lab-toggle').focus({preventScroll:true});}
  $('lab-toggle').addEventListener('click',()=>setOpen(shell.hidden));$('lab-close').addEventListener('click',()=>setOpen(false));
  $('lab-stop').addEventListener('click',()=>coordinator.cancel());
- $('lab-new').addEventListener('click',async()=>{if(coordinator.busy)return;Object.assign(state,newConversation());for(const p of panels.values())p.input.value='';persist();render();if(await coordinator.welcome(account,available))await refreshUsage();});
+ $('lab-new').addEventListener('click',async()=>{if(coordinator.busy)return;Object.assign(state,newConversation());for(const p of panels.values())p.input.value='';persist();render();if(refreshing)await refreshing;if(await coordinator.welcome(account,available))await refreshUsage();});
  document.querySelectorAll('[data-lab-tab]').forEach(b=>b.addEventListener('click',()=>{state.selected=b.dataset.labTab;persist();render();}));
  function showAuth(){if(authBusy)return;$('lab-auth-error').textContent='';$('lab-auth').showModal();$('lab-email').focus();}
  $('lab-auth-close').addEventListener('click',()=>$('lab-auth').close());
@@ -114,7 +114,9 @@ function initLab(){
   try{const r=await fetch('/.netlify/functions/mdlxdcc-guide-auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...details}),signal:AbortSignal.timeout(20000)});const d=await r.json();if(!r.ok)throw Error(d.error?.code||'AUTH_UNAVAILABLE');account=d.authenticated?d.account:null;usage=d.usage||null;$('lab-auth').close();}
   catch(e){$('lab-auth-error').textContent='Account request failed: '+e.message;}
   finally{$('lab-password').value='';authBusy=false;$('lab-auth-submit').disabled=false;$('lab-auth-mode').disabled=false;render();}
-  if(account&&await coordinator.welcome(account,available))await refreshUsage();
+  // Sign-in can finish before the initial availability probe. Wait for its result
+  // rather than marking a valid new welcome unavailable during that race.
+  if(account){if(refreshing)await refreshing;if(await coordinator.welcome(account,available))await refreshUsage();}
  }
  $('lab-account').addEventListener('click',()=>account?auth('logout'):showAuth());
  $('lab-auth-form').addEventListener('submit',e=>{e.preventDefault();auth(register?'register':'login',{email:$('lab-email').value,password:$('lab-password').value});});
