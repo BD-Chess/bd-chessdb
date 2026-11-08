@@ -46,8 +46,9 @@ try{
  for(const id of ['top','cfh','ai8','games','apps','machines','theories','stories','lab']){
   const label=p.locator(`.section-label[data-section=${id}]`).first();await label.scrollIntoViewIfNeeded();await label.hover();
   assert.equal(await label.getAttribute('aria-expanded'),'true',id+' hover');
-  const counts=await p.locator(`.dna-node[data-section=${id}]`).count();assert.equal(await p.locator('.dna-node.section-active').count(),counts,id+' highlights');
-  assert.equal(await p.locator(`.section-label[data-section=${id}]:not(.section-active)`).count(),0,id+' all labels');
+  const physical=await label.evaluate(e=>{const y=parseFloat(e.style.top);return [...document.querySelectorAll('.dna-node:not(.origin)')].filter(n=>Math.abs(parseFloat(n.style.top)-y)<115).map(n=>n.dataset.project).sort();});
+  assert.deepEqual(await p.locator('.dna-node.section-active').evaluateAll(es=>es.map(e=>e.dataset.project).sort()),physical,id+' physical oval only');
+  assert.equal(await p.locator('.section-label.section-active').count(),1,id+' one label');
   if(id==='cfh'||id==='machines')await p.screenshot({path:out+'/desktop-'+id+'-hover.png'});
   await p.mouse.move(0,0);assert.equal(await label.getAttribute('aria-expanded'),'false',id+' hover exit');
   await p.keyboard.press('Tab');await label.focus();assert.equal(await label.getAttribute('aria-expanded'),'true',id+' keyboard focus');
