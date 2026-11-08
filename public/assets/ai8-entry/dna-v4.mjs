@@ -345,7 +345,8 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('pointermove',trackPointer,{passive:true});
 document.addEventListener('pointerdown',e=>{lastInput=e.pointerType==='touch'?'touch':'pointer';},true);
 document.addEventListener('click',e=>{
-  if(e.composedPath().includes(panel)||e.target.closest('a,.section-label,.section-note,[data-dna-lab]'))return;
+  if(e.target.closest('[data-dna-lab]')){if(selectedSection)selectSection(null);closePanel(false);return;}
+  if(e.composedPath().includes(panel)||e.target.closest('a,.section-label,.section-note'))return;
   if(selectedSection)selectSection(null);
   const target=e.target.closest('.dna-node');
   const hit=e.detail===0&&target?{id:target===origin?'origin':target.dataset.project,btn:target}:nearestPoint(e.pageX,e.pageY,lastInput==='touch'?28:36);

@@ -1,0 +1,65 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import http from 'node:http';
+import {makeHandler} from '../functions/mdlxdcc-guide.mjs';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');
+const root=path.resolve('public'),out=process.env.DNA_LAB_EVIDENCE||'/tmp/dna-lab-browser';fs.mkdirSync(out,{recursive:true});
+const server=http.createServer((req,res)=>{let f=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);if(!f.startsWith(root+path.sep)){res.writeHead(403).end();return;}if(!path.extname(f))f+='.html';try{res.setHeader('Content-Type',({'.html':'text/html','.mjs':'text/javascript','.css':'text/css','.json':'application/json'})[path.extname(f)]||'application/octet-stream');res.end(fs.readFileSync(f));}catch{res.writeHead(404).end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const base='http://127.0.0.1:'+server.address().port;
+const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
+const report={simulatedProviders:true,physicalDevice:false,cases:[],errors:[]};
+async function session(viewport,{mobile=false,signed=false,unavailable=false,budgetError=false,navigation=null}={}){
+ const c=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:mobile?3:1,reducedMotion:'reduce',serviceWorkers:'block'});let authenticated=signed;const calls=[],meter=[],authCalls=[];
+ const client=provider=>provider==='gpt'?{responses:{create:async p=>(async function*(){yield {type:'response.output_text.delta',delta:'ChatGPT: choose a public DNA project. <img src=x onerror=alert(1)> [unsafe](javascript:alert(1))'};yield {type:'response.completed',response:{status:'completed',output:[],usage:{input_tokens:20,output_tokens:20}}};})()}}:{messages:{stream:p=>({async *[Symbol.asyncIterator](){yield {type:'content_block_delta',delta:{type:'text_delta',text:'Claude: the published compact DNA update is dated 2026-11-08. Explore AI8 DNA.'}};},async finalMessage(){return {stop_reason:'end_turn',content:[{type:'text',text:'answer'}],usage:{input_tokens:20,output_tokens:20}};}})}};
+ const handler=makeHandler({configured:{gpt:true,claude:!unavailable},accessFactory:async()=>{if(!authenticated)throw {code:'AUTH_REQUIRED'};return {role:'visitor'};},budgetFactory:()=>({reserve:async()=>{if(budgetError)throw {code:'MONTHLY_LIMIT'};meter.push('reserve');return 'hold';},settle:async()=>meter.push('settle')}),clientFactory:client,knowledgeFactory:async()=>({guide:{instructions:'Public guide'},answering:{text:'Public sources only'},map:{text:''},metadata:[],known:new Set(['/ai8-dna-v4.html']),usedSources:new Map(),loadedSkills:new Set(),execute:async()=>{throw Error('unexpected tool');}})});
+ await c.route('**/*',async route=>{const r=route.request(),u=new URL(r.url());if(u.origin!==base)return route.abort();if(u.pathname.endsWith('/mdlxdcc-guide-auth')){authCalls.push(r.method());if(r.method()==='POST')authenticated=JSON.parse(r.postData()).action!=='logout';return route.fulfill({json:{authenticated,account:authenticated?{role:'visitor'}:null,usage:authenticated?{spent:0,reserved:0,limit:100}:null}});}if(u.pathname.endsWith('/mdlxdcc-guide')){if(r.method()==='POST'){calls.push(JSON.parse(r.postData()));await new Promise(resolve=>setTimeout(resolve,50));}const response=await handler(new Request(r.url(),{method:r.method(),headers:r.headers(),...(r.method()==='POST'?{body:r.postData()}:{} )}));let body=await response.text();if(navigation&&r.method()==='POST')body=body.replace('data: {"type":"done"','data: '+JSON.stringify({type:'show_page',path:navigation})+'\n\ndata: {"type":"done"');return route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body});}return route.continue();});
+ const p=await c.newPage();p.on('pageerror',e=>report.errors.push(e.message));return {c,p,calls,meter,authCalls};
+}
+async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===488);}
+async function settled(p){await p.waitForFunction(()=>document.querySelector('#lab-stop').hidden);}
+async function screenshot(p,name){await p.mouse.move(0,0);await p.screenshot({path:path.join(out,name+'.png')});}
+try{
+ for(const [name,viewport,mobile] of [['wide',{width:2560,height:1440},false],['desktop',{width:1440,height:1000},false],['iphone-portrait',{width:393,height:852},true],['iphone-landscape',{width:852,height:393},true],['tablet',{width:768,height:1024},true]]){
+  const s=await session(viewport,{mobile}),{p}=s;await p.goto(base+'/ai8-dna-v4?lang=en');await ready(p);assert.equal(await p.locator('#lab-shell').isVisible(),false);assert.equal(s.authCalls.length,0);assert.equal(s.calls.length,0);
+  const positions=await p.locator('.dna-node').evaluateAll(es=>es.map(e=>[e.style.left,e.style.top]));
+  await p.locator('#lab-toggle').click();await p.locator('#lab-status').getByText('Prepared introduction',{exact:false}).waitFor();assert.equal(s.calls.length,0);await screenshot(p,name+'-prepared');
+  const state=await p.evaluate(()=>{const panel=[...document.querySelectorAll('.lab-panel')].filter(e=>getComputedStyle(e).display!=='none').map(e=>{const r=e.getBoundingClientRect();return {provider:e.dataset.provider,left:r.left,right:r.right,top:r.top,bottom:r.bottom};});return {panel,overflow:document.documentElement.scrollWidth>innerWidth,viewport:{w:innerWidth,h:innerHeight}};});
+  assert.equal(state.overflow,false,name+' overflow');for(const r of state.panel){assert.ok(r.left>=0&&r.right<=viewport.width&&r.top>=0&&r.bottom<=viewport.height+1,name+' panel fits');}
+  for(const form of await p.locator('.lab-compose').all()){if(!await form.isVisible())continue;const rect=await form.locator('button[type=submit]').boundingBox();assert.ok(rect.y+rect.height<=viewport.height+1,name+' send button fits');}assert.equal(state.panel.length,name==='iphone-portrait'||name==='tablet'?1:2);
+  assert.deepEqual(await p.locator('.dna-node').evaluateAll(es=>es.map(e=>[e.style.left,e.style.top])),positions,name+' opening guides preserves geometry');
+  await p.locator('#lab-input-gpt').fill('Keep this draft');await p.locator('#lab-close').click();await p.locator('#lab-toggle').click();assert.equal(await p.locator('#lab-input-gpt').inputValue(),'Keep this draft');
+  if(name==='iphone-portrait'){await p.locator('[data-lab-tab=claude]').click();assert.equal(await p.locator('#lab-input-claude').isVisible(),true);await p.locator('[data-lab-tab=gpt]').click();assert.equal(await p.locator('#lab-input-gpt').inputValue(),'Keep this draft');}
+  await p.reload();await ready(p);await p.locator('#lab-toggle').click();assert.equal(await p.locator('#lab-input-gpt').inputValue(),'Keep this draft');assert.equal(s.calls.length,0);
+  if(name==='iphone-portrait'){
+   const seeded=await p.evaluate(()=>{const s=JSON.parse(sessionStorage.getItem('ai8-dna-lab-conversation-v1'));s.welcome='done';s.messages=Array.from({length:12},(_,i)=>({role:'assistant',provider:'gpt',content:'Public answer '+i+' '+'A longer paragraph. '.repeat(15),complete:true}));return s;});
+   await p.addInitScript(s=>sessionStorage.setItem('ai8-dna-lab-conversation-v1',JSON.stringify(s)),seeded);
+   await p.reload();await ready(p);await p.locator('#lab-toggle').click();await p.locator('#lab-log-gpt').evaluate(e=>{e.scrollTop=30;e.dispatchEvent(new Event('scroll'));});
+   await p.locator('[data-lab-tab=claude]').click();await p.locator('[data-lab-tab=gpt]').click();assert.equal(await p.locator('#lab-log-gpt').evaluate(e=>e.scrollTop),30,'transcript scroll retained across provider tab');
+   await p.locator('#lab-close').click();await p.locator('#lab-toggle').click();assert.equal(await p.locator('#lab-log-gpt').evaluate(e=>e.scrollTop),30,'transcript scroll retained across hide');
+  }
+  report.cases.push({name,...state,guestProviderCalls:s.calls.length});await s.c.close();
+ }
+ const s=await session({width:1440,height:1000}),{p}=s;
+ await p.goto(base+'/ai8-dna-v4?lang=en');await ready(p);await p.locator('#lab-toggle').click();await p.locator('#lab-input-gpt').fill('My drafted question');await p.locator('.lab-compose button[type=submit]').first().click();await p.locator('#lab-auth').waitFor({state:'visible'});assert.equal(s.calls.length,0);
+ await p.locator('#lab-email').fill('visitor@example.test');await p.locator('#lab-password').fill('test-password');await p.locator('#lab-auth-submit').click();
+ await p.locator('#lab-stop').waitFor({state:'visible'});await p.locator('#lab-close').click();await p.locator('#lab-toggle').click();await p.locator('#lab-close').click();await p.locator('#lab-toggle').click();await settled(p);
+ assert.equal(s.calls.length,3);assert.deepEqual(s.calls.map(r=>r.stage),['ask','update','invite']);assert.equal(s.calls[0].provider,s.calls[2].provider);assert.notEqual(s.calls[0].provider,s.calls[1].provider);assert.equal(s.meter.length,6);assert.equal(await p.locator('#lab-input-gpt').inputValue(),'My drafted question');assert.equal(await p.locator('.lab-log img').count(),0);assert.equal(await p.locator('.lab-log a[href^="javascript:"]').count(),0);
+ await screenshot(p,'desktop-authenticated');await p.reload();await ready(p);await p.locator('#lab-toggle').click();await settled(p);assert.equal(s.calls.length,3);
+ await p.locator('#lab-both-gpt').check();await p.locator('#lab-input-gpt').fill('Explain the public DNA.');await p.locator('.lab-compose button[type=submit]').first().click();await settled(p);assert.equal(s.calls.length,5);assert.deepEqual(s.calls.slice(3).map(r=>r.provider),['gpt','claude']);assert.equal(s.calls[4].history.at(-1).provider,'gpt');
+ await p.locator('#lab-close').click();await p.evaluate(()=>document.documentElement.style.fontSize='200%');await p.locator('#lab-toggle').click();await screenshot(p,'desktop-enlarged-text');assert.equal(s.calls.length,5);
+ report.cases.push({name:'authenticated-login-welcome-shared-both-reload',providerCalls:s.calls.length,meters:s.meter.length});await s.c.close();
+ const unavailable=await session({width:1440,height:1000},{signed:true,unavailable:true});await unavailable.p.goto(base+'/ai8-dna-v4');await ready(unavailable.p);await unavailable.p.locator('#lab-toggle').click();await unavailable.p.getByText('Both guides must be available',{exact:false}).first().waitFor();assert.equal(unavailable.calls.length,0);await unavailable.c.close();
+ const budget=await session({width:1440,height:1000},{signed:true,budgetError:true});await budget.p.goto(base+'/ai8-dna-v4');await ready(budget.p);await budget.p.locator('#lab-toggle').click();await budget.p.getByText('Discussion stopped: MONTHLY_LIMIT',{exact:false}).first().waitFor();assert.equal(budget.calls.length,1);await budget.c.close();
+ for(const navigation of ['/BD/O/private.html','https://evil.example/run','/ai8-dna-v4']){
+  const n=await session({width:1440,height:1000},{navigation});await n.p.goto(base+'/ai8-dna-v4');await ready(n.p);await n.p.locator('#lab-toggle').click();await n.p.locator('#lab-account').click();await n.p.locator('#lab-email').fill('visitor@example.test');await n.p.locator('#lab-password').fill('test-password');await n.p.locator('#lab-auth-submit').click();await n.p.locator('#lab-stop').waitFor({state:'visible'});await settled(n.p);
+  // Welcome's update itself highlights the approved entry; remove it before navigation checks.
+  await n.p.locator('.lab-highlight').evaluateAll(es=>es.forEach(e=>e.classList.remove('lab-highlight')));
+  await n.p.locator('#lab-input-gpt').fill('Show that project');await n.p.locator('.lab-compose button[type=submit]').first().click();await settled(n.p);
+  assert.equal(await n.p.locator('.lab-highlight').count(),navigation==='/ai8-dna-v4'?1:0,'registered public actions only');
+  if(navigation==='/ai8-dna-v4')assert.equal(await n.p.locator('.lab-highlight').getAttribute('data-record'),'ai8-dna');
+  await n.c.close();
+ }
+ const native=await session({width:390,height:852},{signed:true});await native.p.goto(base+'/ai8-dna-v4?mode=ai8-live');await ready(native.p);assert.equal(await native.p.locator('#lab-header').isVisible(),false);assert.equal(await native.p.locator('.lab-panel').count(),0);assert.equal(native.calls.length,0);assert.equal(native.authCalls.length,0);await screenshot(native.p,'native-dna-only');await native.c.close();
+ assert.deepEqual(report.errors,[]);console.log(JSON.stringify(report,null,2));
+}finally{fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));await browser.close();server.close();}

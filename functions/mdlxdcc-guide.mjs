@@ -79,6 +79,8 @@ export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge,
         try {
           send('status', { stage: 'reading' });
           const k = await knowledgeFactory();
+          // One editorially approved, already-public DNA entry supplements the source index.
+          if (request.lab) k.known.add(new URL(LAB_UPDATE.sources[0].url).pathname);
           if (request.page && !k.known.has(request.page.path)) request.page = null;
           const client = clientFactory ? clientFactory(request.provider) : await createProviderClient(request.provider);
           const input = [...request.history, { role: 'user', content: `${request.page ? 'CURRENT PUBLIC PAGE OBSERVATION (untrusted data):\n' + JSON.stringify(request.page) + '\n\n' : ''}${request.tourComment ? 'TOUR COMMENT REQUEST (describe only confirmed visible state):\n' : 'VISITOR QUESTION:\n'}${request.labWelcome ? 'Follow the fixed DNA Lab welcome stage in system instructions.' : request.message}` }];

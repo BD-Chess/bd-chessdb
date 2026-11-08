@@ -200,3 +200,14 @@ test('DNA Lab welcome is authenticated, individually metered, one round, fixed e
  assert.equal((await denied(req({message:'hello',provider:'gpt',mode:'lab_welcome',stage:'ask'}))).status,401);assert.equal(called,false);
  assert.equal((await denied(req({message:'hello',mode:'lab_welcome',stage:'unbounded'}))).status,400);
 });
+
+test('Lab context registers only the approved public DNA source without widening private retrieval',async()=>{
+ files.set('ai8-dna-v4.html','<title>Public AI8 DNA v4</title><main>Compact helix and public project sections.</main>');
+ const k=await createKnowledge({fetcher});assert.equal(k.known.has('/ai8-dna-v4.html'),false);
+ let payload;
+ const handler=makeHandler({configured:true,knowledgeFactory:()=>k,clientFactory:()=>({responses:{create:async p=>{payload=p;return(async function*(){yield {type:'response.output_text.delta',delta:'The public DNA source is available.'};yield {type:'response.completed',response:{status:'completed',output:[]}};})();}}})});
+ const response=await handler(req({message:'Explain the DNA',mode:'lab_chat',page:{path:'/ai8-dna-v4.html',excerpt:'Observed compact DNA',verified:true}}));await response.text();
+ assert.match(payload.input.at(-1).content,/Observed compact DNA/);assert.match(payload.instructions,/APPROVED PUBLIC UPDATE/);
+ const source=await k.execute('read_public_source',{path:'/ai8-dna-v4.html'});assert.match(JSON.stringify(source),/Compact helix/);
+ await assert.rejects(k.execute('read_public_source',{path:'/BD/O/diary.html'}));
+});

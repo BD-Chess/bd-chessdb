@@ -56,7 +56,7 @@ jobs:
           npm ci --ignore-scripts
           npm ci --prefix functions --no-audit --no-fund
       - name: Verify AI8 DNA themes, shortcuts and frozen archive
-        run: node --test tests/ai8-dna-v4.test.mjs
+        run: node --test tests/ai8-dna-v4.test.mjs tests/dna-lab.test.mjs
       - name: Verify AI8 News gateway and local bridge without provider calls
         run: |
           python3 integrations/ai8-news/native/test_host.py
