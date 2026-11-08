@@ -229,7 +229,7 @@ function inPanelPassage(x,y){
 function trackPointer(e){
   if(e.pointerType==='touch')return;
   lastInput='pointer';
-  if(e.target.closest('.section-label')){cancelHover();cancelClose();setNear(null);return;}
+  if(e.target.closest('.section-label,[data-dna-lab]')){cancelHover();cancelClose();setNear(null);return;}
   if(panel.contains(e.target)){cancelHover();cancelClose();setNear(opener);return;}
   const hit=nearestPoint(e.pageX,e.pageY);
   if(suppressedHover&&hit?.id!==suppressedHover)suppressedHover=null;
@@ -345,7 +345,7 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('pointermove',trackPointer,{passive:true});
 document.addEventListener('pointerdown',e=>{lastInput=e.pointerType==='touch'?'touch':'pointer';},true);
 document.addEventListener('click',e=>{
-  if(e.composedPath().includes(panel)||e.target.closest('a,.section-label,.section-note'))return;
+  if(e.composedPath().includes(panel)||e.target.closest('a,.section-label,.section-note,[data-dna-lab]'))return;
   if(selectedSection)selectSection(null);
   const target=e.target.closest('.dna-node');
   const hit=e.detail===0&&target?{id:target===origin?'origin':target.dataset.project,btn:target}:nearestPoint(e.pageX,e.pageY,lastInput==='touch'?28:36);
