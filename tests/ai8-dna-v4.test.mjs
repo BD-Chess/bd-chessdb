@@ -6,7 +6,27 @@ import {CURATED,FEATURED_IDS,loadCatalogue} from '../public/assets/ai8-entry/fea
 import {decorateDNA,DNA_TOP_PAGES} from '../public/assets/ai8-entry/dna-top-points.mjs';
 import {SECTIONS,classify,buildStrand} from '../public/assets/ai8-entry/dna-sections.mjs';
 const publicIndex=JSON.parse(fs.readFileSync('public/site-search-index.json'));
-async function fullCatalogue(){const fetch=globalThis.fetch;try{globalThis.fetch=async()=>({ok:true,json:async()=>publicIndex});return classify(decorateDNA((await loadCatalogue()).items,{includeLive:true}));}finally{globalThis.fetch=fetch;}}
+async function catalogue(index=publicIndex){const fetch=globalThis.fetch;try{globalThis.fetch=async()=>({ok:true,json:async()=>index});return await loadCatalogue();}finally{globalThis.fetch=fetch;}}
+async function fullCatalogue(){return classify(decorateDNA((await catalogue()).items,{includeLive:true}));}
+
+test('a refreshed index cannot duplicate the mapped current DNA destination',async()=>{
+ const baseline=await catalogue();
+ const forms=['/ai8-dna-v4.html','/ai8-dna-v4','https://www.mdlxdcc.org/ai8-dna-v4.html','https://mdlxdcc.org/ai8-dna-v4'];
+ for(const urls of [...forms.map(url=>[url]),forms]){
+  const result=await catalogue({...publicIndex,items:[...publicIndex.items,...urls.map(url=>({url,title:'AI8 DNA v4',description:'Index metadata must not replace the curated record.',priority:9999}))]});
+  assert.equal(result.complete,true);
+  assert.deepEqual(result.items,baseline.items,urls.join(', '));
+  assert.deepEqual(result.items.find(p=>p.id==='ai8-dna'),CURATED.find(p=>p.id==='ai8-dna'));
+  assert.equal(result.items.filter(p=>p.url==='/ai8-dna-v4.html').length,1);
+ }
+});
+test('current DNA deduplication preserves case-distinct pages, fragments and unverified paths',async()=>{
+ const urls=['/AI8-DNA-V4.html','/ai8-dna-v4/','/different-dna-page.html','/ai8-dna-v4.html#guide','/ai8-dna-v3.html'];
+ const result=await catalogue({items:[{url:'/ai8-dna-v4.html',title:'AI8 DNA v4',priority:50},...urls.map(url=>({url,title:'AI8 DNA v4',priority:50}))]});
+ for(const url of urls)assert.ok(result.items.some(p=>p.url===url),url);
+ assert.equal(result.items.filter(p=>p.title==='AI8 DNA v4').length,urls.length,'same titles must not merge distinct destinations');
+ assert.equal(result.items.find(p=>p.url==='/ai8-dna-v4.html').id,'ai8-dna');
+});
 
 test('Top 8 shortcuts share records, keep stable IDs, and do not inflate catalogue counts',async()=>{
  const items=await fullCatalogue(),strand=buildStrand(items),top=strand.instances.filter(d=>d.section==='top');

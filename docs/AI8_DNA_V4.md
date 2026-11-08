@@ -17,6 +17,10 @@ shortcut display instances of the same project objects. Search and page counts
 use the underlying catalogue, never the display instances. Case-distinct pages
 and unverified aliases retain the catalogue's existing independent identities.
 Search results show paths to distinguish separate pages with the same title.
+Destination deduplication runs again after the current DNA URL mapping. The v4
+`.html` and clean URL share one destination; the curated record and ID win when
+the public index includes that destination. Case, fragments and other paths are
+retained.
 
 Each section spans as many half turns as needed, with up to twelve points per
 opening. Labels show the whole section's page count and the opening number.
@@ -41,5 +45,5 @@ node tests/ai8-dna-v4-browser.mjs
 The browser test serves local fixtures, blocks external requests and verifies
 hover/focus/touch, search, navigation, fallback, reduced motion, enlarged text,
 phone/tablet/desktop layout and a pixel comparison of v3 against base `93c097d4`.
-It uses emulated touch, not physical-device testing. The four data/archive tests
+It uses emulated touch, not physical-device testing. The six data/archive tests
 also run in the existing Pages and Netlify release workflows.
