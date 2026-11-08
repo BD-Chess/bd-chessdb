@@ -334,7 +334,7 @@ test('AI_LEARNING U1 UI hold readback disables Resume; another cap needs a fresh
  const f=fixture(),q=(await f.send(quoteFields())).data.quote,h=await pureUIFixture(f);
  h.node('learning-kind').value='api';await h.node('learning-kind').onchange();h.node('learning-tests').value='2';h.node('learning-budget').value=String(q.requiredNanoUSD);await h.node('learning-budget').onchange();h.node('learning-cost-ack').checked=true;
  await h.ui.start();assert.equal(h.ui.state.reason,'LEARNING_BUDGET');const heldId=h.ui.state.runId;
- assert.match(h.node('learning-status').textContent,/Zadržano zaradi proračuna/);assert.equal(h.node('learning-resume').disabled,true);
+ assert.match(h.node('learning-status').textContent,/Zadržano zaradi proračuna/);assert.equal(h.node('learning-resume').disabled,true);assert.equal(h.node('learning-stop').disabled,false);
  await h.ui.refresh();await h.ui.resume();assert.equal(f.calls.length,2);assert.equal(h.ui.state.runId,heldId);assert.equal(h.ui.state.reason,'LEARNING_BUDGET');
  const restored=await pureUIFixture(f);for(const [k,v] of h.saved)restored.saved.set(k,v);await restored.ui.open();
  assert.equal(restored.ui.state.reason,'LEARNING_BUDGET');assert.match(restored.node('learning-status').textContent,/Zadržano zaradi proračuna/);assert.equal(restored.node('learning-resume').disabled,true);assert.equal(f.calls.length,2);
@@ -362,4 +362,31 @@ test('AI_LEARNING U1 late RUNNING response cannot override acknowledged STOPPING
  const put=f.store.put;f.store.put=async(k,v)=>{if(k.endsWith('/dispatch/0/tester')&&v.state==='STOP_BARRIER')throw Object.assign(Error(),{code:'STORAGE_UNAVAILABLE',status:503});return put(k,v);};
  await h.ui.stop();await h.ui.refresh();assert.equal(h.ui.state.status,'STOPPING');release();await pending;
  assert.equal(h.ui.state.status,'STOPPING');assert.equal(h.node('learning-resume').disabled,true);assert.equal(f.calls.length,0);
+});
+
+test('AI_LEARNING U1 R2 expired held cycle keeps budget reason in new handler, UI and export',async()=>{
+ const f=fixture(),s=await f.begin('api',{maxTests:1,budgetNanoUSD:1});
+ await f.send({action:'step',runId:s.runId,revision:0});f.setTime(610001);
+ const remote=makeLearningHandler({...f.deps,controllers:new Map()}),exported=await (await remote(f.request({action:'export',runId:s.runId}),context)).json();
+ assert.equal(exported.state.status,'EXPIRED');assert.equal(exported.state.reason,'LEARNING_BUDGET');assert.equal(exported.report.reason,'LEARNING_BUDGET');assert.equal(exported.state.counts.NOT_RUN,1);assert.equal(exported.state.reservedCalls,0);
+ const {reportMarkdown}=await import('../../public/OmniCPQ/ai-learning.mjs');assert.match(reportMarkdown(exported.report),/Razlog zadržanja: LEARNING_BUDGET/);
+ const h=await pureUIFixture(f);h.saved.set('omnicpq:ai-learning:r1:SYNTHETIC_OWNER',JSON.stringify({schema:LEARNING_PROTOCOL,runId:s.runId}));await h.ui.open();
+ assert.equal(h.ui.state.status,'EXPIRED');assert.match(h.node('learning-status').textContent,/Časovna meja je potekla/);assert.match(h.node('learning-status').textContent,/Zadržano zaradi proračuna/);assert.equal(h.node('learning-resume').disabled,true);assert.equal(h.node('learning-stop').disabled,false);
+ await h.ui.resume();assert.equal(f.calls.length,0);await h.node('learning-stop').onclick();assert.equal(h.ui.state.status,'STOPPED');assert.equal(h.ui.state.reason,null);assert.equal(h.node('learning-stop').disabled,true);assert.equal(f.calls.length,0);
+});
+test('AI_LEARNING U1 R2 user can Stop after a completed prefix holds; late held status stays stopped',async()=>{
+ const f=fixture(),q=(await f.send(quoteFields())).data.quote;let armed=false,entered,release;const gate=new Promise(r=>entered=r),handler=f.handler;
+ const wrapped={handler:async(req,ctx)=>{const body=req.method==='POST'?await req.clone().json():null,r=await handler(req,ctx);if(armed&&body?.action==='status'){armed=false;entered();await new Promise(r=>release=r);}return r;}};
+ const h=await pureUIFixture(wrapped);h.node('learning-kind').value='api';await h.node('learning-kind').onchange();h.node('learning-tests').value='3';h.node('learning-budget').value=String(q.requiredNanoUSD);await h.node('learning-budget').onchange();h.node('learning-cost-ack').checked=true;await h.ui.start();
+ assert.equal(h.ui.state.reason,'LEARNING_BUDGET');assert.equal(h.ui.state.counts.PASS,1);assert.equal(h.ui.state.counts.NOT_RUN,2);assert.equal(h.node('learning-stop').disabled,false);
+ armed=true;const late=h.ui.refresh();await gate;await h.node('learning-stop').onclick();assert.equal(h.ui.state.status,'STOPPED');release();await late;
+ assert.equal(h.ui.state.status,'STOPPED');assert.equal(h.ui.state.reason,null);assert.equal(h.node('learning-stop').disabled,true);assert.equal(f.calls.length,2);
+});
+test('AI_LEARNING U1 R2 budget-held Stop failure stays STOPPING until its barriers close',async()=>{
+ const f=fixture(),s=await f.begin('api',{maxTests:1,budgetNanoUSD:1});await f.send({action:'step',runId:s.runId,revision:0});
+ const h=await pureUIFixture(f);h.saved.set('omnicpq:ai-learning:r1:SYNTHETIC_OWNER',JSON.stringify({schema:LEARNING_PROTOCOL,runId:s.runId}));await h.ui.open();
+ const put=f.store.put;f.store.put=async(k,v)=>{if(k.endsWith('/dispatch/0/tester')&&v.state==='STOP_BARRIER')throw Object.assign(Error(),{code:'STORAGE_UNAVAILABLE',status:503});return put(k,v);};
+ assert.equal(h.node('learning-stop').disabled,false);await h.node('learning-stop').onclick();await h.ui.refresh();
+ assert.equal(h.ui.state.status,'STOPPING');assert.equal(h.ui.state.reason,null);assert.equal(h.ui.state.stopBarrierClosed,false);assert.equal(h.node('learning-resume').disabled,true);assert.doesNotMatch(h.node('learning-status').textContent,/Zadržano zaradi proračuna/);assert.equal(f.calls.length,0);
+ f.store.put=put;await h.node('learning-stop').onclick();assert.equal(h.ui.state.status,'STOPPED');assert.equal(h.ui.state.stopBarrierClosed,true);assert.equal(f.calls.length,0);
 });

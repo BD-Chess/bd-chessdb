@@ -45,7 +45,7 @@ export function createLearningUI({document:doc,window:win,authorized,canStart=()
  }
  const settings=()=>({kind:$('learning-kind').value,profile:$('learning-profile').value,maxTests:Number($('learning-tests').value),minutes:Number($('learning-minutes').value),budgetNanoUSD:$('learning-kind').value==='api'?Number($('learning-budget').value):0});
  const settingsKey=x=>JSON.stringify(x);
- const budgetMessage=()=> 'Zadržano zaradi proračuna. Naslednji celotni preizkus zahteva '+money(state.budgetHold?.requiredNanoUSD)+'; preostalo '+money(state.budgetHold?.remainingNanoUSD)+'. Nedokončani preizkusi ostanejo NOT_RUN. Za drugačno mejo izberi nov cikel in ponovno potrdi stroške.';
+ const budgetMessage=()=> (state.status==='EXPIRED'?'Časovna meja je potekla. ':'')+'Zadržano zaradi proračuna. Naslednji celotni preizkus zahteva '+money(state.budgetHold?.requiredNanoUSD)+'; preostalo '+money(state.budgetHold?.remainingNanoUSD)+'. Nedokončani preizkusi ostanejo NOT_RUN. Za drugačno mejo izberi nov cikel in ponovno potrdi stroške.';
  async function refreshQuote(fields=settings()){
   const serial=++quoteSerial,token=epoch,k=settingsKey(fields);
   preview={key:k,pending:true};render();
@@ -68,7 +68,7 @@ export function createLearningUI({document:doc,window:win,authorized,canStart=()
   $('learning-start').disabled=!allowed()||starting||inflight||looping||!canStart()||Boolean(runId&&!state)||Boolean(state&&!TERMINAL.includes(state.status))||(kind==='api'&&(!capability?.apiAvailable||!$('learning-cost-ack').checked||!p?.quote?.fits));
   $('learning-pause').disabled=!allowed()||!state||state.status!=='RUNNING'||paused;
   $('learning-resume').disabled=!allowed()||!state||TERMINAL.includes(state.status)||state.status==='STOPPING'||inflight||looping||!canStart();
-  $('learning-stop').disabled=!allowed()||!state||TERMINAL.includes(state.status);
+  $('learning-stop').disabled=!allowed()||!state||(TERMINAL.includes(state.status)&&state.reason!=='LEARNING_BUDGET');
   $('learning-refresh').disabled=!allowed()||!runId;
   for(const id of ['learning-export-json','learning-export-md'])$(id).disabled=!allowed()||!state;
   for(const id of ['learning-kind','learning-profile','learning-tests','learning-minutes','learning-budget','learning-cost-ack'])$(id).disabled=Boolean(state&&!TERMINAL.includes(state.status))||starting||inflight||looping;
@@ -87,12 +87,12 @@ export function createLearningUI({document:doc,window:win,authorized,canStart=()
    if(r.status==='FAIL'){const p=doc.createElement('p');p.textContent='Kandidat za popravek: pregled istega primera in regresija za HTML ter Copilot. Še ni sprejeto ali nameščeno.';row.append(p);}
    $('learning-results').append(row);
   }
-  if(state?.status==='BLOCKED'&&state.reason==='LEARNING_BUDGET')status(budgetMessage());
+  if(state?.reason==='LEARNING_BUDGET')status(budgetMessage());
   else if(running)status(inflight?'Preizkus poteka. Pavza ustavi naslednje korake; Ustavi prekliče cikel.':'Pripravljam naslednji omejeni preizkus.');
  }
  async function refresh(){
   if(!allowed()||!runId)return;const token=epoch;
-  try{const v=await request('status');if(adopt(v.state,token)){if(state.status==='BLOCKED'&&state.reason==='LEARNING_BUDGET')status(budgetMessage());else status('Shranjeno stanje je prebrano. Nadaljevanje sproži samo gumb Nadaljuj.');}}
+  try{const v=await request('status');if(adopt(v.state,token)){if(state.reason==='LEARNING_BUDGET')status(budgetMessage());else status('Shranjeno stanje je prebrano. Nadaljevanje sproži samo gumb Nadaljuj.');}}
   catch(e){if(token===epoch&&allowed()&&e?.code==='LEARNING_NOT_FOUND'){runId=null;state=null;try{win.localStorage.removeItem(key());}catch{}}status(problem(e));render();}
  }
  async function loop(){
@@ -104,7 +104,7 @@ export function createLearningUI({document:doc,window:win,authorized,canStart=()
     catch(e){paused=true;if(token===epoch&&allowed())status(problem(e));break;}
     finally{inflight=false;controller=null;render();}
    }
-   if(token===epoch&&allowed()&&state&&TERMINAL.includes(state.status))status(state.status==='BLOCKED'&&state.reason==='LEARNING_BUDGET'?budgetMessage():(WORDS[state.status]||'Končano')+'. To je omejeni preizkus, ne dokaz izvedbe v CPQ.');
+   if(token===epoch&&allowed()&&state&&TERMINAL.includes(state.status))status(state.reason==='LEARNING_BUDGET'?budgetMessage():(WORDS[state.status]||'Končano')+'. To je omejeni preizkus, ne dokaz izvedbe v CPQ.');
   }finally{looping=false;render();}
  }
  async function start(){
