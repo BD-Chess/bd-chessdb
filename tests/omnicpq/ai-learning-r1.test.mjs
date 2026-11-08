@@ -47,7 +47,7 @@ test('AI_LEARNING every operation denies demo visitor and anonymous before stora
  const f=fixture();
  for(const role of ['demo','visitor','anonymous']){
   f.setRole(role);
-  for(const action of ['start','status','step','pause','resume','stop','export']){
+  for(const action of ['quote','start','status','step','pause','resume','stop','export']){
    const r=await f.send({action,runId:randomUUID(),role:'owner',email:'SYNTHETIC_BYPASS'});
    assert([401,403].includes(r.response.status));assert.equal(f.stores,0);assert.equal(f.calls.length,0);
   }
@@ -94,8 +94,8 @@ test('AI_LEARNING owner binding and version binding prevent adopting another or 
 });
 test('AI_LEARNING duration cap and tiny API budget hold before provider dispatch',async()=>{
  const f=fixture(),s=await f.begin('api',{budgetNanoUSD:1,maxTests:1});
- assert.equal((await f.send({action:'step',runId:s.runId,revision:0})).data.error.code,'LEARNING_BUDGET');assert.equal(f.calls.length,0);
- f.setTime(610000);assert.equal((await f.send({action:'step',runId:s.runId,revision:0})).data.error.code,'LEARNING_TIME');
+ const held=await f.send({action:'step',runId:s.runId,revision:0});assert.equal(held.data.state.status,'BLOCKED');assert.equal(held.data.state.reason,'LEARNING_BUDGET');assert.equal(f.calls.length,0);
+ f.setTime(610000);assert.equal((await f.send({action:'step',runId:s.runId,revision:1})).data.error.code,'LEARNING_TIME');
 });
 test('AI_LEARNING fixed model pair records separate identity usage and strict deterministic verdict',async()=>{
  const f=fixture(),s=await f.begin('api',{maxTests:1});const r=await f.send({action:'step',runId:s.runId,revision:0});
@@ -269,4 +269,97 @@ test('AI_LEARNING prior commit before final overlapping check can remain possibl
  const stopped=await (await remote(f.request({action:'stop',runId:s.runId}),context)).json();
  assert.equal(stopped.state.stopCommittedCalls,1);assert.equal(f.calls.length,0);
  release();const result=await pending;assert.equal(f.calls.length,1);assert.equal(result.data.state.status,'STOPPED');assert(result.data.state.reservedNanoUSD>0);
+});
+
+const quoteFields=(fields={})=>({action:'quote',runId:randomUUID(),kind:'api',profile:'careful',maxTests:1,minutes:10,budgetNanoUSD:1e9,...fields});
+test('AI_LEARNING U1 quote is owner-only, closed and calls neither storage nor provider',async()=>{
+ const f=fixture();
+ const q=await f.send(quoteFields({ackCost:false}));
+ assert.equal(q.response.status,200);assert(q.data.quote.requiredNanoUSD>0);assert.equal(q.data.quote.modelExecution,'NOT_RUN');assert.equal(f.stores,0);assert.equal(f.calls.length,0);assert.equal(f.map.size,0);
+ for(const fields of [{budgetNanoUSD:'500000000'},{budgetNanoUSD:true},{budgetNanoUSD:1e9+1},{minutes:0},{maxTests:1.5},{context:{text:'FORGED_PRIVATE'}},{extra:1}]){
+  const r=await f.send(quoteFields(fields));assert.notEqual(r.response.status,200);assert.equal(f.stores,0);
+ }
+ f.setRole('demo');assert.equal((await f.send(quoteFields())).response.status,403);assert.equal(f.stores,0);
+});
+test('AI_LEARNING U1 one-nano budget boundary and reservation agree at dispatch',async()=>{
+ const f=fixture(),q=(await f.send(quoteFields())).data.quote;
+ assert.equal((await f.send(quoteFields({budgetNanoUSD:q.requiredNanoUSD-1}))).data.quote.fits,false);
+ assert.equal((await f.send(quoteFields({budgetNanoUSD:q.requiredNanoUSD}))).data.quote.fits,true);
+ assert.equal(f.calls.length,0);assert.equal(f.stores,0);
+ const s=await f.begin('api',{budgetNanoUSD:q.requiredNanoUSD,maxTests:1});
+ const result=await f.send({action:'step',runId:s.runId,revision:0});
+ assert.equal(result.data.state.status,'COMPLETE');assert.equal(result.data.state.reservedNanoUSD,q.requiredNanoUSD);assert.equal(f.calls.length,2);
+});
+test('AI_LEARNING U1 durable low-budget hold restores and exports without reservation or replay',async()=>{
+ const f=fixture(),s=await f.begin('api',{budgetNanoUSD:1,maxTests:1}),held=await f.send({action:'step',runId:s.runId,revision:0}),state=held.data.state;
+ assert.equal(held.response.status,200);assert.equal(state.status,'BLOCKED');assert.equal(state.reason,'LEARNING_BUDGET');assert.equal(state.counts.NOT_RUN,1);assert.equal(state.reservedNanoUSD,0);assert.equal(state.reservedCalls,0);assert.equal(state.revision,1);
+ assert(![...f.map.keys()].some(k=>k.includes('/dispatch/')||k.includes('/receipt/')));
+ const remote=makeLearningHandler({...f.deps,controllers:new Map()});
+ const restored=await (await remote(f.request({action:'export',runId:s.runId}),context)).json();
+ assert.equal(restored.report.reason,'LEARNING_BUDGET');assert.deepEqual(restored.report.budgetHold,state.budgetHold);assert.equal(restored.report.counts.NOT_RUN,1);
+ const before=structuredClone([...f.map]);
+ for(const action of ['resume','step'])assert.equal((await f.send({action,runId:s.runId,revision:1})).data.error.code,'LEARNING_BUDGET');
+ assert.deepEqual([...f.map],before);assert.equal(f.calls.length,0);
+ const stopped=(await f.send({action:'stop',runId:s.runId})).data.state;
+ assert.equal(stopped.status,'STOPPED');assert.equal(stopped.reason,null);assert.equal(stopped.reservedCalls,0);
+});
+test('AI_LEARNING U1 next pair exhaustion preserves the completed prefix and immutable cap',async()=>{
+ const f=fixture(),q=(await f.send(quoteFields())).data.quote,s=await f.begin('api',{maxTests:2,budgetNanoUSD:q.requiredNanoUSD});
+ const first=(await f.send({action:'step',runId:s.runId,revision:0})).data.state;
+ assert.equal(first.counts.PASS,1);assert.equal(f.calls.length,2);
+ const second=(await f.send({action:'step',runId:s.runId,revision:1})).data.state;
+ assert.equal(second.status,'BLOCKED');assert.equal(second.reason,'LEARNING_BUDGET');assert.equal(second.counts.PASS,1);assert.equal(second.counts.NOT_RUN,1);
+ assert.equal(second.reservedNanoUSD,first.reservedNanoUSD);assert.equal(second.reservedCalls,2);assert.equal(second.budgetNanoUSD,q.requiredNanoUSD);assert.equal(f.calls.length,2);
+});
+test('AI_LEARNING U1 failed hold persistence returns uncertainty, never a false held acknowledgement',async()=>{
+ const f=fixture(),s=await f.begin('api',{maxTests:1,budgetNanoUSD:1}),put=f.store.put;
+ f.store.put=async(k,v)=>{if(v.action==='hold')throw Object.assign(Error(),{code:'STORAGE_UNAVAILABLE',status:503});return put(k,v);};
+ const r=await f.send({action:'step',runId:s.runId,revision:0});assert.equal(r.response.status,503);assert.equal(r.data.state,undefined);assert.equal(f.calls.length,0);
+});
+test('AI_LEARNING U1 concurrent holds create one immutable event without any provider call',async()=>{
+ const f=fixture(),s=await f.begin('api',{maxTests:1,budgetNanoUSD:1});
+ const rs=await Promise.all([f.send({action:'step',runId:s.runId,revision:0}),f.send({action:'step',runId:s.runId,revision:0})]);
+ assert.equal(rs.filter(r=>r.response.status===200).length,1);assert.equal(rs.filter(r=>r.response.status===409).length,1);
+ assert.equal([...f.map.keys()].filter(k=>k.includes('/event/')).length,1);assert.equal(f.calls.length,0);
+});
+test('AI_LEARNING U1 UI preflight cannot create a low-budget cycle or auto-raise the cap',async()=>{
+ const f=fixture(),h=await pureUIFixture(f);
+ h.node('learning-kind').value='api';await h.node('learning-kind').onchange();h.node('learning-budget').value='1';await h.node('learning-budget').onchange();
+ h.node('learning-cost-ack').checked=true;h.node('learning-cost-ack').onchange();await h.ui.start();
+ assert.equal(h.ui.state,null);assert.equal(f.stores,0);assert.equal(f.calls.length,0);assert.equal(h.saved.size,0);
+ assert.equal(h.node('learning-start').disabled,true);assert.match(h.node('learning-budget-preview').textContent,/Zadržano pred zagonom/);assert.match(h.node('learning-progress').textContent,/NOT_RUN/);
+ assert.equal(h.node('learning-budget').value,'1');
+});
+test('AI_LEARNING U1 UI hold readback disables Resume; another cap needs a fresh cost acknowledgement',async()=>{
+ const f=fixture(),q=(await f.send(quoteFields())).data.quote,h=await pureUIFixture(f);
+ h.node('learning-kind').value='api';await h.node('learning-kind').onchange();h.node('learning-tests').value='2';h.node('learning-budget').value=String(q.requiredNanoUSD);await h.node('learning-budget').onchange();h.node('learning-cost-ack').checked=true;
+ await h.ui.start();assert.equal(h.ui.state.reason,'LEARNING_BUDGET');const heldId=h.ui.state.runId;
+ assert.match(h.node('learning-status').textContent,/Zadržano zaradi proračuna/);assert.equal(h.node('learning-resume').disabled,true);
+ await h.ui.refresh();await h.ui.resume();assert.equal(f.calls.length,2);assert.equal(h.ui.state.runId,heldId);assert.equal(h.ui.state.reason,'LEARNING_BUDGET');
+ const restored=await pureUIFixture(f);for(const [k,v] of h.saved)restored.saved.set(k,v);await restored.ui.open();
+ assert.equal(restored.ui.state.reason,'LEARNING_BUDGET');assert.match(restored.node('learning-status').textContent,/Zadržano zaradi proračuna/);assert.equal(restored.node('learning-resume').disabled,true);assert.equal(f.calls.length,2);
+ h.node('learning-budget').value='1000000000';await h.node('learning-budget').onchange();assert.equal(h.node('learning-cost-ack').checked,false);await h.ui.start();assert.equal(h.ui.state.runId,heldId);assert.equal(f.calls.length,2);
+ h.node('learning-tests').value='1';await h.node('learning-tests').onchange();h.node('learning-cost-ack').checked=true;await h.ui.start();
+ assert.notEqual(h.ui.state.runId,heldId);assert.equal(h.ui.state.status,'COMPLETE');assert.equal(f.calls.length,4);
+});
+for(const leave of ['profile','hide','logout'])test('AI_LEARNING U1 stale quote cannot authorize Start after '+leave,async()=>{
+ const f=fixture();let entered,release,armed=true;const gate=new Promise(r=>entered=r);
+ const h=await pureUIFixture(f,async opts=>{if(armed&&opts.method==='POST'&&JSON.parse(opts.body).action==='quote'){armed=false;entered();await new Promise(r=>release=r);}});
+ h.node('learning-kind').value='api';const pending=h.node('learning-kind').onchange();await gate;
+ if(leave==='profile'){h.node('learning-profile').value='fast';await h.node('learning-profile').onchange();}
+ else if(leave==='hide')h.ui.hide();else h.ui.setAccess(false);
+ release();await pending;assert.equal(h.node('learning-start').disabled,true);assert.equal(f.calls.length,0);assert.equal(f.stores,0);
+ if(leave==='profile')assert.equal(h.node('learning-cost-ack').checked,false);
+});
+test('AI_LEARNING U1 late RUNNING response cannot override acknowledged STOPPING',async()=>{
+ const f=fixture();let armed=false,entered,release;const gate=new Promise(r=>entered=r),handler=f.handler;
+ const wrapped={handler:async(req,ctx)=>{const body=req.method==='POST'?await req.clone().json():null,r=await handler(req,ctx);if(armed&&body?.action==='status'){armed=false;entered();await new Promise(r=>release=r);}return r;}};
+ const h=await pureUIFixture(wrapped);h.node('learning-kind').value='api';await h.node('learning-kind').onchange();h.node('learning-cost-ack').checked=true;
+ // Keep a real RUNNING header without dispatch by holding Start response locally.
+ const s=await f.begin('api',{maxTests:1});
+ h.saved.set('omnicpq:ai-learning:r1:SYNTHETIC_OWNER',JSON.stringify({schema:LEARNING_PROTOCOL,runId:s.runId}));await h.ui.open();
+ armed=true;const pending=h.ui.refresh();await gate;
+ const put=f.store.put;f.store.put=async(k,v)=>{if(k.endsWith('/dispatch/0/tester')&&v.state==='STOP_BARRIER')throw Object.assign(Error(),{code:'STORAGE_UNAVAILABLE',status:503});return put(k,v);};
+ await h.ui.stop();await h.ui.refresh();assert.equal(h.ui.state.status,'STOPPING');release();await pending;
+ assert.equal(h.ui.state.status,'STOPPING');assert.equal(h.node('learning-resume').disabled,true);assert.equal(f.calls.length,0);
 });
