@@ -21,7 +21,7 @@ let active = null, pinned = false, opener = null, hoverTimer, closeTimer, ignore
 let interaction = null, lastInput = 'keyboard', pendingHover = null, closeReason = null, nearNode = null, suppressedHover = null;
 let width = document.documentElement.clientWidth, height = innerHeight, frame = 0;
 const buttons = new Map();
-let strand=buildStrand(items), displays=[], selectedSection=null, sectionPinned=false, sectionOpener=null;
+let strand=buildStrand(items), displays=[], selectedLoop=null, sectionPinned=false, sectionOpener=null;
 const sectionNotes=new Map();
 const sectionLayer=nodes;
 function orderControls(){for(const control of [...nodes.children].sort((a,b)=>parseFloat(a.style.top)-parseFloat(b.style.top)))nodes.append(control);}
@@ -41,42 +41,42 @@ function positionSectionNote(){
   note.style.left=Math.max(v.left+pad,Math.min(left,v.left+v.width-w-pad))+'px';
   note.style.top=Math.max(v.top+pad,Math.min(top,v.top+v.height-h-pad))+'px';
 }
-function selectSection(id,pin=false,button=sectionOpener){
-  selectedSection=id;sectionPinned=pin;sectionOpener=id?button:null;
+function selectLoop(id,pin=false,button=sectionOpener){
+  selectedLoop=id;sectionPinned=pin;sectionOpener=id?button:null;
   main.classList.toggle('section-selected',!!id);
-  for(const btn of buttons.values())btn.classList.toggle('section-active',btn.dataset.section===id);
+  for(const btn of buttons.values())btn.classList.toggle('section-active',btn.dataset.loop===id);
   for(const btn of sectionLayer.querySelectorAll('.section-label')){
-    const selected=btn.dataset.section===id,expanded=selected&&btn===sectionOpener;
+    const selected=btn.dataset.loop===id,expanded=selected&&btn===sectionOpener;
     btn.classList.toggle('section-active',selected);btn.setAttribute('aria-expanded',String(expanded));btn.setAttribute('aria-pressed',String(selected&&pin));
     sectionNotes.get(btn).hidden=!expanded;
   }
   positionSectionNote();scheduleDraw();
 }
 function renderSections(){
-  const previous=sectionOpener?{section:sectionOpener.dataset.section,top:sectionOpener.style.top}:null;
+  const previous=sectionOpener?.dataset.loop;
   for(const label of sectionLayer.querySelectorAll('.section-label'))label.remove();
   for(const note of sectionNotes.values())note.remove();sectionNotes.clear();sectionOpener=null;
   for(const [i,loop] of strand.loops.entries()){
     if(!loop.label)continue;
     const section=SECTIONS.find(s=>s.id===loop.section),btn=el('button',undefined,'section-label');
-    btn.type='button';btn.dataset.section=section.id;btn.style.top=loop.centre+'px';
+    btn.type='button';btn.dataset.section=section.id;btn.dataset.loop=loop.id;btn.style.top=loop.centre+'px';
     btn.style.left=geometry(loop.centre).centre+'px';btn.style.width=Math.max(94,Math.min(156,strandAmplitude()*2-44))+'px';
     const title=width<600&&section.id==='cfh'?t('CFH / Zavest','CFH'):width<600&&section.id==='lab'?'LAB':section[lang];
     btn.append(el('span',title),el('small',loop.count+' '+t('strani','pages')+(loop.total>1?' · '+loop.part+'/'+loop.total:'')));
     btn.setAttribute('aria-controls','section-note-'+i);btn.setAttribute('aria-describedby','section-note-'+i);btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-pressed','false');
     const note=el('div',undefined,'section-note');note.id='section-note-'+i;note.hidden=true;note.setAttribute('role','tooltip');
     note.append(el('strong',section.name[lang]),el('span',section.description[lang]));
-    document.body.append(note);sectionNotes.set(btn,note);btn.setAttribute('aria-label',section.name[lang]+' · '+loop.count+' '+t('strani','pages'));
-    btn.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch'&&!sectionPinned){closePanel(false);selectSection(section.id,false,btn);}});
-    btn.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch'&&!sectionPinned&&document.activeElement!==btn)selectSection(null);});
-    btn.addEventListener('focus',()=>{if(lastInput==='keyboard'){closePanel(false);selectSection(section.id,false,btn);}});
+    document.body.append(note);sectionNotes.set(btn,note);btn.setAttribute('aria-label',section.name[lang]+' · '+loop.count+' '+t('strani','pages')+(loop.total>1?' · '+loop.part+'/'+loop.total:''));
+    btn.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch'&&!sectionPinned){closePanel(false);selectLoop(loop.id,false,btn);}});
+    btn.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch'&&!sectionPinned&&document.activeElement!==btn)selectLoop(null);});
+    btn.addEventListener('focus',()=>{if(lastInput==='keyboard'){closePanel(false);selectLoop(loop.id,false,btn);}});
     btn.addEventListener('keydown',e=>arrowNavigate(e,btn));
-    btn.addEventListener('blur',()=>{if(!sectionPinned)selectSection(null);});
-    btn.addEventListener('click',e=>{e.stopPropagation();closePanel(false);const off=sectionPinned&&selectedSection===section.id;selectSection(off?null:section.id,!off,btn);});
+    btn.addEventListener('blur',()=>{if(!sectionPinned)selectLoop(null);});
+    btn.addEventListener('click',e=>{e.stopPropagation();closePanel(false);const off=sectionPinned&&selectedLoop===loop.id;selectLoop(off?null:loop.id,!off,btn);});
     sectionLayer.append(btn);
-    if(previous?.section===section.id&&previous.top===btn.style.top)sectionOpener=btn;
+    if(previous===loop.id)sectionOpener=btn;
   }
-  orderControls();selectSection(selectedSection,sectionPinned,sectionOpener);
+  orderControls();selectLoop(selectedLoop,sectionPinned,sectionOpener);
 }
 const t = (sl,en) => lang === 'sl' ? sl : en;
 const KINDS={archive:['Arhiv','Archive'],tool:['Orodje','Tool'],game:['Igra','Game'],research:['Raziskava','Research'],gallery:['Galerija','Gallery'],story:['Zgodba','Story'],concept:['Zamisel','Concept'],collection:['Zbirka','Collection'],dialogue:['Pogovor','Dialogue'],portrait:['Portret','Portrait'],entrance:['Vstop','Entrance'],page:['Podstran','Page']};
@@ -109,9 +109,9 @@ function geometry(y,side=0) {
 }
 function nodePosition(i){const d=displays[i];return geometry(d.y,d.side);}
 function segmentAlpha(y){
-  if(!selectedSection)return 1;
+  if(!selectedLoop)return 1;
   const loop=strand.loops[y<FIRST_CROSS?0:1+Math.floor((y-FIRST_CROSS)/LOOP_HEIGHT)];
-  return loop?.section===selectedSection?1.5:.55;
+  return loop?.id===selectedLoop?1.5:.55;
 }
 
 function scheduleDraw(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;draw();});}
@@ -153,7 +153,7 @@ function draw(){
 const observer=new IntersectionObserver(entries=>{for(const e of entries)e.target.classList.toggle('is-visible',e.isIntersecting);},{rootMargin:'50px'});
 function renderNodes(){
   strand=buildStrand(items);
-  displays=strand.instances.map(d=>({...d.project,id:d.id,projectId:d.project.id,section:d.section,y:d.y,side:d.side}));
+  displays=strand.instances.map(d=>({...d.project,id:d.id,projectId:d.project.id,section:d.section,loopId:d.loopId,y:d.y,side:d.side}));
   renderSections();
   displays.forEach((item,i)=>{
     let btn=buttons.get(item.id);
@@ -163,6 +163,8 @@ function renderNodes(){
       btn.style.setProperty('--node',GROUPS[item.group]?.color||palette[i%palette.length]);btn.style.setProperty('--delay',(-(i*3.73)%13)+'s');
       bindNode(btn,item.id);buttons.set(item.id,btn);nodes.append(btn);observer.observe(btn);
     }
+    // Existing buttons can move to another physical loop after catalogue load.
+    btn.dataset.loop=item.loopId;
     btn.classList.toggle('dna-top',!!item.dnaTop);
     btn.querySelector('.node-label').textContent=item.dnaLabel||item.title;
     btn.setAttribute('aria-label',item.title+' · '+groupName(item)+(item.featured?' · '+t('Izbrani projekt','Featured project'):'')+(item.dnaTop?' · '+t('BD izbor','BD selection'):''));
@@ -172,7 +174,7 @@ function renderNodes(){
   });
   origin.style.left=width/2+'px';origin.style.top=originY+'px';
   main.style.height=Math.max(height,strand.end+100)+'px';
-  orderControls();selectSection(selectedSection,sectionPinned);scheduleDraw();
+  orderControls();selectLoop(selectedLoop,sectionPinned);scheduleDraw();
 }
 function arrowNavigate(e,btn){
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const list=[...nodes.children],next=list[list.indexOf(btn)+(e.key==='ArrowDown'?1:-1)];next?.focus();}
@@ -307,7 +309,7 @@ function fillGuide(){
   body.append(el('p',t('Razišči tematske dele verige ali poišči stran. Oznaka v sredini razloži in osvetli temo; dotik jo vklopi ali izklopi. TOP 8 so bližnjice do projektov v njihovih temah.','Explore the strand by subject or search for a page. A central label explains and highlights its subject; tap to toggle it. TOP 8 offers shortcuts to projects in their own sections.')));
   body.append(el('span',items.length+' '+t('povezav','connections')+' · '+(complete?t('javna zbirka','public collection'):t('izbor projektov','selected projects')),'origin-count'));
   const nav=el('nav',undefined,'guide-links');nav.setAttribute('aria-label',t('Vstopne strani','Entry pages'));nav.append(link('AI8 Codex','/ai8-codex.html'),link('MDL×DCC','/'),link('Atlas','/index-atlas.html'),link('DNA v1','/ai8-dna.html'),link('DNA v2','/ai8-dna-v2.html'),link('DNA v3','/ai8-dna-v3.html'));body.append(nav);
-  const sections=el('nav',undefined,'section-index');sections.setAttribute('aria-label',t('Teme','Subjects'));for(const section of SECTIONS){const first=sectionLayer.querySelector(`[data-section="${section.id}"]`);if(!first)continue;const b=el('button',section[lang]);b.type='button';b.addEventListener('click',()=>{closePanel(false);first.scrollIntoView({block:'center'});first.focus({preventScroll:true});selectSection(section.id,true);});sections.append(b);}body.append(sections);
+  const sections=el('nav',undefined,'section-index');sections.setAttribute('aria-label',t('Teme','Subjects'));for(const section of SECTIONS){const first=sectionLayer.querySelector(`[data-section="${section.id}"]`);if(!first)continue;const b=el('button',section[lang]);b.type='button';b.addEventListener('click',()=>{closePanel(false);first.scrollIntoView({block:'center'});first.focus({preventScroll:true});selectLoop(first.dataset.loop,true,first);});sections.append(b);}body.append(sections);
   const label=el('label',t('Poišči točko v verigi','Find a point in the strand'),'search-label');label.htmlFor='dna-search';
   const input=el('input',undefined,'search-input');input.type='search';input.id='dna-search';input.placeholder=t('Projekt, pojem, podstran …','Project, concept, page …');input.autocomplete='off';
   const results=el('ul',undefined,'search-results');results.id='dna-results';results.setAttribute('aria-label',t('Rezultati iskanja','Search results'));input.setAttribute('aria-controls','dna-results');
@@ -338,16 +340,16 @@ $('#panel-close').addEventListener('click',()=>{suppressedHover=active;closePane
 $('#panel-overline').addEventListener('click',()=>{openPanel('origin',opener||origin,true,lastInput==='touch'?'touch':'keyboard');$('#dna-search').focus({preventScroll:true});});
 document.addEventListener('keydown',e=>{
   lastInput='keyboard';
-  if(e.key==='Escape'&&selectedSection){selectSection(null);}
+  if(e.key==='Escape'&&selectedLoop){selectLoop(null);}
   if(e.key==='Escape'&&!panel.hidden){e.preventDefault();suppressedHover=active;closePanel(true);}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openPanel('origin',origin,true,'keyboard');$('#dna-search').focus();}
 },true);
 document.addEventListener('pointermove',trackPointer,{passive:true});
 document.addEventListener('pointerdown',e=>{lastInput=e.pointerType==='touch'?'touch':'pointer';},true);
 document.addEventListener('click',e=>{
-  if(e.target.closest('[data-dna-lab]')){if(selectedSection)selectSection(null);closePanel(false);return;}
+  if(e.target.closest('[data-dna-lab]')){if(selectedLoop)selectLoop(null);closePanel(false);return;}
   if(e.composedPath().includes(panel)||e.target.closest('a,.section-label,.section-note'))return;
-  if(selectedSection)selectSection(null);
+  if(selectedLoop)selectLoop(null);
   const target=e.target.closest('.dna-node');
   const hit=e.detail===0&&target?{id:target===origin?'origin':target.dataset.project,btn:target}:nearestPoint(e.pageX,e.pageY,lastInput==='touch'?28:36);
   if(!hit){closePanel(false);return;}

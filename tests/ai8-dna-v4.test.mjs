@@ -59,3 +59,14 @@ test('current entry links choose v4 while explicit archive pages remain availabl
  assert.equal(CURATED.find(p=>p.id==='ai8-dna').url,'/ai8-dna-v4.html');
  for(const file of ['ai8-dna.html','ai8-dna-v2.html','ai8-dna-v3.html','ai8-dna-v4.html'])assert.ok(fs.existsSync('public/'+file));
 });
+
+test('physical loop IDs are category-local and keep top cap separate from its full oval',async()=>{
+ const items=await fullCatalogue(),s=buildStrand(items),ids=s.loops.map(l=>l.id);
+ assert.equal(new Set(ids).size,ids.length);
+ for(const n of s.instances){const loop=s.loops.find(l=>l.id===n.loopId);assert.ok(loop);assert.equal(loop.section,n.section);assert.ok(n.y>loop.start&&n.y<loop.end);}
+ assert.equal(s.instances.filter(n=>n.loopId==='top:cap').length,3);
+ assert.equal(s.instances.filter(n=>n.loopId==='top:1').length,5);
+ assert.equal(s.loops.find(l=>l.id==='top:1').count,8);
+ const initial=buildStrand(classify(decorateDNA(CURATED)));
+ for(const l of initial.loops)assert.ok(s.loops.some(full=>full.id===l.id),'identity survives full catalogue expansion');
+});
