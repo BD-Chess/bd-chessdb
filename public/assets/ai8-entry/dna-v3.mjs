@@ -1,6 +1,6 @@
 import {CURATED, GROUPS, loadCatalogue} from './featured-catalog.mjs';
 import {textEnabled} from './text-setting.mjs';
-import {decorateDNA} from './dna-top-points.mjs?v=20261108-top2';
+import {decorateDNA} from './dna-top-points.mjs?v=20261108-top3';
 
 const $ = s => document.querySelector(s), root = document.documentElement;
 const canvas = $('#dna-canvas'), ctx = canvas.getContext('2d'), main = $('#dna'), nodes = $('#dna-nodes');

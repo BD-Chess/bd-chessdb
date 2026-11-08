@@ -2,6 +2,8 @@
 export const DNA_TOP_PAGES = Object.freeze([
   {url: '/crp/ToE.html', label: 'ToE'},
   {url: '/crp/AI8_Architecture.html', label: 'AI8 Architecture'},
+  {url: '/BD/BD_AIM3.html', label: 'AIM³'},
+  {url: '/BD/BD_AIM3_RHP.html', label: 'RHP'},
   {url: '/crp/AC-WFP.html', label: 'AC-WFP'},
   {url: '/BD/BD_CCH_Consciousness_Field.html', label: 'CFH'},
   {url: '/crp/DGTE.html', label: 'DGTE'},
