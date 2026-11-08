@@ -9,7 +9,7 @@ export const RESEARCH_ONLY_IDS = Object.freeze(['materials', '8zip']);
 const selected = new Set(FEATURED_IDS);
 function current(item) {
   return {...item, featured: selected.has(item.id),
-    ...(item.id === 'ai8-dna' ? {url: '/ai8-dna-v3.html'} : {}),
+    ...(item.id === 'ai8-dna' ? {url: '/ai8-dna-v4.html'} : {}),
     ...(item.id === 'mdl-dcc' ? {related: ['ai8', 'tsp', 'sudoku']} : {})};
 }
 export const CURATED = ORIGINAL.map(current);
