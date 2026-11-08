@@ -22,12 +22,20 @@ Destination deduplication runs again after the current DNA URL mapping. The v4
 the public index includes that destination. Case, fragments and other paths are
 retained.
 
-Each section spans as many half turns as needed, with up to twelve points per
-opening. Labels show the whole section's page count and the opening number.
+Each section spans as many half turns as needed, with up to eight points per
+full opening; the original upper cap retains the first three Top 8 anchors. Labels show the whole section's page count and the opening number.
 Hover or focus highlights every point and label of that section; touch or click
-pins the explanation, a second click or Escape clears it. Text enlargement adds
-vertical room. Canvas drawing is viewport bounded, and offscreen nuclei do not
-animate. Reduced motion disables animations and transitions.
+pins the explanation, a second click or Escape clears it. Larger central titles
+keep the desktop `.56rem` and mobile `.5rem` count lines small. Long explanations
+use the existing tooltip outside the compact opening and remain viewport bounded.
+Text enlargement changes text without moving anchors or changing the helix pitch.
+
+The curve uses the original v3 amplitude, 460px full turn and `.62` opening phase,
+including its broad upper cap. An absolute canvas tile occupies only the visible
+document rectangle (`visualViewport.pageLeft/pageTop/width/height`). Its raster
+transform uses that same document origin as the DOM nodes and category labels,
+and updates on visual viewport resize/scroll as well as ordinary scrolling.
+Pinch zoom remains native and unrestricted. Offscreen nuclei do not animate. Reduced motion disables animations and transitions.
 
 V3 loads only `assets/ai8-entry/archive-v3/` for its entry scripts, styles,
 catalogue and search snapshot. `manifest.json` records source and frozen hashes.
@@ -40,6 +48,7 @@ Validation:
 node --test tests/ai8-dna-v4.test.mjs
 # Requires playwright-core and Chromium; accepts CHROMIUM_PATH and DNA_EVIDENCE.
 node tests/ai8-dna-v4-browser.mjs
+node tests/ai8-dna-v4-zoom-browser.mjs
 ```
 
 The browser test serves local fixtures, blocks external requests and verifies
@@ -47,3 +56,11 @@ hover/focus/touch, search, navigation, fallback, reduced motion, enlarged text,
 phone/tablet/desktop layout and a pixel comparison of v3 against base `93c097d4`.
 It uses emulated touch, not physical-device testing. The six data/archive tests
 also run in the existing Pages and Netlify release workflows.
+
+The zoom test measures actual canvas stroke segments against DOM nuclei and
+category centres during real two-contact Chromium touch gestures, explicit
+scale 1 → 2 → 1, zoomed pan and document scroll, with asserted nonzero visual
+viewport offsets. It also exercises a labeled Safari-coordinate regression
+model on Chromium (visual scroll offsets/height and viewport-driven events).
+This is not physical iPhone/Safari testing. The initial canvas raster must match
+frozen v3 exactly; enlarged text must preserve every nucleus position.
