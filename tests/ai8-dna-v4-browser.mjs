@@ -22,14 +22,14 @@ async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.
 async function guide(p){await p.keyboard.press('Control+k');await p.locator('#dna-search').waitFor({state:'visible'});}
 async function categoryLayout(page,width){
  const state=await page.evaluate(()=>{
-  const points=[...document.querySelectorAll('.dna-node .nucleus')].map(e=>e.getBoundingClientRect());
+  const points=[...document.querySelectorAll('.dna-node .nucleus')].map(e=>({rect:e.getBoundingClientRect(),id:e.parentElement.dataset.project}));
   const labels=[...document.querySelectorAll('.section-label')];
-  const collisions=labels.filter(e=>{const r=e.getBoundingClientRect();return points.some(p=>r.right>p.left&&r.left<p.right&&r.bottom>p.top&&r.top<p.bottom);}).length;
+  const collisions=labels.flatMap(e=>{const r=e.getBoundingClientRect();return points.filter(({rect:p})=>r.right>p.left&&r.left<p.right&&r.bottom>p.top&&r.top<p.bottom).map(p=>({loop:e.dataset.loop,point:p.id}));});
   const note=document.querySelector('.section-note:not([hidden])'),r=note.getBoundingClientRect(),v=visualViewport;
   return {collisions,noteInside:r.left>=v.offsetLeft&&r.top>=v.offsetTop&&r.right<=v.offsetLeft+v.width&&r.bottom<=v.offsetTop+v.height,
    title:parseFloat(getComputedStyle(labels[0]).fontSize),count:parseFloat(getComputedStyle(labels[0].querySelector('small')).fontSize),root:parseFloat(getComputedStyle(document.documentElement).fontSize)};
  });
- assert.equal(state.collisions,0,width+' compact category labels clear nuclei');
+ assert.deepEqual(state.collisions,[],width+' compact category labels clear nuclei');
  assert.equal(state.noteInside,true,width+' explanation remains in the visible viewport');
  assert.ok(state.title>state.count*1.5,'central title is larger than small details');
  if(width<=600)assert.ok(Math.abs(state.count-state.root*.5)<.01,'preserve mobile .5rem count size');
@@ -43,7 +43,7 @@ try{
  const top=await p.locator('.dna-node[data-section=top]').evaluateAll(es=>es.map(e=>e.dataset.record));
  assert.deepEqual(top,['tripopti','mdl-dcc','chessbest','sudoku','ai8','human-middle','nara','flip4m']);
  await p.mouse.move(0,0);await p.screenshot({path:out+'/desktop-first.png'});
- for(const id of ['top','cfh','ai8','games','apps','machines','theories','stories','lab']){
+ for(const id of ['top','new','cfh','ai8','games','apps','machines','theories','stories','lab']){
   const label=p.locator(`.section-label[data-section=${id}]`).first();await label.scrollIntoViewIfNeeded();await label.hover();
   assert.equal(await label.getAttribute('aria-expanded'),'true',id+' hover');
   const physical=await label.evaluate(e=>{const y=parseFloat(e.style.top);return [...document.querySelectorAll('.dna-node:not(.origin)')].filter(n=>Math.abs(parseFloat(n.style.top)-y)<115).map(n=>n.dataset.project).sort();});
@@ -55,7 +55,7 @@ try{
   await p.keyboard.press('ArrowDown');assert.equal(await p.evaluate(()=>document.activeElement.classList.contains('dna-node')),true,id+' arrow continues to next point');await label.focus();
   await p.keyboard.press('Escape');assert.equal(await label.getAttribute('aria-expanded'),'false',id+' escape');
  }
- await guide(p);assert.match(await p.locator('.origin-count').textContent(),/^479 /);
+ await guide(p);assert.match(await p.locator('.origin-count').textContent(),/^480 /);
  await p.locator('#dna-search').fill('TripOpti');const titles=await p.locator('#dna-results button span:first-child').allTextContents();assert.equal(titles.filter(t=>t==='TripOpti').length,2); // distinct /Trip/ and /Trip/TripOpti.html records already in source
  assert.equal(new Set(await p.locator('#dna-results button').evaluateAll(es=>es.map(e=>e.dataset.record))).size,titles.length,'Top 8 must not duplicate search results');
  await p.locator('#dna-search').fill('Consciousness Field Hypothesis');assert.equal(await p.locator('#dna-results button').count(),1);
@@ -92,7 +92,7 @@ try{
  await v.goto(base+'/baseline-v3.html?lang=en');await v.waitForFunction(()=>document.querySelectorAll('.dna-node').length===480);
  const baseline=await v.screenshot({path:out+'/v3-baseline.png'});assert.deepEqual(archived,baseline,'v3 archive is pixel-identical to base at phone viewport with reduced motion');
  report.cases.push('v3: same 479 records and pixel-identical phone screenshot against pre-change base');await c.close();
- const fallback=await context({viewport:{width:390,height:844},reducedMotion:'reduce'}),f=await fallback.newPage();await f.route('**/site-search-index.json',r=>r.fulfill({status:503,body:'unavailable'}));await f.goto(base+'/ai8-dna-v4.html?lang=en');await f.waitForFunction(()=>document.querySelectorAll('.dna-node').length===38);await guide(f);assert.match(await f.locator('.origin-count').textContent(),/^29 .*selected projects/);assert.equal(await f.locator('.dna-node[data-section=top]').count(),8);report.cases.push('catalogue fetch failure: working curated fallback, honest count/status and eight shortcuts');await fallback.close();
+ const fallback=await context({viewport:{width:390,height:844},reducedMotion:'reduce'}),f=await fallback.newPage();await f.route('**/site-search-index.json',r=>r.fulfill({status:503,body:'unavailable'}));await f.goto(base+'/ai8-dna-v4.html?lang=en');await f.waitForFunction(()=>document.querySelectorAll('.dna-node').length===41);await guide(f);assert.match(await f.locator('.origin-count').textContent(),/^30 .*selected projects/);assert.equal(await f.locator('.dna-node[data-section=top]').count(),8);assert.equal(await f.locator('.dna-node[data-section=new]').count(),2);report.cases.push('catalogue fetch failure: working curated fallback, honest count/status, eight featured and two available NEW shortcuts');await fallback.close();
  assert.deepEqual(errors,[]);assert.deepEqual(report.externalRequests,[]);
  fs.writeFileSync(out+'/browser-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

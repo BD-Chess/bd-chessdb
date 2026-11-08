@@ -1,9 +1,11 @@
 import {FEATURED_IDS} from './featured-catalog.mjs';
+import {selectNewRecords,newUpdateFor} from './dna-new-points.mjs';
 
 // Labels describe subjects, not claims of validation. Original groups, kinds,
 // descriptions and related IDs remain on every underlying catalogue record.
 export const SECTIONS = Object.freeze([
   {id:'top',sl:'TOP 8',en:'TOP 8',name:{sl:'Osem izbranih projektov',en:'Eight featured projects'},description:{sl:'Osem bližnjic do izbranih projektov, iger, raziskav in zgodb.',en:'Eight starting points for selected projects, games, research and stories.'}},
+  {id:'new',sl:'NEW',en:'NEW',name:{sl:'Nove strani in pomembne posodobitve',en:'New pages and significant updates'},description:{sl:'Kratek uredniški izbor nedavnih novosti in pomembnih posodobitev. Opis pove, kdaj je bila novost objavljena ali predstavljena; TOP 8 ostaja zgoraj.',en:'A short editorial selection of recent additions and significant updates. Each description dates the announcement or feature; TOP 8 stays above.'}},
   {id:'cfh',sl:'CFH / Zavest',en:'CFH / Consciousness',name:{sl:'CFH in raziskovanje zavesti',en:'CFH and consciousness research'},description:{sl:'Hipoteza polja zavesti (CFH), CCH in Absolute Consciousness: zamisli in raziskave o zavesti.',en:'Consciousness Field Hypothesis (CFH), CCH and Absolute Consciousness: ideas and research on consciousness.'}},
   {id:'ai8',sl:'AI8',en:'AI8',name:{sl:'Arhitektura in sodelovanje AI8',en:'AI8 architecture and collaboration'},description:{sl:'AI8, AI8 Live, AIM³, RHP, spomin, kontinuiteta in sodelovanje človeka z agenti.',en:'AI8, AI8 Live, AIM³, RHP, memory, continuity and collaboration between people and agents.'}},
   {id:'games',sl:'IGRE',en:'GAMES',name:{sl:'Igre in sklepanje',en:'Games and reasoning'},description:{sl:'ChessBest, Sudoku, Flip4M in križanke: igre, navodila in povezane strani.',en:'ChessBest, Sudoku, Flip4M and crosswords: games, guides and related pages.'}},
@@ -17,6 +19,7 @@ const primary = {
   'page-1acawln':'theories', // Top 100 Universe-Origin & Existence Theories
   'page-17igdys':'lab','page-8q559z':'lab', // RouteSignal prompt-method comparisons
   'page-t8mklc':'ai8', // DCC Meta-Architecture
+  'bogastvo-obstoja':'cfh', // Authored essay on consciousness and experience
 
   tripopti:'apps','mdl-dcc':'theories',chessbest:'games',sudoku:'games',ai8:'ai8',materials:'lab','8zip':'theories','human-middle':'stories',nara:'stories',flip4m:'games',crosswords:'games',tsp:'lab',hth:'machines',dgte:'machines',compression:'theories',aim3:'ai8',rhp:'ai8',os:'lab',consciousness:'cfh',toe:'theories',top100:'theories','who-are-we':'ai8',birds:'stories','discovery-map':'cfh','dna-research':'lab',bd:'ai8','ai8-codex':'ai8','ai8-dna':'ai8','ai8-live':'ai8'
 };
@@ -48,7 +51,7 @@ export function buildStrand(items) {
   const instances=[],loops=[];
   let cursor=FIRST_CROSS;
   for(const section of SECTIONS){
-    let records=section.id==='top'?FEATURED_IDS.map(id=>items.find(p=>p.id===id)).filter(Boolean):items.filter(p=>p.category===section.id).sort((a,b)=>Number(!!b.dnaTop)-Number(!!a.dnaTop));
+    let records=section.id==='top'?FEATURED_IDS.map(id=>items.find(p=>p.id===id)).filter(Boolean):section.id==='new'?selectNewRecords(items):items.filter(p=>p.category===section.id).sort((a,b)=>Number(!!b.dnaTop)-Number(!!a.dnaTop));
     const count=records.length;
     if(section.id==='top'){
       loops.push({id:'top:cap',section:'top',start:FIRST_Y-42,end:FIRST_CROSS,centre:0,label:false,count,part:0,total:1});
@@ -60,7 +63,7 @@ export function buildStrand(items) {
       const start=cursor,loopId=section.id+':'+(part+1);
       loops.push({id:loopId,section:section.id,start,end:start+LOOP_HEIGHT,centre:start+LOOP_HEIGHT/2,label:true,part:part+1,total,count});
       const chunk=records.slice(part*PER_LOOP,(part+1)*PER_LOOP);
-      chunk.forEach((project,i)=>instances.push({id:`${section.id}:${project.id}`,project,section:section.id,loopId,y:start+28+i*(LOOP_HEIGHT-56)/Math.max(1,chunk.length-1),side:i%2}));
+      chunk.forEach((project,i)=>instances.push({id:`${section.id}:${project.id}`,project,...(section.id==='new'?{update:newUpdateFor(project)}:{}),section:section.id,loopId,y:start+28+i*(LOOP_HEIGHT-56)/Math.max(1,chunk.length-1),side:i%2}));
       cursor+=LOOP_HEIGHT;
     }
   }

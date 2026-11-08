@@ -31,15 +31,20 @@ function viewport(){
 }
 function positionSectionNote(){
   const note=sectionNotes.get(sectionOpener);if(!note||note.hidden)return;
-  const v=viewport(),pad=14/v.scale,x=parseFloat(sectionOpener.style.left),y=parseFloat(sectionOpener.style.top);
+  const loop=strand.loops.find(loop=>loop.id===selectedLoop);if(!loop)return;
+  const v=viewport(),pad=14/v.scale,gap=12/v.scale,x=parseFloat(sectionOpener.style.left);
+  const topEdge=v.top+pad,bottomEdge=v.top+v.height-pad;
   note.style.width=Math.min(260,v.width-pad*2)+'px';note.style.maxHeight=Math.max(1,v.height-pad*2)+'px';
-  const w=note.offsetWidth,h=note.offsetHeight,half=sectionOpener.offsetHeight/2;
-  let left=x-w/2,top=y+half+12;
-  const outer=strandAmplitude()+Math.min(width*.035,40)+24;
-  if(v.width>=680&&width/2+outer+w<v.left+v.width-pad){left=width/2+outer;top=y-h/2;}
-  else if(top+h>v.top+v.height-pad)top=y-half-h-12;
+  const above=Math.max(0,loop.start-gap-topEdge),below=Math.max(0,bottomEdge-loop.end-gap);
+  // Stay beyond this physical ellipse, leaving all its highlighted page labels
+  // clear. If one side is tight, flip; a short viewport gets a scrollable note.
+  const placement=note.offsetHeight<=below?'below':note.offsetHeight<=above?'above':below>=above?'below':'above';
+  const room=placement==='below'?below:above;
+  note.style.visibility=loop.end<=v.top||loop.start>=v.top+v.height||room<32?'hidden':'';
+  note.style.maxHeight=room+'px';note.dataset.placement=placement;
+  const w=note.offsetWidth,h=note.offsetHeight,left=x-w/2,top=placement==='below'?loop.end+gap:loop.start-gap-h;
   note.style.left=Math.max(v.left+pad,Math.min(left,v.left+v.width-w-pad))+'px';
-  note.style.top=Math.max(v.top+pad,Math.min(top,v.top+v.height-h-pad))+'px';
+  note.style.top=top+'px';
 }
 function selectLoop(id,pin=false,button=sectionOpener){
   selectedLoop=id;sectionPinned=pin;sectionOpener=id?button:null;
@@ -61,7 +66,7 @@ function renderSections(){
     const section=SECTIONS.find(s=>s.id===loop.section),btn=el('button',undefined,'section-label');
     btn.type='button';btn.dataset.section=section.id;btn.dataset.loop=loop.id;btn.style.top=loop.centre+'px';
     btn.style.left=geometry(loop.centre).centre+'px';btn.style.width=Math.max(94,Math.min(156,strandAmplitude()*2-44))+'px';
-    const title=width<600&&section.id==='cfh'?t('CFH / Zavest','CFH'):width<600&&section.id==='lab'?'LAB':section[lang];
+    const title=width<1100&&section.id==='cfh'?t('CFH / Zavest','CFH'):width<600&&section.id==='lab'?'LAB':section[lang];
     btn.append(el('span',title),el('small',loop.count+' '+t('strani','pages')+(loop.total>1?' · '+loop.part+'/'+loop.total:'')));
     btn.setAttribute('aria-controls','section-note-'+i);btn.setAttribute('aria-describedby','section-note-'+i);btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-pressed','false');
     const note=el('div',undefined,'section-note');note.id='section-note-'+i;note.hidden=true;note.setAttribute('role','tooltip');
@@ -79,7 +84,7 @@ function renderSections(){
   orderControls();selectLoop(selectedLoop,sectionPinned,sectionOpener);
 }
 const t = (sl,en) => lang === 'sl' ? sl : en;
-const KINDS={archive:['Arhiv','Archive'],tool:['Orodje','Tool'],game:['Igra','Game'],research:['Raziskava','Research'],gallery:['Galerija','Gallery'],story:['Zgodba','Story'],concept:['Zamisel','Concept'],collection:['Zbirka','Collection'],dialogue:['Pogovor','Dialogue'],portrait:['Portret','Portrait'],entrance:['Vstop','Entrance'],page:['Podstran','Page']};
+const KINDS={archive:['Arhiv','Archive'],tool:['Orodje','Tool'],game:['Igra','Game'],research:['Raziskava','Research'],gallery:['Galerija','Gallery'],story:['Zgodba','Story'],essay:['Esej','Essay'],concept:['Zamisel','Concept'],collection:['Zbirka','Collection'],dialogue:['Pogovor','Dialogue'],portrait:['Portret','Portrait'],entrance:['Vstop','Entrance'],page:['Podstran','Page']};
 const palette = ['#a7d9c5','#daca9c','#a4c8e3','#bbb0dc','#c8d6c8'];
 const originY = 70, firstY = FIRST_Y;
 const normalize = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -153,7 +158,7 @@ function draw(){
 const observer=new IntersectionObserver(entries=>{for(const e of entries)e.target.classList.toggle('is-visible',e.isIntersecting);},{rootMargin:'50px'});
 function renderNodes(){
   strand=buildStrand(items);
-  displays=strand.instances.map(d=>({...d.project,id:d.id,projectId:d.project.id,section:d.section,loopId:d.loopId,y:d.y,side:d.side}));
+  displays=strand.instances.map(d=>({...d.project,id:d.id,projectId:d.project.id,section:d.section,loopId:d.loopId,y:d.y,side:d.side,update:d.update}));
   renderSections();
   displays.forEach((item,i)=>{
     let btn=buttons.get(item.id);
@@ -231,7 +236,7 @@ function inPanelPassage(x,y){
 function trackPointer(e){
   if(e.pointerType==='touch')return;
   lastInput='pointer';
-  if(e.target.closest('.section-label,[data-dna-lab]')){cancelHover();cancelClose();setNear(null);return;}
+  if(e.target.closest('.section-label,.section-note,[data-dna-lab]')){cancelHover();cancelClose();setNear(null);return;}
   if(panel.contains(e.target)){cancelHover();cancelClose();setNear(opener);return;}
   const hit=nearestPoint(e.pageX,e.pageY);
   if(suppressedHover&&hit?.id!==suppressedHover)suppressedHover=null;
@@ -299,6 +304,10 @@ function fillPanel(id){
   const item=displays.find(p=>p.id===id)||items.find(p=>p.id===id);if(!item)return;
   const kind=KINDS[item.kind];$('#panel-overline').textContent=groupName(item)+(kind?' / '+t(...kind):'');$('#panel-title').textContent=item.title;
   body.append(el('p',item[lang]||item.en||item.sl));
+  if(item.update){
+    const update=el('div',undefined,'project-update'),date=el('time',item.update.date);date.dateTime=item.update.date;
+    update.append(el('span',item.update.type==='featured'?t('Predstavljeno na Start · ','Featured on Start · '):t('Objavljena novost · ','Update announced · ')),date,link(t('Vir obvestila ↗','Source announcement ↗'),item.update.source));body.append(update);
+  }
   const a=link('',item.url,'project-cta');a.append(el('span',t('Odpri stran','Open page')),el('span','↗'));body.append(a);
   const related=(item.related||[]).map(x=>items.find(p=>p.id===x)).filter(Boolean);
   if(related.length){const wrap=el('div',undefined,'related');wrap.append(el('span',t('Povezano v verigi','Connected in the strand'),'related-label'));for(const other of related){const b=el('button',other.title);b.type='button';b.addEventListener('click',()=>goTo(other.id));wrap.append(b);}body.append(wrap);}
@@ -306,7 +315,7 @@ function fillPanel(id){
 }
 function fillGuide(){
   $('#panel-overline').textContent='BD × AI LAB';$('#panel-title').textContent='AI8 DNA';
-  body.append(el('p',t('Razišči tematske dele verige ali poišči stran. Oznaka v sredini razloži temo in osvetli le svojo zanko s točkami na njej; dotik jo vklopi ali izklopi. TOP 8 so bližnjice do projektov v njihovih temah.','Explore the strand by subject or search for a page. A central label explains its subject and highlights only its own ellipse and the points on it; tap to toggle it. TOP 8 offers shortcuts to projects in their own sections.')));
+  body.append(el('p',t('Razišči tematske dele verige ali poišči stran. Oznaka v sredini razloži temo in osvetli le svojo zanko s točkami na njej; dotik jo vklopi ali izklopi. TOP 8 so bližnjice do izbranih projektov. NEW prinaša kratek uredniški izbor nedavnih novosti z datumi objave ali predstavitve.','Explore the strand by subject or search for a page. A central label explains its subject and highlights only its own ellipse and the points on it; tap to toggle it. TOP 8 offers featured shortcuts. NEW is a short editorial selection of recent highlights, dated by their announcement or feature.')));
   body.append(el('span',items.length+' '+t('povezav','connections')+' · '+(complete?t('javna zbirka','public collection'):t('izbor projektov','selected projects')),'origin-count'));
   const nav=el('nav',undefined,'guide-links');nav.setAttribute('aria-label',t('Vstopne strani','Entry pages'));nav.append(link('AI8 Codex','/ai8-codex.html'),link('MDL×DCC','/'),link('Atlas','/index-atlas.html'),link('DNA v1','/ai8-dna.html'),link('DNA v2','/ai8-dna-v2.html'),link('DNA v3','/ai8-dna-v3.html'));body.append(nav);
   const sections=el('nav',undefined,'section-index');sections.setAttribute('aria-label',t('Teme','Subjects'));for(const section of SECTIONS){const first=sectionLayer.querySelector(`.section-label[data-section="${section.id}"]`);if(!first)continue;const b=el('button',section[lang]);b.type='button';b.addEventListener('click',()=>{const target=sectionLayer.querySelector(`.section-label[data-section="${section.id}"]`);if(!target)return;closePanel(false);target.scrollIntoView({block:'center'});target.focus({preventScroll:true});selectLoop(target.dataset.loop,true,target);});sections.append(b);}body.append(sections);
@@ -326,7 +335,7 @@ function fillGuide(){
   const motion=el('button',paused||reduced.matches?t('Mirovanje','Still'):t('Žarenje','Glow'),'motion');motion.type='button';motion.setAttribute('aria-pressed',String(paused||reduced.matches));motion.disabled=reduced.matches;motion.addEventListener('click',()=>{paused=!paused;save('ai8-dna-current-paused',paused);applyMotion();motion.textContent=paused?t('Mirovanje','Still'):t('Žarenje','Glow');motion.setAttribute('aria-pressed',String(paused));});controls.append(motion);body.append(controls);
 }
 function goTo(id){
-  const instance=displays.find(p=>p.projectId===id&&p.section!=='top')||displays.find(p=>p.id===id);
+  const instance=displays.find(p=>p.projectId===id&&!['top','new'].includes(p.section))||displays.find(p=>p.id===id);
   const btn=buttons.get(instance?.id);if(!btn)return;
   id=instance.id;
   closePanel(false);btn.scrollIntoView({behavior:'instant',block:'center'});ignoreFocus=true;btn.focus({preventScroll:true});ignoreFocus=false;openPanel(id,btn,true,lastInput==='touch'?'touch':'keyboard');$('#panel-close').focus({preventScroll:true});

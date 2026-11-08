@@ -150,6 +150,8 @@ function identity(raw) {
   if (host === 'www.mdlxdcc.org' && path === '/chess/') return 'https://chessbest.org/';
   return `${u.protocol}//${host}${path}${u.hash}`;
 }
+// Reuse the catalogue's verified aliases without changing its record identities.
+export {identity as destinationIdentity};
 
 function groupFor(item) {
   const text = `${item.url} ${item.category || ''} ${item.title || ''}`;

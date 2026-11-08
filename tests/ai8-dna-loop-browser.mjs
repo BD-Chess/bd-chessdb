@@ -21,14 +21,14 @@ async function context(touch=false){
  c.on('page',p=>p.on('pageerror',e=>report.errors.push(e.message)));
  return c;
 }
-async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===488);}
+async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===491);}
 async function local(p,label){
  const actual=await p.locator('.dna-node.section-active').evaluateAll(es=>es.map(e=>e.dataset.project).sort());
  // Independent physical membership: document-space position in the 230px oval.
  const physical=await label.evaluate(e=>{const y=parseFloat(e.style.top);return [...document.querySelectorAll('.dna-node:not(.origin)')].filter(n=>Math.abs(parseFloat(n.style.top)-y)<115).map(n=>n.dataset.project).sort();});
  assert.deepEqual(actual,physical);assert.equal(await p.locator('.section-label.section-active').count(),1);
  assert.equal(await label.getAttribute('aria-expanded'),'true');
- const note=await label.getAttribute('aria-controls');assert.equal(await p.locator('[id="'+note+'"]').isVisible(),true);
+ const note=await label.getAttribute('aria-controls');await p.locator('[id="'+note+'"]').waitFor({state:'visible'});
  assert.equal(await p.locator('.section-note:not([hidden])').count(),1);
  return physical.length;
 }
@@ -89,7 +89,7 @@ try{
  }
  const delayed=await context(),p=await delayed.newPage();let release;
  const held=new Promise(r=>release=r);await p.route('**/site-search-index.json',async r=>{await held;return r.continue();});
- await p.goto(base+'/ai8-dna-v4?lang=en',{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===37);
+ await p.goto(base+'/ai8-dna-v4?lang=en',{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===40);
  // Click synchronously in the curated render so actionability waiting cannot
  // consume the source loader's real eight-second network timeout.
  await p.locator('.section-label[data-loop="ai8:1"]').evaluate(e=>e.click());
