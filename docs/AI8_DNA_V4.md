@@ -24,8 +24,13 @@ retained.
 
 Each section spans as many half turns as needed, with up to eight points per
 full opening; the original upper cap retains the first three Top 8 anchors. Labels show the whole section's page count and the opening number.
-Hover or focus highlights every point and label of that section; touch or click
-pins the explanation, a second click or Escape clears it. Larger central titles
+Hover or focus highlights only that physical opening, its label, its strand
+segment and the points on it. Touch or click pins that opening; clicking another
+opening switches directly, while a second click on the same one or Escape clears it.
+Stable category-local loop IDs survive full catalogue expansion and resize; reused
+node buttons receive their current physical membership on every render. The
+three-point top cap is separate from the five-point full TOP 8 opening; its
+section counter and all eight shortcut entries remain unchanged. Larger central titles
 keep the desktop `.56rem` and mobile `.5rem` count lines small. Long explanations
 use the existing tooltip outside the compact opening and remain viewport bounded.
 Text enlargement changes text without moving anchors or changing the helix pitch.
@@ -48,13 +53,15 @@ Validation:
 node --test tests/ai8-dna-v4.test.mjs
 # Requires playwright-core and Chromium; accepts CHROMIUM_PATH and DNA_EVIDENCE.
 node tests/ai8-dna-v4-browser.mjs
+# Local-loop membership, canvas alpha and late-catalogue regression.
+node tests/ai8-dna-loop-browser.mjs
 node tests/ai8-dna-v4-zoom-browser.mjs
 ```
 
 The browser test serves local fixtures, blocks external requests and verifies
 hover/focus/touch, search, navigation, fallback, reduced motion, enlarged text,
 phone/tablet/desktop layout and a pixel comparison of v3 against base `93c097d4`.
-It uses emulated touch, not physical-device testing. The six data/archive tests
+It uses emulated touch, not physical-device testing. The data, archive and loop-identity tests
 also run in the existing Pages and Netlify release workflows.
 
 The zoom test measures actual canvas stroke segments against DOM nuclei and
