@@ -36,6 +36,7 @@ try{
   if(id==='cfh'||id==='machines')await p.screenshot({path:out+'/desktop-'+id+'-hover.png'});
   await p.mouse.move(0,0);assert.equal(await label.getAttribute('aria-expanded'),'false',id+' hover exit');
   await p.keyboard.press('Tab');await label.focus();assert.equal(await label.getAttribute('aria-expanded'),'true',id+' keyboard focus');
+  await p.keyboard.press('ArrowDown');assert.equal(await p.evaluate(()=>document.activeElement.classList.contains('dna-node')),true,id+' arrow continues to next point');await label.focus();
   await p.keyboard.press('Escape');assert.equal(await label.getAttribute('aria-expanded'),'false',id+' escape');
  }
  await guide(p);assert.match(await p.locator('.origin-count').textContent(),/^479 /);

@@ -50,6 +50,7 @@ function renderSections(){
     btn.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch'&&!sectionPinned){closePanel(false);selectSection(section.id);}});
     btn.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch'&&!sectionPinned&&document.activeElement!==btn)selectSection(null);});
     btn.addEventListener('focus',()=>{if(lastInput==='keyboard'){closePanel(false);selectSection(section.id);}});
+    btn.addEventListener('keydown',e=>arrowNavigate(e,btn));
     btn.addEventListener('blur',()=>{if(!sectionPinned)selectSection(null);});
     btn.addEventListener('click',e=>{e.stopPropagation();closePanel(false);selectSection(sectionPinned&&selectedSection===section.id?null:section.id,!(sectionPinned&&selectedSection===section.id));});
     sectionLayer.append(btn);
@@ -146,9 +147,12 @@ function renderNodes(){
   main.style.height=Math.max(height,strand.end+100)+'px';
   orderControls();selectSection(selectedSection,sectionPinned);scheduleDraw();
 }
+function arrowNavigate(e,btn){
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const list=[...nodes.children],next=list[list.indexOf(btn)+(e.key==='ArrowDown'?1:-1)];next?.focus();}
+}
 function bindNode(btn,id){
   btn.addEventListener('focus',()=>{if(ignoreFocus||lastInput!=='keyboard')return;openPanel(id,btn,false,'keyboard');});
-  btn.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const list=[origin,...main.querySelectorAll('.dna-node:not(.origin),.section-label')].sort((a,b)=>parseFloat(a.style.top)-parseFloat(b.style.top)),next=list[list.indexOf(btn)+(e.key==='ArrowDown'?1:-1)];next?.focus();}});
+  btn.addEventListener('keydown',e=>arrowNavigate(e,btn));
 }
 function cancelHover(){clearTimeout(hoverTimer);pendingHover=null;}
 function cancelClose(){clearTimeout(closeTimer);closeReason=null;}
