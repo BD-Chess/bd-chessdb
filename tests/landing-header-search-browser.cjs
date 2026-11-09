@@ -21,12 +21,13 @@ async function localServer(){
 async function row(page,width){
  const boxes=await page.evaluate(()=>{
   const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,cy:r.y+r.height/2};};
-  return {brand:box('.topbar .brand'),book:box('#book-link'),tools:box('.topbar .utilities'),header:box('.topbar'),controls:[...document.querySelectorAll('.topbar .utility')].map(el=>{const r=el.getBoundingClientRect();return {id:el.id||el.dataset.lang,x:r.x,y:r.y,w:r.width,h:r.height,right:r.right};})};
+  return {brand:box('.topbar .brand'),search:box('#search-open'),menu:box('#main-menu-trigger'),tools:box('.topbar .utilities'),header:box('.topbar'),controls:[...document.querySelectorAll('.topbar>.utilities>.utility,.topbar>.utilities>.main-menu>summary')].map(el=>{const r=el.getBoundingClientRect();return {id:el.id,x:r.x,y:r.y,w:r.width,h:r.height,right:r.right};})};
  });
  assert.ok(Math.abs(boxes.brand.cy-boxes.tools.cy)<2,'One header row at '+width);
  assert.ok(boxes.brand.right<=boxes.tools.x+1,'Brand/toolbar do not overlap at '+width);
- assert.ok(boxes.book.x>=boxes.tools.x-1&&boxes.book.right<=boxes.tools.right+1,'Book icon sits in the top-right toolbar at '+width);
-  assert.equal(boxes.controls.length,8,'Seven toolbar controls plus the book icon');
+ assert.ok(boxes.search.right<=boxes.menu.x+1,'S stays left of the menu at '+width);
+ assert.ok(Math.abs(boxes.search.cy-boxes.menu.cy)<2,'S and menu share one row at '+width);
+ assert.equal(boxes.controls.length,2,'Only S and menu stay in the header');
  for(const c of boxes.controls){
   assert.ok(c.w>=24&&c.h>=40,'Usable hit area '+c.id+' at '+width);
   assert.ok(c.x>=0&&c.right<=width+1,'No clipped control '+c.id+' at '+width);
@@ -40,6 +41,7 @@ async function run(name,engine,url){
  page.on('pageerror',error=>{if(new URL(page.url()).pathname===new URL(url).pathname)errors.push(String(error));});
  try{
   await page.goto(url,{waitUntil:'domcontentloaded'});
+  await page.locator('#main-menu-trigger').click();
   await page.locator('#font-value').waitFor({state:'visible'});
   const layouts=[];
   for(const width of [320,390,402,430,700,1440]){
@@ -60,6 +62,7 @@ async function run(name,engine,url){
   await page.setViewportSize({width:402,height:874});
   await page.locator('button[data-lang="en"]').click();
   if(await page.locator('html').getAttribute('data-theme')!=='dark')await page.locator('#theme').click();
+  await page.locator('#main-menu-trigger').click();
   if(evidence)await page.screenshot({path:path.join(evidence,name+'-mobile-402.png')});
   await page.locator('#search-open').click();
   // This global-only page proves that S actually loads the full index.
@@ -98,7 +101,7 @@ async function run(name,engine,url){
   await offline.close();
   assert.deepEqual(errors,[],'No landing JavaScript errors');
   if(evidence)fs.writeFileSync(path.join(evidence,name+'-layout.json'),JSON.stringify(layouts,null,2));
-  console.log('PASS '+name+': 320/390/402/430/700/1440, EN/SL, dark/light, 100/150%, 13 searches, real Chess LAB Enter and Start logo navigation, offline search fallback');
+  console.log('PASS '+name+': S left of menu at 320/390/402/430/700/1440, menu settings EN/SL dark/light 100/150%, 13 searches, real Chess LAB Enter and Start navigation, offline search fallback');
  }finally{await context.close();await browser.close();}
 }
 (async()=>{

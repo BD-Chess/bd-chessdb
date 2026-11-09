@@ -5,8 +5,9 @@ const data=JSON.parse(fs.readFileSync(path.join(root,'public/site-search-index.j
 // Since ee527fd8 the MDL×DCC brand toggles the Guide and the BD link opens Start.
 assert.match(html,/<button class="brand-home" id="guide-brand-toggle"/);
 assert.match(html,/<nav class="brand-sub"[^>]*><a href="\.\/Start\/index\.html">BD<\/a>/);
-// Icon-only book link is the first top-right toolbar control and opens /knjiga/.
-assert.match(html,/<div class="utilities"><a class="utility book-utility" id="book-link" href="\.\/knjiga\/" aria-label="[^"]+" title="[^"]+"><svg/);
+// Search remains left of the menu; the book and settings stay inside the menu.
+assert.match(html,/<div class="utilities"><button class="utility search-utility" id="search-open"[^>]*>S<\/button><details class="main-menu"/);
+assert.match(html,/<div class="main-menu-actions"><a class="main-menu-action" id="book-link" href="\.\/knjiga\/"/);
 assert.ok(fs.existsSync(path.join(root,'public/knjiga/index.html')),'Book page exists');
 assert.match(html,/id="landing-compact-header"/);
 for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
