@@ -629,13 +629,20 @@ html.hero-demo-open,html.hero-demo-open body{overflow:hidden!important;overscrol
 .dna-home-link:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
 @media(max-width:700px){.dna-home-link{font-size:.73rem;padding-inline:4px}}
 @media(max-width:365px){.dna-home-link{font-size:.66rem;letter-spacing:0}}
+.dna-home-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;min-width:0}
+.dna-home-sep{color:var(--muted);font-size:.86rem;line-height:1}
+html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:none}
+/* Two links do not fit between the brand and the tools on narrow windows: they take their own row. */
+.topbar>.brand{grid-column:1;grid-row:1}
+.topbar>.utilities{grid-column:3;grid-row:1}
+@media(max-width:1000px){.dna-home-links{grid-column:1/-1;grid-row:2}.dna-home-link{min-height:40px}}
 </style>
 <script type="module" src="/assets/ai8-entry/text-setting.mjs"></script>
 </head>
 <body>
 <a class="skip" href="#main"><span class="en" lang="en">Skip to content</span><span class="sl" lang="sl">Preskoči na vsebino</span></a>
 <header class="topbar wrap"><div class="brand"><button class="brand-home" id="guide-brand-toggle" type="button" aria-expanded="false" aria-controls="guide-panel" aria-label="MDL×DCC — show or hide the guide"><span class="brand-mark">MDL<em>×</em>DCC<span class="sr-only">.org</span></span></button><nav class="brand-sub" aria-label="BD × AI LAB"><a href="./Start/index.html">BD</a><span aria-hidden="true">×</span><button id="guide-toggle" type="button" aria-expanded="false" aria-controls="guide-panel">AI</button><button id="guide-lab" type="button" aria-haspopup="dialog" aria-controls="ai8-vision-dialog">LAB</button></nav></div>
-<a class="dna-home-link" href="ai8-dna-v4.html"><span class="en" lang="en">See AI8 DNA</span><span class="sl" lang="sl">Poglej AI8 DNK</span></a>
+<nav class="dna-home-links" aria-label="AI8 DNA · Essay"><a class="dna-home-link" href="ai8-dna-v4.html"><span class="en" lang="en">AI8 DNA Works</span><span class="sl" lang="sl">AI8 DNK dela</span></a><span class="dna-home-sep" aria-hidden="true">|</span><a class="dna-home-link dna-essay-en" href="bogastvo-obstoja/en/" lang="en">Essay “The Richness of Existence”</a><a class="dna-home-link dna-essay-sl" href="bogastvo-obstoja/" lang="sl">Esej »Bogastvo obstoja«</a></nav>
 <div class="utilities"><button class="utility search-utility" id="search-open" type="button" aria-label="Search the site" title="Search · S / Ctrl+K" aria-haspopup="dialog" aria-expanded="false">S</button><details class="main-menu" id="main-menu">
 <summary id="main-menu-trigger" aria-label="Menu" aria-controls="main-menu-panel" aria-expanded="false" title="Menu"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></summary>
 <div class="main-menu-panel" id="main-menu-panel">
