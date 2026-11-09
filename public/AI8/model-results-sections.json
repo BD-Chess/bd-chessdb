@@ -314,6 +314,19 @@
         "en": "Failed JSON cases once more with the CLI's structured output (a schema with only the shape the case states); T009 (code) not re-run. 10 of 16 re-tests passed. Since a fence no longer counts as an error, the Opus re-runs only confirm it. Best when a correct answer in the base run or a re-test counts: Terra low 10/10, Terra medium 10/10, Terra high 10/10, Terra xhigh 10/10, Sol low 10/10, Astra medium 10/10, Luna low 8/10, Haiku low 10/10, Sonnet low 9/10, Sonnet medium 9/10, Sonnet high 9/10, Sonnet max 9/10, Opus high 10/10, Opus max 10/10, Fable high 10/10."
       },
       "href": null
+    },
+    {
+      "id": "gptoss-paths",
+      "title": {
+        "sl": "GPT-OSS 20B · štiri poti",
+        "en": "GPT-OSS 20B · four paths"
+      },
+      "dates": "2026-11-09",
+      "description": {
+        "sl": "Isti GPT-OSS 20B MXFP4 (llama.cpp b12141, Vulkan, kontekst 4096) prek različnih odjemalcev, en kratek krog. Pet nalog (T001, T002, T007, T008, T009), samo uporabniško sporočilo in privzeto vzorčenje (temperatura 0,8): llama-cli 3/5, HTML klepet 4/5, neposredni HTTP 4/5 in 4/5. Codex Local je agentno nalogo (popravek stats.py z neodvisnim preverjanjem) rešil 2/2. OpenCode Local ni tekel, ker zahteva kontekst 16384. Razlike med odjemalci so pri T007 in T008 in so pri štirih poskusih lahko naključne.",
+        "en": "The same GPT-OSS 20B MXFP4 (llama.cpp b12141, Vulkan, context 4096) through different clients, one short round. Five cases (T001, T002, T007, T008, T009), user message only and default sampling (temperature 0.8): llama-cli 3/5, HTML chat 4/5, direct HTTP 4/5 and 4/5. Codex Local solved the agent task (fix stats.py, independent check) 2/2. OpenCode Local did not run: it needs a 16384 context. The differences between clients are in T007 and T008 and may be chance over four attempts."
+      },
+      "href": null
     }
   ],
   "results": [
@@ -16280,6 +16293,305 @@
       "channel": "subscription",
       "date": "2026-11-09",
       "source": "LLM-Night 20261109-cli-claude-struct · claude-opus-max"
+    },
+    {
+      "id": "gptoss-paths-llamacli-t001",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "LLAMA-CLI / T001",
+      "status": "PASS",
+      "seconds": 15.6,
+      "tok_s": 19.6,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p1-llamacli/tasks.json"
+    },
+    {
+      "id": "gptoss-paths-llamacli-t002",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "LLAMA-CLI / T002",
+      "status": "PASS",
+      "seconds": 63.1,
+      "tok_s": 11.2,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p1-llamacli/tasks.json"
+    },
+    {
+      "id": "gptoss-paths-llamacli-t007",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "LLAMA-CLI / T007",
+      "status": "FAIL",
+      "seconds": 48.7,
+      "tok_s": 9.5,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p1-llamacli/tasks.json"
+    },
+    {
+      "id": "gptoss-paths-llamacli-t008",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "LLAMA-CLI / T008",
+      "status": "FAIL",
+      "seconds": 45.0,
+      "tok_s": 9.4,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p1-llamacli/tasks.json"
+    },
+    {
+      "id": "gptoss-paths-llamacli-t009",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "LLAMA-CLI / T009",
+      "status": "PASS",
+      "seconds": 15.8,
+      "tok_s": 10.9,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p1-llamacli/tasks.json"
+    },
+    {
+      "id": "gptoss-paths-html-t001",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTML / T001",
+      "status": "PASS",
+      "seconds": 10.1,
+      "tok_s": 20.66,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p4-html/html_T001.json"
+    },
+    {
+      "id": "gptoss-paths-html-t002",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTML / T002",
+      "status": "PASS",
+      "seconds": 67.9,
+      "tok_s": 11.01,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p4-html/html_T002.json"
+    },
+    {
+      "id": "gptoss-paths-html-t007",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTML / T007",
+      "status": "PASS",
+      "seconds": 63.8,
+      "tok_s": 12.11,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p4-html/html_T007.json"
+    },
+    {
+      "id": "gptoss-paths-html-t008",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTML / T008",
+      "status": "FAIL",
+      "seconds": 50.3,
+      "tok_s": 11.5,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p4-html/html_T008.json"
+    },
+    {
+      "id": "gptoss-paths-html-t009",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTML / T009",
+      "status": "PASS",
+      "seconds": 13.0,
+      "tok_s": 11.91,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · p4-html/html_T009.json"
+    },
+    {
+      "id": "gptoss-paths-http1-t001",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 1 / T001",
+      "status": "PASS",
+      "seconds": 8.8,
+      "tok_s": 20.61,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round1.json"
+    },
+    {
+      "id": "gptoss-paths-http1-t002",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 1 / T002",
+      "status": "PASS",
+      "seconds": 34.9,
+      "tok_s": 14.72,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round1.json"
+    },
+    {
+      "id": "gptoss-paths-http1-t007",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 1 / T007",
+      "status": "FAIL",
+      "seconds": 34.4,
+      "tok_s": 11.95,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round1.json"
+    },
+    {
+      "id": "gptoss-paths-http1-t008",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 1 / T008",
+      "status": "PASS",
+      "seconds": 34.7,
+      "tok_s": 11.8,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round1.json"
+    },
+    {
+      "id": "gptoss-paths-http1-t009",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 1 / T009",
+      "status": "PASS",
+      "seconds": 17.0,
+      "tok_s": 11.52,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round1.json"
+    },
+    {
+      "id": "gptoss-paths-http2-t001",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 2 / T001",
+      "status": "PASS",
+      "seconds": 15.1,
+      "tok_s": 21.06,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round2.json"
+    },
+    {
+      "id": "gptoss-paths-http2-t002",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 2 / T002",
+      "status": "PASS",
+      "seconds": 67.0,
+      "tok_s": 12.02,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round2.json"
+    },
+    {
+      "id": "gptoss-paths-http2-t007",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 2 / T007",
+      "status": "FAIL",
+      "seconds": 32.8,
+      "tok_s": 12.11,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round2.json"
+    },
+    {
+      "id": "gptoss-paths-http2-t008",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 2 / T008",
+      "status": "PASS",
+      "seconds": 39.8,
+      "tok_s": 11.72,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round2.json"
+    },
+    {
+      "id": "gptoss-paths-http2-t009",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "HTTP 2 / T009",
+      "status": "PASS",
+      "seconds": 25.4,
+      "tok_s": 11.75,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · http-control/round2.json"
+    },
+    {
+      "id": "gptoss-paths-codex-agent 1",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "CODEX LOCAL / agent 1",
+      "status": "PASS",
+      "seconds": 40.8,
+      "tok_s": null,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · codex/run1/run.json"
+    },
+    {
+      "id": "gptoss-paths-codex-agent 2",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "CODEX LOCAL / agent 2",
+      "status": "PASS",
+      "seconds": 23.0,
+      "tok_s": null,
+      "context": 4096,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · codex/run2/run.json"
+    },
+    {
+      "id": "gptoss-paths-opencode-—",
+      "model": "home-gpt-oss-mxfp4",
+      "campaign": "gptoss-paths",
+      "test": "OPENCODE LOCAL / —",
+      "status": "NOT_TESTED",
+      "seconds": null,
+      "tok_s": null,
+      "context": null,
+      "channel": "local",
+      "date": "2026-11-09",
+      "source": "Z2 gptoss-four-paths-20261109 · opencode/check_at_4096.json"
     }
   ],
   "sources": [
@@ -16333,6 +16645,10 @@
     },
     {
       "title": "LLM-Night 20261109-cli-codex + 20261109-cli-claude · Codex CLI and Claude Code · summary.json per setting · 2026-11-09",
+      "href": null
+    },
+    {
+      "title": "Z2 gptoss-four-paths-20261109 · tasks.json, html_T*.json, round1/2.json, codex run.json · 2026-11-09",
       "href": null
     }
   ]
