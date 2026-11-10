@@ -44,7 +44,15 @@ const timeout=setTimeout(()=>{expired=true;if(controller)controller.abort();},22
 fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',headers:{Accept:'application/json'},...(controller?{signal:controller.signal}:{})}).then(r=>{if(!r.ok||!(r.headers.get('content-type')||'').includes('application/json'))throw Error('No country response');return r.json();}).then(d=>{if(expired||generation!==start||selection||!d||!valid(d.language))return;selection=read()||{lang:d.language,source:'geo',at:Date.now()};persist();apply();}).catch(()=>{}).finally(()=>clearTimeout(timeout));
 }
 })();</script>
-<script>try{const t=localStorage.getItem('mdlxdcc-theme'),f=Number(localStorage.getItem('mdlxdcc-font'));document.documentElement.dataset.theme=t==='light'||t==='dark'?t:matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';if(f>=.8&&f<=1.5)document.documentElement.style.setProperty('--scale',f);}catch(_){}</script>
+<script>
+try {
+  const root = document.documentElement;
+  const savedTheme = localStorage.getItem('mdlxdcc-theme');
+  root.dataset.theme = savedTheme === 'light' ? 'light' : 'dark';
+  const fontScale = Number(localStorage.getItem('mdlxdcc-font'));
+  if (fontScale >= .8 && fontScale <= 1.5) root.style.setProperty('--scale', fontScale);
+} catch (_) {}
+</script>
 <style>
 :root{color-scheme:dark;--bg:#101a1c;--surface:#172527;--ink:#edf0e7;--muted:#a8b6b2;--line:#35484a;--accent:#b7d9bb;--accent2:#88cbc6;--art:#a5d3bc;--wash:#162b2b;--paper:#1b2d2e;--shadow:0 24px 80px #0004;--scale:1;--max:1180px;font-family:'Avenir Next','Segoe UI',Arial,sans-serif}
 :root[data-theme=light]{color-scheme:light;--bg:#f6f3ec;--surface:#eeece3;--ink:#203c38;--muted:#5c7068;--line:#c7d0c5;--accent:#396846;--accent2:#206d69;--art:#357761;--wash:#e7ede1;--paper:#eeeee4;--shadow:0 24px 80px #46564514}
