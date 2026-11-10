@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {pagesBuildGate,checkRuns} from '../scripts/netlify-auto-release.mjs';
+const run={id:10,name:'Deploy to GitHub Pages',path:'.github/workflows/deploy-pages.yml',head_sha:'a'.repeat(40),event:'push',status:'completed',conclusion:'failure'};
+const secret={id:20,path:'.github/workflows/secret-boundary.yml',event:'push',status:'completed',conclusion:'success'};
+const job={id:100,name:'build',run_id:10,head_sha:run.head_sha,status:'completed',conclusion:'success'};
+const gate=jobs=>checkRuns([secret,pagesBuildGate(run,jobs)],99);
+test('same-commit successful build permits Netlify when Pages hosting failed',()=>{assert.equal(gate([job]).ready,true)});
+test('failed build still blocks publication',()=>{assert.equal(gate([{...job,conclusion:'failure'}]).bad.length,1)});
+test('skipped or neutral build cannot count as successful verification',()=>{for(const conclusion of ['skipped','neutral',null])assert.equal(gate([{...job,conclusion}]).ready,false)});
+test('pending or missing build remains pending',()=>{assert.equal(gate([]).ready,false);assert.equal(gate([{...job,status:'in_progress',conclusion:null}]).ready,false)});
+test('wrong SHA or run identity cannot supply build evidence',()=>{assert.equal(gate([{...job,head_sha:'b'.repeat(40)}]).ready,false);assert.equal(gate([{...job,run_id:11}]).ready,false)});
+test('newer failed build cannot reuse old successful attempt',()=>{assert.equal(gate([job,{...job,id:101,conclusion:'failure'}]).ready,false)});
+test('non-Pages check is unchanged and secret scan remains mandatory',()=>{const other={...run,path:'other'};assert.equal(pagesBuildGate(other,[job]),other);assert.equal(checkRuns([pagesBuildGate(run,[job])],99).ready,false)});

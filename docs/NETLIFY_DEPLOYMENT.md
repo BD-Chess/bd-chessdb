@@ -4,7 +4,7 @@ Version R1 â€” 2026-10-22. BD explicitly approved automatic publication of 
 
 ## One publication path
 
-`.github/workflows/deploy-netlify.yml` prepares and tests source in GitHub Actions, then runs `netlify deploy --prod --no-build`. Automatic publication follows a successful **Deploy to GitHub Pages** run on this repository's `main`. The exact source SHA that passed Pages is checked out; a superseded source never overwrites newer main. There is no Monday window, weekly attempt quota, materiality threshold or requirement for a fresh human approval for each tested main update.
+`.github/workflows/deploy-netlify.yml` prepares and tests source in GitHub Actions, then runs `netlify deploy --prod --no-build`. Automatic publication requires the successful **build** job (source preparation and tests) of **Deploy to GitHub Pages** for the exact source SHA on this repository's `main`. The independent Pages hosting deployment does not gate Netlify. Failed, skipped, missing or unverified Pages builds still block publication; a superseded source never overwrites newer main. There is no Monday window, weekly attempt quota, materiality threshold or requirement for a fresh human approval for each tested main update.
 
 Native Netlify builds remain **Stopped** on both existing projects. `ignore = "exit 0"` is retained as defense against accidental native build activation. Do not use Netlify build hooks, `deploy --trigger`, dashboard rebuilds, or a second production workflow. Stopped native builds still permit prebuilt CLI/API uploads.
 
