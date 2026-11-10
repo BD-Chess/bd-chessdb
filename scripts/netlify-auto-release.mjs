@@ -79,6 +79,33 @@ async function github(path) { return api('https://api.github.com/repos/BD-Chess/
 async function netlify(path) { return api('https://api.netlify.com/api/v1/' + path, requireValue(process.env.NETLIFY_AUTH_TOKEN, 'Missing Netlify token')); }
 async function currentMain(sha) { return (await github('/branches/main')).commit.sha === sha; }
 
+// Pages compilation/tests are a source check. Its separate hosting deployment
+// is not a Netlify test; a provider timeout must not replace a failed build.
+export function pagesBuildGate(run, jobs) {
+  if (run.path !== '.github/workflows/deploy-pages.yml') return run;
+  const build = jobs.filter(j => j.name === 'build' && j.run_id === run.id
+    && j.head_sha === run.head_sha).sort((a,b) => b.id-a.id)[0];
+  return { ...run, name: run.name + ' / build',
+    status: build?.status || 'in_progress',
+    conclusion: build?.status === 'completed'
+      ? (build.conclusion === 'success' ? 'success' : 'failure') : null };
+}
+
+async function sourceGateRuns(runs) {
+  return Promise.all(runs.map(async run => {
+    if (run.path !== '.github/workflows/deploy-pages.yml' || run.event !== 'push') return run;
+    const jobs = [];
+    for (let page = 1; ; page++) {
+      const data = await github('/actions/runs/' + run.id + '/jobs?filter=all&per_page=100&page=' + page);
+      requireValue(Array.isArray(data.jobs), 'Missing Pages build evidence');
+      jobs.push(...data.jobs);
+      if (jobs.length >= data.total_count) break;
+      requireValue(data.jobs.length > 0 && page < 10, 'Pages job pagination coverage exceeded');
+    }
+    return pagesBuildGate(run, jobs);
+  }));
+}
+
 export function checkRuns(runs, ownRun) {
   // Only push verification belongs here. Old workflow_run one-shot jobs may be
   // cancelled/skipped intentionally; their retired state must not deadlock CI.
@@ -104,7 +131,7 @@ async function ciGate(sha) {
       if (data.workflow_runs.length < 100) break;
       requireValue(page < 10, 'CI pagination coverage exceeded');
     }
-    const state = checkRuns(runs, process.env.GITHUB_RUN_ID);
+    const state = checkRuns(await sourceGateRuns(runs), process.env.GITHUB_RUN_ID);
     requireValue(!state.bad.length, 'Same-commit verification failed: ' + state.bad.map(r => r.name).join(', '));
     if (state.ready) return true;
     console.log('Waiting for same-commit verification: ' + state.pending.map(r => r.name).join(', '));
