@@ -37,7 +37,8 @@ final slash only for this shortcut comparison. Search and related-page navigatio
 continue to open the original subject instance.
 
 Each section spans as many half turns as needed, with up to eight points per
-full opening; the original upper cap retains the first three Top 8 anchors. Labels show the whole section's page count and the opening number.
+full opening; the original upper cap retains the first three Top 8 anchors. Labels show the whole section's count of works (points) and the opening number; the
+explanation adds the page count when versions share points.
 Hover or focus highlights only that physical opening, its label, its strand
 segment and the points on it. Touch or click pins that opening; clicking another
 opening switches directly, while a second click on the same one or Escape clears it.
@@ -63,6 +64,50 @@ transform uses that same document origin as the DOM nodes and category labels,
 and updates on visual viewport resize/scroll as well as ordinary scrolling.
 Pinch zoom remains native and unrestricted. Offscreen nuclei do not animate. Reduced motion disables animations and transitions.
 
+## One point per work, readable names, progressive drawing (2026-11-10)
+
+One point stands for one work. Catalogue pages with the same title are versions
+or copies of one work and share a point (`groupWorks` in `dna-sections.mjs`);
+the first record in catalogue order is the visible one, so curated records and
+BD's selection keep their place. A title that is only a file-derived word
+("app", "help") is grouped per top folder and shown as `folder · title`.
+Versions with different titles stay separate points. Nothing leaves the
+catalogue: every version is listed in the point's description, search still
+returns every page and opens the point of its work, and the guide counts both
+works and pages. TOP 8 and NEW shortcuts are never grouped.
+
+Names are readable at rest: their size follows the window width
+(`clamp(.66rem, .56rem + .16vw, .82rem)`) and their resting opacity is `.68`
+(about 5:1 on the page background; it was `.33`, about 2.3:1). A wide window
+allows longer names (300px from 1300px, 400px from 1900px). Below 600px a name
+takes two lines and does not grow when approached; the growth factor is set by
+the script (`--near-zoom`) so hit testing and CSS agree.
+
+The strand is drawn as far as the visitor has travelled. Its end thins into fog
+above a small dock at the bottom of the window, which holds a one-time caption
+(what the page is, how to use it) and the button "Show the whole strand". Moving
+down draws further, animated unless reduced motion is set; points and section
+labels beyond the drawn part are `hidden`, so they are neither focusable nor
+hit-tested. The page is as long as the drawn part plus one window. Search, the
+list of parts, arrow keys, focus and the End key draw as far as they need at
+once. A reload or a return from a work restores the place (`sessionStorage`,
+`history.scrollRestoration = 'manual'`). Geometry is untouched: the canvas only
+stops at the drawn length and lowers alpha inside the fog, and the whole strand
+has no fog at all. The native display scene (`?mode=ai8-live`) is managed
+elsewhere and keeps the whole strand, without the dock or the list of parts.
+The AI Lab finds a record's point through the `ai8-dna:locate` event: the
+strand answers with the point (the work's point for a version) and draws that far.
+
+From 1200px a list of the ten parts with their counts stands beside the strand:
+it shows which parts are drawn, where the visitor is, and jumps to a part. It
+sits left of the longest name and fades while a growing name crosses it.
+
+The top bar carries a visible SL/EN switch; the guide keeps its own for the
+native display mode, where the bar is hidden. Every strand text follows the
+chosen language (the Slovene section names are NOVO and APLIKACIJE); names and
+descriptions of works keep the language of the work. The AI Lab panel is a
+separate module and is still English only.
+
 V3 loads only `assets/ai8-entry/archive-v3/` for its entry scripts, styles,
 catalogue and search snapshot. `manifest.json` records source and frozen hashes.
 The sole source-byte change inside this copy is the catalogue's index URL,
@@ -81,8 +126,11 @@ node tests/ai8-dna-v4-zoom-browser.mjs
 ```
 
 The browser test serves local fixtures, blocks external requests and verifies
-hover/focus/touch, search, navigation, fallback, reduced motion, enlarged text,
-phone/tablet/desktop layout and a pixel comparison of v3 against base `93c097d4`.
+the progressive drawing (short first view, fog above the dock, drawing on
+scroll, list of parts, restored place, versions in a description, SL/EN switch,
+whole strand on request), hover/focus/touch, search, navigation, fallback,
+reduced motion, enlarged text, phone/tablet/desktop layout and a pixel comparison
+of v3 against base `93c097d4`. The older cases first ask for the whole strand.
 It uses emulated touch, not physical-device testing. The data, archive and loop-identity tests
 also run in the existing Pages and Netlify release workflows.
 
@@ -91,5 +139,6 @@ category centres during real two-contact Chromium touch gestures, explicit
 scale 1 → 2 → 1, zoomed pan and document scroll, with asserted nonzero visual
 viewport offsets. It also exercises a labeled Safari-coordinate regression
 model on Chromium (visual scroll offsets/height and viewport-driven events).
-This is not physical iPhone/Safari testing. The initial canvas raster must match
-frozen v3 exactly; enlarged text must preserve every nucleus position.
+This is not physical iPhone/Safari testing. The canvas raster of the whole strand
+(no fog) must match frozen v3 exactly; enlarged text must preserve every nucleus
+position.

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {CURATED,FEATURED_IDS,loadCatalogue} from '../public/assets/ai8-entry/featured-catalog.mjs';
 import {decorateDNA,DNA_TOP_PAGES} from '../public/assets/ai8-entry/dna-top-points.mjs';
-import {SECTIONS,classify,buildStrand} from '../public/assets/ai8-entry/dna-sections.mjs';
+import {SECTIONS,classify,buildStrand,groupWorks,workKey,workLabel,genericTitle} from '../public/assets/ai8-entry/dna-sections.mjs';
 import {NEW_UPDATES,normalizedTarget,selectNewRecords} from '../public/assets/ai8-entry/dna-new-points.mjs';
 const publicIndex=JSON.parse(fs.readFileSync('public/site-search-index.json'));
 async function catalogue(index=publicIndex){const fetch=globalThis.fetch;try{globalThis.fetch=async()=>({ok:true,json:async()=>index});return await loadCatalogue();}finally{globalThis.fetch=fetch;}}
@@ -34,7 +34,8 @@ test('Top 8 shortcuts share records, keep stable IDs, and do not inflate catalog
  assert.deepEqual(top.map(d=>d.project.id),FEATURED_IDS);
  assert.equal(new Set(items.map(p=>p.id)).size,items.length);
  assert.equal(new Set(strand.instances.map(d=>d.id)).size,strand.instances.length);
- assert.equal(strand.instances.length,items.length+8+selectNewRecords(items).length);
+ // Versions of one work share a point, so pages are counted through the points' variants.
+ assert.equal(strand.instances.reduce((n,d)=>n+1+d.variants.length,0),items.length+8+selectNewRecords(items).length);
  for(const d of top){const subject=strand.instances.find(n=>n.project.id===d.project.id&&!['top','new'].includes(n.section));assert.equal(subject.project,d.project);assert.notEqual(subject.id,d.id);}
  for(const h of DNA_TOP_PAGES)assert.ok(items.some(p=>p.url===h.url&&p.dnaTop),h.url);
 });
@@ -43,7 +44,7 @@ test('all public entries have contiguous primary themes and retain useful source
  let previous=-1;
  for(const d of strand.instances){const next=keys.indexOf(d.section);assert.ok(next>=previous);previous=next;assert.ok(d.y>0);assert.equal(d.project,items.find(p=>p.id===d.project.id));}
  for(const item of items){assert.ok(keys.includes(item.category)&&item.category!=='top');assert.ok(Array.isArray(item.secondaryCategories));assert.ok(item.url&&item.title&&item.en&&item.sl);}
- for(const loop of strand.loops){assert.equal(loop.count,loop.section==='top'?8:loop.section==='new'?selectNewRecords(items).length:items.filter(p=>p.category===loop.section).length);assert.ok(strand.instances.filter(d=>d.section===loop.section&&d.y>loop.start&&d.y<loop.end).length<=12);}
+ for(const loop of strand.loops){const pages=loop.section==='top'?8:loop.section==='new'?selectNewRecords(items).length:items.filter(p=>p.category===loop.section).length;assert.equal(loop.pages,pages);assert.equal(loop.count,strand.instances.filter(d=>d.section===loop.section).length);assert.ok(loop.count<=pages);assert.ok(strand.instances.filter(d=>d.section===loop.section&&d.y>loop.start&&d.y<loop.end).length<=12);}
  const category=url=>items.find(p=>p.url===url)?.category;
  for(const [url,expected] of [['/BD/BD_CCH_Consciousness_Field.html','cfh'],['/crp/AI8_Architecture.html','ai8'],['/BD/BD_AIM3.html','ai8'],['/AI8/live/','ai8'],['/crp/HTH.html','machines'],['/crp/SORA.html','machines'],['/crp/ToE.html','theories'],['/crp/AC-WFP.html','theories'],['/Nara/','stories'],['/Trip/','apps'],['/S/','games'],['/S/new/','lab']])assert.equal(category(url),expected,url);
  for(const original of CURATED){const item=items.find(p=>p.id===original.id);assert.deepEqual(item.related,original.related);assert.equal(item.group,original.group);}
@@ -121,4 +122,25 @@ test('physical loop IDs are category-local and keep top cap separate from its fu
  assert.equal(s.loops.find(l=>l.id==='top:1').count,8);
  const initial=buildStrand(classify(decorateDNA(CURATED)));
  for(const l of initial.loops)assert.ok(s.loops.some(full=>full.id===l.id),'identity survives full catalogue expansion');
+});
+
+test('versions of one work share a point and every catalogue page stays reachable',async()=>{
+ const items=await fullCatalogue(),strand=buildStrand(items),subject=strand.instances.filter(d=>!['top','new'].includes(d.section));
+ const seen=new Map();
+ for(const d of subject){
+  assert.ok(!seen.has(d.section+'|'+workKey(d.project)),'one point per work in a section: '+d.project.title);seen.set(d.section+'|'+workKey(d.project),d);
+  for(const v of d.variants){assert.equal(workKey(v),workKey(d.project));assert.equal(v.category,d.section);assert.equal(v,items.find(p=>p.id===v.id));assert.notEqual(v.id,d.project.id);}
+ }
+ const reachable=subject.flatMap(d=>[d.project,...d.variants]);
+ assert.equal(reachable.length,items.length);assert.equal(new Set(reachable.map(p=>p.id)).size,items.length);
+ assert.ok(subject.length<items.length,'the public catalogue does contain versions');
+ for(const d of strand.instances.filter(d=>['top','new'].includes(d.section)))assert.deepEqual(d.variants,[]);
+});
+test('file-derived titles are grouped per folder, real titles across folders',()=>{
+ const page=(id,title,url)=>({id,title,url});
+ const works=groupWorks([page('a','app','/F4M/app/'),page('b','app','/S/app/'),page('c','app','/S/new/app.html'),page('d','The Story','/BD/Story.html'),page('e','The  story','/OS/Story2.html'),page('f','Other','/BD/Other.html')]);
+ assert.deepEqual(works.map(w=>[w.project.id,...w.variants.map(v=>v.id)]),[['a'],['b','c'],['d','e'],['f']]);
+ assert.equal(genericTitle('app'),true);assert.equal(genericTitle('The Story'),false);
+ assert.equal(workLabel(page('b','app','/S/app/')),'S · app');assert.equal(workLabel(page('d','The Story','/BD/Story.html')),'The Story');
+ assert.equal(workLabel(page('x','help','https://chessbest.org/help')),'help','an external address has no folder to name');
 });

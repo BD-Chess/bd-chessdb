@@ -31,7 +31,10 @@ function initLab(){
   await catalogue();
   // Only IDs actually returned by the public registered catalogue are eligible.
   if(![...routeMap.values()].includes(projectId))return false;
-  const nodes=[...document.querySelectorAll('.dna-node[data-record]')],node=nodes.find(n=>n.dataset.record===projectId);
+  // The strand draws itself as the visitor moves, and versions of one work share
+  // a point: ask it for this record's point, which also draws the strand that far.
+  const ask={record:projectId,node:null};document.dispatchEvent(new CustomEvent('ai8-dna:locate',{detail:ask}));
+  const nodes=[...document.querySelectorAll('.dna-node[data-record]')],node=ask.node||nodes.find(n=>n.dataset.record===projectId);
   if(!node)return false;
   for(const n of nodes)n.classList.toggle('lab-highlight',n===node);
   if(scroll){node.scrollIntoView({block:'center',behavior:'auto'});node.focus({preventScroll:true});}

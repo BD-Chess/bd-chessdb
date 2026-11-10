@@ -16,7 +16,8 @@ async function session(viewport,{mobile=false,signed=false,unavailable=false,bud
  await c.route('**/*',async route=>{const r=route.request(),u=new URL(r.url());if(u.origin!==base)return route.abort();if(u.pathname.endsWith('/mdlxdcc-guide-auth')){authCalls.push(r.method());if(r.method()==='POST')authenticated=JSON.parse(r.postData()).action!=='logout';return route.fulfill({json:{authenticated,account:authenticated?{role:'visitor'}:null,usage:authenticated?{spent:0,reserved:0,limit:100}:null}});}if(u.pathname.endsWith('/mdlxdcc-guide')){if(r.method()==='GET')await probeGate;if(r.method()==='POST'){calls.push(JSON.parse(r.postData()));await new Promise(resolve=>setTimeout(resolve,50));}const response=await handler(new Request(r.url(),{method:r.method(),headers:r.headers(),...(r.method()==='POST'?{body:r.postData()}:{} )}));let body=await response.text();if(navigation&&r.method()==='POST')body=body.replace('data: {"type":"done"','data: '+JSON.stringify({type:'show_page',path:navigation})+'\n\ndata: {"type":"done"');return route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body});}return route.continue();});
  const p=await c.newPage();p.on('pageerror',e=>report.errors.push(e.message));return {c,p,calls,meter,authCalls,releaseProbe};
 }
-async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===491);}
+// 412 works + 8 + 2 shortcuts + origin; these cases work on the whole strand.
+async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===423);await p.locator('#dna-more').evaluate(e=>e.click());}
 async function settled(p){await p.waitForFunction(()=>document.querySelector('#lab-stop').hidden);}
 async function screenshot(p,name){await p.mouse.move(0,0);await p.screenshot({path:path.join(out,name+'.png')});}
 try{
