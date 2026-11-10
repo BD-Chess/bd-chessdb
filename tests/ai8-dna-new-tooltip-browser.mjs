@@ -34,7 +34,8 @@ async function context(width,height=920,touch=false){
  });
  c.on('page',p=>p.on('pageerror',e=>report.errors.push(e.message)));return c;
 }
-async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===491);}
+// 412 works + 8 + 2 shortcuts + origin; these cases work on the whole strand.
+async function ready(p){await p.waitForFunction(()=>document.querySelectorAll('.dna-node').length===423);await p.locator('#dna-more').evaluate(e=>e.click());}
 async function settled(p){await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
 async function at(p,label,y){
  const docY=await label.evaluate(e=>parseFloat(e.style.top));

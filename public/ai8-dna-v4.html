@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#060d12">
-  <title>AI8 DNA v4 · BD × AI Lab</title>
+  <title>AI8 DNA · BD × AI Lab</title>
   <meta name="description" content="Tematska veriga BD × AI Lab: TOP 8, NEW, zavest, AI8, igre, aplikacije, naprave, teorije, zgodbe in raziskave.">
   <link rel="canonical" href="https://www.mdlxdcc.org/ai8-dna-v4.html">
   <meta property="og:title" content="AI8 DNA · BD × AI Lab">
@@ -12,15 +12,16 @@
   <meta property="og:url" content="https://www.mdlxdcc.org/ai8-dna-v4.html">
   <script>if(new URLSearchParams(location.search).get('mode')==='ai8-live')document.documentElement.dataset.dnaNative='true';</script>
   <link rel="stylesheet" href="/assets/dna-lab/lab.css?v=20261108-r1">
-  <script type="module" src="/assets/dna-lab/lab.mjs?v=20261108-r1"></script>
+  <script type="module" src="/assets/dna-lab/lab.mjs?v=20261110-locate"></script>
   <link rel="icon" href="/PWA/icon-192.png">
-  <link rel="stylesheet" href="/assets/ai8-entry/dna-v4.css?v=20261108-new-vertical">
+  <link rel="stylesheet" href="/assets/ai8-entry/dna-v4.css?v=20261110-reveal">
   <link rel="stylesheet" href="/assets/ai8-entry/entry-menu.css">
-  <script type="module" src="/assets/ai8-entry/dna-v4.mjs?v=20261108-new-vertical"></script>
+  <script type="module" src="/assets/ai8-entry/dna-v4.mjs?v=20261110-reveal"></script>
 </head>
 <body>
   <header id="lab-header" data-dna-lab>
     <a href="/index.html">MDLxDCC.org</a><span aria-hidden="true">|</span><a href="/BD/index.html">BD</a><span aria-hidden="true">×</span><button id="lab-toggle" type="button" aria-expanded="false" aria-controls="lab-shell">AI Lab</button>
+    <span id="dna-lang" role="group" aria-label="Jezik / Language"><button type="button" data-lang="sl" lang="sl" aria-label="Jezik: slovenščina" aria-pressed="true">SL</button><button type="button" data-lang="en" lang="en" aria-label="Language: English" aria-pressed="false">EN</button></span>
   </header>
   <section id="lab-shell" data-dna-lab aria-label="Public AI Lab guides" hidden>
     <div class="lab-toolbar">
@@ -33,7 +34,7 @@
       <form id="lab-auth-form"><h2 id="lab-auth-title">Sign in for live discussion</h2><p>Use your existing site guide account. Public introductions are prepared; live answers use the shared visitor limits.</p><label>Email<input id="lab-email" type="email" autocomplete="username" required maxlength="254"></label><label>Password<input id="lab-password" type="password" autocomplete="current-password" required maxlength="256"></label><p id="lab-auth-error" role="alert"></p><button id="lab-auth-submit" type="submit">Sign in</button><button id="lab-auth-mode" type="button">Create account</button><button id="lab-auth-close" type="button">Cancel</button></form>
     </dialog>
   </section>
-  <a class="skip" href="#dna-origin">AI8 DNA · navodila / explore</a>
+  <a class="skip" href="#dna-origin">Preskoči na verigo AI8 DNA</a>
   <canvas id="dna-canvas" aria-hidden="true"></canvas>
   <main id="dna" aria-labelledby="dna-title">
     <h1 class="sr-only" id="dna-title">AI8 DNA · BD × AI Lab</h1>
@@ -44,10 +45,12 @@
     <noscript><div class="fallback"><h2>AI8 DNA</h2><p>Interaktivna veriga potrebuje JavaScript. Zbirko lahko odpreš v Atlasu.</p><a href="/index-atlas.html">Atlas vseh projektov</a><a href="/">MDL×DCC.org</a></div></noscript>
   </main>
   <section id="dna-panel" role="dialog" aria-modal="false" aria-labelledby="panel-title" hidden>
-    <div class="panel-head"><button id="panel-overline" type="button" title="AI8 DNA · iskanje / search"></button><button id="panel-close" type="button" aria-label="Zapri / Close">×</button></div>
+    <div class="panel-head"><button id="panel-overline" type="button" title="AI8 DNA · iskanje in nastavitve"></button><button id="panel-close" type="button" aria-label="Zapri">×</button></div>
     <div class="dna-guide-title"><h2 id="panel-title"></h2><label id="dna-text-control" class="dna-text-toggle" hidden><input type="checkbox" data-dna-text checked><span id="dna-text-label">Nazivi</span></label></div>
     <div id="panel-body"></div>
   </section>
+  <nav id="dna-rail" data-dna-ui hidden></nav>
+  <div id="dna-dock" data-dna-ui><p id="dna-hint" role="note" hidden></p><button id="dna-more" type="button" hidden></button></div>
   <p class="sr-only" id="dna-status" role="status" aria-live="polite"></p>
 </body>
 </html>
