@@ -8,8 +8,9 @@ import {fileURLToPath} from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const nara = path.join(root, 'public/Nara');
 const mainPages = ['index.html', 'nara.html', 'illuminara.html'];
-// Episodes join as their Slovene editions land.
-const episodes = ['episode-01-ordinary-light.html', 'episode-02-the-answer-that-belonged-to-no-one.html'];
+// All four main episodes have Slovene editions.
+const episodes = ['episode-01-ordinary-light.html', 'episode-02-the-answer-that-belonged-to-no-one.html',
+  'episode-03-what-must-be-allowed-to-fall.html', 'illuminara-episode-01-let-me-leave-angry.html'];
 const pages = [...mainPages, ...episodes];
 const read = (name) => fs.readFileSync(path.join(nara, name), 'utf8');
 const script = fs.readFileSync(path.join(nara, 'assets/js/nara-language.js'), 'utf8');
