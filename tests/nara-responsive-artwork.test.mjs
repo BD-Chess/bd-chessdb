@@ -66,16 +66,20 @@ test('Oct9-S1 preserves its own approved landscape folder and rejects a sibling 
  const changed=structuredClone(m);changed.images[0].variants.L_HD.src=changed.images[0].variants.L_HD.src.replace('/S1/','/S2/');
  assert.throws(()=>responsiveEditionArtwork(root,i,changed,validateWebp,[],()=>approved.images),/unsafe responsive variant path/);
 });
-for(const [key,score] of [['2026-10-09-S2',66.5],['2026-10-09-S3',70]])test(key+' remains readable without artwork, including when a stray manifest is reintroduced',t=>{
+for(const [key,score] of [['2026-10-09-S2',66.5],['2026-10-09-S3',70]])test(key+' renders its published companion artwork while ignoring a stray edition manifest',t=>{
  const i=loadFormatEditions(root).find(x=>x.entry.key===key),html=renderEditionPage(root,i);
  assert.equal(i.combined,score);assert.equal(fs.existsSync(path.join(n,i.paths.artwork)),false);
- assert.doesNotMatch(html,/<figure\b|data-nara-responsive=|nara-daily-responsive\.js/);
+ const manifest=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations',key+'.json'),'utf8'));
+ assert.equal(manifest.schema,'nara.daily.illustrations.v6');assert.equal(manifest.images.length,1);
+ assert.equal((html.match(/<figure\b/g)||[]).length,2);assert.ok(html.includes(manifest.images[0].src));
+ assert.doesNotMatch(html,/data-nara-responsive=|nara-daily-responsive\.js/);
  const r=fs.mkdtempSync(path.join(os.tmpdir(),'nara-unselected-'));t.after(()=>fs.rmSync(r,{recursive:true,force:true}));
  const target=path.join(r,'public/Nara');fs.mkdirSync(target,{recursive:true});fs.cpSync(path.join(n,'daily'),path.join(target,'daily'),{recursive:true});
  for(const file of fs.readdirSync(n).filter(f=>f.endsWith('-pre-format-R1.html')))fs.copyFileSync(path.join(n,file),path.join(target,file));
+ const asset=path.join(target,manifest.images[0].src);fs.mkdirSync(path.dirname(asset),{recursive:true});fs.copyFileSync(path.join(n,manifest.images[0].src),asset);
  fs.writeFileSync(path.join(target,i.paths.artwork),'{stray artwork must not be parsed');
  const candidate=loadFormatEditions(r).find(x=>x.entry.key===key);
- assert.equal(renderEditionPage(r,candidate),html,'non-selected artwork cannot reappear during normal regeneration');
+ assert.equal(renderEditionPage(r,candidate),html,'stray edition artwork does not override the source-bound companion image');
 });
 test('inline loads only visible-language HD; viewport resize selects P/L without a page reload',async()=>{
  const f=responsiveFixture();await flush();assert.equal(f.requests.length,3);assert.ok(f.requests.every(r=>/P[123]-HD/.test(r.src)));
