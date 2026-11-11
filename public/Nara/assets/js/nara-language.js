@@ -30,6 +30,11 @@
       if (img.dataset.altEn === undefined) img.dataset.altEn = img.getAttribute('alt') ?? '';
       img.alt = language === 'sl' ? img.dataset.altSl : img.dataset.altEn;
     });
+    // Episode lightbox captions: nara-reader.js reads data-lightbox-caption when an image opens.
+    document.querySelectorAll('[data-lightbox-caption-sl]').forEach((el) => {
+      if (el.dataset.lightboxCaptionEn === undefined) el.dataset.lightboxCaptionEn = el.dataset.lightboxCaption ?? '';
+      el.dataset.lightboxCaption = language === 'sl' ? el.dataset.lightboxCaptionSl : el.dataset.lightboxCaptionEn;
+    });
     switcher.querySelectorAll('[data-language]').forEach((button) => {
       button.setAttribute('aria-pressed', String(button.dataset.language === language));
     });
@@ -52,6 +57,8 @@
       try { history.replaceState(history.state, '', url.pathname + url.search + url.hash); } catch { /* file:// */ }
     }
     switcher.hidden = false;
+    // Page scripts with their own labels (episode music) re-render on this event.
+    if (typeof CustomEvent === 'function') document.dispatchEvent(new CustomEvent('nara:language', {detail: {language}}));
   };
 
   switcher.querySelectorAll('[data-language]').forEach((button) => button.addEventListener('click', () => {

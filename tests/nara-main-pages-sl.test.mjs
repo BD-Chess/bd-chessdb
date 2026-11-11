@@ -7,7 +7,10 @@ import {fileURLToPath} from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const nara = path.join(root, 'public/Nara');
-const pages = ['index.html', 'nara.html', 'illuminara.html'];
+const mainPages = ['index.html', 'nara.html', 'illuminara.html'];
+// Episodes join as their Slovene editions land.
+const episodes = ['episode-01-ordinary-light.html', 'episode-02-the-answer-that-belonged-to-no-one.html'];
+const pages = [...mainPages, ...episodes];
 const read = (name) => fs.readFileSync(path.join(nara, name), 'utf8');
 const script = fs.readFileSync(path.join(nara, 'assets/js/nara-language.js'), 'utf8');
 
@@ -16,14 +19,16 @@ const LEAF = /<([a-z][a-z0-9]*)((?:\s[^>]*)?)>((?:(?!<(?!\/?(?:em|strong|br)\b))
 // Text that is the same in both languages: names, episode codes, the brand and the text-size controls.
 const SAME = new Set(['NARA', 'Nara', 'Illuminara', 'Nara 01', 'Nara 02', 'Nara 03', 'Illuminara 01', 'MDLxDCC.org',
   'A−', 'A+', 'A', '100%', '24', 'Nara Okafor', 'Silas Amaiu', 'Adaeze Okafor', '01', '02', '03', '04', '05', '06',
-  'Nara /Illuminara', 'EN', 'SL']);
+  '07', '08', '09', '10', '11', '12', 'Nara /Illuminara', 'Nara /', 'EN', 'SL', 'Tomas', 'Kila', 'Adaeze', 'Silas.', 'Kolu.', 'Alu', 'Ravi', 'Mere', 'Lani']);
 const textOf = (html) => html.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').trim();
 
 function body(html) {
   return html.slice(html.indexOf('<body>'), html.indexOf('</body>'))
     .replace(/<details class="reader-rating"[\s\S]*?<\/details>/g, '')
     .replace(/<script\b[\s\S]*?<\/script>/g, '')
-    .replace(/<div class="language-switch"[\s\S]*?<\/div>/, '');
+    .replace(/<div class="language-switch"[\s\S]*?<\/div>/, '')
+    // The episode music button is labelled by its own script, in the page language.
+    .replace(/<button[^>]*id="nara-audio-toggle"[\s\S]*?<\/button>/, '');
 }
 
 test('main pages carry the shared EN/SL switch, script and page metadata', () => {
@@ -54,13 +59,19 @@ test('every English text on the main pages has a non-empty, different Slovene pa
     }
     // Remaining visible leaf text outside the pairs may only be language-neutral.
     const rest = body(html).replace(PAIR, '');
-    const left = [...rest.matchAll(LEAF)].map((m) => textOf(m[3])).filter((t) => t && !SAME.has(t));
+    const left = [...rest.matchAll(LEAF)].map((m) => textOf(m[3])).filter((t) => /\p{L}/u.test(t) && !SAME.has(t));
     assert.deepEqual(left, [], name + ': English text without a Slovene pair');
+    // Strict: no text with letters may stay outside a pair, including text beside inline elements.
+    const bare = [...rest.matchAll(/>([^<>]+)</g)].map((m) => textOf(m[1])).filter((t) => /\p{L}/u.test(t) && !SAME.has(t));
+    assert.deepEqual(bare, [], name + ': text outside SL pairs');
     for (const tag of body(html).match(/<[a-z][^>]*\saria-label="[^"]*"[^>]*>/g) || []) {
       assert.match(tag, /data-aria-en="[^"]+" data-aria-sl="[^"]+"/, name + ': aria-label without SL ' + tag);
     }
     for (const tag of body(html).match(/<img\b[^>]*>/g) || []) {
       assert.match(tag, /data-alt-sl="[^"]+"/, name + ': image alt without SL ' + tag);
+    }
+    for (const tag of body(html).match(/<[a-z][^>]*\sdata-lightbox-caption="[^"]*"[^>]*>/g) || []) {
+      assert.match(tag, /data-lightbox-caption-sl="[^"]+"/, name + ': lightbox caption without SL ' + tag);
     }
   }
 });
@@ -94,12 +105,14 @@ function page({href = 'https://www.mdlxdcc.org/nara/', storage = {}, throwingSto
   const buttons = ['en', 'sl'].map((language) => el({dataset: {language}}));
   const switcher = el({hidden: true, querySelectorAll: () => buttons});
   const meta = el({content: 'EN description', dataset: {descriptionEn: 'EN description', descriptionSl: 'SL opis'}});
+  const caption = el({dataset: {lightboxCaption: 'A yellow boot.', lightboxCaptionSl: 'Rumen škorenj.'}});
+  const events = [];
   const rootEl = {lang: 'en', dataset: {titleEn: 'EN title', titleSl: 'SL naslov'}};
   const document = {
-    documentElement: rootEl, title: 'EN title',
+    documentElement: rootEl, title: 'EN title', dispatchEvent: (event) => events.push(event),
     querySelector: (s) => s === '[data-language-switch]' ? (withSwitch ? switcher : null) : s.startsWith('meta[name="description"]') ? meta : null,
     querySelectorAll: (s) => ({'[data-language-content]': [en, sl], '[data-aria-en]': [aria], 'img[data-alt-sl]': [img],
-      'a[href]': Object.values(links)})[s] || [],
+      '[data-lightbox-caption-sl]': [caption], 'a[href]': Object.values(links)})[s] || [],
   };
   const url = new URL(href);
   const replaced = [];
@@ -107,10 +120,10 @@ function page({href = 'https://www.mdlxdcc.org/nara/', storage = {}, throwingSto
     getItem(k) { if (throwingStorage) throw new Error('blocked'); return store.has(k) ? store.get(k) : null; },
     setItem(k, v) { if (throwingStorage) throw new Error('blocked'); store.set(k, String(v)); },
   };
-  const context = {document, location: url, localStorage, URL, URLSearchParams,
+  const context = {document, location: url, localStorage, URL, URLSearchParams, CustomEvent,
     history: {state: null, replaceState: (_s, _t, u) => replaced.push(u)}};
   vm.runInNewContext(script, context);
-  return {document, rootEl, en, sl, aria, img, links, buttons, switcher, meta, store, replaced};
+  return {document, rootEl, en, sl, aria, img, links, buttons, switcher, meta, store, replaced, caption, events};
 }
 
 test('English is the default, the switch appears and the choice is stored', () => {
@@ -174,4 +187,14 @@ test('blocked storage and pages without a switch fail safe', () => {
   const none = page({withSwitch: false, storage: {'nara-daily-lang': 'sl'}});
   assert.equal(none.rootEl.lang, 'en');
   assert.equal(none.sl.hidden, true);
+});
+
+test('episode lightbox captions follow the language and page scripts hear the switch', () => {
+  const p = page({storage: {'nara-daily-lang': 'sl'}});
+  assert.equal(p.caption.dataset.lightboxCaption, 'Rumen škorenj.');
+  assert.equal(p.events.at(-1).type, 'nara:language');
+  assert.equal(p.events.at(-1).detail.language, 'sl');
+  p.buttons[0].click();
+  assert.equal(p.caption.dataset.lightboxCaption, 'A yellow boot.');
+  assert.equal(p.events.at(-1).detail.language, 'en');
 });

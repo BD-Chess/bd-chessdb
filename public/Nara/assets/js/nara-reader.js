@@ -105,6 +105,14 @@
           </div>
         </div>
       </div>`;
+    // EN / SL labels (assets/js/nara-language.js keeps [data-aria-en] in step when the reader switches).
+    [[lightbox, 'Full-screen scene image', 'Celozaslonska slika prizora'],
+      [lightbox.querySelector('[data-lightbox-fullscreen]'), 'Use browser full screen', 'Uporabi celozaslonski način brskalnika'],
+      [lightbox.querySelector('button[data-lightbox-close]'), 'Close full-screen image', 'Zapri celozaslonsko sliko']].forEach(([el, en, sl]) => {
+      el.dataset.ariaEn = en;
+      el.dataset.ariaSl = sl;
+      el.setAttribute('aria-label', root.lang === 'sl' ? sl : en);
+    });
     document.body.append(lightbox);
 
     const lightboxImage = lightbox.querySelector('.image-lightbox__image');

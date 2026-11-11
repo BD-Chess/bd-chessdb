@@ -37,6 +37,9 @@ on:
       - 'public/Nara/nara.html'
       - 'public/Nara/illuminara.html'
       - 'public/Nara/assets/js/nara-language.js'
+      - 'public/Nara/assets/js/nara-reader.js'
+      - 'public/Nara/episode-01-ordinary-light.html'
+      - 'public/Nara/episode-02-the-answer-that-belonged-to-no-one.html'
       - 'public/Nara/assets/css/nara-cinematic.css'
       - 'tests/nara-main-pages-sl.test.mjs'
   workflow_dispatch:
@@ -73,6 +76,7 @@ jobs:
           node --check tests/nara-daily.test.mjs
           node --check tests/nara-daily-illustrations.test.mjs
           node --check public/Nara/assets/js/nara-language.js
+          node --check public/Nara/assets/js/nara-reader.js
           node --check tests/nara-main-pages-sl.test.mjs
       - name: Run Daily tests and image integrity checks
         run: node --test tests/nara-rating-dialog.test.mjs tests/nara-reader-ratings.test.mjs tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs tests/nara-main-pages-sl.test.mjs
