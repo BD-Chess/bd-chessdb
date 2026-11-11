@@ -77,7 +77,7 @@ test('NEW is one second opening of existing, honestly dated records outside the 
   assert.ok(fs.existsSync('public'+d.project.url),'already-public destination');
  }
  assert.deepEqual(fresh.map(d=>d.project.id),NEW_UPDATES.map(u=>u.id));
- assert.equal(items.length,480,'one added essay record; display shortcuts do not inflate search or catalogue counts');
+ assert.equal(items.length,481,'essay record and 8zTSP page record added; display shortcuts do not inflate search or catalogue counts');
 });
 
 test('the featured essay has one canonical record even when the public index adds URL variants',async()=>{
