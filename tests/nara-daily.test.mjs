@@ -323,6 +323,36 @@ test('late publication publishes a held day once, on the decision date, with its
   assert.throws(()=>publishLate(root,batch,new Date('2026-10-23T11:00:00Z')),/already published/);
 });
 
+test('late backfill keeps all unrated companions and an untranslated companion through later refresh',async t=>{
+  const {publishLate}=await import('../scripts/nara-daily-late.mjs');
+  const {refreshIllustratedPages}=await import('../scripts/nara-daily-batch.mjs');
+  const root=temp(t),date='2026-10-21',at='2026-10-23T09:00:00Z';
+  for(const d of ['2026-10-20','2026-10-22'])publish(root,record(d,d+'T20:00:00Z'),logRecord(d),new Date(d+'T20:00:00Z'));
+  const late={decided_by:'BD',decided_on:'2026-10-23',reason:'Published later; reader scores are pending.',reason_sl:'Objavljeno naknadno; bralske ocene še niso pripravljene.'};
+  const instances=['S1','S2','S3'].map((s,i)=>{
+    const id=`NARA-D-${date}:${s}`,base=record(date,at);base.title=`Late story ${s}`;base.content_sha256=hash(JSON.stringify({title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes}));
+    const tr=translationSl(base),translation={schema:'nara.daily.translation.v1',story_id:id,date,language:'sl',source_content_sha256:base.content_sha256,title:tr.title,deck:tr.deck,shape:tr.shape,scenes:tr.scenes,critic_line:tr.critic_line,content_sha256:tr.content_sha256};
+    const rec={schema:'nara.daily.instance_record.v1',id,day_id:`NARA-D-${date}`,date,instance:s,published_at:at,closed_at:date+'T06:00:00Z',title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes,critic_line:base.critic_line,content_sha256:base.content_sha256,...(i===2?{}:{translation_sl:translation}),late_publication:late};
+    const log={schema:'nara.daily.instance_log.v1',id:id+'-LOG',story_id:id,day_id:`NARA-D-${date}`,date,instance:s,title:base.title,proposer:'GPT',selector:'CLAUDE',author:'GPT',critic:'CLAUDE',rounds:[{actor:'CLAUDE',stage:'STORY_SELECTION',summary:'Selected.'},{actor:'GPT',stage:'AUTHOR_FINAL',summary:'Final.'},{actor:'CLAUDE',stage:'CRITIC_CLOSE',summary:'Closed.'}],final_critic_line:base.critic_line};
+    return {instance:s,record:rec,log};
+  });
+  const candidates=logRecord(date).candidates.map((c,i)=>i<3?{...c,title:`Late story S${i+1}`}:c);
+  const batch={schema:'nara.daily.late_publish.v1',date,published_at:at,late_publication:late,featured_instance:'S1',candidates,selection:{title:'Late story S1',reason:'First available story.',risk:'Score pending.'},instances};
+  publishLate(root,batch,new Date('2026-10-23T10:00:00Z'));
+  const n=path.join(root,'public/Nara'),day=JSON.parse(fs.readFileSync(path.join(n,`daily/days/${date}.json`),'utf8'));
+  assert.equal(day.story_count,3);assert.equal(day.instances[2].translation_file,null);assert.ok(day.instances.every(x=>x.combined===null));
+  let monthly=fs.readFileSync(path.join(n,'Nara-AI-2026-10.html'),'utf8');
+  for(const s of ['S2','S3'])assert.ok(monthly.includes(`id="NARA-D-${date}:${s}"`));
+  assert.match(monthly,/independent reader scores are pending/);assert.match(monthly,/Ta zgodba je trenutno na voljo v angleščini/);
+  const {archiveDaySections}=await import('../scripts/nara-daily-batch.mjs');
+  const archive=fs.readFileSync(path.join(n,'Nara-AI-archive.html'),'utf8'),archived=archiveDaySections(archive).find(s=>s.date===date);
+  assert.ok(archived);for(const s of ['S1','S2','S3'])assert.ok(archived.html.includes(`#NARA-D-${date}:${s}`));
+  assert.match(archived.html,/stories published later/);
+  refreshIllustratedPages(root,'2026-10');monthly=fs.readFileSync(path.join(n,'Nara-AI-2026-10.html'),'utf8');
+  for(const s of ['S2','S3'])assert.ok(monthly.includes(`id="NARA-D-${date}:${s}"`));
+  assert.match(monthly,/independent reader scores are pending/);assert.match(monthly,/Ta zgodba je trenutno na voljo v angleščini/);
+});
+
 test('batch path: a BD-decided late day with three scored stories and a recorded stand-in is published on the decision date, a normal day still on its own date',async t=>{
   const {publishBatch,validateBatch,archiveDaySections}=await import('../scripts/nara-daily-batch.mjs');
   const root=temp(t),n=path.join(root,'public/Nara');

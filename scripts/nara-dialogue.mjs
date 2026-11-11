@@ -33,7 +33,7 @@ export function renderDialogueParagraph(scene,index,heading=2,storyDate){
   if(acts.includes(index))return index===1
     ?'<h'+heading+' class="act">'+esc(p)+'</h'+heading+'>'
     :'<p class="subtitle act-line"><em>'+esc(italicLine(p)[1])+'</em></p>';
-  const turn=/^\*\*([^*\r\n]+)\*\* {2,}\r?\n([\s\S]+)$/.exec(p);
+  const turn=/^\*\*([^*\r\n]+)\*\* {1,}\r?\n([\s\S]+)$/.exec(p);
   if(turn)return '<p class="dialogue"><strong class="speaker">'+esc(turn[1])+'</strong>'+renderThoughts(turn[2]).replace(/\r?\n/g,'<br>')+'</p>';
   return '<p>'+renderThoughts(p)+'</p>';
 }
