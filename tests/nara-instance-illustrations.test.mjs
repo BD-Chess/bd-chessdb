@@ -70,6 +70,24 @@ test('unselected native candidates stay image-free even when their complete artw
   assert.deepEqual(loadIllustrations(f.root,f.r,f.sl),[],'unconfirmed selection cannot publish candidate images');
   assert.equal(JSON.stringify(f.r),before,'selection guard preserves prose and grades');
 });
+test('explicit v6 artwork is limited to an exact published companion and supports a recorded untranslated late story',t=>{
+  const f=fixture(t),date=f.r.date,id=`NARA-D-${date}:S2`,record={...f.r,id,instance:'S2'},sl={...f.sl,story_id:id};record.translation_sl=sl;
+  const recordFile=`daily/records/${date}/S2.json`,bytes=JSON.stringify(record);
+  f.write(recordFile,bytes);
+  const day={schema:'nara.daily.day.v1',id:`NARA-D-${date}`,date,featured_instance:'S1',instances:[{instance:'S1'},{instance:'S2',id,record_file:recordFile,record_sha256:hash(bytes),translation_file:`daily/translations/sl/${date}/S2.json`,translation_sha256:'a'.repeat(64)}]};
+  const webp=Buffer.alloc(30);webp.write('RIFF');webp.writeUInt32LE(22,4);webp.write('WEBP',8);webp.write('VP8X',12);webp.writeUInt32LE(10,16);webp.writeUIntLE(1671,24,3);webp.writeUIntLE(940,27,3);
+  const src=`assets/img/daily/${date}/S2/moment-1.webp`;f.write(src,webp);
+  const manifest={schema:'nara.daily.illustrations.v6',story_id:id,date,edition:null,instance:'S2',en_content_sha256:record.content_sha256,sl_content_sha256:sl.content_sha256,images:[{scene:1,after_paragraph:1,src,width:1672,height:941,alt_en:'Companion scene',alt_sl:'Prizor spremljevalne zgodbe',sha256:hash(webp)}]};
+  f.write(`daily/illustrations/${date}-S2.json`,manifest);f.write(`daily/days/${date}.json`,day);
+  assert.equal(loadIllustrations(f.root,record,sl).length,1);assert.equal(count(instanceStoryHtml({record},f.root)),2);
+  f.write(`daily/days/${date}.json`,{...day,instances:day.instances.slice(0,1)});assert.deepEqual(loadIllustrations(f.root,record,sl),[]);
+  f.write(`daily/days/${date}.json`,{...day,instances:[day.instances[0],{...day.instances[1],record_sha256:'0'.repeat(64)}]});assert.deepEqual(loadIllustrations(f.root,record,sl),[]);
+  const englishOnly={...record};delete englishOnly.translation_sl;const onlyBytes=JSON.stringify(englishOnly);f.write(recordFile,onlyBytes);
+  const lateDay={...day,late_publication:{decided_by:'BD'},instances:[day.instances[0],{...day.instances[1],record_sha256:hash(onlyBytes),translation_file:null,translation_sha256:null}]};
+  f.write(`daily/days/${date}.json`,lateDay);f.write(`daily/illustrations/${date}-S2.json`,{...manifest,sl_content_sha256:null});
+  assert.equal(loadIllustrations(f.root,englishOnly,null).length,1);assert.equal(count(instanceStoryHtml({record:englishOnly},f.root)),1);
+  f.write(`daily/days/${date}.json`,{...lateDay,late_publication:undefined});assert.throws(()=>loadIllustrations(f.root,englishOnly,null),/translated body binding/);
+});
 test('source, instance, PNG dimension and private-field violations are rejected but never hold rendering',t=>{
   const f=fixture(t);
   for(const invalid of [{...f.m,en_content_sha256:'0'.repeat(64)},{...f.m,instance:'S2'},{...f.m,images:f.images.map(x=>({...x,drive_id:'private'}))}]){
