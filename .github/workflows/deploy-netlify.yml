@@ -51,6 +51,10 @@ jobs:
           python3 scripts/check_secret_boundary.py
           node --check scripts/netlify-auto-release.mjs
           node --test tests/netlify-auto-release.test.mjs tests/netlify-pages-build-gate.test.mjs
+      - name: Verify Nara integrity for every production snapshot
+        # Path-filtered source CI may not run for an unrelated main commit.
+        # Recheck the complete existing Nara suite before any artifact is frozen.
+        run: node --test tests/nara-rating-dialog.test.mjs tests/nara-reader-ratings.test.mjs tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs tests/nara-main-pages-sl.test.mjs
       - name: Install locked dependencies
         run: |
           npm ci --ignore-scripts
