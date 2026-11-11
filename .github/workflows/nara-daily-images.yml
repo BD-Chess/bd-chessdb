@@ -33,6 +33,12 @@ on:
       - 'public/Nara/assets/css/nara-daily.css'
       - 'public/Nara/Nara-AI-daily.html'
       - 'public/Nara/Nara-AI-2026-10.html'
+      - 'public/Nara/index.html'
+      - 'public/Nara/nara.html'
+      - 'public/Nara/illuminara.html'
+      - 'public/Nara/assets/js/nara-language.js'
+      - 'public/Nara/assets/css/nara-cinematic.css'
+      - 'tests/nara-main-pages-sl.test.mjs'
   workflow_dispatch:
 
 permissions:
@@ -66,8 +72,10 @@ jobs:
           node --check public/Nara/assets/js/nara-daily-score-details.js
           node --check tests/nara-daily.test.mjs
           node --check tests/nara-daily-illustrations.test.mjs
+          node --check public/Nara/assets/js/nara-language.js
+          node --check tests/nara-main-pages-sl.test.mjs
       - name: Run Daily tests and image integrity checks
-        run: node --test tests/nara-rating-dialog.test.mjs tests/nara-reader-ratings.test.mjs tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs
+        run: node --test tests/nara-rating-dialog.test.mjs tests/nara-reader-ratings.test.mjs tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs tests/nara-main-pages-sl.test.mjs
 
 
 

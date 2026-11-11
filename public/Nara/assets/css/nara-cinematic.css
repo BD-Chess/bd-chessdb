@@ -201,6 +201,34 @@ button, a { -webkit-tap-highlight-color: transparent; }
   text-align: center;
 }
 
+/* EN / SL on the main pages (assets/js/nara-language.js). Hidden until the script runs. */
+[data-language-content][hidden] { display: none !important; }
+
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.topbar-tools .reader-tools { margin-left: 0; }
+
+.language-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.language-switch[hidden] { display: none; }
+
+.language-switch .tool[aria-pressed="true"] {
+  color: #06111d;
+  border-color: rgba(255, 255, 255, 0.58);
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+}
+
 .reading-progress {
   position: absolute;
   right: 0;
@@ -460,6 +488,8 @@ p { margin: 0 0 1em; }
   .wrap, .narrow, .reading, .act, .scene { width: min(100% - 22px, var(--page)); }
   .topbar-inner { align-items: flex-start; }
   .reader-tools { margin-left: 0; }
+  .topbar-tools { display: contents; }
+  .language-switch { margin-left: auto; }
   .nav { order: 3; width: 100%; overflow-x: auto; flex-wrap: nowrap; padding: 2px 0 4px; scrollbar-width: thin; }
   .hero { padding-top: 34px; }
   h1, .story-hero h1 { font-size: clamp(2.75rem, 16vw, 4.25rem); }
