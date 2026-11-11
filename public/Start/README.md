@@ -13,6 +13,11 @@ favorites heading and a searchable research-directory entry. These are static
 navigation additions outside the eight personal pins; no saved favorites,
 exports, notes or localStorage records are migrated or overwritten.
 
+BD's November 11 request adds a searchable research-directory entry for the
+new 8zTSP page (`../BD/BD_8ZTSP.html`), first in "Raziskave & primerjave".
+Like the entry above it is a static navigation addition: no saved favorites,
+personal links, exports or localStorage records change.
+
 BD's November 7 request (R5) makes wide and 4K windows use their width
 instead of a 1260px column. From 1600px the directory takes the left two
 thirds with its groups side by side, and personal links, AI8 News, more and
