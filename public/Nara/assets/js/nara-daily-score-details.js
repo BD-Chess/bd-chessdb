@@ -6,11 +6,29 @@
   const labels = () => language() === 'sl'
     ? {open: 'Odpri razlago ocene', close: 'Zapri razlago ocene', pending: 'Ocena še ni pripravljena'}
     : {open: 'Open score explanation', close: 'Close score explanation', pending: 'Score pending'};
-  for (const pending of document.querySelectorAll('.reader-rating-pending')) {
-    pending.textContent = '—';
-    pending.title = labels().pending;
-    pending.setAttribute('aria-label', labels().pending);
-  }
+  let close = null;
+  let shownBody = null;
+  // Hints follow a language switch on the page (nara:language), also while an explanation is open.
+  const relabel = () => {
+    const text = labels();
+    for (const pending of document.querySelectorAll('.reader-rating-pending')) {
+      pending.title = text.pending;
+      pending.setAttribute('aria-label', text.pending);
+    }
+    for (const button of document.querySelectorAll('.reader-score-button')) {
+      button.title = text.open;
+      const label = button.getAttribute(language() === 'sl' ? 'data-aria-sl' : 'data-aria-en');
+      if (label) button.setAttribute('aria-label', label);
+    }
+    if (close) {
+      close.setAttribute('aria-label', text.close);
+      close.title = text.close;
+    }
+    if (shownBody) for (const item of shownBody.querySelectorAll('[data-language-content]')) item.hidden = item.getAttribute('data-language-content') !== language();
+  };
+  for (const pending of document.querySelectorAll('.reader-rating-pending')) pending.textContent = '—';
+  relabel();
+  document.addEventListener('nara:language', relabel);
   const ratings = document.querySelectorAll('details.reader-rating');
   if (!ratings.length) return;
   const dialog = document.createElement('dialog');
@@ -22,7 +40,7 @@
   header.className = 'reader-rating-dialog-header';
   const heading = document.createElement('h2');
   heading.id = 'reader-rating-dialog-title';
-  const close = document.createElement('button');
+  close = document.createElement('button');
   close.type = 'button';
   close.className = 'reader-rating-close';
   close.textContent = '×';
@@ -30,7 +48,6 @@
   dialog.append(header);
   document.body.append(dialog);
   let trigger = null;
-  let shownBody = null;
   close.addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => trigger?.focus());
   dialog.addEventListener('click', event => {

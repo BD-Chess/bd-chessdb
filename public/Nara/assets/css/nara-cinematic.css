@@ -203,6 +203,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 /* EN / SL on the main pages (assets/js/nara-language.js). Hidden until the script runs. */
 [data-language-content][hidden] { display: none !important; }
+/* First paint before the deferred script: the head bootstrap marks a Slovene choice; nara-language.js removes the mark. */
+html[data-language-early="sl"] span[data-language-content="en"] { display: none !important; }
+html[data-language-early="sl"] span[data-language-content="sl"][hidden] { display: inline !important; }
 
 .topbar-tools {
   display: flex;
