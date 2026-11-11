@@ -169,6 +169,32 @@ function dailyStoryHref(root,r){
   if(fs.existsSync(path.join(n,reader)))return reader;
   return fallback;
 }
+/** Optional Slovenian easy-reading edition ("Lahko branje"; BD, 2026-11-11): the same story retold shorter and calmer.
+ * A separate sidecar, public/Nara/daily/light/sl/<date>.json, bound to the published source hash. The published record,
+ * its translation and their hashes are never touched; a story without the sidecar renders exactly as before. */
+export function validateLightEdition(v,r){
+  assert(v?.schema==='nara.daily.light.v1'&&v.language==='sl','light edition schema/language');
+  const keys=['schema','story_id','date','language','source_content_sha256','title','note','reading_minutes','scenes','content_sha256','written_by'];
+  assert(Object.keys(v).every(k=>keys.includes(k)),'unexpected/private light edition field');
+  assert(v.story_id===r.id&&v.date===r.date,'light edition identity');
+  assert(v.source_content_sha256===r.content_sha256,'light edition source mismatch');
+  assert(text(v.title,180)&&text(v.note,400)&&text(v.written_by,80),'light edition text');
+  assert(Number.isInteger(v.reading_minutes)&&v.reading_minutes>=1&&v.reading_minutes<=60,'light edition reading time');
+  assert(Array.isArray(v.scenes)&&v.scenes.length>=1&&v.scenes.length<=12,'light edition scene count');
+  for(const s of v.scenes){assert(s&&Object.keys(s).every(k=>['title','paragraphs'].includes(k)),'unexpected light edition scene field');assert(text(s.title,180)&&Array.isArray(s.paragraphs)&&s.paragraphs.length>0&&s.paragraphs.every(p=>text(p,10000)),'light edition scene structure')}
+  assert(v.content_sha256===hash(JSON.stringify({title:v.title,note:v.note,scenes:v.scenes})),'light edition content hash mismatch');
+  assert(JSON.stringify(v).length<=60000,'light edition too large');
+  return v;
+}
+export function loadLightEdition(root,r){
+  const p=path.join(root,'public/Nara/daily/light/sl',r.date+'.json');
+  return fs.existsSync(p)?validateLightEdition(JSON.parse(fs.readFileSync(p,'utf8')),r):null;
+}
+function lightEdition(v,r){
+  if(!v)return '';
+  const minutes=String(v.reading_minutes);
+  return '<link rel="stylesheet" href="assets/css/nara-light-edition.css?v=1"><details class="light-edition" id="lahko-branje" data-light-edition="'+esc(v.story_id)+'" data-light-content-sha256="'+v.content_sha256+'"><summary><span class="light-edition-kicker">'+bi('Easy reading','Lahko branje')+'</span><span class="light-edition-meta">'+bi('A shorter, calmer retelling in Slovenian · about '+minutes+' min','Krajša, mirnejša pripoved iste zgodbe · približno '+minutes+' min')+'</span></summary><div class="light-edition-body"><p class="light-edition-note" lang="sl">'+esc(v.note)+' Lahko verzijo je napisal '+esc(v.written_by)+'.</p><article class="story story-light" lang="sl" aria-label="Lahko branje"><h2 class="light-edition-title">'+esc(v.title)+'</h2>'+v.scenes.map((s,i)=>renderStoryScene(s,i+1,[],'sl',3,r.date)).join('\n')+'</article><p class="light-edition-end" lang="sl">Konec lahke verzije. Celotna zgodba se začne spodaj.</p></div></details><script defer src="assets/js/nara-light-edition.js?v=1"></script>';
+}
 /** Source-bound, full-page reader; distinct from a not-yet-approved format-R1 edition. */
 export function renderFeaturedStoryPage(root,r,translation=null){
   validateRecord(r);
@@ -181,7 +207,7 @@ export function renderFeaturedStoryPage(root,r,translation=null){
   const score=ratingMarkup(readerRating(root,r.id));
   const header='<header class="masthead"><div class="eyebrow">'+bi('Complete published story · original text','Celotna objavljena zgodba · izvirno besedilo')+'</div><h1>'+title+'</h1><p class="meta"><time datetime="'+esc(r.date)+'">'+esc(r.date)+'</time></p><p class="lede">'+localizedText(r.deck,t?.deck)+'</p>'+lateNotice(r)+score+'</header>';
   const navigation='<nav class="end-nav"><a href="Nara-AI-daily.html">'+bi('Return to Daily','Nazaj na dnevne zgodbe')+'</a><a href="Nara-AI-'+r.date.slice(0,7)+'.html#'+r.id+'">'+bi('Monthly archive','Mesečni arhiv')+'</a></nav>';
-  return shell(enTitle,file,header+tools+storyContent(r,t,images)+scoreDialog(r,t,root)+navigation,'daily',true,slTitle);
+  return shell(enTitle,file,header+tools+lightEdition(loadLightEdition(root,r),r)+storyContent(r,t,images)+scoreDialog(r,t,root)+navigation,'daily',true,slTitle);
 }
 /** Pure projection: call after day/record/translation files have been staged. */
 export function featuredStoryPageOutputs(root,records,translations={}){
