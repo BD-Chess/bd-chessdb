@@ -58,6 +58,14 @@ test('edition-bound artwork uses exact bilingual R1 paragraph anchors without ch
  assert.ok(slBlock.indexOf('Rada bi vedela, kaj misliš.')<slBlock.indexOf('moment-1.webp'));assert.ok(slBlock.includes('Slovenski sidrni odstavek 3'));
  const bad={...manifest,images:manifest.images.map((x,i)=>i?x:{...x,paragraph_sha256_en:'0'.repeat(64)})};fs.writeFileSync(artFile,JSON.stringify(bad));assert.throws(()=>renderEditionPage(r,item),/direct edition artwork paragraph binding/);
 });
+test('a published companion v6 illustration maps to both dialogue-format editions',t=>{
+ const r=fixture(t,{art:true}),item=loadFormatEditions(r).find(x=>x.paths.story_id==='NARA-D-2026-10-09:S2'),base=path.join(r,'public/Nara');assert.ok(item);
+ const data=fs.readFileSync(path.join(n,'assets/img/daily/2026-10-13/S2/moment-1.webp')),src='assets/img/daily/2026-10-09/S2/moment-1.webp',asset=path.join(base,src);
+ fs.mkdirSync(path.dirname(asset),{recursive:true});fs.writeFileSync(asset,data);
+ const art={schema:'nara.daily.illustrations.v6',story_id:item.paths.story_id,date:item.paths.date,edition:null,instance:'S2',en_content_sha256:item.originalEn.content_sha256,sl_content_sha256:item.originalSl.content_sha256,images:[{scene:1,after_paragraph:1,src,width:1672,height:941,alt_en:'The companion scene',alt_sl:'Prizor spremljevalne zgodbe',sha256:sha(data)}]};
+ fs.writeFileSync(path.join(base,'daily/illustrations/2026-10-09-S2.json'),JSON.stringify(art));
+ const html=renderEditionPage(r,item);assert.equal((html.match(/2026-10-09\/S2\/moment-1\.webp/g)||[]).length,2);assert.match(html,/Prizor spremljevalne zgodbe/);
+});
 test('scores are withheld until both sealed instruments bind the exact new English body',()=>{
  const h='a'.repeat(64),d={premise:13,character:13,structure:13,prose:13,world:8,moral_intellectual_depth:13,ending:13},g={score:86,dimensions:d,rubric_id:'GPT_LITERARY_7_100_V1',anchor_revision:'SHARED_ANCHOR_V1',sealed:true,en_content_sha256:h,output_sha256:'b'.repeat(64)},c={score:90,rubric_id:'PEC-6_V2',sealed:true,en_content_sha256:h,output_sha256:'c'.repeat(64),prompt_sha256:'d'.repeat(64)},a={status:'PAIRED',en_content_sha256:h,gpt:g,claude:c,combined:88};
  assert.equal(pairedAssessment({status:'PENDING'},h),null);assert.throws(()=>pairedAssessment({status:'PENDING',combined:88},h),/inherited/);assert.equal(pairedAssessment(a,h),88);assert.throws(()=>pairedAssessment(a,'e'.repeat(64)),/binding/);assert.throws(()=>pairedAssessment({...a,combined:90},h),/mean/);assert.throws(()=>pairedAssessment({...a,claude:{...c,sealed:false}},h),/unsealed/);assert.throws(()=>pairedAssessment({...a,gpt:{...g,score:87}},h),/arithmetic/);

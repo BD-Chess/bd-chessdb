@@ -203,9 +203,9 @@ function editionArtworkImages(root,item){
  });
 }
 function optionalEditionImages(root,item){
- if(!isSelectedDailyStory(root,item.originalEn))return [];
+ const selected=isSelectedDailyStory(root,item.originalEn);
  const file=path.join(naraRoot(root),item.paths.artwork);
- if(item.paths.date==='2026-10-05'||fs.existsSync(file))return editionArtworkImages(root,item);
+ if(selected&&(item.paths.date==='2026-10-05'||fs.existsSync(file)))return editionArtworkImages(root,item);
  try{
   const images=loadIllustrations(root,item.originalEn,item.originalSl,{nonBlocking:true});
   return images.map(image=>{

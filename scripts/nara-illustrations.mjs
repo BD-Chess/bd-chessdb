@@ -20,7 +20,7 @@ export const validateWebp=(bytes,width,height)=>{
         assert(w===width&&h===height,'illustration WebP dimensions');
 };
 
-/** Only the chosen Daily story is illustrated; archived sibling candidates stay text-only. */
+/** Whether a record is the featured Daily story; historical artwork keeps this guard. */
 export function isSelectedDailyStory(root,record){
   if(!root||!/^\d{4}-\d{2}-\d{2}$/.test(record.date))return false;
   const instance=record.instance||record.id?.match(/:S([123])$/)?.[0].slice(1)||null;
@@ -31,10 +31,24 @@ export function isSelectedDailyStory(root,record){
   }catch{return false} // No confirmed selection means no candidate artwork.
 }
 
+/** A companion can have its own explicit v6 artwork only after its exact record is public. */
+function publishedInstance(root,record,instance){
+  try{
+    const base=path.join(root,'public/Nara'),day=JSON.parse(fs.readFileSync(path.join(base,'daily/days',record.date+'.json'),'utf8'));
+    if(day.schema!=='nara.daily.day.v1'||day.date!==record.date||day.id!==`NARA-D-${record.date}`||!Array.isArray(day.instances))return null;
+    const entry=day.instances.find(x=>x.instance===instance);
+    const file=`daily/records/${record.date}/${instance}.json`;
+    if(!entry||entry.id!==`NARA-D-${record.date}:${instance}`||entry.record_file!==file||record.id!==entry.id)return null;
+    const bytes=fs.readFileSync(path.join(base,file));
+    if(!/^[a-f0-9]{64}$/.test(entry.record_sha256)||sha(bytes)!==entry.record_sha256||JSON.parse(bytes).content_sha256!==record.content_sha256)return null;
+    return {day,entry};
+  }catch{return null}
+}
+
 export function loadIllustrations(root,record,translation=null,{nonBlocking=false}={}){
   if(!root)return [];
   assert(/^\d{4}-\d{2}-\d{2}$/.test(record.date),'illustration date');
-  if(!isSelectedDailyStory(root,record))return [];
+  const selected=isSelectedDailyStory(root,record);
   const base=path.join(root,'public','Nara');
   let instance=record.instance||record.id?.match(/:S([123])$/)?.[0].slice(1)||null;
   if(!instance&&record.id===`NARA-D-${record.date}`){
@@ -48,7 +62,11 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
   const file=path.join(base,'daily','illustrations',record.date+suffix+'.json');
   if(!fs.existsSync(file))return [];
   try {
-    const m=JSON.parse(fs.readFileSync(file,'utf8')),v4=m.schema==='nara.daily.illustrations.v4',v3=m.schema==='nara.daily.illustrations.v3'||v4,v2=m.schema==='nara.daily.illustrations.v2'||v3;
+    const m=JSON.parse(fs.readFileSync(file,'utf8')),v6=m.schema==='nara.daily.illustrations.v6',v4=m.schema==='nara.daily.illustrations.v4',v3=m.schema==='nara.daily.illustrations.v3'||v4||v6,v2=m.schema==='nara.daily.illustrations.v2'||v3;
+    const published=v6?publishedInstance(root,record,instance):null;
+    if(!selected&&(!v6||!published))return [];
+    if(v6)assert(published,'illustration requires a source-bound published instance');
+    const englishOnly=v6&&!translation&&m.sl_content_sha256===null&&published.day.late_publication&&published.entry.translation_file===null&&published.entry.translation_sha256===null;
     const keys=['schema','story_id','date','edition','en_content_sha256','sl_content_sha256','images',...(v2?['instance']:[])];
     assert(m&&typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).length===keys.length&&Object.keys(m).every(k=>keys.includes(k)),'illustration manifest fields');
     if(v3&&!instance){
@@ -58,10 +76,10 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
       assert(/^S[123]$/.test(instance)&&m.instance===instance&&m.story_id===`NARA-D-${record.date}:${instance}`,'illustration instance binding');
       assert(m.edition===(record.revision?.edition??null)&&m.date===record.date,'illustration edition binding');
       assert(bodyHash(record)===record.content_sha256,'illustration English body binding');
-      assert(translation&&bodyHash(translation)===translation.content_sha256,'illustration translated body binding');
-      if(translation.source_content_sha256!==undefined)assert(translation.source_content_sha256===record.content_sha256,'illustration translation source binding');
+      assert(englishOnly||(translation&&bodyHash(translation)===translation.content_sha256),'illustration translated body binding');
+      if(translation?.source_content_sha256!==undefined)assert(translation.source_content_sha256===record.content_sha256,'illustration translation source binding');
     } else assert(m.schema==='nara.daily.illustrations.v1'&&m.story_id===record.id&&m.date===record.date&&m.edition===record.revision?.edition,'illustration edition binding');
-    assert(m.en_content_sha256===record.content_sha256&&translation&&m.sl_content_sha256===translation.content_sha256,'illustration language content binding');
+    assert(m.en_content_sha256===record.content_sha256&&(englishOnly||(translation&&m.sl_content_sha256===translation.content_sha256)),'illustration language content binding');
     assert(Array.isArray(m.images)&&m.images.length>0&&m.images.length<=record.scenes.length&&(!v2||m.images.length<=3)&&(!v4||m.images.length===3),'illustration scene count');
     let prior=0,priorParagraph=0;
     for(const [momentIndex,image] of m.images.entries()){
@@ -70,8 +88,8 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
       assert(image&&typeof image==='object'&&!Array.isArray(image)&&fields.every(k=>Object.hasOwn(image,k))&&Object.keys(image).every(k=>fields.includes(k)||optional.includes(k)),'illustration image fields');
       assert(Number.isInteger(image.scene)&&image.scene>=1&&image.scene<=record.scenes.length&&(v3?image.scene>=prior:image.scene>prior),'illustration scene order');
       if(v3){
-        const en=record.scenes[image.scene-1].paragraphs,sl=translation.scenes[image.scene-1].paragraphs;
-        assert(en.length===sl.length,'illustration translated paragraph structure');
+        const en=record.scenes[image.scene-1].paragraphs,sl=translation?.scenes[image.scene-1]?.paragraphs;
+        assert(englishOnly||(sl&&en.length===sl.length),'illustration translated paragraph structure');
         assert(Number.isInteger(image.after_paragraph)&&image.after_paragraph>=1&&image.after_paragraph<=en.length,'illustration paragraph anchor');
         assert(image.scene>prior||image.after_paragraph>priorParagraph,'illustration paragraph order');
         if(v4){
