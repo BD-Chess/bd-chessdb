@@ -13,6 +13,8 @@ import {
   hash,
   validateRecord,
   validateLog,
+  validateLatePublication,
+  lateNotice,
   loadRecords,
   latestPage,
   featuredStoryPageOutputs,
@@ -73,13 +75,16 @@ export function validateInstanceRecord(r,date,instance){
   return r;
 }
 
-function validateInstanceLog(l,date,instance,record,candidates,selection){
+function validateInstanceLog(l,date,instance,record,candidates,selection,late=false){
   assert(l&&l.schema==='nara.daily.instance_log.v1','instance log schema');
   assert(l.id===`${instanceId(date,instance)}-LOG`&&l.story_id===instanceId(date,instance)&&l.day_id===`NARA-D-${date}`&&l.date===date&&l.instance===instance,'instance log identity');
   for(const k of ['proposer','selector','author','critic'])assert(['GPT','CLAUDE'].includes(l[k]),'log role');
   // Functional failover can split the original proposal/selection roles from
   // the final author/critic roles. Preserve all four authentic attributions.
-  assert(l.author!==l.critic,'author and closing critic must be independent');
+  // A recorded stand-in (the other model could not act; transparent single-model failover) may close its own story,
+  // but only in a validated late batch. A normal nightly day keeps the strict independence rule.
+  if(l.stand_in_for!==undefined){assert(late,'a recorded stand-in is allowed only in a validated late batch');assert(['GPT','CLAUDE'].includes(l.stand_in_for)&&l.stand_in_for!==l.critic&&l.author===l.critic,'stand-in model')}
+  assert(l.author!==l.critic||l.stand_in_for!==undefined,'author and closing critic must be independent or a recorded stand-in');
   assert(l.title===record.title&&l.final_critic_line===record.critic_line,'log/record binding');
   assert(Array.isArray(l.rounds)&&l.rounds.some(r=>r.stage==='AUTHOR_FINAL')&&l.rounds.some(r=>r.stage==='CRITIC_CLOSE'),'log close');
   normalizeEvaluation(l.evaluation);
@@ -113,7 +118,7 @@ function featuredLogProjection(item,batch){
   const l=item.log;
   const out={
     schema:'nara.daily.log.v1',id:`NARA-D-${batch.date}-LOG`,date:batch.date,story_id:`NARA-D-${batch.date}`,
-    title:item.record.title,proposer:l.proposer,selector:l.selector,author:l.author,critic:l.critic,
+    title:item.record.title,proposer:l.proposer,selector:l.selector,author:l.author,critic:l.critic,...(l.stand_in_for?{stand_in_for:l.stand_in_for}:{}),
     candidates:batch.candidates,selection:{...batch.selections.find(s=>s.instance===item.instance)},rounds:l.rounds,
     final_critic_line:item.record.critic_line,evaluation:l.evaluation,
   };
@@ -130,6 +135,7 @@ function dayManifest(batch,items,featured,files){
     schema:'nara.daily.day.v1',id:`NARA-D-${batch.date}`,date:batch.date,published_at:batch.published_at,
     regime:'THREE_STORY_CAPACITY_R8',cutoff_local:batch.cutoff_local,featured_instance:featured,
     selection_method:'highest READER_APPEAL_R1 50/50 mean; tie higher minimum individual reader score; then earlier close',
+    ...(batch.late_publication?{late_publication:batch.late_publication}:{}),
     story_count:sorted.length,
     instances:sorted.map(x=>({
       instance:x.instance,id:instanceId(batch.date,x.instance),title:x.record.title,
@@ -148,7 +154,7 @@ export function instanceStoryHtml(item,root=null){
   const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,3,r.date)).join('\n')}</article>`;
   const english=`<div data-language-content="en" lang="en"><p class="lede">${esc(r.deck)}</p>${prose(r,'en')}</div>`;
   const sl=t?`<div data-language-content="sl" lang="sl" hidden><p class="lede">${esc(t.deck)}</p>${prose(t,'sl')}</div>`:`<p data-language-content="sl" lang="sl" hidden>Ta zgodba je trenutno na voljo v angleščini.</p>`;
-  return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}${readerRating(root,r.id)?`<span class="reader-score-badge">${ratingNumber(readerRating(root,r.id).combined)} / 100</span>`:`<span class="score-chip">${r.literary_score?.display??''}</span>`}</span></summary><div class="inside">${loadReaderRatings(root)?ratingMarkup(readerRating(root,r.id)):''}${formatDayLinks(root,r.date,r.id)}${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
+  return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}${readerRating(root,r.id)?`<span class="reader-score-badge">${ratingNumber(readerRating(root,r.id).combined)} / 100</span>`:`<span class="score-chip">${r.literary_score?.display??''}</span>`}</span></summary><div class="inside">${lateNotice(r)}${loadReaderRatings(root)?ratingMarkup(readerRating(root,r.id)):''}${formatDayLinks(root,r.date,r.id)}${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
 }
 
 function insertBeforeMainClose(html,fragment){const needle='</main>';const i=html.lastIndexOf(needle);assert(i>=0,'main close missing');return html.slice(0,i)+fragment+html.slice(i)}
@@ -190,9 +196,14 @@ function patchMonthly(html,month,root){
   }).filter(Boolean);
   return blocks.length?insertBeforeMainClose(html,blocks.join('\n')):html;
 }
-function patchArchive(html,batch,items,featured){
+// The archive page is regenerated for every publication, so the eligible-stories section of each earlier published day
+// is carried over from the page as it stands (oldest first) and the current day is added last. Nothing already listed is lost.
+const ARCHIVE_DAY_SECTION=/<section class="notice"><h2>(\d{4}-\d{2}-\d{2}) · \d+ eligible stories<\/h2><ul>.*?<\/ul><\/section>/g;
+export function archiveDaySections(html){return [...String(html??'').matchAll(ARCHIVE_DAY_SECTION)].map(m=>({date:m[1],html:m[0]}))}
+function patchArchive(html,batch,items,featured,previous=''){
   const links=items.map(x=>`<li>${esc(x.record.instance)} · <a href="Nara-AI-${batch.date.slice(0,7)}.html#${esc(x.record.id)}">${esc(x.record.title)}</a>${x.instance===featured?' · featured':''}</li>`).join('');
-  return insertBeforeMainClose(html,`<section class="notice"><h2>${esc(batch.date)} · ${items.length} eligible stories</h2><ul>${links}</ul></section>`);
+  const kept=archiveDaySections(previous).filter(s=>s.date!==batch.date).sort((a,b)=>a.date.localeCompare(b.date)).map(s=>s.html).join('');
+  return insertBeforeMainClose(html,kept+`<section class="notice"><h2>${esc(batch.date)} · ${items.length} eligible stories</h2><ul>${links}</ul></section>`);
 }
 function patchLog(html,batch,items,featured){
   const rows=[...items].sort((a,b)=>instances.indexOf(a.instance)-instances.indexOf(b.instance)).map(x=>`<tr><td>${esc(x.instance)}</td><td>${esc(x.record.title)}</td><td>${x.log.evaluation.gpt.score}</td><td>${x.log.evaluation.claude.score}</td><td>${x.log.evaluation.combined.toFixed(1)}</td><td>${x.instance===featured?'featured':'archive'}</td></tr>`).join('');
@@ -203,22 +214,25 @@ export function validateBatch(batch){
   assert(batch&&batch.schema==='nara.daily.batch.publish.v1','batch schema');
   assert(validDate(batch.date)&&batch.date>='2026-10-09','batch date');
   assert(text(batch.published_at,40)&&Number.isFinite(Date.parse(batch.published_at)),'published_at');
-  const lp=localParts(batch.published_at);assert(`${lp.year}-${lp.month}-${lp.day}`===batch.date,'published_at local date');
+  // A late day (BD decision, validated like the single-story late path) is published on the decision date, not on its own date.
+  const late=batch.late_publication===undefined?null:validateLatePublication(batch.late_publication,batch.date);
+  const lp=localParts(batch.published_at);assert(`${lp.year}-${lp.month}-${lp.day}`===(late?late.decided_on:batch.date),'published_at local date');
   assert(batch.cutoff_local==='20:30','cutoff');
   assert(Array.isArray(batch.candidates)&&batch.candidates.length===10&&batch.candidates.every(c=>c&&text(c.title,180)&&text(c.premise,1200)),'candidates');
   assert(Array.isArray(batch.selections)&&batch.selections.length===3,'three selections');
   const seenSel=new Set();for(const s of batch.selections){assert(instances.includes(s.instance)&&!seenSel.has(s.instance),'selection instance');seenSel.add(s.instance);assert(text(s.title,180)&&text(s.reason,1200)&&text(s.risk,1200)&&batch.candidates.some(c=>c.title===s.title),'selection content')}
   assert(Array.isArray(batch.instances)&&batch.instances.length>=1&&batch.instances.length<=3,'eligible instances');
-  const seen=new Set();for(const x of batch.instances){assert(instances.includes(x.instance)&&!seen.has(x.instance),'instance uniqueness');seen.add(x.instance);validateInstanceRecord(x.record,batch.date,x.instance);const sel=batch.selections.find(s=>s.instance===x.instance);validateInstanceLog(x.log,batch.date,x.instance,x.record,batch.candidates,sel);assert(x.record.literary_score.combined===x.log.evaluation.combined&&x.record.literary_score.display===x.log.evaluation.display,'record/log score binding');assert(x.record.translation_sl,'translation required for R8 eligibility')}
+  const seen=new Set();for(const x of batch.instances){assert(instances.includes(x.instance)&&!seen.has(x.instance),'instance uniqueness');seen.add(x.instance);validateInstanceRecord(x.record,batch.date,x.instance);assert(late?x.record.published_at===batch.published_at&&JSON.stringify(x.record.late_publication)===JSON.stringify(late):x.record.late_publication===undefined,'record late publication binding');const sel=batch.selections.find(s=>s.instance===x.instance);validateInstanceLog(x.log,batch.date,x.instance,x.record,batch.candidates,sel,late!==null);assert(x.record.literary_score.combined===x.log.evaluation.combined&&x.record.literary_score.display===x.log.evaluation.display,'record/log score binding');assert(x.record.translation_sl,'translation required for R8 eligibility')}
   return batch;
 }
 
 export function publishBatch(root,input,now=new Date()){
   const batch=validateBatch(input);
   assert(new Date(batch.published_at).getTime()<=now.getTime(),'future publication');
-  const np=localParts(now.toISOString());assert(`${np.year}-${np.month}-${np.day}`===batch.date,'not current local date');
+  const np=localParts(now.toISOString());assert(`${np.year}-${np.month}-${np.day}`===(batch.late_publication?batch.late_publication.decided_on:batch.date),'not current local date');
   const {n,c,records}=loadRecords(root);
   assert(!records.some(r=>r.date>batch.date),'backfill prohibited');
+  const archiveFile=path.join(n,'Nara-AI-archive.html'),previousArchive=fs.existsSync(archiveFile)?fs.readFileSync(archiveFile,'utf8'):'';
   const featured=chooseFeatured(batch.instances);
   if(batch.featured_instance!==undefined)assert(batch.featured_instance===featured,'featured mismatch');
   const item=batch.instances.find(x=>x.instance===featured);
@@ -264,7 +278,7 @@ export function publishBatch(root,input,now=new Date()){
     ...(fs.existsSync(path.join(n,'daily/reader-ratings.json'))?{'daily/reader-ratings.json':fs.readFileSync(path.join(n,'daily/reader-ratings.json'),'utf8')} : {}),
     'Nara-AI-daily.html':patchLatest(latestPage(next,month,translations,root),batch,batch.instances,featured,root),
     [`Nara-AI-${month}.html`]:patchMonthly(monthlyPage(month,next.filter(r=>r.date.startsWith(month)),translations,root),month,root),
-    'Nara-AI-archive.html':patchArchive(archivePage(entries,month,root),batch,batch.instances,featured),
+    'Nara-AI-archive.html':patchArchive(archivePage(entries,month,root),batch,batch.instances,featured,previousArchive),
     'Nara-AI-log.html':patchLog(logPage(logs),batch,batch.instances,featured),
   };
   for(const [rel,data] of Object.entries(pageOutputs))write(path.join(n,rel),data);

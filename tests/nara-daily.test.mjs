@@ -322,3 +322,73 @@ test('late publication publishes a held day once, on the decision date, with its
   assert.ok(fs.readFileSync(path.join(n,'Nara-AI-log.html'),'utf8').includes('standing in for Claude'));
   assert.throws(()=>publishLate(root,batch,new Date('2026-10-23T11:00:00Z')),/already published/);
 });
+
+test('batch path: a BD-decided late day with three scored stories and a recorded stand-in is published on the decision date, a normal day still on its own date',async t=>{
+  const {publishBatch,validateBatch,archiveDaySections}=await import('../scripts/nara-daily-batch.mjs');
+  const root=temp(t),n=path.join(root,'public/Nara');
+  for(const date of ['2026-10-20','2026-10-21']){const r=record(date,date+'T20:00:00Z');publish(root,r,logRecord(date),new Date(r.published_at))}
+  const scores={S1:[80,70],S2:[90,84],S3:[85,80]},titles={S1:'Fixture story one',S2:'Fixture story two',S3:'Fixture story three'};
+  const makeBatch=(date,at,late,stand=true)=>{
+    const candidates=logRecord(date).candidates.map((c,i)=>i<3?{...c,title:titles['S'+(i+1)]}:c);
+    const instances=['S1','S2','S3'].map(S=>{
+      const id=`NARA-D-${date}:${S}`,base={...record(date,at),title:titles[S]};base.content_sha256=hash(JSON.stringify({title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes}));
+      const tr=translationSl(base),[g,c]=scores[S],combined=(g+c)/2,display=Math.floor(combined+.5);
+      const translation={schema:'nara.daily.translation.v1',story_id:id,date,language:'sl',translated_by:'GPT',source_content_sha256:base.content_sha256,title:tr.title,deck:tr.deck,shape:tr.shape,scenes:tr.scenes,critic_line:tr.critic_line,content_sha256:tr.content_sha256};
+      const rec={schema:'nara.daily.instance_record.v1',id,day_id:'NARA-D-'+date,date,instance:S,published_at:at,closed_at:date+'T17:00:00Z',title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes,critic_line:base.critic_line,content_sha256:base.content_sha256,
+        literary_score:{combined,display,method:'READER_APPEAL_R1 equal 50/50 mean',blind:true,weights:{gpt:.5,claude:.5},shared_strengths:['Strong.','Warm.'],shared_reservations:['Dense.','No specific drop-off passage identified.']},translation_sl:translation,...(late?{late_publication:late}:{})};
+      const own=S==='S2'&&stand;
+      const log={schema:'nara.daily.instance_log.v1',id:id+'-LOG',story_id:id,day_id:'NARA-D-'+date,date,instance:S,title:base.title,proposer:'GPT',selector:'CLAUDE',author:own?'CLAUDE':'GPT',critic:'CLAUDE',...(own?{stand_in_for:'GPT'}:{}),
+        rounds:[{actor:'CLAUDE',stage:'STORY_SELECTION',summary:'Selected.'},{actor:own?'CLAUDE':'GPT',stage:'AUTHOR_FINAL',summary:'Final.'},{actor:'CLAUDE',stage:'CRITIC_CLOSE',summary:'Closed.'}],final_critic_line:base.critic_line,
+        evaluation:{blind:true,method:'equal_weight_mean',gpt:{score:g,rubric:'READER_APPEAL_R1'},claude:{score:c,rubric:'READER_APPEAL_R1'},weights:{gpt:.5,claude:.5},combined,display,note:'Locked blind scores only.'}};
+      return {instance:S,record:rec,log};
+    });
+    return {schema:'nara.daily.batch.publish.v1',date,published_at:at,cutoff_local:'20:30',...(late?{late_publication:late}:{}),candidates,selections:['S1','S2','S3'].map(S=>({instance:S,title:titles[S],reason:'Clear conflict.',risk:'Easy ending.'})),instances};
+  };
+  const late={decided_by:'BD',decided_on:'2026-10-23',reason:'Published later by BD decision; the day freeze was never created.',reason_sl:'Objavljeno naknadno po odločitvi BD; zamrznitev dneva ni nastala.'};
+  const lateBatch=makeBatch('2026-10-22','2026-10-23T00:30:00Z',late);
+  assert.doesNotThrow(()=>validateBatch(lateBatch));
+  assert.throws(()=>publishBatch(root,lateBatch,new Date('2026-10-24T09:00:00Z')),/not current local date/);
+  assert.throws(()=>validateBatch({...lateBatch,late_publication:{...late,decided_by:'GPT'}}),/BD decision/);
+  assert.throws(()=>validateBatch({...lateBatch,published_at:'2026-10-22T20:00:00Z'}),/published_at local date/);
+  assert.throws(()=>validateBatch({...lateBatch,instances:lateBatch.instances.map(x=>x.instance==='S2'?{...x,log:{...x.log,stand_in_for:undefined}}:x)}),/independent or a recorded stand-in/);
+  assert.throws(()=>validateBatch({...lateBatch,instances:lateBatch.instances.map(x=>x.instance==='S2'?{...x,log:{...x.log,stand_in_for:'CLAUDE'}}:x)}),/stand-in model/);
+  assert.throws(()=>validateBatch({...lateBatch,instances:lateBatch.instances.map(x=>({...x,record:{...x.record,late_publication:undefined}}))}),/wrong local date/);
+  assert.throws(()=>validateBatch({...lateBatch,instances:lateBatch.instances.map(x=>({...x,record:{...x.record,late_publication:{...late,reason:'A different reason.'}}}))}),/record late publication binding/);
+  assert.throws(()=>validateBatch(makeBatch('2026-10-22','2026-10-22T20:00:00Z',null).instances.length&&{...makeBatch('2026-10-22','2026-10-22T20:00:00Z',null),instances:makeBatch('2026-10-22','2026-10-22T20:00:00Z',null).instances.map(x=>({...x,record:{...x.record,late_publication:late}}))}),/late publication/);
+  const result=publishBatch(root,lateBatch,new Date('2026-10-23T01:00:00Z'));
+  assert.equal(result.status,'LOCAL_BATCH_CANDIDATE_READY');assert.equal(result.featured,'S2');
+  const day=JSON.parse(fs.readFileSync(path.join(n,'daily/days/2026-10-22.json'),'utf8'));
+  assert.equal(day.featured_instance,'S2');assert.equal(day.story_count,3);assert.deepEqual(day.late_publication,late);
+  assert.deepEqual(day.instances.map(x=>x.combined),[75,87,82.5]);
+  assert.equal(day.published_at,'2026-10-23T00:30:00Z');
+  const daily=fs.readFileSync(path.join(n,'Nara-AI-daily.html'),'utf8');
+  assert.ok(daily.includes('Nara-AI-2026-10-22-S2-story.html'),'Daily card links the featured story');
+  assert.ok(fs.readFileSync(path.join(n,'Nara-AI-2026-10-22-S2-story.html'),'utf8').includes('late-publication-note'),'the featured story page shows the late note');
+  assert.ok(!daily.includes('id="NARA-D-2026-10-22:S1"'),'companions stay off the Daily landing');
+  const month=fs.readFileSync(path.join(n,'Nara-AI-2026-10.html'),'utf8');
+  assert.ok(month.includes('Other stories of 2026-10-22')&&month.includes('id="NARA-D-2026-10-22:S1"')&&month.includes('id="NARA-D-2026-10-22:S3"'),'companions are listed in the month');
+  assert.ok((month.match(/late-publication-note/g)||[]).length>=3,'featured and both companions show the late note');
+  assert.ok(fs.existsSync(path.join(n,'Nara-AI-2026-10-22-S2-story.html')));
+  assert.match(fs.readFileSync(path.join(n,'Nara-AI-log.html'),'utf8'),/standing in for GPT/);
+  assert.equal(publishBatch(root,lateBatch,new Date('2026-10-23T02:00:00Z')).status,'ALREADY_PUBLISHED_BATCH');
+  const archive=()=>fs.readFileSync(path.join(n,'Nara-AI-archive.html'),'utf8');
+  const afterLate=archiveDaySections(archive());
+  assert.deepEqual(afterLate.map(x=>x.date),['2026-10-22']);
+  for(const S of ['S1','S2','S3'])assert.ok(afterLate[0].html.includes(`href="Nara-AI-2026-10.html#NARA-D-2026-10-22:${S}"`),'archive links every story of the late day');
+  // a normal day keeps its own date: it publishes on that date, never the next one, carries no late note and keeps the strict independence rule
+  const next=makeBatch('2026-10-24','2026-10-24T19:20:00Z',null,false);
+  assert.throws(()=>validateBatch(makeBatch('2026-10-24','2026-10-24T19:20:00Z',null,true)),/stand-in is allowed only in a validated late batch/);
+  assert.throws(()=>publishBatch(root,next,new Date('2026-10-25T09:00:00Z')),/not current local date/);
+  assert.equal(publishBatch(root,next,new Date('2026-10-24T19:30:00Z')).status,'LOCAL_BATCH_CANDIDATE_READY');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(n,'daily/days/2026-10-24.json'),'utf8')).late_publication,undefined);
+  // the archive keeps every earlier published day, byte for byte, and adds the new one last
+  const afterNext=archiveDaySections(archive());
+  assert.deepEqual(afterNext.map(x=>x.date),['2026-10-22','2026-10-24']);
+  assert.equal(afterNext[0].html,afterLate[0].html,'the earlier day section is carried over unchanged');
+  for(const S of ['S1','S2','S3'])assert.ok(afterNext[1].html.includes(`href="Nara-AI-2026-10.html#NARA-D-2026-10-24:${S}"`));
+  const third=makeBatch('2026-10-25','2026-10-25T19:20:00Z',null,false);
+  assert.equal(publishBatch(root,third,new Date('2026-10-25T19:30:00Z')).status,'LOCAL_BATCH_CANDIDATE_READY');
+  assert.deepEqual(archiveDaySections(archive()).map(x=>x.date),['2026-10-22','2026-10-24','2026-10-25'],'no day is dropped or duplicated');
+  assert.equal(publishBatch(root,third,new Date('2026-10-25T20:30:00Z')).status,'ALREADY_PUBLISHED_BATCH');
+  assert.deepEqual(archiveDaySections(archive()).map(x=>x.date),['2026-10-22','2026-10-24','2026-10-25']);
+});
