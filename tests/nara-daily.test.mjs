@@ -422,3 +422,29 @@ test('batch path: a BD-decided late day with three scored stories and a recorded
   assert.equal(publishBatch(root,third,new Date('2026-10-25T20:30:00Z')).status,'ALREADY_PUBLISHED_BATCH');
   assert.deepEqual(archiveDaySections(archive()).map(x=>x.date),['2026-10-22','2026-10-24','2026-10-25']);
 });
+
+test('optional Slovenian easy-reading edition is source-bound and leaves the published story untouched',async()=>{
+  const {validateLightEdition,loadLightEdition}=await import('../scripts/nara-daily.mjs');
+  const {records}=loadRecords(editionRoot),translations=loadTranslations(editionRoot,records);
+  const r=records.find(x=>x.date==='2026-11-04'),light=loadLightEdition(editionRoot,r);
+  assert.ok(light,'2026-11-04 carries a light edition');
+  assert.equal(light.source_content_sha256,r.content_sha256);
+  const file='Nara-AI-2026-11-04-S1-story.html',html=renderFeaturedStoryPage(editionRoot,r,translations[r.id]);
+  assert.equal(html,fs.readFileSync(path.join(editionRoot,'public/Nara',file),'utf8'),'committed page is the generator output');
+  assert.equal((html.match(/<details class="light-edition" id="lahko-branje"/g)||[]).length,1);
+  assert.ok(html.includes('data-light-content-sha256="'+light.content_sha256+'"'));
+  // The block sits between the reading controls and the unchanged original; removing it restores the plain page.
+  const start=html.indexOf('<link rel="stylesheet" href="assets/css/nara-light-edition.css'),endMark='<script defer src="assets/js/nara-light-edition.js?v=1"></script>',end=html.indexOf(endMark)+endMark.length;
+  assert.ok(start>0&&end>start&&end<html.indexOf('<article class="story" lang="en" data-story-id="'+r.id+'"'));
+  const plain=html.slice(0,start)+html.slice(end);
+  assert.ok(!plain.includes('light-edition')&&plain.includes(r.content_sha256)&&plain.includes(translations[r.id].content_sha256));
+  for(const asset of ['assets/css/nara-light-edition.css','assets/js/nara-light-edition.js'])assert.ok(fs.existsSync(path.join(editionRoot,'public/Nara',asset)),'missing '+asset);
+  // A story without the sidecar renders without any trace of the feature.
+  const other=records.find(x=>x.date==='2026-11-03');
+  assert.equal(loadLightEdition(editionRoot,other),null);
+  assert.ok(!renderFeaturedStoryPage(editionRoot,other,translations[other.id]).includes('light-edition'));
+  // The sidecar cannot drift from the published source, carry private fields or change silently.
+  assert.throws(()=>validateLightEdition({...light,source_content_sha256:'0'.repeat(64)},r),/source mismatch/);
+  assert.throws(()=>validateLightEdition({...light,drive_id:'PRIVATE'},r),/unexpected\/private/);
+  assert.throws(()=>validateLightEdition({...light,scenes:[...light.scenes.slice(1)]},r),/content hash mismatch/);
+});
