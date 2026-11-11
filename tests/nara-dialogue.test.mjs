@@ -24,6 +24,11 @@ test('speaker labels, subtitles and interior thoughts render safely without chan
   assert.match(html,/Ruth lifted the box\. <em>Too soon,<\/em> she thought\./);
   assert.match(html,/<p>She put it down\.<\/p>/);assert.equal(JSON.stringify(r),before);assert.equal(validateRecord(r).content_sha256,bodyHash(r));
 });
+test('speaker labels with one space before the line break render without changing source',()=>{
+  const s={title:'One space',paragraphs:['*Sogeri · morning*','**Hollis** \nListen.']};const before=JSON.stringify(s);
+  const html=renderStoryScene(s,1,[],'en',2,'2026-10-26');
+  assert.match(html,/<p class="dialogue"><strong class="speaker">Hollis<\/strong>Listen\.<\/p>/);assert.equal(JSON.stringify(s),before);
+});
 test('only specified formatting executes; raw HTML and unsupported Markdown remain escaped',()=>{
   const hostile={title:'<script>x()</script>',paragraphs:['*<img src=x> · noon*','**<svg onload=x()>**  \n<script>x()</script> *<img src=y>*','[unsafe](javascript:x()) **unsupported**']};
   const html=renderStoryScene(hostile,2,[],'en',2,'2026-10-13');

@@ -150,7 +150,8 @@ function dailyFeaturedKey(root,r){
   assert(day.schema==='nara.daily.day.v1'&&day.date===r.date&&day.id===r.id&&Array.isArray(day.instances)&&/^S[123]$/.test(day.featured_instance),'Daily featured manifest identity');
   const selected=day.instances.find(x=>x.instance===day.featured_instance);
   assert(selected&&selected.title===r.title&&(selected.combined??undefined)===r.literary_score?.combined&&(selected.display??undefined)===r.literary_score?.display,'Daily featured title/grade mismatch');
-  assert(day.date<='2026-10-18'||(day.late_publication!==undefined&&day.instances.length===1)||day.instances.every(x=>Number.isFinite(x.combined)&&x.combined<=selected.combined),'Daily not highest combined score');
+  const unratedLate=day.late_publication!==undefined&&day.instances.every(x=>x.combined===null&&x.display===null&&x.gpt===null&&x.claude===null);
+  assert(day.date<='2026-10-18'||unratedLate||day.instances.every(x=>Number.isFinite(x.combined)&&x.combined<=selected.combined),'Daily not highest combined score');
   return key+'-'+day.featured_instance;
 }
 export function featuredStoryFilename(root,r){

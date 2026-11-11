@@ -11,11 +11,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {hash,validDate,localParts,validateRecord,validateLog,validateLatePublication,loadRecords,latestPage,monthlyPage,logPage,featuredStoryPageOutputs} from './nara-daily.mjs';
-import {instanceId,instanceRecordPath,instanceTranslationPath,dayManifestPath,validateInstanceRecord} from './nara-daily-batch.mjs';
+import {instanceId,instanceRecordPath,instanceTranslationPath,dayManifestPath,validateInstanceRecord,instanceStoryHtml} from './nara-daily-batch.mjs';
 import {generateFormatEditions} from './nara-format-editions.mjs';
 
 const assert=(x,m)=>{if(!x)throw Error(m)};
 const text=(s,n)=>typeof s==='string'&&s.trim().length>0&&s.length<=n;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const stringify=x=>JSON.stringify(x,null,2)+'\n';
 const write=(p,s)=>{fs.mkdirSync(path.dirname(p),{recursive:true});if(fs.existsSync(p)&&fs.readFileSync(p,'utf8')===s)return false;const t=p+'.tmp';fs.writeFileSync(t,s);fs.renameSync(t,p);return true};
 const INSTANCES=['S1','S2','S3'];
@@ -53,7 +54,7 @@ export function validateLateBatch(b){
     validateInstanceRecord(x.record,b.date,x.instance);
     assert(x.record.published_at===b.published_at&&JSON.stringify(x.record.late_publication)===JSON.stringify(lp),'record late publication binding');
     assert(x.record.literary_score===undefined,'a late day has no reader score');
-    assert(x.record.translation_sl,'a late day needs its source-bound Slovene translation');
+    if(x.instance===b.featured_instance)assert(x.record.translation_sl,'the featured late story needs its source-bound Slovene translation');
     validateLateLog(x.log,b.date,x.instance,x.record);
   }
   const featured=b.instances.find(x=>x.instance===b.featured_instance);
@@ -83,6 +84,12 @@ function updateArchiveCount(html,month,count){
   const hits=html.match(re)?.length??0;assert(hits===1,'archive month entry '+month);
   return html.replace(re,`$1${count}$2`);
 }
+function addArchiveDay(html,b){
+  const links=[...b.instances].sort((a,c)=>INSTANCES.indexOf(a.instance)-INSTANCES.indexOf(c.instance)).map(x=>
+    `<li>${esc(x.instance)} · <a href="Nara-AI-${b.date.slice(0,7)}.html#${esc(x.record.id)}">${esc(x.record.title)}</a>${x.instance===b.featured_instance?' · featured':''}</li>`).join('');
+  const section=`<section class="notice"><h2>${b.date} · ${b.instances.length} stories published later</h2><ul>${links}</ul></section>`;
+  const end=html.lastIndexOf('</main>');assert(end>=0,'archive main close');return html.slice(0,end)+section+html.slice(end);
+}
 const generatedPart=html=>html.slice(0,html.lastIndexOf('</main>'));
 
 export function publishLate(root,input,now=new Date()){
@@ -106,13 +113,13 @@ export function publishLate(root,input,now=new Date()){
   const staged={},files={};
   for(const x of b.instances){
     const rp=instanceRecordPath(b.date,x.instance),lg=`daily/log/${b.date}/${x.instance}.json`,tp=instanceTranslationPath(b.date,x.instance);
-    const rb=stringify(x.record),lb=stringify(x.log),tb=stringify(x.record.translation_sl);
-    staged[rp]=rb;staged[lg]=lb;staged[tp]=tb;
-    files[x.instance]={record:rp,record_sha256:hash(rb),log:lg,log_sha256:hash(lb),translation:tp,translation_sha256:hash(tb)};
+    const rb=stringify(x.record),lb=stringify(x.log),tb=x.record.translation_sl?stringify(x.record.translation_sl):null;
+    staged[rp]=rb;staged[lg]=lb;if(tb!==null)staged[tp]=tb;
+    files[x.instance]={record:rp,record_sha256:hash(rb),log:lg,log_sha256:hash(lb),translation:tb!==null?tp:null,translation_sha256:tb!==null?hash(tb):null};
   }
   const sorted=[...b.instances].sort((x,y)=>INSTANCES.indexOf(x.instance)-INSTANCES.indexOf(y.instance));
   const manifest={schema:'nara.daily.day.v1',id:`NARA-D-${b.date}`,date:b.date,published_at:b.published_at,regime:'THREE_STORY_CAPACITY_R8',cutoff_local:'20:30',
-    featured_instance:b.featured_instance,selection_method:'BD late-publication decision; no READER_APPEAL_R1 reader scores exist for this day',
+    featured_instance:b.featured_instance,selection_method:'BD late-publication decision; displayed first available story, no combined reader score',
     late_publication:lp,story_count:sorted.length,
     instances:sorted.map(x=>({instance:x.instance,id:instanceId(b.date,x.instance),title:x.record.title,combined:null,display:null,gpt:null,claude:null,
       record_file:files[x.instance].record,record_sha256:files[x.instance].record_sha256,log_file:files[x.instance].log,log_sha256:files[x.instance].log_sha256,
@@ -141,8 +148,15 @@ export function publishLate(root,input,now=new Date()){
   const pages={...storyPages};
   pages['Nara-AI-daily.html']=latestPage(next,latestMonth,translations,root);
   const generatedMonth=monthlyPage(month,next.filter(r=>r.date.startsWith(month)),translations,root);
-  pages[monthFile]=liveMonth===null?generatedMonth:insertEntry(liveMonth,extractEntry(generatedMonth,record.id),b.date,record.id);
-  if(liveArchive!==null)pages['Nara-AI-archive.html']=updateArchiveCount(liveArchive,month,entries.filter(e=>e.date.startsWith(month)).length);
+  let updatedMonth=liveMonth===null?generatedMonth:insertEntry(liveMonth,extractEntry(generatedMonth,record.id),b.date,record.id);
+  const companions=b.instances.filter(x=>x.instance!==b.featured_instance);
+  if(companions.length){
+    for(const x of companions)assert(!updatedMonth.includes(`id="${instanceId(b.date,x.instance)}"`),'late companion already present');
+    const block=`<section class="batch-archive"><header><div class="eyebrow">Other stories of ${b.date}</div><h2>${b.date} · stories published later</h2><p class="lede"><span data-language-content="en" lang="en">Published later; independent reader scores are pending.</span><span data-language-content="sl" lang="sl" hidden>Objavljeno naknadno; neodvisne bralske ocene še niso pripravljene.</span></p></header>${companions.map(x=>instanceStoryHtml(x,root)).join('\n')}</section>`;
+    const end=updatedMonth.lastIndexOf('</main>');assert(end>=0,'monthly main close');updatedMonth=updatedMonth.slice(0,end)+block+updatedMonth.slice(end);
+  }
+  pages[monthFile]=updatedMonth;
+  if(liveArchive!==null)pages['Nara-AI-archive.html']=addArchiveDay(updateArchiveCount(liveArchive,month,entries.filter(e=>e.date.startsWith(month)).length),b);
   if(liveLog!==null)pages['Nara-AI-log.html']=generatedPart(logPage(logsOf(entries)))+liveLog.slice(logBefore.length);
   for(const [rel,data] of Object.entries(pages))write(path.join(n,rel),data);
   const formats=generateFormatEditions(root);
