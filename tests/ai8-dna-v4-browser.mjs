@@ -101,7 +101,13 @@ try{
   await p.keyboard.press('ArrowDown');assert.equal(await p.evaluate(()=>document.activeElement.classList.contains('dna-node')),true,id+' arrow continues to next point');await label.focus();
   await p.keyboard.press('Escape');assert.equal(await label.getAttribute('aria-expanded'),'false',id+' escape');
  }
- await guide(p);const counted=(await p.locator('.origin-count').textContent()).match(/^(\d+) works · 481 pages · public collection$/);assert.ok(counted,'the guide counts works and pages');
+ await guide(p);const counted=(await p.locator('.origin-count').textContent()).match(/^(\d+) works · (\d+) pages · public collection$/);assert.ok(counted,'the guide counts works and pages');
+ const expectedPages=await p.evaluate(async()=>{
+  const [{loadCatalogue},{decorateDNA}]=await Promise.all([import('/assets/ai8-entry/featured-catalog.mjs'),import('/assets/ai8-entry/dna-top-points.mjs')]);
+  const source=await loadCatalogue();if(!source.complete)throw Error('Catalogue did not load');
+  return decorateDNA(source.items,{includeLive:true}).length;
+ });
+ assert.equal(Number(counted[2]),expectedPages,'the guide counts actual public catalogue pages');
  assert.equal(Number(counted[1]),await p.locator('.dna-node:not(.origin):not([data-section=top]):not([data-section=new])').count());
  await p.locator('#dna-search').fill('TripOpti');const titles=await p.locator('#dna-results button span:first-child').allTextContents();assert.equal(titles.filter(t=>t==='TripOpti').length,2); // distinct /Trip/ and /Trip/TripOpti.html records already in source
  assert.equal(new Set(await p.locator('#dna-results button').evaluateAll(es=>es.map(e=>e.dataset.record))).size,titles.length,'Top 8 must not duplicate search results');

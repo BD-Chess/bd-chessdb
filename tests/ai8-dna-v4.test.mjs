@@ -77,7 +77,11 @@ test('NEW is one second opening of existing, honestly dated records outside the 
   assert.ok(fs.existsSync('public'+d.project.url),'already-public destination');
  }
  assert.deepEqual(fresh.map(d=>d.project.id),NEW_UPDATES.map(u=>u.id));
- assert.equal(items.length,481,'essay record and 8zTSP page record added; display shortcuts do not inflate search or catalogue counts');
+ const source=(await catalogue()).items;
+ const liveAdded=source.some(p=>/^\/ai8\/live\/(?:index\.html)?$/i.test(p.url))?0:1;
+ assert.equal(items.length,source.length+liveAdded,'DNA decorations and shortcuts do not duplicate catalogue records');
+ assert.equal(items.filter(p=>p.id==='bogastvo-obstoja').length,1,'the essay has one catalogue record');
+ assert.equal(items.filter(p=>p.url==='/BD/BD_8ZTSP.html').length,1,'8zTSP has one catalogue record');
 });
 
 test('the featured essay has one canonical record even when the public index adds URL variants',async()=>{
