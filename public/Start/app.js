@@ -28,6 +28,8 @@
   Object.assign(tr.en,{settings:'Settings',favorites:'At hand',editPins:'Edit favorites',donePins:'Done',choosePin:'Add from directory',addPin:'Pin',pinLimit:'Up to eight pinned links.',pinMoveLeft:'Move left',pinMoveRight:'Move right',areas:'My areas',areasHint:'Research · work · everyday',openAll:'Open all',closeAll:'Close all',groupAI:'AI & collaboration',hintAI:'Chats · local models · loops',groupResearch:'Research & comparisons',hintResearch:'People · Gods · LLMs · DGTE',groupDevelopment:'Development & plans',hintDevelopment:'Priorities · strategy · code · infrastructure',groupDaily:'Everyday & work',hintDaily:'Mail · files · home · OmniCPQ',groupTravel:'Travel & games',hintTravel:'Andalusia · TripOpti · chess · Sudoku',groupLab:'About the lab',hintLab:'Our work · AI8 · foundations',manageMyLinks:'My links · edit',homePortal:'Home portal',myDay:'My day',marketsTitle:'Markets',newsToday:'AI8 News',newsLoading:'Loading the latest edition …',newsUnavailable:'The latest edition is not available right now.',newsMetadata:'RSS metadata interpretations',newsSynthetic:'Synthetic preview',allNews:'All news ↗',oldSampleNews:'Earlier sample stories',sampleArchive:'Earlier sample stories and bookmarks',upcoming:'Next 7 days',noUpcoming:'No events in the next 7 days.',weather:'Weather & traffic',prototype:'Markets and weather · sample data',search:'Find a project, tool or link …'});
   Object.assign(tr.sl,{codeLabel:'Koda',peopleLabel:'Ljudje',llmLabel:'LLM indeks',gameLabel:'Igra',godsLabel:'Bogovi',aboutLabel:'O AI8',oldWorld:'Arhiv: svetovne novice (24. 10.)',oldSlovenia:'Arhiv: slovenske novice (24. 10.)'});
   Object.assign(tr.en,{codeLabel:'Code',peopleLabel:'People',llmLabel:'LLM index',gameLabel:'Game',godsLabel:'Gods',aboutLabel:'About AI8',oldWorld:'Archive: world news (24 Oct)',oldSlovenia:'Archive: Slovenian news (24 Oct)'});
+  Object.assign(tr.sl,{siteResults:'Strani našega spletnega mesta',siteLoading:'Nalagam iskalni imenik …',siteUnavailable:'Imenik trenutno ni na voljo; obstoječe bližnjice še delujejo.',siteEmpty:'Na spletnem mestu ni zadetkov.',siteShowing:'strani',planOrigin:'OmniCPQ · zgodba'});
+  Object.assign(tr.en,{siteResults:'Pages on our site',siteLoading:'Loading the site catalogue …',siteUnavailable:'The catalogue is unavailable; existing shortcuts still work.',siteEmpty:'No matching site pages.',siteShowing:'pages',planOrigin:'OmniCPQ · origin'});
   const links={
     daily:[['ChatGPT','https://chatgpt.com/','GPT'],['Claude','https://claude.ai/','C'],['Gmail','https://mail.google.com/','G'],['Outlook','https://outlook.live.com/','O'],['Google Drive','https://drive.google.com/','GD'],['OneDrive','https://onedrive.live.com/','OD'],['TradingView','https://www.tradingview.com/','TV'],['start.me','https://start.me/','S']],
     lab:[['MDL×DCC','https://www.mdlxdcc.org/','BD'],['GitHub','https://github.com/BD-Chess/bd-chessdb','GH'],['Netlify','https://app.netlify.com/','N'],['arXiv','https://arxiv.org/','aX'],['Hugging Face','https://huggingface.co/','HF'],['ChessBest','https://www.mdlxdcc.org/chess/','CB'],['8zSudoku','https://www.mdlxdcc.org/S/','8z'],['TripOpti','https://www.mdlxdcc.org/Trip/','TO']],
@@ -253,13 +255,37 @@
     $$('button[data-asset]').forEach(function(b){const v=prices[b.dataset.asset],loc=lang==='sl'?'sl-SI':'en-US';b.querySelector('.bs-ticker-value').textContent=v[0].toLocaleString(loc,{minimumFractionDigits:v[1],maximumFractionDigits:v[1]});b.querySelector('.bs-ticker-change').textContent=(v[2]>=0?'↗ +':'↘ −')+Math.abs(v[2]).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2})+'%';});
     renderLinks();renderNews();renderReading();renderCalendar();renderNote();clock();drawChart();renderSearch();renderCity();renderLiveNews();storageStatus();$('#bs-pins-edit').textContent=t($('#bs-pin-editor').hidden?'editPins':'donePins');
   }
+  let siteItems=null,siteRequest=null,siteFailed=false;
+  function loadSiteIndex(){
+    if(siteItems||siteRequest||siteFailed)return;
+    if(!window.BDStartSiteSearch){siteFailed=true;return;}
+    const base=new URL('../',document.baseURI);
+    siteRequest=fetch(new URL('site-search-index.json',base),{credentials:'same-origin',cache:'no-cache'})
+      .then(function(response){if(!response.ok)throw new Error('catalogue unavailable');return response.json();})
+      .then(function(data){siteItems=window.BDStartSiteSearch.publicEntries(data,base.href);})
+      .catch(function(){siteFailed=true;})
+      .finally(function(){siteRequest=null;renderSearch();});
+  }
+  function renderSiteSearch(){
+    const panel=$('#bs-site-results'),status=$('#bs-site-results-status'),list=$('#bs-site-result-list'),q=query();
+    panel.hidden=q.length<2;list.replaceChildren();
+    if(panel.hidden)return 0;
+    if(siteItems===null){loadSiteIndex();status.textContent=t(siteFailed?'siteUnavailable':'siteLoading');return 0;}
+    const matches=window.BDStartSiteSearch.search(siteItems,q,12);
+    status.textContent=matches.length?matches.length+' '+t('siteShowing'):t('siteEmpty');
+    matches.forEach(function(item){
+      const a=make('a','bs-site-result cursor-interaction');a.href=item.url;a.target='_blank';a.rel='noopener noreferrer';
+      a.append(make('strong','',item.title));if(item.description)a.append(make('span','',item.description));list.append(a);
+    });
+    return matches.length;
+  }
   function renderSearch(){
     const a=renderLinks(),b=renderNews(),q=normalized(query());let plans=0;
     if(q&&planBeforeSearch===null){planBeforeSearch=$('#bs-plans-panel').open;$('#bs-plans-panel').open=true;}
     $$('.bs-plan-link').forEach(function(link){const group=link.closest('.bs-category'),categoryMatch=group&&q&&normalized(group.querySelector('summary').textContent).includes(q);const match=!q||categoryMatch||normalized(link.textContent+' '+(link.dataset.keywords||'')+' '+link.href).includes(q);link.hidden=!match;if(match)plans++;});
     $$('.bs-category').forEach(function(group){const matching=Array.from(group.querySelectorAll('.bs-plan-link')).some(function(a){return !a.hidden;});group.hidden=!!q&&!matching;group.open=q?matching:openGroups[group.dataset.category];});
     if(!q&&planBeforeSearch!==null){$('#bs-plans-panel').open=planBeforeSearch;planBeforeSearch=null;}
-    const c=renderLiveNews();$('#bs-filter-status').hidden=!q;$('#bs-filter-status').textContent=t('filter')+': '+(a+b+(q?plans+c:0))+' '+t('results');updateGroupButton();
+    const c=renderLiveNews(),d=renderSiteSearch();$('#bs-filter-status').hidden=!q;$('#bs-filter-status').textContent=t('filter')+': '+(a+b+(q?plans+c+d:0))+' '+t('results');updateGroupButton();
   }
   $$('button[data-lang]').forEach(function(b){b.addEventListener('click',function(){lang=b.dataset.lang;localize();persist();});});
   $$('button[data-theme]').forEach(function(b){b.addEventListener('click',function(){root.dataset.theme=b.dataset.theme;document.documentElement.dataset.theme=b.dataset.theme;pressed('button[data-theme]','data-theme',b.dataset.theme);persist();});});
@@ -270,7 +296,7 @@
   $$('button[data-news-group]').forEach(function(b){b.addEventListener('click',function(){newsGroup=b.dataset.newsGroup;pressed('button[data-news-group]','data-news-group',newsGroup);renderNews();persist();});});
   $('#bs-news-more').addEventListener('click',function(){moreStories=!moreStories;renderNews();});
   $('#bs-search-input').addEventListener('input',renderSearch);$('#bs-search-form').addEventListener('submit',function(e){e.preventDefault();renderSearch();});
-  $('#bs-clear-search').addEventListener('click',function(){$('#bs-search-input').value='';renderSearch();$('#bs-search-input').focus();});
+  $('#bs-clear-search').addEventListener('click',function(){$('#bs-search-input').value='';siteFailed=false;renderSearch();$('#bs-search-input').focus();});
   $$('button[data-asset]').forEach(function(b){b.addEventListener('click',function(){const same=asset===b.dataset.asset&&!$('#bs-chart-panel').hidden;asset=b.dataset.asset;$('#bs-chart-panel').hidden=same;$$('button[data-asset]').forEach(function(x){x.setAttribute('aria-expanded',String(!same&&x===b));});drawChart();});});
   $('#bs-chart-close').addEventListener('click',function(){$('#bs-chart-panel').hidden=true;$$('button[data-asset]').forEach(function(b){b.setAttribute('aria-expanded','false');});});
   const resizeObserver=new ResizeObserver(function(){if(!$('#bs-chart-panel').hidden)drawChart();});resizeObserver.observe(root);
