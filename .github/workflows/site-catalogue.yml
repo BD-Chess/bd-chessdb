@@ -8,6 +8,7 @@ on:
       - 'public/ai8-dna*.html'
       - 'scripts/check_site_search_freshness.py'
       - 'tests/ai8-dna-v4.test.mjs'
+      - 'tests/ai8-dna-v4-browser.mjs'
       - 'tests/dna-lab.test.mjs'
       - 'tests/check_site_search_freshness_test.py'
       - 'tests/start-site-search.test.cjs'
@@ -27,6 +28,7 @@ jobs:
           node-version: '22'
       - name: Verify catalogue, search and DNA invariants
         run: |
+          node --check tests/ai8-dna-v4-browser.mjs
           python3 scripts/check_site_search_freshness.py
           python3 tests/check_site_search_freshness_test.py
           node --test tests/start-site-search.test.cjs tests/ai8-dna-v4.test.mjs tests/dna-lab.test.mjs
