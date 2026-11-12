@@ -31,6 +31,18 @@ The same workflow supports `workflow_dispatch`, site `all`, `mdlxdcc` or `bd-che
 
 The old weekly ChatGPT coordinator is retired after the verified cutover. Nara, image and editorial tasks retain their content schedules and scopes; their authorized main changes use this shared pipeline, without direct per-task Netlify dispatches. Retired one-off production jobs stay retired. Never reactivate an old release marker to publish again.
 
+## Public search freshness
+
+The Pages build checks every newly added, discoverable public HTML page in a
+main push against `public/site-search-index.json`; the shared Netlify release
+already requires that exact Pages build to pass. When publishing a new page,
+add its URL and title (plus useful aliases/description) to the index and update
+`total_pages`. Protected routes and pages explicitly marked `noindex` are not
+forced into public search. `scripts/check_site_search_freshness.py` contains the
+current protected route policy and supports a direct base/head comparison.
+The index contains metadata, not page bodies; the check prevents omission but
+does not automatically author catalogue entries or review their content.
+
 ## Sef browser verification order
 
 The Sef push check tests the prepared checkout with isolated synthetic browser

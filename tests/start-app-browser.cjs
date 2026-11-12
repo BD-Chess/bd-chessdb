@@ -77,6 +77,12 @@ async function suite(browser, engine, url, mobile) {
     await page.locator('#bs-clear-search').click();
     assert.equal(await page.locator('[data-category="research"]').evaluate(el => el.open), true, 'search restores group state');
     assert.equal(await page.locator('[data-category="travel"]').evaluate(el => el.open), false);
+    await page.locator('#bs-search-input').fill('8ztsp');
+    await page.locator('#bs-site-result-list a').filter({hasText:'8zTSP'}).first().waitFor({state:'visible'});
+    await page.locator('#bs-search-input').fill('the count the mountain asked for');
+    await page.locator('#bs-site-result-list a').filter({hasText:'The Count The Mountain Asked For'}).first().waitFor({state:'visible'});
+    await page.locator('#bs-clear-search').click();
+    assert.equal(await page.locator('#bs-site-results').isVisible(), false);
     await page.locator('#bs-pins-edit').click();
     await page.getByRole('button', { name:'Move right: ChatGPT', exact:true }).click();
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('bd-start-v1')).preferences.favoriteUrls[1].includes('chatgpt.com'));

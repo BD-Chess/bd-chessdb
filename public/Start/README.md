@@ -18,6 +18,14 @@ new 8zTSP page (`../BD/BD_8ZTSP.html`), first in "Raziskave & primerjave".
 Like the entry above it is a static navigation addition: no saved favorites,
 personal links, exports or localStorage records change.
 
+The November 12 directory update adds links to AI8 DNA, Nara and Illuminara,
+and the public OmniCPQ origin story. Searching Start also searches the public
+site catalogue, without including protected shortcuts. Results are created as
+text, stay on the same site, and existing shortcuts still work if the catalogue
+is unavailable. No personal Start data or saved favorites are changed.
+The shared release check requires new indexable public HTML pages to be present
+in the catalogue; protected and explicit `noindex` pages remain excluded.
+
 BD's November 7 request (R5) makes wide and 4K windows use their width
 instead of a 1260px column. From 1600px the directory takes the left two
 thirds with its groups side by side, and personal links, AI8 News, more and
