@@ -4,9 +4,14 @@ on:
   pull_request:
     paths:
       - 'public/site-search-index.json'
+      - 'public/*.html'
+      - 'public/*.htm'
+      - 'public/**/*.html'
+      - 'public/**/*.htm'
       - 'public/assets/ai8-entry/**'
       - 'public/ai8-dna*.html'
       - 'scripts/check_site_search_freshness.py'
+      - 'scripts/site-search-baseline.txt'
       - 'tests/ai8-dna-v4.test.mjs'
       - 'tests/ai8-dna-v4-browser.mjs'
       - 'tests/dna-lab.test.mjs'
@@ -27,8 +32,15 @@ jobs:
         with:
           node-version: '22'
       - name: Verify catalogue, search and DNA invariants
+        env:
+          SEARCH_HEAD: ${{ github.sha }}
         run: |
           node --check tests/ai8-dna-v4-browser.mjs
-          python3 scripts/check_site_search_freshness.py
+          SEARCH_BASELINE="$(cat scripts/site-search-baseline.txt)"
+          [[ "$SEARCH_BASELINE" =~ ^[0-9a-f]{40}$ ]]
+          if ! git cat-file -e "$SEARCH_BASELINE^{commit}" 2>/dev/null; then
+            git fetch --no-tags --filter=blob:none --depth=1 origin "$SEARCH_BASELINE"
+          fi
+          python3 scripts/check_site_search_freshness.py --base "$SEARCH_BASELINE" --head "$SEARCH_HEAD"
           python3 tests/check_site_search_freshness_test.py
           node --test tests/start-site-search.test.cjs tests/ai8-dna-v4.test.mjs tests/dna-lab.test.mjs

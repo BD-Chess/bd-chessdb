@@ -22,20 +22,16 @@ jobs:
         uses: actions/checkout@v4
       - name: Keep newly published pages searchable
         env:
-          SEARCH_BEFORE: ${{ github.event.before }}
           SEARCH_HEAD: ${{ github.sha }}
-          SEARCH_EVENT: ${{ github.event_name }}
         run: |
           python3 tests/check_site_search_freshness_test.py
           node --test tests/start-site-search.test.cjs
-          if [ "$SEARCH_EVENT" = "push" ]; then
-            if ! git cat-file -e "$SEARCH_BEFORE^{commit}" 2>/dev/null; then
-              git fetch --no-tags --filter=blob:none --depth=1 origin "$SEARCH_BEFORE"
-            fi
-            python3 scripts/check_site_search_freshness.py --base "$SEARCH_BEFORE" --head "$SEARCH_HEAD"
-          else
-            python3 scripts/check_site_search_freshness.py
+          SEARCH_BASELINE="$(cat scripts/site-search-baseline.txt)"
+          [[ "$SEARCH_BASELINE" =~ ^[0-9a-f]{40}$ ]]
+          if ! git cat-file -e "$SEARCH_BASELINE^{commit}" 2>/dev/null; then
+            git fetch --no-tags --filter=blob:none --depth=1 origin "$SEARCH_BASELINE"
           fi
+          python3 scripts/check_site_search_freshness.py --base "$SEARCH_BASELINE" --head "$SEARCH_HEAD"
       - name: Verify AI8 DNA themes, shortcuts and frozen archive
         run: node --test tests/ai8-dna-v4.test.mjs tests/dna-lab.test.mjs
       - name: Verify AI8 News gateway and local bridge without provider calls
