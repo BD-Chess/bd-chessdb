@@ -1,0 +1,32 @@
+name: Public site catalogue verification
+
+on:
+  pull_request:
+    paths:
+      - 'public/site-search-index.json'
+      - 'public/assets/ai8-entry/**'
+      - 'public/ai8-dna*.html'
+      - 'scripts/check_site_search_freshness.py'
+      - 'tests/ai8-dna-v4.test.mjs'
+      - 'tests/dna-lab.test.mjs'
+      - 'tests/check_site_search_freshness_test.py'
+      - 'tests/start-site-search.test.cjs'
+      - '.github/workflows/site-catalogue.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify catalogue, search and DNA invariants
+        run: |
+          python3 scripts/check_site_search_freshness.py
+          python3 tests/check_site_search_freshness_test.py
+          node --test tests/start-site-search.test.cjs tests/ai8-dna-v4.test.mjs tests/dna-lab.test.mjs
