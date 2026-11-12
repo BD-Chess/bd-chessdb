@@ -33,9 +33,12 @@ The old weekly ChatGPT coordinator is retired after the verified cutover. Nara, 
 
 ## Public search freshness
 
-The Pages build checks every newly added, discoverable public HTML page in a
-main push against `public/site-search-index.json`; the shared Netlify release
-already requires that exact Pages build to pass. When publishing a new page,
+The Pages build checks every discoverable public HTML page added since the
+2026-11-12 baseline in `scripts/site-search-baseline.txt` against
+`public/site-search-index.json`. The baseline is fixed so an unrelated later
+commit cannot hide a page missed by a failed release. The shared Netlify release
+already requires that exact Pages build to pass. Pull requests that touch public
+HTML or the catalogue run the same check before merge. When publishing a new page,
 add its URL and title (plus useful aliases/description) to the index and update
 `total_pages`. Protected routes and pages explicitly marked `noindex` are not
 forced into public search. `scripts/check_site_search_freshness.py` contains the

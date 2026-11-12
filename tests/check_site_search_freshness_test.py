@@ -1,5 +1,6 @@
 import importlib.util
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 
@@ -33,6 +34,31 @@ class FreshnessTest(unittest.TestCase):
             hidden.write_text('<meta content="noindex, nofollow" name="robots"><title>Draft</title>')
             names = ['public/draft.html', 'public/BD/O/secret.html', 'public/WL/index.html']
             self.assertEqual(check.missing_new_pages(root, names, {'items': []}), [])
+
+    def test_unindexed_page_remains_detectable_after_an_unrelated_commit(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            def git(*args):
+                return subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture',
+                                       '-c', 'user.email=fixture@example.invalid', *args],
+                                      check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      text=True).stdout.strip()
+            git('init', '-q')
+            (root / 'README').write_text('baseline')
+            git('add', 'README'); git('commit', '-qm', 'baseline')
+            baseline = git('rev-parse', 'HEAD')
+            (root / 'public').mkdir()
+            (root / 'public' / 'new.html').write_text('<html>New work</html>')
+            git('add', 'public'); git('commit', '-qm', 'new unindexed page')
+            previous = git('rev-parse', 'HEAD')
+            (root / 'README').write_text('unrelated later update')
+            git('add', 'README'); git('commit', '-qm', 'unrelated update')
+            head = git('rev-parse', 'HEAD')
+            self.assertEqual(check.added_paths(root, previous, head), [])
+            names = check.added_paths(root, baseline, head)
+            self.assertEqual(check.missing_new_pages(root, names, {'items': []}), ['public/new.html'])
+            self.assertEqual(check.missing_new_pages(root, names, {'items': [
+                {'url': '/new.html', 'title': 'New work'}]}), [])
 
     def test_invalid_or_missing_new_file_is_not_silently_accepted(self):
         with tempfile.TemporaryDirectory() as temp:

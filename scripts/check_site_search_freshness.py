@@ -87,6 +87,13 @@ def missing_new_pages(root, paths, index):
     return missing
 
 
+def added_paths(root, base, head):
+    result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '--diff-filter=A',
+                             '--no-renames', '-z', base, head, '--', 'public/'],
+                            check=True, stdout=subprocess.PIPE)
+    return [v.decode('utf-8') for v in result.stdout.split(b'\0') if v]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base')
@@ -102,10 +109,7 @@ def main():
     if args.base:
         if not all(re.fullmatch(r'[0-9a-f]{40,64}', v or '') for v in (args.base, args.head)):
             raise SystemExit('Expected exact commit identifiers')
-        result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '--diff-filter=A',
-                                 '--no-renames', '-z', args.base, args.head, '--', 'public/'],
-                                check=True, stdout=subprocess.PIPE)
-        names = [v.decode('utf-8') for v in result.stdout.split(b'\0') if v]
+        names = added_paths(root, args.base, args.head)
         missing = missing_new_pages(root, names, index)
         if missing:
             raise SystemExit('New public HTML missing from site-search-index.json:\n' + '\n'.join(missing))
