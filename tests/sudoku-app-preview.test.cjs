@@ -9,11 +9,16 @@ test('one active LAB source exposes desktop LAB and APP presentation selector',(
  assert.match(app,/id="sudoku-unified-bootstrap"/);assert.match(app,/id="sudoku-app-ui"/);assert.match(app,/id="sudoku-app-solve-playback"/);
  assert.match(app,/ai8SudokuNavigatorV020/);
 });
-test('legacy APP root is recovery only while immutable old/003 preserves previous game',()=>{
+test('legacy APP root is recovery only and old/003 points to the moved archive',()=>{
  const retired=read('public/S/app/index.html'),direct=read('public/S/app/app.html');
  assert.equal(retired,direct);assert.match(retired,/\.\.\/new\/\?view=app/);assert.doesNotMatch(retired,/navigator-core|SudokuNavigator=/);
- assert.equal(hash('public/S/app/old/003/app.html'),'9228617baa550c9fe2a97b3c2d477c1a5d44a00759d7327ecb519a7b9a37fc6a');
- assert.equal(JSON.parse(read('public/S/app/old/003/release.json')).release_id,'01b24c21dbd0bb3f69e50f357a6194b1b9cc3e45dbd9eb048816defef077b384');
+ // The 2026-10-13 archive migration removed the old game bytes from public/.
+ const archive=read('public/S/app/old/003/index.html');
+ assert.match(archive,/Arhiv je preseljen/);
+ assert.match(archive,/public\/S\/app\/old\/003/);
+ assert.match(archive,/https:\/\/drive\.google\.com\/drive\/folders\//);
+ assert.equal(fs.existsSync('public/S/app/old/003/app.html'),false);
+ assert.equal(fs.existsSync('public/S/app/old/003/release.json'),false);
 });
 test('CURRENT and PREVIOUS canonical game bytes remain untouched',()=>{
  assert.equal(hash('public/S/current/index.html'),'e5af3f7345fd506ec3d59a811fc482ae19204334809171b595a4898618c6c3ba');
