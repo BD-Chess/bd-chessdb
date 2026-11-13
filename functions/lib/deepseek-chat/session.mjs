@@ -1,7 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export const origin = 'https://www.mdlxdcc.org';
-export const account = 'bd@siol.net';
 export const cookieName = '__Host-mdlxdcc-deepseek';
 export const sessionLifetime = 8 * 60 * 60;
 const scope = 'mdlxdcc-deepseek-chat.v1';
@@ -11,7 +10,7 @@ function signature(payload, secret) {
   return createHmac('sha256', secret).update(payload).digest();
 }
 
-export function makeSession(secret, now) {
+export function makeSession(account, secret, now) {
   const iat = Math.floor(now / 1000);
   const value = Buffer.from(JSON.stringify({
     aud: scope, sub: account, iat, exp: iat + sessionLifetime,
@@ -27,7 +26,7 @@ export function logoutCookie() {
   return cookieName + '=; ' + cookieAttributes + '; Max-Age=0';
 }
 
-export function validSession(req, secret, now) {
+export function validSession(req, account, secret, now) {
   const raw = req.headers.get('cookie')?.split(';').map(part => part.trim());
   const cookies = raw?.filter(part => part.startsWith(cookieName + '='));
   if (cookies?.length !== 1) return false;

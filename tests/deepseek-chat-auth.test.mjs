@@ -3,12 +3,17 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { makeAuthHandler, config } from '../functions/deepseek-chat-auth.mjs';
 import { passwordHash } from '../functions/lib/mdlxdcc-guide/access.mjs';
-import { account, cookieName, origin, sessionLifetime } from '../functions/lib/deepseek-chat/session.mjs';
+import { cookieName, origin, sessionLifetime } from '../functions/lib/deepseek-chat/session.mjs';
 
 const password = 'fixture-only-synthetic-password';
 const signing = 'z'.repeat(43);
+const account = 'owner@example.invalid';
 const hash = await passwordHash(password);
-const env = new Map([['DEEPSEEK_CHAT_PASSWORD_HASH', hash], ['DEEPSEEK_CHAT_SESSION_SECRET', signing]]);
+const env = new Map([
+  ['DEEPSEEK_CHAT_OWNER_EMAIL', account],
+  ['DEEPSEEK_CHAT_PASSWORD_HASH', hash],
+  ['DEEPSEEK_CHAT_SESSION_SECRET', signing],
+]);
 let now = Date.now();
 const handler = makeAuthHandler({ getEnv: key => env.get(key), now: () => now });
 const site = { site: { name: 'mdlxdcc' } };
@@ -90,6 +95,6 @@ test('public page serves only client assets with a password input and independen
   assert.match(html, /type="password" autocomplete="current-password"/);
   assert.match(html, /method="post"/);
   assert.match(script, /'\/deepseek-chat\/api\/session'/);
-  assert.doesNotMatch(html + script, /DEEPSEEK_CHAT_(SESSION_SECRET|PASSWORD_HASH)|bd@siol\.net|scrypt-v1/);
+  assert.doesNotMatch(html + script, /DEEPSEEK_CHAT_(OWNER_EMAIL|SESSION_SECRET|PASSWORD_HASH)|scrypt-v1/);
   assert.equal(config.rateLimit.windowLimit, 12);
 });

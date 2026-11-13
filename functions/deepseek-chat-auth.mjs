@@ -1,6 +1,6 @@
-import { env, passwordMatches } from './lib/mdlxdcc-guide/access.mjs';
+import { emailAddress, env, passwordMatches } from './lib/mdlxdcc-guide/access.mjs';
 import {
-  account, origin, makeSession, sessionCookie, logoutCookie, validSession,
+  origin, makeSession, sessionCookie, logoutCookie, validSession,
 } from './lib/deepseek-chat/session.mjs';
 
 const headers = {
@@ -58,6 +58,7 @@ export function makeAuthHandler({ getEnv = env, checkPassword = passwordMatches,
     }
 
     try {
+      const account = emailAddress(getEnv('DEEPSEEK_CHAT_OWNER_EMAIL'));
       const hash = getEnv('DEEPSEEK_CHAT_PASSWORD_HASH');
       const secret = getEnv('DEEPSEEK_CHAT_SESSION_SECRET');
       if (!/^scrypt-v1\$[a-f0-9]{32}\$[a-f0-9]{64}$/.test(hash ?? '') ||
@@ -66,7 +67,7 @@ export function makeAuthHandler({ getEnv = env, checkPassword = passwordMatches,
       }
 
       if (req.method === 'GET') {
-        if (!validSession(req, secret, now())) return json({ authenticated: false });
+        if (!validSession(req, account, secret, now())) return json({ authenticated: false });
         return json({ authenticated: true, email: account, connection: 'pending' });
       }
 
@@ -83,7 +84,7 @@ export function makeAuthHandler({ getEnv = env, checkPassword = passwordMatches,
         return json({ error: 'INVALID_LOGIN' }, 401);
       }
       return json({ authenticated: true, email: account, connection: 'pending' },
-        200, { 'Set-Cookie': sessionCookie(makeSession(secret, now())) });
+        200, { 'Set-Cookie': sessionCookie(makeSession(account, secret, now())) });
     } catch {
       return json({ error: 'AUTH_UNAVAILABLE' }, 503);
     }
