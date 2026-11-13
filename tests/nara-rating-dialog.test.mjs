@@ -24,8 +24,15 @@ class Element {
  focus(){this.doc.activeElement=this}
  getBoundingClientRect(){return {left:10,top:10,right:110,bottom:110}}
 }
+// A page document with the nara:language event of assets/js/nara-language.js (switchTo changes <html lang>, then announces it).
+function page(lang='en'){
+ const doc={documentElement:{lang},listeners:{},createElement(tag){return new Element(tag,this)}};doc.body=new Element('body',doc);doc.querySelector=s=>doc.body.querySelector(s);doc.querySelectorAll=s=>doc.body.querySelectorAll(s);
+ doc.addEventListener=(k,cb)=>(doc.listeners[k]??=[]).push(cb);
+ doc.switchTo=language=>{doc.documentElement.lang=language;for(const cb of doc.listeners['nara:language']??[])cb({type:'nara:language',detail:{language}})};
+ return doc;
+}
 function fixture(lang='en'){
- const doc={documentElement:{lang},createElement(tag){return new Element(tag,this)}};doc.body=new Element('body',doc);doc.querySelector=s=>doc.body.querySelector(s);doc.querySelectorAll=s=>doc.body.querySelectorAll(s);
+ const doc=page(lang);
  const make=(tag,cl='',text='')=>{const x=doc.createElement(tag);x.className=cl;x.textContent=text;return x};
  const cards=[];
  for(const [id,value,reason]of [['S1','71 / 100','First actual reason'],['S2','68.5 / 100','Second actual reason']]){
@@ -45,6 +52,27 @@ test('second score swaps the actual explanation and repeated loading creates no 
  const {doc,cards,run}=fixture('sl');const buttons=doc.querySelectorAll('.reader-score-button'),dialog=doc.querySelector('[data-reader-ratings-dialog]');
  buttons[0].click();doc.querySelector('.reader-rating-close').click();buttons[1].click();assert.equal(cards[0].body.parent,null);assert.equal(cards[1].body.parent,dialog);assert.equal(cards[1].en.hidden,true);assert.equal(cards[1].sl.hidden,false);assert.equal(cards[1].body.textContent,'Second actual reasonReading notesObrazložitvi');
  dialog.click(30,30);assert.equal(dialog.open,true);dialog.click(200,200);assert.equal(dialog.open,false);assert.equal(doc.activeElement,buttons[1]);run();assert.equal(doc.querySelectorAll('[data-reader-ratings-dialog]').length,1);
+});
+test('a language switch relabels score buttons, pending marks and an already open explanation',()=>{
+ const {doc,cards,pending}=fixture('en');const button=doc.querySelector('.reader-score-button'),dialog=doc.querySelector('[data-reader-ratings-dialog]');
+ assert.equal(button.title,'Open score explanation');assert.equal(pending.title,'Score pending');
+ button.click();const close=doc.querySelector('.reader-rating-close');assert.equal(close.title,'Close score explanation');assert.equal(cards[0].en.hidden,false);
+ doc.switchTo('sl');
+ assert.equal(button.title,'Odpri razlago ocene');assert.equal(button.getAttribute('aria-label'),'71 / 100 — Odpri razlago ocene');
+ assert.equal(pending.title,'Ocena še ni pripravljena');assert.equal(pending.getAttribute('aria-label'),'Ocena še ni pripravljena');
+ assert.equal(close.title,'Zapri razlago ocene');assert.equal(close.getAttribute('aria-label'),'Zapri razlago ocene');
+ assert.equal(dialog.open,true,'the open explanation stays open');assert.equal(cards[0].en.hidden,true);assert.equal(cards[0].sl.hidden,false);
+ // Scores and the original model reasons stay exactly as published.
+ assert.equal(button.textContent,'71 / 100');assert.equal(cards[0].body.textContent,'First actual reasonReading notesObrazložitvi');
+ doc.switchTo('en');
+ assert.equal(button.title,'Open score explanation');assert.equal(close.getAttribute('aria-label'),'Close score explanation');assert.equal(pending.title,'Score pending');assert.equal(cards[0].en.hidden,false);
+});
+test('a page with a pending mark and no scores follows the language too',()=>{
+ const doc=page('en'),pending=doc.createElement('span');pending.className='reader-rating-pending';pending.textContent='Reader rating pending';doc.body.append(pending);
+ vm.runInNewContext(runtime,{document:doc});
+ assert.equal(pending.textContent,'—');assert.equal(pending.title,'Score pending');assert.equal(doc.querySelector('[data-reader-ratings-dialog]'),null,'no dialog without scores');
+ doc.switchTo('sl');assert.equal(pending.title,'Ocena še ni pripravljena');assert.equal(pending.getAttribute('aria-label'),'Ocena še ni pripravljena');assert.equal(pending.textContent,'—');
+ doc.switchTo('en');assert.equal(pending.getAttribute('aria-label'),'Score pending');
 });
 test('every generated Daily shell loads the native score-details adapter',()=>{
  for(const source of [dailyRenderer,formatRenderer])assert.match(source,/nara-daily-score-details\.js\?v=20261019-dialog-r2/);

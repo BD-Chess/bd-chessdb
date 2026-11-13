@@ -23,6 +23,8 @@
     document.querySelectorAll('[data-language-content]').forEach((el) => {
       el.hidden = el.dataset.languageContent !== language;
     });
+    // The head bootstrap's first-paint mark (nara-cinematic.css) is no longer needed: hidden now decides.
+    delete root.dataset.languageEarly;
     document.querySelectorAll('[data-aria-en]').forEach((el) => {
       el.setAttribute('aria-label', language === 'sl' ? el.dataset.ariaSl : el.dataset.ariaEn);
     });
