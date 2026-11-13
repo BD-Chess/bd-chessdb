@@ -14,4 +14,6 @@ API si deli obstoječo lastnikovo sejo. `GET /deepseek-chat/api/messages` prever
 
 Spletna pogodba predvideva izolacijo po prijavljenem lastniku, enoličnost istega UUID, trajen odgovor na ponovni odčitek in identifikator v vsakem izidu. Prejšnje besedilo ni kontekst novega modelnega klica. Brskalnik hrani zadnji ID v zavihku, da ga lahko po osvežitvi ponovno odčita. Sintetični adapter je samo v testih.
 
+Če brskalnik izgubi potrditev oddaje ali STOP, do tri minute preverja stanje po istem UUID. Besedilo v odprtem zavihku ostane v vnosu do potrditve oddaje. Brskalnik med preverjanjem pošilja samo zahteve `GET`.
+
 Za celotni prevzem so odprti dejanski namenski Drive inbox in results, preveritev obstoječega 8zListenerja na WORK ter ena sveža sintetična povratna naloga z ločenim ACK in rezultatom. Ročni izvoz arhiva v lokalni izdaji 8102 je druga funkcija.

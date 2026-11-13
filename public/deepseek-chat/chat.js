@@ -53,7 +53,9 @@ function updateControls() {
   ui.stop.hidden = !activeId || !canStop;
   ui.stop.disabled = !activeId || !canStop || stopping || submitting;
   ui.refresh.hidden = !canRefresh;
+  ui.refresh.disabled = !canRefresh || stopping || submitting;
   ui.release.hidden = !activeId || !canRefresh || !ready;
+  ui.release.disabled = !activeId || !canRefresh || !ready || stopping || submitting;
 }
 
 function readJobId() {
@@ -180,9 +182,9 @@ function applyMessage(data, id) {
   }
   if (data.state === 'complete') addMessage('model', 'DeepSeek', data.reply);
   delivery(stateLabels[data.state], data.state === 'failed' || data.state === 'uncertain');
+  canRefresh = false;
   if (terminalStates.has(data.state)) {
     activeId = null;
-    canRefresh = false;
     canStop = false;
   } else {
     canStop = data.state !== 'stopping';
@@ -215,8 +217,9 @@ async function checkMessage(revision, id) {
     return;
   }
   canRefresh = true;
+  delivery('Stanje vprašanja še ni potrjeno. Preverjanje se nadaljuje.', true);
   updateControls();
-  delivery('Stanje vprašanja trenutno ni potrjeno. Preveri stanje pred naslednjim pošiljanjem.', true);
+  schedulePoll(revision, id);
 }
 
 ui.composer.addEventListener('submit', async event => {
@@ -249,13 +252,15 @@ ui.composer.addEventListener('submit', async event => {
     rememberJob(previousId);
     delivery('Vprašanje je bilo zavrnjeno. Besedilo je ostalo v vnosu.', true);
   } else {
-    canRefresh = true;
-    delivery('Oddaja ni potrjena. Preveri stanje istega vprašanja.', true);
+    delivery('Oddaja ni potrjena. Preverjam stanje istega vprašanja.', true);
+    pollingUntil = Date.now() + maximumPollMs;
+    void checkMessage(revision, id);
   }
   updateControls();
 });
 
 ui.refresh.addEventListener('click', () => {
+  if (ui.refresh.disabled) return;
   canRefresh = false;
   updateControls();
   if (!ready || !activeId) {
@@ -267,7 +272,7 @@ ui.refresh.addEventListener('click', () => {
 });
 
 ui.release.addEventListener('click', () => {
-  if (!activeId || !canRefresh || !ready) return;
+  if (ui.release.disabled || !activeId) return;
   if (!window.confirm('Oddani klic lahko še teče. Opustim čakanje in omogočim nov poziv?')) return;
   clearTimeout(pollTimer);
   pollRevision += 1;
@@ -286,6 +291,7 @@ ui.stop.addEventListener('click', async () => {
   pollRevision += 1;
   clearTimeout(pollTimer);
   stopping = true;
+  canStop = false;
   updateControls();
   let result;
   try { result = await messageRequest({ id, method: 'POST', body: { action: 'stop' } }); } catch { result = { status: 0 }; }
@@ -295,9 +301,9 @@ ui.stop.addEventListener('click', async () => {
   if (id !== activeId) return;
   if (result.status === 401) return sessionExpired();
   if (result.status !== 202 || !applyMessage(result.data, id)) {
-    canRefresh = true;
-    updateControls();
-    delivery('Oddaja STOP ni potrjena. Preveri trenutno stanje.', true);
+    delivery('Oddaja STOP ni potrjena. Preverjam stanje istega vprašanja.', true);
+    pollingUntil = Date.now() + maximumPollMs;
+    void checkMessage(revision, id);
   } else if (activeId) {
     pollingUntil = Date.now() + maximumPollMs;
     schedulePoll(revision, id);
