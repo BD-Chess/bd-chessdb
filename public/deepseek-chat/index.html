@@ -6,18 +6,18 @@
   <meta name="color-scheme" content="dark">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="referrer" content="no-referrer">
-  <title>my DeepSeek Chat · MDL×DCC</title>
+  <title>MyDeepSeekRHP · MDL×DCC</title>
   <link rel="stylesheet" href="/deepseek-chat/chat.css">
   <script src="/deepseek-chat/chat.js" defer></script>
 </head>
 <body>
-  <main>
+  <main id="page">
     <header class="heading">
       <a class="brand" href="/" aria-label="MDL×DCC, domača stran">MDL<span>×</span>DCC</a>
       <button id="logout" type="button" hidden>Odjava</button>
     </header>
     <section class="card" aria-labelledby="title">
-      <h1 id="title">my DeepSeek Chat</h1>
+      <h1 id="title">MyDeepSeekRHP</h1>
       <p id="account" class="muted" hidden></p>
       <form id="login" method="post" action="/deepseek-chat/api/session" hidden>
         <label for="email">Uporabniško ime</label>
@@ -27,6 +27,22 @@
         <button class="primary" id="submit" type="submit">Prijava</button>
       </form>
       <p id="status" class="status" role="status" aria-live="polite">Preverjam prijavo …</p>
+      <section id="chat" aria-label="Spletni klepet" hidden>
+        <p id="connection" class="connection" role="status"></p>
+        <div id="transcript" class="transcript" role="log" aria-label="Sporočila" hidden></div>
+        <form id="composer" method="post" action="/deepseek-chat/api/messages">
+          <label for="prompt">Sporočilo</label>
+          <textarea id="prompt" name="prompt" rows="3" maxlength="8000" required disabled></textarea>
+          <div class="composer-actions">
+            <label class="reasoning"><input id="reasoning" type="checkbox" checked disabled> Reasoning</label>
+            <button id="stop" type="button" hidden disabled>STOP</button>
+            <button id="refresh" type="button" hidden>Preveri stanje</button>
+            <button id="release" type="button" hidden>Opusti čakanje</button>
+            <button id="send" class="primary" type="submit" disabled>Pošlji</button>
+          </div>
+        </form>
+        <p id="delivery" class="status" role="status"></p>
+      </section>
       <noscript><p class="status">Za prijavo vključi JavaScript.</p></noscript>
     </section>
   </main>

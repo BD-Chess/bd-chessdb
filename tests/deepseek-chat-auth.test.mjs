@@ -58,6 +58,8 @@ test('login verifies a real scrypt password and issues a host-only protected coo
   const logout = await handler(request({ cookie, body: { action: 'logout' } }), site);
   assert.match(logout.headers.get('set-cookie'), /Max-Age=0$/);
   assert.equal((await logout.json()).authenticated, false);
+  const noReferrer = await handler(request({ cookie, body: { action: 'logout' }, siteOrigin: null, metadata: 'same-origin' }), site);
+  assert.match(noReferrer.headers.get('set-cookie'), /Max-Age=0$/);
 
   const stat = now;
   now += sessionLifetime * 1000;
