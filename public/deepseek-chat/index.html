@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>my DeepSeek Chat · MDL×DCC</title>
+  <link rel="stylesheet" href="/deepseek-chat/chat.css">
+  <script src="/deepseek-chat/chat.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="heading">
+      <a class="brand" href="/" aria-label="MDL×DCC, domača stran">MDL<span>×</span>DCC</a>
+      <button id="logout" type="button" hidden>Odjava</button>
+    </header>
+    <section class="card" aria-labelledby="title">
+      <h1 id="title">my DeepSeek Chat</h1>
+      <p id="account" class="muted" hidden></p>
+      <form id="login" method="post" action="/deepseek-chat/api/session" hidden>
+        <label for="email">Uporabniško ime</label>
+        <input id="email" name="username" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="254" required>
+        <label for="password">Geslo</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" maxlength="256" required>
+        <button class="primary" id="submit" type="submit">Prijava</button>
+      </form>
+      <p id="status" class="status" role="status" aria-live="polite">Preverjam prijavo …</p>
+      <noscript><p class="status">Za prijavo vključi JavaScript.</p></noscript>
+    </section>
+  </main>
+</body>
+</html>
