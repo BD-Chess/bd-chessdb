@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 export const owner = 'owner@example.invalid';
 export const inbox = 'folder-inbox-dev';
 export const results = 'folder-results-dev';
@@ -13,8 +15,8 @@ export function driveFixture(overrides = {}) {
     DEEPSEEK_CHAT_DRIVE_RESULTS_ID: results,
     DEEPSEEK_CHAT_DRIVE_PERMISSION_ID: principal,
     DEEPSEEK_CHAT_DRIVE_CLIENT_ID: 'test.apps.googleusercontent.com',
-    DEEPSEEK_CHAT_DRIVE_CLIENT_SECRET: 'not-a-real-secret',
-    DEEPSEEK_CHAT_DRIVE_REFRESH_TOKEN: 'not-a-real-token',
+    DEEPSEEK_CHAT_DRIVE_CLIENT_SECRET: randomUUID(),
+    DEEPSEEK_CHAT_DRIVE_REFRESH_TOKEN: randomUUID(),
     ...overrides,
   };
   const blobs = new Map();
