@@ -2,44 +2,9 @@ import { emailAddress, env, passwordMatches } from './lib/mdlxdcc-guide/access.m
 import {
   origin, makeSession, sessionCookie, logoutCookie, validSession,
 } from './lib/deepseek-chat/session.mjs';
+import { json, originAllowed, readJson } from './lib/deepseek-chat/http.mjs';
 
-const headers = {
-  'Cache-Control': 'no-store, private',
-  'X-Content-Type-Options': 'nosniff',
-  'Cross-Origin-Resource-Policy': 'same-origin',
-  'Referrer-Policy': 'no-referrer',
-  Vary: 'Cookie, Origin',
-};
 const maxLoginBytes = 2048;
-
-function json(value, status = 200, extra = {}) {
-  return Response.json(value, { status, headers: { ...headers, ...extra } });
-}
-
-async function readAction(req) {
-  if (!/^application\/json(?:\s*;|$)/i.test(req.headers.get('content-type') ?? '') ||
-      !req.body || Number(req.headers.get('content-length')) > maxLoginBytes) return null;
-  const reader = req.body.getReader();
-  const chunks = [];
-  let size = 0;
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > maxLoginBytes) {
-        await reader.cancel();
-        return null;
-      }
-      chunks.push(value);
-    }
-    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
-  } catch {
-    return null;
-  } finally {
-    reader.releaseLock();
-  }
-}
 
 export function makeAuthHandler({ getEnv = env, checkPassword = passwordMatches, now = Date.now,
   allowedOrigin = origin } = {}) {
@@ -47,14 +12,9 @@ export function makeAuthHandler({ getEnv = env, checkPassword = passwordMatches,
     if ((context.site?.name && context.site.name !== 'mdlxdcc') ||
         new URL(req.url).origin !== allowedOrigin) return json({ error: 'NOT_FOUND' }, 404);
 
-    const requestOrigin = req.headers.get('origin');
-    if ((requestOrigin !== null && requestOrigin !== allowedOrigin) ||
-        req.headers.get('sec-fetch-site') === 'cross-site') return json({ error: 'ORIGIN_FORBIDDEN' }, 403);
+    if (!originAllowed(req, allowedOrigin)) return json({ error: 'ORIGIN_FORBIDDEN' }, 403);
     if (!['GET', 'POST'].includes(req.method)) {
       return json({ error: 'METHOD_NOT_ALLOWED' }, 405, { Allow: 'GET, POST' });
-    }
-    if (req.method === 'POST' && requestOrigin !== allowedOrigin) {
-      return json({ error: 'ORIGIN_FORBIDDEN' }, 403);
     }
 
     try {
@@ -71,7 +31,7 @@ export function makeAuthHandler({ getEnv = env, checkPassword = passwordMatches,
         return json({ authenticated: true, email: account, connection: 'pending' });
       }
 
-      const body = await readAction(req);
+      const body = await readJson(req, maxLoginBytes);
       if (body?.action === 'logout') {
         return json({ authenticated: false }, 200, { 'Set-Cookie': logoutCookie() });
       }
