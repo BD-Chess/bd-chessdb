@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BD × AI Lab — 8zTSP in your browser</title>
+<meta name="description" content="Run 8zTSP, the Rust TSP kernel of BD × AI Lab, in its minimal build compiled to WebAssembly, in your own browser: nu3496 (3,496 cities in Nicaragua), random points or your own TSPLIB file.">
+<meta property="og:title" content="BD × AI Lab — 8zTSP in your browser">
+<meta property="og:description" content="Run 8zTSP, the Rust TSP kernel of BD × AI Lab, in its minimal build compiled to WebAssembly, in your own browser: nu3496 (3,496 cities in Nicaragua), random points or your own TSPLIB file.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_GB">
+<meta property="og:locale:alternate" content="sl_SI">
+<script>/* Existing MDLxDCC locale contract: manual > saved > SI country hint > English. */
+(function(){
+'use strict';
+if(window.MDLxDCCLocale)return;
+const root=document.documentElement,KEY='mdlxdcc-locale-v1',LEGACY='mdlxdcc-lang',COOKIE='mdlxdcc_locale',listeners=new Set();
+let selection=null,generation=0,controller=null;
+const valid=x=>x==='en'||x==='sl';
+const get=k=>{try{return localStorage.getItem(k);}catch(_){return null;}};
+function parse(v){try{const x=JSON.parse(v);return x&&valid(x.lang)&&['manual','geo'].includes(x.source)&&Number.isFinite(x.at)&&x.at>=0?{lang:x.lang,source:x.source,at:x.at}:null;}catch(_){return null;}}
+function cookie(){try{const x=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));return x?parse(decodeURIComponent(x.slice(COOKIE.length+1))):null;}catch(_){return null;}}
+function read(){const l=parse(get(KEY)),c=cookie();let v=!l?c:!c?l:c.at>l.at?c:l;const old=get(LEGACY);if(valid(old)&&(!v||(v.lang!==old&&(!c||(l&&l.at>=c.at)))))v={lang:old,source:'manual',at:Date.now()};return v;}
+function persist(){if(!selection)return;const data=JSON.stringify(selection);try{localStorage.setItem(LEGACY,selection.lang);localStorage.setItem('bdPortraitLang',selection.lang);localStorage.setItem(KEY,data);}catch(_){}try{if(!/^https?:$/.test(location.protocol))return;const h=location.hostname.toLowerCase(),d=h==='mdlxdcc.org'||h==='www.mdlxdcc.org'?'; Domain=mdlxdcc.org':'';document.cookie=COOKIE+'='+encodeURIComponent(data)+'; Path=/; Max-Age=31536000; SameSite=Lax'+d+(location.protocol==='https:'?'; Secure':'');}catch(_){}}
+const current=()=>selection?selection.lang:'en';
+function apply(){root.lang=current();root.dataset.lang=current();root.dataset.localeSource=selection?selection.source:'fallback';listeners.forEach(fn=>{try{fn(current());}catch(_){}});window.dispatchEvent(new CustomEvent('mdlxdcc:language',{detail:{lang:current(),source:root.dataset.localeSource}}));}
+function choose(lang){if(!valid(lang))return;generation++;if(controller)controller.abort();selection={lang,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};persist();apply();}
+function subscribe(fn){if(typeof fn!=='function')return()=>{};listeners.add(fn);fn(current());return()=>listeners.delete(fn);}
+function refresh(){const n=read();if(n&&(!selection||n.at>selection.at||n.lang!==selection.lang)){generation++;if(controller)controller.abort();selection=n;persist();apply();}}
+selection=read();try{const q=new URLSearchParams(location.search).get('lang');if(valid(q))selection={lang:q,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};}catch(_){}
+window.MDLxDCCLocale=Object.freeze({current,choose,subscribe,refresh,version:'1.0'});root.classList.add('js');if(selection)persist();apply();
+window.addEventListener('storage',e=>{if([KEY,LEGACY,null].includes(e.key))refresh();});window.addEventListener('pageshow',refresh);window.addEventListener('focus',refresh);
+if(!selection&&/^https?:$/.test(location.protocol)&&typeof fetch==='function'){
+const start=generation;controller=typeof AbortController==='function'?new AbortController():null;let expired=false;
+const timeout=setTimeout(()=>{expired=true;if(controller)controller.abort();},2200);
+fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',headers:{Accept:'application/json'},...(controller?{signal:controller.signal}:{})}).then(r=>{if(!r.ok||!(r.headers.get('content-type')||'').includes('application/json'))throw Error('No country response');return r.json();}).then(d=>{if(expired||generation!==start||selection||!d||!valid(d.language))return;selection=read()||{lang:d.language,source:'geo',at:Date.now()};persist();apply();}).catch(()=>{}).finally(()=>clearTimeout(timeout));
+}
+})();</script>
+<script>try{const f=Number(localStorage.getItem('mdlxdcc-font'));if(f>=.8&&f<=1.5)document.documentElement.style.setProperty('--scale',f);}catch(_){}</script>
+<style>:root{color-scheme:dark;--bg:#04070e;--card:#0c1727;--card2:#0a1422;--line:rgba(148,163,184,.18);--text:#e7eef9;--muted:#9daec4;--cyan:#22d3ee;--green:#34d399;--gold:#f59e0b;--scale:1;--m:1;--fs:calc(var(--scale)*var(--m))}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:calc(100%*var(--fs))}
+html:not([data-lang=sl]) .l-sl,html[data-lang=sl] .l-en{display:none!important}
+body{margin:0;background-color:var(--bg);background-image:radial-gradient(circle at 12% 0,rgba(34,211,238,.11),transparent 30%),radial-gradient(circle at 88% 10%,rgba(52,211,153,.08),transparent 28%);color:var(--text);font-family:Inter,"Segoe UI",system-ui,sans-serif;line-height:1.6}
+a{color:var(--cyan)}a:focus-visible,summary:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.wrap{width:min(1180px,calc(100% - 32px));margin:auto}
+.top{position:sticky;top:0;z-index:30;background:rgba(4,7,14,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.top .wrap{position:relative;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 0}
+.brand{font:800 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.16em;color:var(--cyan);text-decoration:none}
+.nav{display:flex;flex-wrap:wrap;gap:7px}.nav a{font:calc(11px*var(--fs)) ui-monospace,Consolas,monospace;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:6px 9px;border-radius:999px}.nav a:hover{color:var(--cyan);border-color:rgba(34,211,238,.5)}
+.top-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ubtn{display:inline-grid;place-items:center;min-width:40px;min-height:36px;border:1px solid var(--line);border-radius:9px;background:none;color:var(--muted);font:600 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;cursor:pointer;padding:4px 9px}
+.ubtn:hover{border-color:rgba(34,211,238,.5);color:var(--cyan)}.ubtn[aria-pressed=true]{background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.5);color:var(--cyan)}.ubtn:disabled{opacity:.4;cursor:default}
+.menu{border:0;padding:0;margin:0;background:none}.menu>summary{list-style:none;display:inline-grid;place-items:center;width:42px;height:36px;border:1px solid var(--line);border-radius:9px;color:var(--text);cursor:pointer}
+.menu>summary::-webkit-details-marker{display:none}.menu[open]>summary{border-color:rgba(34,211,238,.5);color:var(--cyan)}
+.menu-panel{position:absolute;z-index:40;right:0;top:calc(100% + 6px);width:min(360px,100%);max-height:min(78vh,700px);overflow:auto;overscroll-behavior:contain;padding:18px;background:#0c1727;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55)}
+.menu-h{margin:0 0 8px;color:var(--muted);font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase}
+.menu-links{display:grid;margin:0 0 16px;border-top:1px solid var(--line)}.menu-links a{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:42px;padding:8px 3px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text);font-size:calc(15px*var(--fs))}.menu-links a:hover{color:var(--cyan)}
+.menu-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:50px;color:var(--text);font-size:calc(15px*var(--fs))}.menu-row .grp{display:flex;align-items:center;gap:4px}.menu-row .ubtn{min-width:46px;min-height:42px;color:var(--text)}#font-value{min-width:62px}
+.intro{padding:30px 0 6px}
+.kicker{margin:0 0 10px;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1{margin:0 0 12px;font-size:calc(clamp(30px,5vw,50px)*var(--fs));line-height:1.08;letter-spacing:-.025em}
+.lead{max-width:820px;margin:0 0 16px;font-size:calc(17px*var(--fs))}
+.facts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.facts li{border:1px solid var(--line);border-radius:12px;background:rgba(12,23,39,.72);padding:12px 14px;font-size:calc(14px*var(--fs));color:var(--muted)}.facts b{color:var(--text)}
+.lab{display:grid;grid-template-columns:310px minmax(0,1fr);margin:20px 0;border:1px solid rgba(34,211,238,.35);border-radius:14px;overflow:hidden;background:var(--card)}
+.lab aside{padding:20px;border-right:1px solid var(--line);background:var(--card2)}
+.lab h2{margin:0 0 10px;font-size:calc(15px*var(--fs))}
+.lab label{display:block;color:var(--muted);font-size:calc(13px*var(--fs))}
+.lab input,.lab select,.lab button{font:inherit}
+.lab input[type=number],.lab select{display:block;width:100%;min-width:0;margin:5px 0 12px;padding:8px 10px;border:1px solid rgba(148,163,184,.35);border-radius:7px;background:#060d18;color:var(--text);font-size:calc(15px*var(--fs))}
+.lab input[type=file]{width:100%;margin-top:8px;font-size:calc(12px*var(--fs));color:var(--muted)}
+.file{padding:12px;border:1px dashed rgba(34,211,238,.45);border-radius:8px;color:var(--cyan)}
+.hint{margin:6px 0 12px;font-size:calc(12.5px*var(--fs));color:var(--muted);line-height:1.5}
+.row{display:flex;gap:12px}.row>*{flex:1;min-width:0}
+.lab button{width:100%;padding:10px 12px;border:0;border-radius:8px;background:var(--cyan);color:#03121a;font-weight:700;font-size:calc(14px*var(--fs));cursor:pointer}
+.lab button.secondary{background:rgba(34,211,238,.08);color:var(--text);border:1px solid rgba(34,211,238,.35)}
+.lab button:disabled{opacity:.45;cursor:default}
+.presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:0 0 6px}
+.lab .presets button{padding:8px 4px;font-size:calc(13px*var(--fs));background:none;color:var(--muted);border:1px solid var(--line)}
+.lab .presets button[aria-pressed=true]{background:rgba(34,211,238,.14);color:var(--cyan);border-color:rgba(34,211,238,.55)}
+.rule{height:1px;margin:18px 0;background:var(--line)}
+.check{display:flex!important;align-items:center;gap:8px;margin:2px 0 8px}.check input{accent-color:var(--cyan)}
+.optional{margin-left:6px;font-size:calc(11px*var(--fs));color:var(--muted)}
+.actions{margin-top:12px}
+.lab button.text-button{margin-top:10px;padding:4px 0;background:none;color:var(--muted);font-weight:600;font-size:calc(13px*var(--fs));text-align:left}
+.workspace{display:flex;flex-direction:column;min-width:0;padding:18px 20px 14px}
+.map-head{display:flex;justify-content:space-between;gap:12px;padding-bottom:10px;font:calc(12px*var(--fs)) ui-monospace,Consolas,monospace;color:var(--muted)}#mapName{overflow-wrap:anywhere}
+canvas{display:block;width:100%;height:470px;min-height:260px;flex:1;border-radius:8px;background:#050b15}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.stats span{display:block;font:600 calc(10px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.1em;color:var(--muted)}
+.stats strong{display:block;font-size:calc(clamp(17px,2vw,26px)*var(--fs));font-weight:600;font-variant-numeric:tabular-nums;color:var(--cyan)}
+#status{min-height:20px;margin:12px 0 0;font-size:calc(13px*var(--fs));color:var(--muted)}
+.credits,.more{margin:0 0 18px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:rgba(12,23,39,.72)}
+.credits h2{margin:0 0 8px;font-size:calc(16px*var(--fs))}.credits p,.more p{margin:0 0 10px;color:var(--muted);font-size:calc(14.5px*var(--fs))}.credits b,.more b{color:var(--text)}
+.more summary{cursor:pointer;color:var(--cyan);font:700 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.06em}.more[open] summary{margin-bottom:10px}
+footer{padding:6px 0 28px;color:var(--muted);font-size:calc(13px*var(--fs))}
+@media(max-width:820px){:root{--m:1.1}.top-right{width:100%;justify-content:space-between}.top-right .nav{flex:1}}
+@media(max-width:760px){.facts{grid-template-columns:1fr}.lab{grid-template-columns:1fr}.lab aside{border-right:0;border-bottom:1px solid var(--line)}.workspace{padding:14px}canvas{height:340px;flex:none}.stats{grid-template-columns:1fr 1fr}}</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><a class="brand" href="BD_8ZTSP.html">BD × AI LAB · TSP R&amp;D</a><div class="top-right"><nav class="nav"><a href="BD_8ZTSP.html">8zTSP</a><a href="BD_8ZRP.html">8Z-RP</a></nav><div class="languages" role="group" aria-label="Language"><button class="ubtn" type="button" data-lang="en" aria-pressed="true" aria-label="English">EN</button><button class="ubtn" type="button" data-lang="sl" aria-pressed="false" aria-label="Slovenščina">SL</button></div><details class="menu" id="menu"><summary id="menu-trigger" aria-label="Menu" title="Menu"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></summary><div class="menu-panel" id="menu-panel"><p class="menu-h" id="menu-pages"><span class="l-en" lang="en">Pages</span><span class="l-sl" lang="sl">Strani</span></p><nav class="menu-links" aria-labelledby="menu-pages"><a href="/"><span>MDL×DCC</span><span aria-hidden="true">↗</span></a><a href="/index-search.html"><span><span class="l-en" lang="en">The method</span><span class="l-sl" lang="sl">Metoda</span></span><span aria-hidden="true">↗</span></a><a href="/index-atlas.html"><span>Atlas</span><span aria-hidden="true">↗</span></a><a href="/index-todo.html"><span><span class="l-en" lang="en">Now &amp; next</span><span class="l-sl" lang="sl">Zdaj in potem</span></span><span aria-hidden="true">↗</span></a><a href="/index-intro.html"><span><span class="l-en" lang="en">Overview</span><span class="l-sl" lang="sl">Predstavitev</span></span><span aria-hidden="true">↗</span></a><a href="/proposal1.html"><span><span class="l-en" lang="en">Discover</span><span class="l-sl" lang="sl">Odkrij</span></span><span aria-hidden="true">↗</span></a><a href="/ai8-codex.html"><span>AI8 Codex</span><span aria-hidden="true">↗</span></a><a href="/ai8-dna-v4.html"><span><span class="l-en" lang="en">AI8 DNA</span><span class="l-sl" lang="sl">AI8 DNK</span></span><span aria-hidden="true">↗</span></a><a href="/knjiga/"><span><span class="l-en" lang="en">Book</span><span class="l-sl" lang="sl">Knjiga</span></span><span aria-hidden="true">↗</span></a></nav><p class="menu-h" id="menu-settings"><span class="l-en" lang="en">Settings</span><span class="l-sl" lang="sl">Nastavitve</span></p><div class="menu-row"><span><span class="l-en" lang="en">Language</span><span class="l-sl" lang="sl">Jezik</span></span><div class="grp" role="group" aria-label="Language"><button class="ubtn" type="button" data-lang="en" aria-pressed="true" aria-label="English">EN</button><button class="ubtn" type="button" data-lang="sl" aria-pressed="false" aria-label="Slovenščina">SL</button></div></div><div class="menu-row"><span><span class="l-en" lang="en">Text size</span><span class="l-sl" lang="sl">Velikost besedila</span></span><div class="grp" role="group" aria-label="Text size"><button class="ubtn" id="font-down" type="button" aria-label="Smaller text">A−</button><button class="ubtn" id="font-value" type="button" aria-label="Reset text size to 100%" title="100%">100%</button><button class="ubtn" id="font-up" type="button" aria-label="Larger text">A+</button></div></div></div></details></div></div></div>
+<main class="wrap">
+<section class="intro">
+<p class="kicker"><span class="l-en" lang="en">8zTSP · in your browser · development version of 14 Nov 2026</span><span class="l-sl" lang="sl">8zTSP · v vašem brskalniku · razvojna različica s 14. nov. 2026</span></p>
+<h1><span class="l-en" lang="en">8zTSP in your browser</span><span class="l-sl" lang="sl">8zTSP v vašem brskalniku</span></h1>
+<p class="lead"><span class="l-en" lang="en">Our TSP kernel 8zTSP in its minimal build, 8zTSP-min: the same Rust code, compiled to WebAssembly and running on your computer. Press Run and watch it look for the shortest round trip it can find through nu3496, 3,496 cities in Nicaragua whose optimal tour (96,132) is known, through random points, or through your own TSPLIB file.</span><span class="l-sl" lang="sl">Naše jedro za TSP 8zTSP v minimalni gradnji, 8zTSP-min: ista koda v Rustu, prevedena v WebAssembly, ki teče na vašem računalniku. Pritisnite Zaženi in opazujte, kako išče čim krajšo krožno pot skozi nu3496, 3.496 mest v Nikaragvi, katerih optimalna pot (96.132) je znana, skozi naključne točke ali skozi vašo datoteko TSPLIB.</span></p>
+<ul class="facts">
+<li><span class="l-en" lang="en"><b>Speed depends on your computer and browser.</b> On our laptop, in Chromium, one core reached the nu3496 optimum in about 40 seconds (one pilot run, 14 Nov 2026).</span><span class="l-sl" lang="sl"><b>Hitrost je odvisna od vašega računalnika in brskalnika.</b> Na našem prenosniku je v Chromiumu eno jedro optimum nu3496 doseglo v okoli 40 sekundah (en pilotni tek, 14. nov. 2026).</span></li>
+<li><span class="l-en" lang="en"><b>Several workers are independent tries.</b> Each has its own seed, and the best tour counts. One population shared by all workers, as the native threads share it (about 10 seconds to the nu3496 optimum with 7 threads on our laptop), is in development.</span><span class="l-sl" lang="sl"><b>Več delavcev pomeni neodvisne poskuse.</b> Vsak ima svoje seme, šteje najboljša pot. Ena populacija, ki si jo delijo vsi delavci, kot si jo delijo nativne niti (s 7 nitmi na našem prenosniku okoli 10 sekund do optimuma nu3496), je v razvoju.</span></li>
+<li><span class="l-en" lang="en"><b>Everything stays on your device.</b> The search runs in your browser; the files you open are not uploaded anywhere.</span><span class="l-sl" lang="sl"><b>Vse ostane na vaši napravi.</b> Iskanje teče v vašem brskalniku; datoteke, ki jih odprete, se ne pošiljajo nikamor.</span></li>
+</ul>
+</section>
+<section class="lab" aria-label="8zTSP">
+<aside>
+<h2><span class="l-en" lang="en">Map</span><span class="l-sl" lang="sl">Zemljevid</span></h2>
+<div class="presets" role="group" aria-label="Map">
+<button type="button" id="p-nu" aria-pressed="true">nu3496</button><button type="button" id="p-rnd" aria-pressed="false"><span class="l-en" lang="en">Random</span><span class="l-sl" lang="sl">Naključno</span></button><button type="button" id="p-file" aria-pressed="false"><span class="l-en" lang="en">Your file</span><span class="l-sl" lang="sl">Datoteka</span></button>
+</div>
+<p class="hint"><span class="l-en" lang="en">nu3496: 3,496 cities in Nicaragua, with the known optimal tour of length 96,132, from the <a href="https://www.math.uwaterloo.ca/tsp/world/countries.html">National TSP collection of the University of Waterloo</a>.</span><span class="l-sl" lang="sl">nu3496: 3.496 mest v Nikaragvi z znano optimalno potjo dolžine 96.132, iz <a href="https://www.math.uwaterloo.ca/tsp/world/countries.html">zbirke National TSP Univerze Waterloo</a>.</span></p>
+<div id="panel-rnd" hidden>
+<label><span class="l-en" lang="en">Random cities</span><span class="l-sl" lang="sl">Naključna mesta</span><input id="count" type="number" min="5" max="200000" value="500"></label>
+<button id="generate" type="button" class="secondary"><span class="l-en" lang="en">Generate points</span><span class="l-sl" lang="sl">Ustvari točke</span></button>
+<p class="hint"><span class="l-en" lang="en">The seed below also places the points.</span><span class="l-sl" lang="sl">Seme spodaj določa tudi lego točk.</span></p>
+</div>
+<div id="panel-file" hidden>
+<label class="file"><span class="l-en" lang="en">Open a TSPLIB file</span><span class="l-sl" lang="sl">Odpri datoteko TSPLIB</span><input id="file" type="file" accept=".tsp,.txt"></label>
+<p class="hint"><span class="l-en" lang="en">EUC_2D or CEIL_2D, up to 200,000 cities and 32 MB; the file stays on your device.</span><span class="l-sl" lang="sl">EUC_2D ali CEIL_2D, do 200.000 mest in 32 MB; datoteka ostane na vaši napravi.</span></p>
+</div>
+<div class="rule"></div>
+<h2><span class="l-en" lang="en">Search</span><span class="l-sl" lang="sl">Iskanje</span></h2>
+<div class="row"><label><span class="l-en" lang="en">Seconds</span><span class="l-sl" lang="sl">Sekunde</span><input id="seconds" type="number" min="0.1" max="600" step="0.1" value="60"></label>
+<label><span class="l-en" lang="en">Workers</span><span class="l-sl" lang="sl">Delavci</span><select id="workers"><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="7">7</option></select></label></div>
+<div class="row"><label><span class="l-en" lang="en">Seed</span><span class="l-sl" lang="sl">Seme</span><input id="seed" type="number" min="0" max="4294967295" value="1"></label>
+<label><span class="l-en" lang="en">Reference</span><span class="l-sl" lang="sl">Referenca</span><span class="optional"><span class="l-en" lang="en">optional</span><span class="l-sl" lang="sl">neobvezno</span></span><input id="reference" type="number" min="1" value="96132"></label></div>
+<label class="check"><input id="tep" type="checkbox" checked> <span class="l-en" lang="en">TEP windows for large maps</span><span class="l-sl" lang="sl">Okna TEP za velike zemljevide</span></label>
+<p class="hint"><span class="l-en" lang="en">Workers are independent tries with the seeds seed, seed + 1, …; the page shows the best. Small maps use the population search (EAX with diversity selection); maps over 12,000 cities use the windows with 3-opt and TEP.</span><span class="l-sl" lang="sl">Delavci so neodvisni poskusi s semeni seme, seme + 1, …; stran pokaže najboljšega. Majhni zemljevidi uporabljajo populacijsko iskanje (EAX z izbiro z raznolikostjo), zemljevidi z več kot 12.000 mesti pa okna s 3-opt in TEP.</span></p>
+<div class="row actions"><button id="run" type="button" disabled><span class="l-en" lang="en">Run</span><span class="l-sl" lang="sl">Zaženi</span></button><button id="stop" type="button" class="secondary" disabled><span class="l-en" lang="en">Stop</span><span class="l-sl" lang="sl">Ustavi</span></button></div>
+<button id="download" type="button" class="text-button" disabled><span class="l-en" lang="en">Download the run and the tour (JSON) ↓</span><span class="l-sl" lang="sl">Prenesi tek in pot (JSON) ↓</span></button>
+</aside>
+<div class="workspace">
+<div class="map-head"><span id="mapName">nu3496</span><span id="cityCount"></span></div>
+<canvas id="map" aria-label="Points and the best tour"></canvas>
+<div class="stats" aria-live="polite">
+<div><span><span class="l-en" lang="en">BEST LENGTH</span><span class="l-sl" lang="sl">NAJBOLJŠA DOLŽINA</span></span><strong id="length">—</strong></div>
+<div><span><span class="l-en" lang="en">ELAPSED</span><span class="l-sl" lang="sl">ČAS</span></span><strong id="elapsed">0.0 s</strong></div>
+<div><span id="gapLabel"><span class="l-en" lang="en">ABOVE THE OPTIMUM</span><span class="l-sl" lang="sl">NAD OPTIMUMOM</span></span><strong id="gap">—</strong></div>
+<div><span id="reachLabel"><span class="l-en" lang="en">OPTIMUM FIRST REACHED</span><span class="l-sl" lang="sl">OPTIMUM PRVIČ DOSEŽEN</span></span><strong id="reach">—</strong></div>
+</div>
+<p id="status" role="status"><span class="l-en" lang="en">Loading WebAssembly…</span><span class="l-sl" lang="sl">Nalagam WebAssembly…</span></p>
+<noscript><p><span class="l-en" lang="en">This page needs JavaScript and WebAssembly.</span><span class="l-sl" lang="sl">Ta stran potrebuje JavaScript in WebAssembly.</span></p></noscript>
+</div>
+</section>
+<section class="credits">
+<h2><span class="l-en" lang="en">Who made it</span><span class="l-sl" lang="sl">Kdo je to naredil</span></h2>
+<p><span class="l-en" lang="en"><b>BD × AI Lab.</b> The idea of 8zTSP-min and 8zTSP-web, to switch the parts off one by one, keep what carries the results and take it to the web, is BD’s. Inside: our windows, from zoom in and out, BD’s idea, first built as MSTD by Claude (C) on 22 March 2026, later implemented by GPT as the integer bitshift pyramid; TEP, the Tour-Enriched Pyramid, by Claude C1 in a session BD prepared free of old TSP knowledge, after seeing BD’s zoom in and out; and known methods such as the edge assembly crossover (EAX) of Nagata and Kobayashi. The browser version was built by a GPT session (8zTSP-web) from a brief by 8zTSP-K, and 8zTSP-K reviewed it; this page by the session 8zTSP-page (Claude).</span><span class="l-sl" lang="sl"><b>BD × AI Lab.</b> Zamisel 8zTSP-min in 8zTSP-web, da dele izklapljamo enega za drugim, obdržimo tisto, kar nosi izide, in to prenesemo na splet, je BD‑jeva. V jedru: naša okna iz zooma noter in ven, BD‑jeve zamisli, ki jo je 22. marca 2026 kot MSTD prvi izvedel Claude (C), pozneje pa GPT kot celoštevilsko bitshift piramido; TEP, Tour-Enriched Pyramid (piramida, obogatena s turami), Claude C1 v seji, ki jo je BD odtujil od okov starega znanja o TSP, ko je videla BD‑jev zoom noter in ven; ter znane metode, na primer križanje s sestavljanjem robov (EAX) Nagate in Kobayashija. Različico za brskalnik je po nalogi seje 8zTSP-K zgradila seja GPT (8zTSP-web), 8zTSP-K jo je pregledala; to stran je pripravila seja 8zTSP-page (Claude).</span></p>
+</section>
+<details class="more"><summary><span class="l-en" lang="en">What runs here, and the limits</span><span class="l-sl" lang="sl">Kaj tu teče in meje</span></summary>
+<p><span class="l-en" lang="en"><b>The build.</b> 8zTSP-min from kernel 673813b (main 9f7670a), compiled to WebAssembly: tsp8z_web_bg.wasm, 406,333 bytes (sha256 aa1b60a4…), with a small JavaScript wrapper; no server takes part in the search. Each worker is one Web Worker, so one thread. With 7 native threads the same build found the nu3496 optimum in a median of 9.2 s (10 seeds, 14 Nov; <a href="BD_8ZTSP.html#w-log-20261114-min">from the lab</a>).</span><span class="l-sl" lang="sl"><b>Gradnja.</b> 8zTSP-min iz jedra 673813b (main 9f7670a), prevedena v WebAssembly: tsp8z_web_bg.wasm, 406.333 bajtov (sha256 aa1b60a4…), z majhnim ovojem v JavaScriptu; pri iskanju ne sodeluje noben strežnik. Vsak delavec je en Web Worker, torej ena nit. S 7 nativnimi nitmi je ista gradnja optimum nu3496 našla v mediani 9,2 s (10 semen, 14. nov.; <a href="BD_8ZTSP.html#w-log-20261114-min">iz laboratorija</a>).</span></p>
+<p><span class="l-en" lang="en"><b>On this site the workers share nothing.</b> To share even the best length, a browser needs cross-origin isolation, which this site does not switch on for now; each worker runs with its own seed, and the page shows the best result. In the browser the clock is the solver’s, from the moment the map has been read.</span><span class="l-sl" lang="sl"><b>Na tej strani si delavci ne delijo ničesar.</b> Da bi si delili vsaj najboljšo dolžino, brskalnik potrebuje izolacijo med izvori (cross-origin isolation), ki je ta stran zaenkrat ne vklopi; vsak delavec teče s svojim semenom, stran pa pokaže najboljši izid. V brskalniku teče ura reševalnika od trenutka, ko je zemljevid prebran.</span></p>
+<p><span class="l-en" lang="en"><b>Limits of this page.</b> Up to 200,000 cities, files up to 32 MB, at most 600 s per run; EUC_2D and CEIL_2D files. The export (JSON) holds the settings, the history of improvements, the tour and the sha256 of the map, so that a run can be checked.</span><span class="l-sl" lang="sl"><b>Meje te strani.</b> Do 200.000 mest, datoteke do 32 MB, največ 600 s na tek; datoteke EUC_2D in CEIL_2D. Izvoz (JSON) vsebuje nastavitve, zgodovino izboljšav, pot in sha256 zemljevida, da je tek mogoče preveriti.</span></p>
+</details>
+</main>
+<footer class="wrap"><span class="l-en" lang="en">BD × AI Lab · development version of 14 Nov 2026 · <a href="BD_8ZTSP.html">8zTSP: results and the lab log</a></span><span class="l-sl" lang="sl">BD × AI Lab · razvojna različica s 14. nov. 2026 · <a href="BD_8ZTSP.html">8zTSP: izidi in laboratorijski dnevnik</a></span></footer>
+<script>
+(function(){'use strict';
+const root=document.documentElement,$=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const T={"en": {"title": "BD × AI Lab — 8zTSP in your browser", "desc": "Run 8zTSP, the Rust TSP kernel of BD × AI Lab, in its minimal build compiled to WebAssembly, in your own browser: nu3496 (3,496 cities in Nicaragua), random points or your own TSPLIB file."}, "sl": {"title": "BD × AI Lab — 8zTSP v vašem brskalniku", "desc": "Poženite 8zTSP, jedro za TSP laboratorija BD × AI Lab, v minimalni gradnji, prevedeni v WebAssembly, v svojem brskalniku: nu3496 (3.496 mest v Nikaragvi), naključne točke ali vašo datoteko TSPLIB."}};
+const read=k=>{try{return localStorage.getItem(k);}catch(_){return null;}},save=(k,v)=>{try{localStorage.setItem(k,String(v));}catch(_){}};
+let font=Number(read('mdlxdcc-font')||'1');if(!Number.isFinite(font))font=1;
+const down=$('#font-down'),up=$('#font-up'),value=$('#font-value'),menu=$('#menu'),trigger=$('#menu-trigger');
+function fontSize(v,persist=true){font=Math.round(Math.max(.8,Math.min(1.5,v))*100)/100;root.style.setProperty('--scale',font);down.disabled=font<=.8;up.disabled=font>=1.5;value.textContent=Math.round(font*100)+'%';if(persist)save('mdlxdcc-font',font);}
+fontSize(font,false);
+down.addEventListener('click',()=>fontSize(font-.05));value.addEventListener('click',()=>fontSize(1));up.addEventListener('click',()=>fontSize(font+.05));
+$$('button[data-lang]').forEach(b=>b.addEventListener('click',()=>window.MDLxDCCLocale.choose(b.dataset.lang)));
+window.MDLxDCCLocale.subscribe(lang=>{const sl=lang==='sl',t=sl?T.sl:T.en;
+ $$('button[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));
+ document.title=t.title;const d=$('meta[name="description"]');if(d)d.content=t.desc;
+ trigger.setAttribute('aria-label',sl?'Meni':'Menu');trigger.title=sl?'Meni':'Menu';
+ down.setAttribute('aria-label',sl?'Manjše besedilo':'Smaller text');up.setAttribute('aria-label',sl?'Večje besedilo':'Larger text');
+ value.setAttribute('aria-label',sl?'Ponastavi velikost besedila na 100 %':'Reset text size to 100%');});
+window.addEventListener('storage',e=>{if(e.key==='mdlxdcc-font'&&Number.isFinite(Number(e.newValue)))fontSize(Number(e.newValue),false);});
+document.addEventListener('click',e=>{if(menu.open&&!menu.contains(e.target))menu.open=false;});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.open){menu.open=false;trigger.focus();}});
+})();
+</script>
+<script type="module" src="8ztsp-web/app.js"></script>
+</body>
+</html>
