@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { createDriveMailbox } from '../functions/lib/deepseek-chat/drive-mailbox.mjs';
 import { driveFixture, inbox, results, owner } from './fixtures/deepseek-drive-mailbox.mjs';
@@ -137,4 +137,39 @@ test('rejects misbound, tampered, duplicate and malformed records while allowing
   for (const [fileId, item] of drive.files) if (item.info.parents.includes(results)) drive.files.delete(fileId);
   recordsOf(drive, inbox)[0].content.prompt = 'Spremenjeno';
   await assert.rejects(drive.mailbox.get(request), /DRIVE_MAILBOX_UNAVAILABLE/);
+});
+
+
+test('WORK submissions bind exact schema, ACK and result UUID, then verify bounded ZIP SHA', async () => {
+  const fixture = driveFixture({ DEEPSEEK_CHAT_WORK_ENABLED:'true' });
+  const mailbox = createDriveMailbox(fixture);
+  const id = randomUUID();
+  const data = {operation:'plan',project:'acceptance',prompt:'syntetični načrt'};
+  const submitted = await mailbox.enqueueWork({owner,id,data});
+  assert.deepEqual(submitted,{id,...data,state:'queued'});
+  assert.equal(await mailbox.enqueueWork({owner,id,data:{...data,prompt:'drugi'}}),null);
+  assert.equal(await mailbox.enqueueWork({owner,id:randomUUID(),data:{...data,terminal:'cmd.exe'}}),null);
+  const request = [...fixture.files.values()].find(item => item.info.name === id + '.json').content;
+  assert.equal(request.schema,'mydeepseekrhp.request.v2');
+  const ackId = fixture.add(results,id+'.ack.json',{schema:'mydeepseekrhp.ack.v1',id,owner,createdAt:request.createdAt});
+  assert.equal((await mailbox.get({owner,id})).state,'acknowledged');
+  const bytes = Buffer.alloc(34,7);
+  const markdownZip = {schema:'mydeepseekrhp.markdown-zip.v1',id,direction:'result',sizeBytes:bytes.length,
+    sha256:createHash('sha256').update(bytes).digest('hex')};
+  const zipId = fixture.add(results,id+'.result.zip',bytes);
+  const resultId = fixture.add(results,id+'.result.json',{schema:'mydeepseekrhp.result.v2',id,owner,createdAt:request.createdAt,
+    operation:'plan',state:'complete',markdownZip,
+    result:{id,action:'plan',project:'acceptance',status:'planned',plan:'README.md:2',unrequested:'hidden'}});
+  assert.deepEqual(await mailbox.get({owner,id}),{id,...data,state:'complete',zip:markdownZip,
+    result:{id,action:'plan',project:'acceptance',status:'planned',plan:'README.md:2'}});
+  assert.deepEqual(await mailbox.zip({owner,id}),bytes);
+  const ack = fixture.files.get(ackId).content;
+  ack.id = randomUUID();
+  await assert.rejects(mailbox.get({owner,id}),/DRIVE_MAILBOX_UNAVAILABLE/);
+  ack.id = id;
+  fixture.files.get(resultId).content.result.id = randomUUID();
+  await assert.rejects(mailbox.get({owner,id}),/DRIVE_MAILBOX_UNAVAILABLE/);
+  fixture.files.get(resultId).content.result.id = id;
+  fixture.files.get(zipId).content = Buffer.alloc(34,8);
+  await assert.rejects(mailbox.zip({owner,id}),/DRIVE_MAILBOX_UNAVAILABLE/);
 });

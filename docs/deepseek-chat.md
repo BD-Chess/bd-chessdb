@@ -1,6 +1,6 @@
 # MyDeepSeekRHP · spletni klepet
 
-Kratek spletni naslov je https://www.mdlxdcc.org/DS/. Odpre spletni klepet na `/deepseek-chat/`. Lokalna aplikacija na `127.0.0.1:8102` ima svoj arhiv in omizje RHP.
+Kratek spletni naslov je https://www.mdlxdcc.org/DS/. Odpre zaščiteni klepet na `/deepseek-chat/` tudi s telefona. Lokalni klepet in RHP na WORK sta na `http://127.0.0.1:8888/` in uporabljata lokalni arhiv.
 
 Spletna prijava uporablja strežniško nastavljen račun lastnika, namenski strežniški scrypt zapis in namenski podpisni ključ. Prijava poteče po osmih urah. Odjava odstrani sejo iz trenutnega brskalnika. Pri nujnem preklicu vseh sej zamenjaj namenski podpisni ključ in objavi novo različico.
 
@@ -8,7 +8,9 @@ Na projektu Netlify mdlxdcc so nastavitve DEEPSEEK_CHAT_OWNER_EMAIL, DEEPSEEK_CH
 
 ## Nabiralnik
 
-Dogovorjeni tok je spletni klepet → Google Drive → 8zListener → DeepSeek → Google Drive → spletni klepet. Spletni vmesnik in adapter sta pripravljena za preizkus. Produkcijski handler vrne `available: false` brez izrecno nastavljene povezave. Pri nastavljeni povezavi `available` preveri dostop do map. Potrditev izvajalnika je prvi ACK za konkretno vprašanje.
+Poziv na zaščiteni spletni strani potuje v namenski Google Drive nabiralnik. Izvajalnik na WORK zapiše prevzem, pokliče službeni DeepSeek in shrani odgovor v isti nabiralnik. Spletna stran odčita prevzem in odgovor z istim ID-jem. Lokalni zagon 8888 pokliče službeni DeepSeek neposredno.
+
+Pri nastavljeni povezavi `available` potrdi dostop do Drive map. Tekoči prevzem na WORK potrdi prvi ACK za konkretno vprašanje. Če povezava z Driveom še ni aktivirana, produkcijski handler vrne `available: false`.
 
 API si deli obstoječo lastnikovo sejo. `GET /deepseek-chat/api/messages` preveri razpoložljivost. `POST` sprejme samo UUID v4, besedilni poziv in stikalo Reasoning. `GET /deepseek-chat/api/messages/{id}` vrne samo pripadajoči poziv, stanje in končni odgovor. `POST` na isti poti zahteva STOP. `queued`, `acknowledged`, `running` in `complete` pomenijo različne stopnje. `stopping` je zahteva. `stopped` je potrditev izvajalnika. Izid `uncertain` se ne ponovi samodejno.
 
@@ -34,3 +36,30 @@ OAuth obseg mora dovoliti ustvarjanje datotek v inboxu ter branje potrdil drugeg
 Spletni adapter posreduje samo besedilni poziv in stikalo Reasoning. V inboxu hrani `<id>.json` in po potrebi `<id>.stop.json`. Iz results bere `<id>.ack.json` in `<id>.result.json`. Vsaka UTF-8 datoteka vsebuje lastnika, UUID, čas UTC in namensko različico sheme. Brskalnik vidi odgovor pri stanju `complete`. `uncertain` je končno stanje brez samodejne ponovitve. Ohrani pooblastila map in revizijsko sled. Dogovori hrambo datotek Drive in rezervacij v storitvi Netlify Blobs `mydeepseekrhp-drive-ids-v1`. Vsaka rezervacija vsebuje Drive ID, čas in prstni odtis zahteve. Za čas ponovnih poskusov morajo ostati tako datoteke kot rezervacije.
 
 Za celotni prevzem uporabi svež testni poziv v pravem spletnem vmesniku. Potrdi isti UUID pri zapisani zahtevi, ACK izvajalnika, odgovoru DeepSeeka in prikazu po osvežitvi brskalnika. Preveri še, da ponovljeni UUID ne ustvari dodatne modelne zahteve in da STOP razlikuje zahtevo od potrditve. Ročni izvoz lokalnega arhiva je ločena funkcija.
+
+
+## R5 · mobilni Plan, Build in RHP
+
+Funkcije ostanejo za obstoječo vstopno pot in sejo lastnika. Za namenski
+nabiralnik nastavi obstoječe OAuth spremenljivke ter dodaj
+`DEEPSEEK_CHAT_WORK_ENABLED=true` v produkcijsko Functions okolje. Dokler je
+stikalo izklopljeno, stran in ovojnice v1 delujejo kot prej. Novo stikalo vključi
+po preverjenem povratnem klepetu s službenim modelom, delavcu R5 in vnaprej
+registriranem testnem projektu, ki ga WORK izrecno izpostavi v nabiralnik.
+
+V mobilnem **Delo na projektu** izberi Plan ali Build in pridobi seznam projektov.
+Po načrtu lahko zahtevaš RHP presojo. Po Build preberi diff in odloči. Če želiš
+RHP presojo diffa pred potrditvijo, jo izvedi in nato v **Zadnje zahteve** znova
+odpri ustrezni Build. Potrditev zahteva prikazani Build, njegov UUID, projekt,
+ID predloga in SHA-256 osnove in diffa. Zapis in test izvede WORK. Rezultat
+prikaže tudi SHA-256 ponovnega odčitka, kadar ga izvajalnik vrne. Brez uspešnega
+končnega potrdila strani ne uporabljaj za sklepanje o stanju datoteke. Ob
+negotovi oddaji stran preverja isti UUID. ACK in rezultat morata pripadati istemu
+pozivu, zaščiten prenos ZIP pa preveri še dolžino in SHA-256.
+
+Spremenljivka samo za MDLxDCC. Uporabi [obstoječo objavo](NETLIFY_DEPLOYMENT.md).
+Varnost poti, sej, map in skrivnosti ohranjajo trenutni GitHub CI in prebuilt
+Netlify. Pri vračanju najprej izklopi R5 stikalo za Functions, uveljavi prek
+obstoječe objave in uskladi morebitne odprte zahteve z WORK. Obstoječe zahteve v1
+in produkcijske mape ostanejo uporabne. Objava javnega projekta je samostojna
+odobritev in ohrani PR, CI in Netlify postopek.

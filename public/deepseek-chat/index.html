@@ -29,9 +29,29 @@
       <p id="status" class="status" role="status" aria-live="polite">Preverjam prijavo …</p>
       <section id="chat" aria-label="Spletni klepet" hidden>
         <p id="connection" class="connection" role="status"></p>
+        <section id="work" class="work-panel" aria-labelledby="work-heading" hidden>
+          <h2 id="work-heading">Delo na projektu</h2>
+          <div class="work-controls">
+            <label for="operation">Način
+              <select id="operation">
+                <option value="chat">Klepet</option>
+                <option value="plan">Plan</option>
+                <option value="build">Build</option>
+              </select>
+            </label>
+            <label id="project-field" for="project" hidden>Projekt
+              <select id="project"><option value="">Pridobi projekte z WORK</option></select>
+            </label>
+            <button id="load-projects" type="button" hidden>Pridobi projekte</button>
+          </div>
+          <label for="recent">Zadnje zahteve</label>
+          <select id="recent"><option value="">Izberi zahtevo</option></select>
+          <button id="reopen" type="button" disabled>Odpri stanje</button>
+          <button id="review-rhp" type="button" hidden disabled>Preglej z RHP</button>
+        </section>
         <div id="transcript" class="transcript" role="log" aria-label="Sporočila" hidden></div>
         <form id="composer" method="post" action="/deepseek-chat/api/messages">
-          <label for="prompt">Sporočilo</label>
+          <label id="prompt-label" for="prompt">Sporočilo</label>
           <textarea id="prompt" name="prompt" rows="3" maxlength="8000" required disabled></textarea>
           <div class="composer-actions">
             <label class="reasoning"><input id="reasoning" type="checkbox" checked disabled> Reasoning</label>
@@ -41,6 +61,16 @@
             <button id="send" class="primary" type="submit" disabled>Pošlji</button>
           </div>
         </form>
+        <section id="review" class="work-panel" aria-labelledby="review-heading" hidden>
+          <h2 id="review-heading">Pregled diffa</h2>
+          <pre id="diff" tabindex="0" aria-label="Spremembe pred zapisom"></pre>
+          <details><summary>Podatki potrditve</summary><pre id="binding"></pre></details>
+          <label class="approval"><input id="check-diff" type="checkbox"> Pregledal sem prikazani diff</label>
+          <div class="composer-actions">
+            <button id="reject" type="button">Zavrni</button>
+            <button id="approve" class="primary" type="button" disabled>Potrdi zapis in test</button>
+          </div>
+        </section>
         <p id="delivery" class="status" role="status"></p>
       </section>
       <noscript><p class="status">Za prijavo vključi JavaScript.</p></noscript>

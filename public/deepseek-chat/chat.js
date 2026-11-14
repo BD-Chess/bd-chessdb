@@ -3,6 +3,7 @@
 const sessionPath = '/deepseek-chat/api/session';
 const messagePath = '/deepseek-chat/api/messages';
 const jobKey = 'mdlxdcc.deepseek.active.v1';
+const recentKey = 'mdlxdcc.deepseek.recent.v2';
 const pollInterval = 6000;
 const maximumPollMs = 3 * 60 * 1000;
 const jobIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -20,6 +21,8 @@ const terminalStates = new Set(['complete', 'stopped', 'failed', 'uncertain']);
 const ui = Object.fromEntries([
   'page', 'login', 'email', 'password', 'submit', 'logout', 'account', 'status', 'chat',
   'connection', 'transcript', 'composer', 'prompt', 'reasoning', 'stop', 'refresh', 'release', 'send', 'delivery',
+  'work', 'operation', 'project-field', 'project', 'load-projects', 'recent', 'reopen', 'prompt-label',
+  'review', 'diff', 'binding', 'check-diff', 'reject', 'approve', 'review-rhp',
 ].map(id => [id, document.getElementById(id)]));
 
 let ready = false;
@@ -34,6 +37,23 @@ let signedIn = false;
 let sessionRevision = 0;
 let pollRevision = 0;
 let displayedId = null;
+let finishedId = null;
+let workReady = false;
+let proposal;
+let rhpSource;
+let activeOperation = 'chat';
+const operations = {chat:'Klepet', projects:'Projekti', plan:'Plan', build:'Build',
+  approve:'Potrditev', reject:'Zavrnitev', status:'Stanje',review:'RHP'};
+const statuses = {
+  planned:'Načrt je pripravljen.', reviewed:'Presoja RHP je pripravljena.', proposed:'Diff čaka na odločitev.', applied:'Popravek je zapisan.',
+  rejected:'Predlog je zavrnjen.', failed:'Izvajalnik je sporočil napako.', cancelled:'Izvajanje je ustavljeno.',
+  needs_review:'Izid ni potrjen. Preglej stanje na WORK.', running:'Izvajanje na WORK še teče.',
+};
+const statusFor = {
+  queued:'Zahteva je v nabiralniku. Čakam na prevzem.', acknowledged:'Izvajalnik na WORK je prevzel zahtevo.',
+  running:'Izvajanje na WORK teče.', stopping:'Zahteva za ustavitev je oddana.', complete:'Rezultat je prejet.',
+};
+
 
 function status(text, error = false) {
   ui.status.textContent = text;
@@ -46,10 +66,28 @@ function delivery(text, error = false) {
 }
 
 function updateControls() {
-  const composerAvailable = signedIn && ready && !activeId && !submitting && !stopping;
+  const idle = signedIn && ready && !activeId && !submitting && !stopping;
+  const workOperation = workReady && ui.operation.value !== 'chat';
+  const composerAvailable = idle && (!workOperation || Boolean(ui.project.value));
+  ui.work.hidden = !signedIn || !workReady;
+  ui.operation.disabled = !idle;
+  ui['project-field'].hidden = !workOperation;
+  ui['load-projects'].hidden = !workOperation;
+  ui['load-projects'].disabled = !idle;
+  ui.project.disabled = !idle;
+  ui.recent.disabled = !idle;
+  ui.reopen.disabled = !idle || !ui.recent.value;
+  ui['review-rhp'].hidden = !rhpSource;
+  ui['review-rhp'].disabled = !idle || !rhpSource;
+  ui['prompt-label'].textContent = workOperation ? 'Naloga za izbrani projekt' : 'Sporočilo';
   ui.prompt.disabled = !composerAvailable;
-  ui.reasoning.disabled = !composerAvailable;
+  ui.reasoning.disabled = !composerAvailable || workOperation;
+  ui.reasoning.closest('label').hidden = workOperation;
+  ui.send.textContent = workOperation ? (ui.operation.value === 'plan' ? 'Pripravi načrt' : 'Pripravi diff') : 'Pošlji';
   ui.send.disabled = !composerAvailable;
+  ui.review.hidden = !signedIn || !proposal;
+  ui.reject.disabled = !idle;
+  ui.approve.disabled = !idle || !ui['check-diff'].checked;
   ui.stop.hidden = !activeId || !canStop;
   ui.stop.disabled = !activeId || !canStop || stopping || submitting;
   ui.refresh.hidden = !canRefresh;
@@ -72,12 +110,48 @@ function rememberJob(id) {
   } catch { /* The active message remains available for this page visit. */ }
 }
 
+function recent() {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(recentKey) || '[]');
+    return Array.isArray(value) ? value.filter(row => jobIdPattern.test(row?.id ?? '') &&
+      Object.hasOwn(operations,row.operation)).slice(0,12) : [];
+  } catch { return []; }
+}
+
+function refreshRecent() {
+  ui.recent.replaceChildren(new Option('Izberi zahtevo',''),
+    ...recent().map(row => new Option(operations[row.operation] + ' · ' + row.id.slice(0,8),row.id)));
+}
+
+function rememberRecent(id, operation) {
+  if (!Object.hasOwn(operations,operation)) return;
+  try {
+    sessionStorage.setItem(recentKey,JSON.stringify([{id,operation},...recent().filter(row => row.id !== id)].slice(0,12)));
+  } catch { /* Existing active-id recovery remains available. */ }
+  refreshRecent();
+}
+
+function clearReview() {
+  proposal = undefined;
+  rhpSource = undefined;
+  ui['check-diff'].checked = false;
+  ui.diff.textContent = '';
+  ui.binding.textContent = '';
+}
+
 function showSession(session) {
   sessionRevision += 1;
   clearTimeout(pollTimer);
   signedIn = session.authenticated === true;
   activeId = signedIn ? readJobId() : null;
   ready = false;
+  workReady = false;
+  activeOperation = 'chat';
+  finishedId = null;
+  ui.operation.value = 'chat';
+  ui.project.replaceChildren(new Option('Pridobi projekte z WORK',''));
+  clearReview();
+  refreshRecent();
   displayedId = null;
   submitting = false;
   stopping = false;
@@ -130,7 +204,10 @@ async function messageRequest({ id, method = 'GET', body } = {}) {
     signal: AbortSignal.timeout(12000),
     ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
   });
-  if (!response.ok) return { status: response.status, data: null };
+  if (!response.ok) {
+    const result = await response.json().catch(() => null);
+    return {status:response.status,data:result};
+  }
   return { status: response.status, data: await response.json() };
 }
 
@@ -145,9 +222,11 @@ async function checkConnection(revision) {
     if (revision !== sessionRevision) return;
     if (code === 401) return sessionExpired();
     ready = code === 200 && data?.available === true;
+    workReady = ready && data?.work === true;
   } catch {
     if (revision !== sessionRevision) return;
     ready = false;
+    workReady = false;
   }
   ui.connection.textContent = ready ? 'Nabiralnik je pripravljen.' : 'Oddaljeni nabiralnik trenutno ni povezan.';
   canRefresh = !ready;
@@ -158,36 +237,81 @@ async function checkConnection(revision) {
   }
 }
 
-function addMessage(source, label, value) {
+function addMessage(source, label, value, preformatted = false) {
   const entry = document.createElement('article');
   entry.className = 'message';
   entry.dataset.source = source;
   const heading = document.createElement('h2');
   heading.textContent = label;
-  const content = document.createElement('p');
+  const content = document.createElement(preformatted ? 'pre' : 'p');
   content.textContent = value;
   entry.append(heading, content);
   ui.transcript.hidden = false;
   ui.transcript.append(entry);
   ui.transcript.scrollTop = ui.transcript.scrollHeight;
+  return entry;
+}
+
+function showWorkflow(data) {
+  const result = data.result;
+  if (data.operation === 'projects' && Array.isArray(result?.projects)) {
+    const selected = ui.project.value;
+    ui.project.replaceChildren(new Option('Izberi projekt',''),...result.projects.map(({id,label}) => new Option(label,id)));
+    if (result.projects.some(row => row.id === selected)) ui.project.value = selected;
+  }
+  let article;
+  if (result?.plan) article = addMessage('model','Načrt',result.plan,true);
+  if (result?.review) article = addMessage('model','Presoja RHP',result.review,true);
+  if (data.state === 'complete' && (data.operation === 'build' && result?.status === 'proposed' ||
+      data.operation === 'plan' && result?.status === 'planned')) {
+    rhpSource = {project:result.project,jobId:data.id,reasoning:true};
+  }
+  if (result?.testReport || result?.readbackSha256) {
+    let report = result.testReport ?? '';
+    if (result.readbackSha256) report += (report ? '\n\n' : '') + 'SHA-256 ponovnega odčitka ' + result.readbackSha256;
+    article = addMessage('model','Rezultat testa',report,true);
+  }
+  if (result?.reply) article = addMessage('model','DeepSeek',result.reply);
+  if (data.operation === 'build' && result?.status === 'proposed' && result.diff && result.proposalId && result.baseSha256 && result.diffSha256) {
+    proposal = {buildId:data.id,project:result.project,proposalId:result.proposalId,baseSha256:result.baseSha256,diffSha256:result.diffSha256};
+    ui['check-diff'].checked = false;
+    ui.diff.textContent = result.diff;
+    ui.binding.textContent = proposal.project + '\n' + proposal.proposalId + '\nOsnova ' + proposal.baseSha256 +
+      '\nSHA-256 diffa ' + proposal.diffSha256;
+  }
+  if (data.zip) {
+    article ??= addMessage('model',operations[data.operation],statuses[result?.status] ?? 'Poročilo je pripravljeno.');
+    const link = document.createElement('a');
+    link.textContent = 'Prenesi Markdown ZIP';
+    link.href = messagePath + '/' + data.id + '?download=zip';
+    article.append(link);
+  }
 }
 
 function applyMessage(data, id) {
-  if (data?.id !== id || !Object.hasOwn(stateLabels, data.state) ||
-      typeof data.prompt !== 'string' || !data.prompt.trim() || data.prompt.length > 8000) return false;
-  if (data.state === 'complete' && (typeof data.reply !== 'string' || !data.reply.trim() || data.reply.length > 64000)) return false;
+  if (data?.id !== id || !Object.hasOwn(stateLabels, data.state)) return false;
+  const workflow = Object.hasOwn(operations,data.operation);
+  if (!workflow && (typeof data.prompt !== 'string' || !data.prompt.trim() || data.prompt.length > 8000 ||
+      (data.state === 'complete' && (typeof data.reply !== 'string' || !data.reply.trim() || data.reply.length > 64000)))) return false;
+  activeOperation = workflow ? data.operation : 'chat';
   if (displayedId !== id) {
-    addMessage('owner', 'Ti', data.prompt);
+    if (workflow) rememberRecent(id,data.operation);
+    addMessage('owner',workflow ? operations[data.operation] : 'Ti', data.prompt ?? data.project ?? 'WORK');
     displayedId = id;
   }
-  if (data.state === 'complete') addMessage('model', 'DeepSeek', data.reply);
-  delivery(stateLabels[data.state], data.state === 'failed' || data.state === 'uncertain');
+  if (terminalStates.has(data.state) && finishedId !== id) {
+    finishedId = id;
+    if (workflow) showWorkflow(data);
+    else if (data.state === 'complete') addMessage('model','DeepSeek',data.reply);
+  }
+  const outcome = workflow ? statuses[data.result?.status] ?? statusFor[data.state] ?? stateLabels[data.state] : stateLabels[data.state];
+  delivery(outcome + (data.error ? ' (' + data.error + ')' : ''), data.state === 'failed' || data.state === 'uncertain');
   canRefresh = false;
   if (terminalStates.has(data.state)) {
     activeId = null;
     canStop = false;
   } else {
-    canStop = data.state !== 'stopping';
+    canStop = ['chat','plan','build'].includes(activeOperation) && data.state !== 'stopping';
   }
   updateControls();
   return true;
@@ -222,40 +346,79 @@ async function checkMessage(revision, id) {
   schedulePoll(revision, id);
 }
 
-ui.composer.addEventListener('submit', async event => {
-  event.preventDefault();
-  const prompt = ui.prompt.value.trim();
-  if (!ready || activeId || submitting || !prompt || prompt.length > 8000) return;
+async function submitMessage(operation, data) {
+  if (!ready || activeId || submitting) return;
   const revision = sessionRevision;
   const previousId = readJobId();
   const id = crypto.randomUUID();
   activeId = id;
+  activeOperation = operation;
   submitting = true;
   updateControls();
   rememberJob(id);
-  delivery('Oddajam vprašanje v nabiralnik …');
+  delivery('Oddajam zahtevo v nabiralnik …');
   let result;
   try {
-    result = await messageRequest({ method: 'POST', body: { id, prompt, reasoning: ui.reasoning.checked } });
-  } catch { result = { status: 0 }; }
+    const body = workReady ? {id,operation,...data} : {id,...data};
+    result = await messageRequest({method:'POST',body});
+  } catch { result = {status:0}; }
   if (revision !== sessionRevision) return;
   submitting = false;
   if (result.status === 401) return sessionExpired();
-  if (result.status === 202 && applyMessage(result.data, id)) {
-    ui.prompt.value = '';
-    if (activeId) {
-      pollingUntil = Date.now() + maximumPollMs;
-      schedulePoll(revision, id);
-    }
-  } else if ([400, 403, 413, 422, 429].includes(result.status)) {
+  if ([400,403,409,413,422,429].includes(result.status)) {
     activeId = null;
     rememberJob(previousId);
-    delivery('Vprašanje je bilo zavrnjeno. Besedilo je ostalo v vnosu.', true);
+    delivery('Zahteva je zavrnjena. Vnos je ohranjen.',true);
   } else {
-    delivery('Oddaja ni potrjena. Preverjam stanje istega vprašanja.', true);
-    pollingUntil = Date.now() + maximumPollMs;
-    void checkMessage(revision, id);
+    clearReview();
+    if (workReady) rememberRecent(id,operation);
+    if (result.status === 202 && applyMessage(result.data,id)) {
+      if (data.prompt) ui.prompt.value = '';
+      if (activeId) {
+        pollingUntil = Date.now() + maximumPollMs;
+        schedulePoll(revision,id);
+      }
+    } else {
+      delivery('Oddaja ni potrjena. Preverjam stanje iste zahteve.',true);
+      pollingUntil = Date.now() + maximumPollMs;
+      void checkMessage(revision,id);
+    }
   }
+  updateControls();
+}
+
+ui.composer.addEventListener('submit', event => {
+  event.preventDefault();
+  const prompt = ui.prompt.value.trim();
+  if (!prompt || prompt.length > 8000) return;
+  const operation = workReady ? ui.operation.value : 'chat';
+  if (operation === 'chat') void submitMessage(operation,{prompt,reasoning:ui.reasoning.checked});
+  else if (ui.project.value) void submitMessage(operation,{prompt,project:ui.project.value});
+});
+ui.operation.addEventListener('change',updateControls);
+ui.project.addEventListener('change',updateControls);
+ui.recent.addEventListener('change',updateControls);
+ui['load-projects'].addEventListener('click',() => void submitMessage('projects',{}));
+ui['check-diff'].addEventListener('change',updateControls);
+ui.approve.addEventListener('click',() => {
+  if (proposal && ui['check-diff'].checked) void submitMessage('approve',proposal);
+});
+ui['review-rhp'].addEventListener('click',() => {
+  if (rhpSource) void submitMessage('review',rhpSource);
+});
+ui.reject.addEventListener('click',() => {
+  if (proposal) void submitMessage('reject',proposal);
+});
+ui.reopen.addEventListener('click',() => {
+  const id = ui.recent.value;
+  if (!jobIdPattern.test(id) || activeId || submitting) return;
+  clearReview();
+  activeId = id;
+  finishedId = null;
+  displayedId = null;
+  rememberJob(id);
+  pollingUntil = Date.now() + maximumPollMs;
+  void checkMessage(sessionRevision,id);
   updateControls();
 });
 
