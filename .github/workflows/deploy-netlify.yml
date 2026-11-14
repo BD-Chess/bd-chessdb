@@ -52,7 +52,6 @@ jobs:
           python3 scripts/check_site_search_freshness.py
           python3 tests/check_site_search_freshness_test.py
           node --test tests/start-site-search.test.cjs
-          node --test tests/deepseek-chat-auth.test.mjs tests/deepseek-chat-messages.test.mjs tests/deepseek-chat-drive-mailbox.test.mjs
           node --check scripts/netlify-auto-release.mjs
           node --test tests/netlify-auto-release.test.mjs tests/netlify-pages-build-gate.test.mjs
       - name: Verify Nara integrity for every production snapshot
@@ -63,6 +62,8 @@ jobs:
         run: |
           npm ci --ignore-scripts
           npm ci --prefix functions --no-audit --no-fund
+      - name: Verify MyDeepSeekRHP authentication and mailbox
+        run: node --test tests/deepseek-chat-auth.test.mjs tests/deepseek-chat-messages.test.mjs tests/deepseek-chat-drive-mailbox.test.mjs
       - name: Verify AI8 DNA themes, shortcuts and frozen archive
         run: node --test tests/ai8-dna-v4.test.mjs tests/dna-lab.test.mjs
       - name: Verify AI8 News gateway and local bridge without provider calls
