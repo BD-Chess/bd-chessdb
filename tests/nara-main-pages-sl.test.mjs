@@ -39,11 +39,11 @@ test('main pages carry the shared EN/SL switch, script and page metadata', () =>
     assert.match(html, /<div class="language-switch" data-language-switch role="group" aria-label="Language" data-aria-en="Language" data-aria-sl="Jezik" hidden>/, name);
     assert.match(html, /data-language="en" lang="en" aria-label="English" aria-pressed="true">EN</, name);
     assert.match(html, /data-language="sl" lang="sl" aria-label="Slovenščina" aria-pressed="false">SL</, name);
-    const lang = html.indexOf('src="assets/js/nara-language.js"'), reader = html.indexOf('src="assets/js/nara-reader.js"');
+    const lang = html.indexOf('src="assets/js/nara-language.js?v=main-sl-r2"'), reader = html.indexOf('src="assets/js/nara-reader.js"');
     assert.ok(lang > 0 && reader > lang, name + ': language script loads before the reader script');
     assert.match(html, /<html lang="en" data-title-en="[^"]+" data-title-sl="[^"]+">/, name);
     assert.match(html, /name="description" data-description-en="[^"]+" data-description-sl="[^"]+"\/>/, name);
-    assert.match(html, /nara-cinematic\.css\?v=main-sl-r1/, name);
+    assert.match(html, /nara-cinematic\.css\?v=main-sl-r2/, name);
   }
 });
 
@@ -87,7 +87,7 @@ test('the switch sits with the text-size tools and hidden language blocks stay h
   }
 });
 
-function page({href = 'https://www.mdlxdcc.org/nara/', storage = {}, throwingStorage = false, withSwitch = true} = {}) {
+function page({href = 'https://www.mdlxdcc.org/nara/', storage = {}, throwingStorage = false, withSwitch = true, early = null} = {}) {
   const store = new Map(Object.entries(storage));
   const el = (props = {}) => ({hidden: false, dataset: {}, attrs: {}, listeners: {},
     setAttribute(k, v) { this.attrs[k] = v; if (k === 'href') this.href = v; },
@@ -108,7 +108,7 @@ function page({href = 'https://www.mdlxdcc.org/nara/', storage = {}, throwingSto
   const meta = el({content: 'EN description', dataset: {descriptionEn: 'EN description', descriptionSl: 'SL opis'}});
   const caption = el({dataset: {lightboxCaption: 'A yellow boot.', lightboxCaptionSl: 'Rumen škorenj.'}});
   const events = [];
-  const rootEl = {lang: 'en', dataset: {titleEn: 'EN title', titleSl: 'SL naslov'}};
+  const rootEl = {lang: early || 'en', dataset: {titleEn: 'EN title', titleSl: 'SL naslov', ...(early ? {languageEarly: early} : {})}};
   const document = {
     documentElement: rootEl, title: 'EN title', dispatchEvent: (event) => events.push(event),
     querySelector: (s) => s === '[data-language-switch]' ? (withSwitch ? switcher : null) : s.startsWith('meta[name="description"]') ? meta : null,
@@ -198,4 +198,69 @@ test('episode lightbox captions follow the language and page scripts hear the sw
   p.buttons[0].click();
   assert.equal(p.caption.dataset.lightboxCaption, 'A yellow boot.');
   assert.equal(p.events.at(-1).detail.language, 'en');
+});
+
+// First paint: a small head script applies the reader's language before the deferred nara-language.js runs.
+const BOOT = /<script>(\/\* EN\/SL before first paint[\s\S]*?)<\/script>/;
+const boot = read('index.html').match(BOOT)[1];
+
+function early({href = 'https://www.mdlxdcc.org/nara/', storage = {}, throwingStorage = false} = {}) {
+  const store = new Map(Object.entries(storage));
+  const attrs = {'data-title-sl': 'SL naslov'};
+  const rootEl = {lang: 'en', setAttribute(k, v) { attrs[k] = String(v); }, getAttribute(k) { return attrs[k] ?? null; }};
+  const document = {documentElement: rootEl, title: 'EN title'};
+  const localStorage = {getItem(k) { if (throwingStorage) throw new Error('blocked'); return store.has(k) ? store.get(k) : null; }};
+  vm.runInNewContext(boot, {document, location: new URL(href), localStorage, URLSearchParams});
+  return {lang: rootEl.lang, mark: attrs['data-language-early'] ?? null, title: document.title};
+}
+
+test('every page applies the language in <head>, before the stylesheet and the deferred scripts', () => {
+  for (const name of pages) {
+    const html = read(name);
+    assert.equal((html.match(/EN\/SL before first paint/g) || []).length, 1, name + ': one head bootstrap');
+    assert.equal(html.match(BOOT)[1], boot, name + ': same bootstrap on every page');
+    const at = html.indexOf('/* EN/SL before first paint');
+    assert.ok(html.indexOf('</title>') < at && at < html.indexOf('assets/css/nara-cinematic.css') && at < html.indexOf('</head>'), name + ': after <title>, before the stylesheet');
+    assert.match(html, /<html lang="en" /, name + ': English stays the no-script default');
+  }
+  const css = fs.readFileSync(path.join(nara, 'assets/css/nara-cinematic.css'), 'utf8');
+  assert.match(css, /html\[data-language-early="sl"\] span\[data-language-content="en"\] \{ display: none !important; \}/);
+  assert.match(css, /html\[data-language-early="sl"\] span\[data-language-content="sl"\]\[hidden\] \{ display: inline !important; \}/);
+  // English is hidden only together with showing Slovene, and only under the bootstrap's mark: never a blank page.
+  for (const rule of css.match(/[^}]*data-language-content="en"[^{]*\{[^}]*\}/g) || []) assert.match(rule, /html\[data-language-early="sl"\]/, rule);
+});
+
+test('the head bootstrap makes the same choice as nara-language.js, including fallbacks', () => {
+  const cases = [
+    [{}, 'en'],
+    [{href: 'https://www.mdlxdcc.org/nara/?lang=sl'}, 'sl'],
+    [{href: 'https://bd-chess.github.io/bd-chessdb/Nara/episode-03-what-must-be-allowed-to-fall.html?lang=en', storage: {'nara-daily-lang': 'sl'}}, 'en'],
+    [{storage: {'nara-daily-lang': 'sl'}}, 'sl'],
+    [{storage: {'nara-daily-language': 'sl'}}, 'sl'],
+    [{storage: {'nara-daily-lang': 'en', 'nara-daily-language': 'sl'}}, 'en'],
+    [{storage: {'nara-daily-lang': 'de', 'nara-daily-language': 'sl'}}, 'en'],
+    [{href: 'https://www.mdlxdcc.org/nara/?lang=de', storage: {'nara-daily-lang': 'sl'}}, 'sl'],
+    [{href: 'https://www.mdlxdcc.org/nara/?lang=SL'}, 'en'],
+    [{throwingStorage: true}, 'en'],
+    [{throwingStorage: true, href: 'https://www.mdlxdcc.org/nara/?lang=sl'}, 'sl'],
+  ];
+  for (const [input, want] of cases) {
+    const label = JSON.stringify(input);
+    const e = early(input);
+    assert.equal(e.lang, want, 'bootstrap ' + label);
+    assert.equal(e.mark, want === 'sl' ? 'sl' : null, 'first-paint mark ' + label);
+    assert.equal(e.title, want === 'sl' ? 'SL naslov' : 'EN title', 'tab title ' + label);
+    assert.equal(page(input).rootEl.lang, want, 'nara-language.js agrees ' + label);
+  }
+});
+
+test('nara-language.js takes over from the first-paint mark', () => {
+  const p = page({storage: {'nara-daily-lang': 'sl'}, early: 'sl'});
+  assert.equal('languageEarly' in p.rootEl.dataset, false, 'mark removed once hidden decides');
+  assert.equal(p.en.hidden, true);
+  assert.equal(p.sl.hidden, false);
+  p.buttons[0].click();
+  assert.equal(p.rootEl.lang, 'en');
+  assert.equal(p.en.hidden, false, 'English comes back after a switch');
+  assert.equal('languageEarly' in p.rootEl.dataset, false);
 });
