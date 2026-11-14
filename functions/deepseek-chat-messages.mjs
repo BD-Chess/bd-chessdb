@@ -1,4 +1,6 @@
+import { getStore } from '@netlify/blobs';
 import { emailAddress, env } from './lib/mdlxdcc-guide/access.mjs';
+import { createDriveMailbox } from './lib/deepseek-chat/drive-mailbox.mjs';
 import { json, originAllowed, readJson } from './lib/deepseek-chat/http.mjs';
 import { origin, validSession } from './lib/deepseek-chat/session.mjs';
 
@@ -69,7 +71,12 @@ export function makeMessagesHandler({ mailbox, getEnv = env, now = Date.now, all
   };
 }
 
-export default makeMessagesHandler();
+export default makeMessagesHandler({
+  mailbox: createDriveMailbox({
+    getEnv: env,
+    getStore: () => getStore({ name: 'mydeepseekrhp-drive-ids-v1', consistency: 'strong' }),
+  }),
+});
 
 export const config = {
   path: ['/deepseek-chat/api/messages', '/deepseek-chat/api/messages/:id'],
