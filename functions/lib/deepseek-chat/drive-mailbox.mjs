@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { workflowInput, workflowResult, workflowZip, zipLimit } from './workflow.mjs';
 
 const prefix = 'DEEPSEEK_CHAT_DRIVE_';
 const endpoint = 'https://www.googleapis.com/drive/v3';
@@ -13,6 +14,8 @@ const requestSchema = 'mydeepseekrhp.request.v1';
 const stopSchema = 'mydeepseekrhp.stop.v1';
 const ackSchema = 'mydeepseekrhp.ack.v1';
 const resultSchema = 'mydeepseekrhp.result.v1';
+const workRequestSchema = 'mydeepseekrhp.request.v2';
+const workResultSchema = 'mydeepseekrhp.result.v2';
 const requestLimit = 64 * 1024;
 const resultLimit = 400 * 1024;
 const workerClockSkewMs = 5 * 60 * 1000;
@@ -39,7 +42,7 @@ function isCurrentReceipt(receipt, request) {
   return Date.parse(receipt.createdAt) >= Date.parse(request.createdAt) - workerClockSkewMs;
 }
 
-async function boundedJson(response, limit) {
+async function boundedBytes(response, limit) {
   if (!response.body || Number(response.headers.get('content-length')) > limit) throw unavailable();
   const reader = response.body.getReader();
   const chunks = [];
@@ -55,10 +58,14 @@ async function boundedJson(response, limit) {
       }
       chunks.push(value);
     }
-    return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks)));
+    return Buffer.concat(chunks);
   } finally {
     reader.releaseLock();
   }
+}
+
+async function boundedJson(response, limit) {
+  return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await boundedBytes(response, limit)));
 }
 
 function configuration(getEnv) {
@@ -131,6 +138,7 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
   if (!settings) return undefined;
   const { owner, inbox, results } = settings;
   const drive = googleClient(settings, fetcher, now);
+  const workEnabled = getEnv('DEEPSEEK_CHAT_WORK_ENABLED') === 'true';
 
   function keyFor(id, kind) {
     if (!jobId.test(id)) throw unavailable();
@@ -139,7 +147,8 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
 
   function matchesFile(file, folder, name) {
     return driveId.test(file?.id ?? '') && file.name === name &&
-      file.mimeType === jsonType && file.trashed === false && file.parents?.includes(folder);
+      (name.endsWith('.zip') ? ['application/zip','application/octet-stream'].includes(file.mimeType) : file.mimeType === jsonType) &&
+      file.trashed === false && file.parents?.includes(folder);
   }
 
   async function reserve(store, key, fingerprint) {
@@ -163,7 +172,11 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
     }, { allowMissing: true });
     if (!info) return null;
     if (!matchesFile(info, folder, name) || info.id !== fileId) throw unavailable();
-    return drive.read(`files/${fileId}`, { alt: 'media', supportsAllDrives: 'true' }, { maxBytes });
+    const query = { alt: 'media', supportsAllDrives: 'true' };
+    if (!name.endsWith('.zip')) return drive.read(`files/${fileId}`, query, { maxBytes });
+    const response = await drive.call(`files/${fileId}`, query);
+    if (!response.ok) throw unavailable();
+    return boundedBytes(response, maxBytes);
   }
 
   async function upload(fileId, folder, name, value) {
@@ -189,19 +202,21 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
   async function receiptFiles(id) {
     const ack = `${id}.ack.json`;
     const result = `${id}.result.json`;
+    const zip = `${id}.result.zip`;
+    const names = [ack,result,zip];
     const data = await drive.read('files', {
-      q: `'${results}' in parents and trashed = false and (name = '${ack}' or name = '${result}')`,
+      q: `'${results}' in parents and trashed = false and (${names.map(name => `name = '${name}'`).join(' or ')})`,
       fields: 'files(id,name,mimeType,parents,trashed),nextPageToken,incompleteSearch',
       pageSize: 10, spaces: 'drive', supportsAllDrives: 'true', includeItemsFromAllDrives: 'true',
     }, { maxBytes: 16384 });
     if (data.nextPageToken || data.incompleteSearch || !Array.isArray(data.files)) throw unavailable();
     const files = new Map();
     for (const file of data.files) {
-      if ((file.name !== ack && file.name !== result) ||
+      if (!names.includes(file.name) ||
           !matchesFile(file, results, file.name) || files.has(file.name)) throw unavailable();
       files.set(file.name, file.id);
     }
-    return { ack: files.get(ack), result: files.get(result) };
+    return { ack: files.get(ack), result: files.get(result), zip: files.get(zip) };
   }
 
   async function readRequest(store, id) {
@@ -210,6 +225,13 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
     if (!stamp(entry.createdAt) || !driveId.test(entry.fileId ?? '')) throw unavailable();
     const request = await download(entry.fileId, inbox, `${id}.json`, requestLimit);
     if (!request) return null;
+    if (request.schema === workRequestSchema) {
+      if (!workEnabled) return null;
+      const data = workflowInput(request, ['schema','id','owner','createdAt','operation']);
+      if (!data || !envelopeMatches(request, workRequestSchema, owner, id) || request.createdAt !== entry.createdAt ||
+          digest(data) !== entry.fingerprint) throw unavailable();
+      return request;
+    }
     if (!envelopeMatches(request, requestSchema, owner, id) || request.createdAt !== entry.createdAt ||
         typeof request.prompt !== 'string' || !request.prompt.trim() || request.prompt.length > 8000 ||
         typeof request.reasoning !== 'boolean' || digest([request.prompt, request.reasoning]) !== entry.fingerprint) {
@@ -219,12 +241,25 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
   }
 
   async function view(store, request) {
-    const { id, prompt } = request;
+    const { id, prompt, operation, project } = request;
+    const work = request.schema === workRequestSchema;
+    const attributes = work ? { id, operation, ...(project && {project}), ...(prompt && {prompt}) } : {id,prompt};
     const receipts = await receiptFiles(id);
     if (receipts.result) {
       const result = await download(receipts.result, results, `${id}.result.json`, resultLimit);
-      if (!envelopeMatches(result, resultSchema, owner, id) ||
+      if (!envelopeMatches(result, work ? workResultSchema : resultSchema, owner, id) ||
           !terminal.has(result.state) || !isCurrentReceipt(result, request)) throw unavailable();
+      if (work) {
+        if (!receipts.ack || result.operation !== operation) throw unavailable();
+        const ack = await download(receipts.ack, results, `${id}.ack.json`, requestLimit);
+        if (!envelopeMatches(ack,ackSchema,owner,id) || !isCurrentReceipt(ack,request)) throw unavailable();
+        const outcome = workflowResult(request, result.result, result.state);
+        if (result.state === 'complete' && !outcome) throw unavailable();
+        const zip = result.markdownZip === undefined ? null : workflowZip(result.markdownZip, id);
+        if (result.markdownZip !== undefined && (!zip || !receipts.zip)) throw unavailable();
+        const error = /^[A-Z][A-Z0-9_]{2,60}$/.test(result.error ?? '') ? result.error : undefined;
+        return { ...attributes, state:result.state, ...(outcome && {result:outcome}), ...(zip && {zip}), ...(error && {error}) };
+      }
       if (result.state === 'complete' &&
           (typeof result.reply !== 'string' || !result.reply.trim() || result.reply.length > 64000)) throw unavailable();
       return { id, prompt, state: result.state, ...(result.state === 'complete' && { reply: result.reply }) };
@@ -234,17 +269,19 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
       const saved = await download(stop.fileId, inbox, `${id}.stop.json`, requestLimit);
       if (saved) {
         if (!envelopeMatches(saved, stopSchema, owner, id) || saved.createdAt !== stop.createdAt) throw unavailable();
-        return { id, prompt, state: 'stopping' };
+        return { ...attributes, state: 'stopping' };
       }
     }
-    if (!receipts.ack) return { id, prompt, state: 'queued' };
+    if (!receipts.ack) return { ...attributes, state: 'queued' };
     const ack = await download(receipts.ack, results, `${id}.ack.json`, requestLimit);
     if (!envelopeMatches(ack, ackSchema, owner, id) ||
         !isCurrentReceipt(ack, request)) throw unavailable();
-    return { id, prompt, state: 'acknowledged' };
+    return { ...attributes, state: 'acknowledged' };
   }
 
   return {
+    workEnabled,
+
     async available(account) {
       if (account !== owner) return false;
       const query = { fields: 'id,mimeType,trashed,capabilities(canAddChildren,canListChildren)', supportsAllDrives: 'true' };
@@ -272,6 +309,34 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
       return { id, prompt, state: 'queued' };
     },
 
+    async enqueueWork({ owner: account, id, data }) {
+      if (account !== owner || !workEnabled || !workflowInput({id,...data})) return null;
+      const store = getStore();
+      const fingerprint = digest(data);
+      const entry = await reserve(store, keyFor(id, 'request'), fingerprint);
+      if (entry.fingerprint !== fingerprint) return null;
+      const existing = await readRequest(store, id);
+      if (existing) return view(store, existing);
+      const request = { schema: workRequestSchema, id, owner, createdAt:entry.createdAt, ...data };
+      await upload(entry.fileId, inbox, `${id}.json`, request);
+      const { operation, project, prompt } = data;
+      return { id, operation, ...(project && {project}), ...(prompt && {prompt}), state:'queued' };
+    },
+
+    async zip({ owner: account, id }) {
+      if (account !== owner || !workEnabled) return null;
+      const store = getStore();
+      const request = await readRequest(store, id);
+      if (!request) return null;
+      const record = await view(store, request);
+      if (!record.zip) return null;
+      const receipts = await receiptFiles(id);
+      const bytes = await download(receipts.zip, results, `${id}.result.zip`, zipLimit);
+      if (!bytes || bytes.length !== record.zip.sizeBytes ||
+          createHash('sha256').update(bytes).digest('hex') !== record.zip.sha256) throw unavailable();
+      return bytes;
+    },
+
     async get({ owner: account, id }) {
       if (account !== owner) return null;
       const store = getStore();
@@ -285,7 +350,8 @@ export function createDriveMailbox({ getEnv, getStore, fetcher = fetch, now = Da
       const request = await readRequest(store, id);
       if (!request) return null;
       const before = await view(store, request);
-      if (terminal.has(before.state) || before.state === 'stopping') return before;
+      if (terminal.has(before.state) || before.state === 'stopping' ||
+          (request.schema === workRequestSchema && !['chat','plan','build'].includes(request.operation))) return before;
       const entry = await reserve(store, keyFor(id, 'stop'), digest([owner, id]));
       if (!stamp(entry.createdAt) || !driveId.test(entry.fileId ?? '') || entry.fingerprint !== digest([owner, id])) {
         throw unavailable();

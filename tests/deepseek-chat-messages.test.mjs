@@ -124,3 +124,28 @@ test('STOP response distinguishes request from final stop and preserves a comple
   mailbox.messages.get(id).id = randomUUID();
   assert.equal((await handler(request({ id }))).status, 503);
 });
+
+test('WORK apply is owner-only and checks immutable reviewed Build receipt before enqueue', async () => {
+  const mailbox = syntheticMailbox();
+  mailbox.workEnabled = true;
+  mailbox.enqueueWork = async ({id,data}) => {
+    mailbox.calls.push(['work',data.operation]);
+    return {id,state:'queued',...data};
+  };
+  const handler = makeMessagesHandler({mailbox,getEnv,now:() => now});
+  const buildId = randomUUID();
+  const result = {status:'proposed',project:'acceptance',proposalId:randomUUID(),baseSha256:'a'.repeat(64),diffSha256:'b'.repeat(64)};
+  mailbox.messages.set(buildId,{id:buildId,state:'complete',operation:'build',result});
+  const {status,...binding} = result;
+  const body = {id:randomUUID(),operation:'approve',buildId,...binding};
+  assert.equal((await handler(request({method:'POST',body,credentials:''}))).status,401);
+  assert.equal((await handler(request({method:'POST',body:{...body,baseSha256:'c'.repeat(64)}}))).status,409);
+  assert.equal((await handler(request({method:'POST',body:{...body,shell:'node'}}))).status,400);
+  assert.ok(mailbox.calls.every(([operation]) => operation === 'get'));
+  const accepted = await handler(request({method:'POST',body}));
+  assert.equal(accepted.status,202);
+  assert.equal((await accepted.json()).id,body.id);
+  assert.equal(accepted.headers.get('cache-control'),'no-store, private');
+  mailbox.workEnabled = false;
+  assert.equal((await handler(request({method:'POST',body}))).status,503);
+});

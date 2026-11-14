@@ -2,6 +2,7 @@ import { getStore } from '@netlify/blobs';
 import { emailAddress, env } from './lib/mdlxdcc-guide/access.mjs';
 import { createDriveMailbox } from './lib/deepseek-chat/drive-mailbox.mjs';
 import { json, originAllowed, readJson } from './lib/deepseek-chat/http.mjs';
+import { workflowInput, workflowOperations } from './lib/deepseek-chat/workflow.mjs';
 import { origin, validSession } from './lib/deepseek-chat/session.mjs';
 
 const messagePath = '/deepseek-chat/api/messages';
@@ -12,6 +13,7 @@ const replyLimit = 64000;
 const requestByteLimit = 64 * 1024;
 
 function messageView(record, id) {
+  if (record?.id === id && workflowOperations.has(record.operation) && states.has(record.state)) return record;
   if (record?.id !== id || !states.has(record.state) ||
       typeof record.prompt !== 'string' || !record.prompt.trim() || record.prompt.length > promptLimit) {
     throw new Error('INVALID_MAILBOX_RECORD');
@@ -28,7 +30,7 @@ function messageView(record, id) {
 
 export function makeMessagesHandler({ mailbox, getEnv = env, now = Date.now, allowedOrigin = origin } = {}) {
   return async (req, context = {}) => {
-    const { origin: requestOrigin, pathname } = new URL(req.url);
+    const { origin: requestOrigin, pathname, searchParams } = new URL(req.url);
     if ((context.site?.name && context.site.name !== 'mdlxdcc') || requestOrigin !== allowedOrigin) {
       return json({ error: 'NOT_FOUND' }, 404);
     }
@@ -45,10 +47,27 @@ export function makeMessagesHandler({ mailbox, getEnv = env, now = Date.now, all
       if (!/^[A-Za-z0-9_-]{43,128}$/.test(secret ?? '')) return json({ error: 'AUTH_UNAVAILABLE' }, 503);
       if (!validSession(req, owner, secret, now())) return json({ error: 'AUTH_REQUIRED' }, 401);
 
-      if (req.method === 'GET' && !id) return json({ available: mailbox ? await mailbox.available(owner) === true : false });
+      if (req.method === 'GET' && !id) {
+        const available = mailbox ? await mailbox.available(owner) === true : false;
+        return json({ available, ...(available && mailbox.workEnabled === true && {work:true}) });
+      }
       if (!mailbox) return json({ error: 'MAILBOX_UNAVAILABLE' }, 503);
 
       if (req.method === 'GET') {
+        if (searchParams.has('download')) {
+          if (searchParams.get('download') !== 'zip' || !mailbox.zip) return json({ error:'NOT_FOUND' }, 404);
+          const bytes = await mailbox.zip({owner,id});
+          if (!bytes) return json({error:'NOT_FOUND'},404);
+          return new Response(bytes, { headers:{
+            'Content-Type':'application/zip',
+            'Content-Disposition':`attachment; filename="${id}.zip"`,
+            'Cache-Control':'no-store, private',
+            'X-Content-Type-Options':'nosniff',
+            'Cross-Origin-Resource-Policy':'same-origin',
+            'Referrer-Policy':'no-referrer',
+            Vary:'Cookie, Origin',
+          } });
+        }
         const message = await mailbox.get({ owner, id });
         return message ? json(messageView(message, id)) : json({ error: 'MESSAGE_NOT_FOUND' }, 404);
       }
@@ -60,6 +79,34 @@ export function makeMessagesHandler({ mailbox, getEnv = env, now = Date.now, all
         return message ? json(messageView(message, id), 202) : json({ error: 'MESSAGE_NOT_FOUND' }, 404);
       }
 
+      if (body && Object.hasOwn(body, 'operation')) {
+        const {buildId, ...candidate} = body;
+        const decision = candidate.operation === 'approve' || candidate.operation === 'reject';
+        if (decision ? typeof buildId !== 'string' || !jobIdPattern.test(buildId) : Object.hasOwn(body,'buildId')) {
+          return json({error:'INVALID_REVIEW'},400);
+        }
+        const data = workflowInput(candidate);
+        if (!data) return json({ error:'INVALID_MESSAGE' },400);
+        if (mailbox.workEnabled !== true) return json({ error:'WORK_UNAVAILABLE' },503);
+        if (decision) {
+          const reviewed = await mailbox.get({owner,id:buildId});
+          const proposal = reviewed?.result;
+          if (reviewed?.operation !== 'build' || reviewed.state !== 'complete' || proposal?.status !== 'proposed' ||
+              !['project','proposalId','baseSha256','diffSha256'].every(field => proposal[field] === data[field])) {
+            return json({error:'REVIEW_MISMATCH'},409);
+          }
+        }
+        if (data.operation === 'review') {
+          const reviewed = await mailbox.get({owner,id:data.jobId});
+          if (reviewed?.state !== 'complete' || reviewed.result?.project !== data.project ||
+              !(reviewed.operation === 'plan' && reviewed.result.status === 'planned' ||
+                reviewed.operation === 'build' && reviewed.result.status === 'proposed')) {
+            return json({error:'REVIEW_MISMATCH'},409);
+          }
+        }
+        const message = await mailbox.enqueueWork({ owner,id:body.id,data });
+        return message ? json(messageView(message,body.id),202) : json({error:'MESSAGE_CONFLICT'},409);
+      }
       if (!body || Object.keys(body).length !== 3 || typeof body.id !== 'string' || !jobIdPattern.test(body.id) ||
           typeof body.prompt !== 'string' || !body.prompt.trim() || body.prompt.length > promptLimit ||
           typeof body.reasoning !== 'boolean') return json({ error: 'INVALID_MESSAGE' }, 400);

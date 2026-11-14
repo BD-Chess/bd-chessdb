@@ -35,7 +35,8 @@ export function driveFixture(overrides = {}) {
   const behavior = { loseAfterUpload: 0, rejectBeforeUpload: 0, principal };
 
   function add(folder, name, content, id = 'file-generated-' + ++generated) {
-    files.set(id, { info: { id, name, mimeType: 'application/json', trashed: false, parents: [folder] }, content });
+    const mimeType = Buffer.isBuffer(content) ? 'application/zip' : 'application/json';
+    files.set(id, { info: { id, name, mimeType, trashed: false, parents: [folder] }, content });
     return id;
   }
 
@@ -79,7 +80,9 @@ export function driveFixture(overrides = {}) {
       }
       const file = files.get(id);
       if (!file) return json({}, 404);
-      return json(url.searchParams.get('alt') === 'media' ? file.content : file.info);
+      if (url.searchParams.get('alt') !== 'media') return json(file.info);
+      if (Buffer.isBuffer(file.content)) return new Response(file.content,{headers:{'Content-Type':'application/zip'}});
+      return json(file.content);
     }
     throw Error('Fixture does not recognize request');
   }
