@@ -56,9 +56,9 @@ const exName = item => (NAMES[item.id] || [item.label, item.label])[lang() === '
 const T = {
   en: {
     wasm: 'Loading WebAssembly…', exLoading: name => `Loading ${name}…`, reading: 'Reading the map…',
-    readyWin: 'Ready · window search with 3-opt (maps over 12,000 cities).',
-    readyPop: 'Ready · population search with diversity selection.',
-    searching: (n, sharing) => n === 1 ? 'Searching with 1 worker…' : `Searching · ${n} workers · ${sharing ? 'one shared population' : 'separate tries'}…`,
+    readyWin: 'Ready · large map (over 12,000 cities).',
+    readyPop: 'Ready · small map (up to 12,000 cities).',
+    searching: (n, sharing) => n === 1 ? 'Searching · 1 worker…' : `Searching · ${n} workers…`,
     complete: (s, opt) => 'Complete · tour checked in Rust.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Reference'} first reached after ${dec(s, 1)} s of solver time.`),
     optimumStop: s => `Optimum reached after ${dec(s, 1)} s of solver time; the search stopped.`,
@@ -71,7 +71,7 @@ const T = {
     generating: name => `Generating ${name} on your device…`,
     genFail: 'Generating the map failed within the memory this browser allows.',
     tenM: '10M needs a desktop computer that reports at least 8 GB of memory; it is not available on this device.',
-    needShare: 'Shared workers need shared memory, which this browser does not offer here.',
+    needShare: 'The selected mode is unavailable in this browser.',
     oneWorkerLarge: 'For maps of a million cities without shared memory, choose 1 worker: each worker would hold its own copy.',
     cities: n => `${group(n)} ${n === 1 ? 'city' : 'cities'}`, sampled: ' · sampled drawing',
     range: (label, lo, hi) => `${label}: enter a number from ${group(lo)} to ${group(hi)}`,
@@ -81,11 +81,11 @@ const T = {
     reachOpt: 'OPTIMUM FIRST REACHED', reachRef: 'REFERENCE FIRST REACHED',
     count: 'Random cities', seed: 'Seed', seconds: 'Seconds', reference: 'Reference length',
     placeholder: 'for the gap and the first-reach time', canvas: 'Points and the best tour',
-    modeShared: (n, c) => `Mode: shared memory, ${ofEn(n, c)}. The workers share one population (on maps over 12,000 cities, one group of windows).`,
-    modeOne: (n, c) => `Mode: one worker; this device reports ${c} ${c === 1 ? 'core' : 'cores'}. With more workers they would share one population.`,
-    modeSeparate: (n, c) => `Mode: separate tries, ${ofEn(n, c)}. This browser offers no shared memory here, so each worker has its own population and seed; the page shows the best.`,
-    modeChosen: (n, c) => `Mode: separate tries, as chosen, ${ofEn(n, c)}; each worker has its own population and seed.`,
-    modeOneNoShare: (n, c) => `Mode: one worker; this device reports ${c} ${c === 1 ? 'core' : 'cores'}. This browser offers no shared memory here, so more workers would be separate tries.`,
+    modeShared: (n, c) => `Mode: ${n} workers; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
+    modeOne: (n, c) => `Mode: 1 worker; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
+    modeSeparate: (n, c) => `Mode: compatibility mode · ${n} workers; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
+    modeChosen: (n, c) => `Mode: compatibility mode · ${n} workers; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
+    modeOneNoShare: (n, c) => `Mode: 1 worker; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
     hintIPhone: 'iPhone: 6 workers by default; Safari may hide the number of cores. More workers than cores do not help.',
     hintCores: c => `Your browser reports ${c} ${c === 1 ? 'core' : 'cores'}. More workers than cores do not help.`,
     option: item => `${exName(item)} · ${group(item.cities)}` + (item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device') : ''),
@@ -102,10 +102,10 @@ const T = {
   },
   sl: {
     wasm: 'Nalagam WebAssembly…', exLoading: name => `Nalagam ${name}…`, reading: 'Berem zemljevid…',
-    readyWin: 'Pripravljeno · iskanje z okni in 3-opt (zemljevidi z več kot 12.000 mesti).',
-    readyPop: 'Pripravljeno · populacijsko iskanje z izbiro z raznolikostjo.',
-    searching: (n, sharing) => n === 1 ? 'Iskanje teče · 1 delavec…' :
-      `Iskanje teče · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')} · ${sharing ? 'skupna populacija' : 'ločeni poskusi'}…`,
+    readyWin: 'Pripravljeno · velik zemljevid (več kot 12.000 mest).',
+    readyPop: 'Pripravljeno · manjši zemljevid (do 12.000 mest).',
+    searching: (n, sharing) => n === 1 ? 'Iskanje · 1 delavec…' :
+      `Iskanje · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}…`,
     complete: (s, opt) => 'Končano · pot preverjena v Rustu.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Referenca'} prvič dosežen${opt ? '' : 'a'} po ${dec(s, 1)} s časa reševalnika.`),
     optimumStop: s => `Optimum dosežen po ${dec(s, 1)} s časa reševalnika; iskanje ustavljeno.`,
@@ -118,7 +118,7 @@ const T = {
     generating: name => `Ustvarjam ${name} na vaši napravi…`,
     genFail: 'Ustvarjanje zemljevida ni uspelo v pomnilniku, ki ga dovoli ta brskalnik.',
     tenM: '10M potrebuje namizni računalnik, ki javlja vsaj 8 GB pomnilnika; na tej napravi ni na voljo.',
-    needShare: 'Delavci si lahko delijo populacijo le s skupnim pomnilnikom, ki ga ta brskalnik tu ne ponuja.',
+    needShare: 'Izbrani način v tem brskalniku ni na voljo.',
     oneWorkerLarge: 'Za zemljevide z milijonom mest brez skupnega pomnilnika izberite 1 delavca: vsak delavec bi imel svojo kopijo.',
     cities: n => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}`, sampled: ' · vzorčeno risanje',
     range: (label, lo, hi) => `${label}: vnesite število od ${group(lo)} do ${group(hi)}`,
@@ -128,11 +128,11 @@ const T = {
     reachOpt: 'OPTIMUM PRVIČ DOSEŽEN', reachRef: 'REFERENCA PRVIČ DOSEŽENA',
     count: 'Naključna mesta', seed: 'Seme', seconds: 'Sekunde', reference: 'Referenčna dolžina',
     placeholder: 'za odmik in čas prvega dosega', canvas: 'Točke in najboljša pot',
-    modeShared: (n, c) => `Način: skupni pomnilnik, ${odSl(n, c)}. Delavci si delijo eno populacijo (na zemljevidih z več kot 12.000 mesti eno skupino oken).`,
-    modeOne: (n, c) => `Način: en delavec; ta naprava javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Več delavcev bi si delilo eno populacijo.`,
-    modeSeparate: (n, c) => `Način: ločeni poskusi, ${odSl(n, c)}. Ta brskalnik tu ne ponuja skupnega pomnilnika, zato ima vsak delavec svojo populacijo in seme; stran pokaže najboljši izid.`,
-    modeChosen: (n, c) => `Način: ločeni poskusi, kot izbrano, ${odSl(n, c)}; vsak delavec ima svojo populacijo in seme.`,
-    modeOneNoShare: (n, c) => `Način: en delavec; ta naprava javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Ta brskalnik tu ne ponuja skupnega pomnilnika, zato bi več delavcev pomenilo ločene poskuse.`,
+    modeShared: (n, c) => `Način: ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
+    modeOne: (n, c) => `Način: 1 delavec; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
+    modeSeparate: (n, c) => `Način: združljivostni način · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
+    modeChosen: (n, c) => `Način: združljivostni način · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
+    modeOneNoShare: (n, c) => `Način: 1 delavec; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
     hintIPhone: 'iPhone: privzeto 6 delavcev; Safari lahko skrije število jeder. Več delavcev kot jeder ne pomaga.',
     hintCores: c => `Vaš brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Več delavcev kot jeder ne pomaga.`,
     option: item => `${exName(item)} · ${group(item.cities)}` + (item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi') : ''),
@@ -329,7 +329,7 @@ async function start(options = {}) {
   if (coords.length >= 2000000 && !sharedThreads && workers > 1) throw new Message('oneWorkerLarge');
   const module = unlocked(sharedThreads);
   const memory = sharedThreads ? new WebAssembly.Memory({ initial: 18, maximum: 65536, shared: true }) : undefined;
-  const topology = workers === 1 ? 'single solver' : sharedThreads ? 'shared population/windows' : 'independent seeds (fallback; no shared population)';
+  const topology = workers === 1 ? 'single worker' : sharedThreads ? 'shared workers' : 'separate workers';
   const reference = options.reference ?? (Number($('reference').value) || null);
   const tep = options.tep ?? $('tep').checked;
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
