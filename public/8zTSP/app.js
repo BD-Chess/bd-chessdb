@@ -13,10 +13,14 @@ const root = document.documentElement;
 const canvas = $('map'), ctx = canvas.getContext('2d');
 const NU = examples.find(item => item.id === 'nu3496');
 const NU_SECONDS = 60;
-const cores = Math.max(1, Math.floor(Number(navigator.hardwareConcurrency) || 1));
+// R22b (8zTSP-web R3, for BD's iPhone): Safari may hide the number of cores, so up to 8 workers can be chosen anywhere and
+// an iPhone starts with 6; elsewhere the page starts with every core the device reports.
+const reportedCores = Math.max(1, Math.floor(Number(navigator.hardwareConcurrency) || 1));
+const isIPhone = /iPhone/i.test(navigator.userAgent);
+const cores = Math.max(reportedCores, 8);
 const canShare = supportsSharedThreads();
 for (let n = 1; n <= cores; n++) $('workers').add(new Option(String(n), String(n)));
-$('workers').value = String(cores);
+$('workers').value = String(isIPhone ? 6 : reportedCores);
 let text = '', coords = new Float64Array(), tour = null, pool = [], loading = null;
 let generation = 0, best = Infinity, started = 0, timer, active = false, runRecord = null, shownElapsed = 0, rejectActive = null;
 let mapName = '', inputHash = '', lastDraw = 0, preset = '', tab = 'nu', statusKey = ['wasm'], mapMeta = null;
@@ -26,6 +30,9 @@ const dec = (x, d) => { const s = x.toFixed(d); return lang() === 'sl' ? s.repla
 const pct = x => `${dec(x, 3)}${lang() === 'sl' ? ' %' : '%'}`;
 const slPlural = (n, one, two, few, many) => { const m = n % 100; return m === 1 ? one : m === 2 ? two : m === 3 || m === 4 ? few : many; };
 const ofCoresSl = c => `${c} ${c === 1 ? 'jedra' : 'jeder'}`;
+// more workers than reported cores (an iPhone starts with 6 where Safari may report fewer): say so instead of »6 of 4 cores«
+const ofEn = (n, c) => n <= c ? `${n} of ${c} cores` : `${n} workers (the device reports ${c} ${c === 1 ? 'core' : 'cores'})`;
+const odSl = (n, c) => n <= c ? `${n} od ${ofCoresSl(c)}` : `${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')} (naprava javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')})`;
 const T = {
   en: {
     wasm: 'Loading WebAssembly…', nuLoading: 'Loading nu3496…', reading: 'Reading the map…',
@@ -49,11 +56,13 @@ const T = {
     gapOpt: 'ABOVE THE OPTIMUM', gapRef: 'ABOVE THE REFERENCE', reachOpt: 'OPTIMUM FIRST REACHED', reachRef: 'REFERENCE FIRST REACHED',
     count: 'Random cities', seed: 'Seed', seconds: 'Seconds', reference: 'Reference length',
     placeholder: 'for the gap and the first-reach time', canvas: 'Points and the best tour',
-    modeShared: (n, c) => `Mode: shared memory, ${n} of ${c} cores. The workers share one population (on maps over 12,000 cities, one group of windows).`,
+    modeShared: (n, c) => `Mode: shared memory, ${ofEn(n, c)}. The workers share one population (on maps over 12,000 cities, one group of windows).`,
     modeOne: (n, c) => `Mode: one worker; this device reports ${c} ${c === 1 ? 'core' : 'cores'}. With more workers they would share one population.`,
-    modeSeparate: (n, c) => `Mode: separate tries, ${n} of ${c} cores. This browser offers no shared memory here, so each worker has its own population and seed; the page shows the best.`,
-    modeChosen: (n, c) => `Mode: separate tries, as chosen, ${n} of ${c} cores; each worker has its own population and seed.`,
+    modeSeparate: (n, c) => `Mode: separate tries, ${ofEn(n, c)}. This browser offers no shared memory here, so each worker has its own population and seed; the page shows the best.`,
+    modeChosen: (n, c) => `Mode: separate tries, as chosen, ${ofEn(n, c)}; each worker has its own population and seed.`,
     modeOneNoShare: (n, c) => `Mode: one worker; this device reports ${c} ${c === 1 ? 'core' : 'cores'}. This browser offers no shared memory here, so more workers would be separate tries.`,
+    hintIPhone: 'iPhone: 6 workers by default; Safari may hide the number of cores. More workers than cores do not help.',
+    hintCores: c => `Your browser reports ${c} ${c === 1 ? 'core' : 'cores'}. More workers than cores do not help.`,
   },
   sl: {
     wasm: 'Nalagam WebAssembly…', nuLoading: 'Nalagam nu3496…', reading: 'Berem zemljevid…',
@@ -78,11 +87,13 @@ const T = {
     gapOpt: 'NAD OPTIMUMOM', gapRef: 'NAD REFERENCO', reachOpt: 'OPTIMUM PRVIČ DOSEŽEN', reachRef: 'REFERENCA PRVIČ DOSEŽENA',
     count: 'Naključna mesta', seed: 'Seme', seconds: 'Sekunde', reference: 'Referenčna dolžina',
     placeholder: 'za odmik in čas prvega dosega', canvas: 'Točke in najboljša pot',
-    modeShared: (n, c) => `Način: skupni pomnilnik, ${n} od ${ofCoresSl(c)}. Delavci si delijo eno populacijo (na zemljevidih z več kot 12.000 mesti eno skupino oken).`,
+    modeShared: (n, c) => `Način: skupni pomnilnik, ${odSl(n, c)}. Delavci si delijo eno populacijo (na zemljevidih z več kot 12.000 mesti eno skupino oken).`,
     modeOne: (n, c) => `Način: en delavec; ta naprava javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Več delavcev bi si delilo eno populacijo.`,
-    modeSeparate: (n, c) => `Način: ločeni poskusi, ${n} od ${ofCoresSl(c)}. Ta brskalnik tu ne ponuja skupnega pomnilnika, zato ima vsak delavec svojo populacijo in seme; stran pokaže najboljši izid.`,
-    modeChosen: (n, c) => `Način: ločeni poskusi, kot izbrano, ${n} od ${ofCoresSl(c)}; vsak delavec ima svojo populacijo in seme.`,
+    modeSeparate: (n, c) => `Način: ločeni poskusi, ${odSl(n, c)}. Ta brskalnik tu ne ponuja skupnega pomnilnika, zato ima vsak delavec svojo populacijo in seme; stran pokaže najboljši izid.`,
+    modeChosen: (n, c) => `Način: ločeni poskusi, kot izbrano, ${odSl(n, c)}; vsak delavec ima svojo populacijo in seme.`,
     modeOneNoShare: (n, c) => `Način: en delavec; ta naprava javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Ta brskalnik tu ne ponuja skupnega pomnilnika, zato bi več delavcev pomenilo ločene poskuse.`,
+    hintIPhone: 'iPhone: privzeto 6 delavcev; Safari lahko skrije število jeder. Več delavcev kot jeder ne pomaga.',
+    hintCores: c => `Vaš brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Več delavcev kot jeder ne pomaga.`,
   },
 };
 const t = (key, ...args) => { const v = T[lang()][key]; return typeof v === 'function' ? v(...args) : v; };
@@ -113,7 +124,8 @@ function render() {
   $('elapsed').textContent = `${dec(shownElapsed, 1)} s`;
   $('cityCount').textContent = coords.length ? t('cities', coords.length / 2) : '';
   $('reference').placeholder = t('placeholder');
-  $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), cores);
+  $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
+  $('workerHint').textContent = isIPhone ? t('hintIPhone') : t('hintCores', reportedCores);
   canvas.setAttribute('aria-label', t('canvas'));
   $('status').textContent = t(...statusKey);
 }
@@ -234,7 +246,7 @@ async function start(options = {}) {
   const tep = options.tep ?? $('tep').checked;
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
   runRecord = { schema: '8ztsp-web-run-v1', name: mapName, inputSha256: inputHash, cities: coords.length / 2, seconds, seed,
-    workers, deviceCores: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
+    workers, deviceCores: reportedCores, workerLimit: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
     tep, reference, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
     history: [], results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
@@ -378,7 +390,7 @@ document.addEventListener('fullscreenchange', expandedControls);
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && mapView.classList.contains('map-window')) closeMap(); });
 window.MDLxDCCLocale?.subscribe(() => render());
 // The same QA hook as in R1/R2: it drives the same UI and worker path.
-window.tsp8zLab = { load, start, stop, loadNu, generate, cores, get canShare() { return canShare; },
+window.tsp8zLab = { load, start, stop, loadNu, generate, cores, reportedCores, defaultWorkers: isIPhone ? 6 : reportedCores, get canShare() { return canShare; },
   get ready() { return loaderState.status === 'ready'; }, get loaderStatus() { return loaderState.status; },
   get wasmMetrics() { return structuredClone(loaderState.metrics); },
   get record() { return runRecord; }, get coordinates() { return coords; }, get liveWorkers() { return pool.length; } };
