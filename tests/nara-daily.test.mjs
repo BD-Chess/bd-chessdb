@@ -299,6 +299,7 @@ test('late publication: only a BD decision allows a later publication date; a sa
   assert.equal(validateRecord({...r,late_publication:{...late,decided_on:'2026-10-07'}}).date,'2026-10-06','a record may be published on a later day than the decision (after midnight)');
   assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_on:'2026-10-09'}}),/wrong local date/,'but never before the decision');
   assert.throws(()=>validateRecord({...r,published_at:'2026-10-07T10:00:00Z'}),/wrong local date/,'an ordinary record stays on its own day');
+  assert.throws(()=>validateRecord({...r,published_at:'2026-10-06T10:00:00Z',late_publication:late}),/wrong local date/,'a late record published on its original day, before the decision, is refused');
   assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_on:'2026-10-06'}}),/decision date/);
   const l=logRecord('2026-10-06');
   assert.throws(()=>validateLog({...l,critic:'GPT'}),/independent/);
@@ -397,7 +398,7 @@ test('batch path: a BD-decided late day with three scored stories and a recorded
   assert.throws(()=>validateBatch({...lateBatch,instances:lateBatch.instances.map(x=>x.instance==='S2'?{...x,log:{...x.log,stand_in_for:'CLAUDE'}}:x)}),/stand-in model/);
   assert.throws(()=>validateBatch({...lateBatch,instances:lateBatch.instances.map(x=>({...x,record:{...x.record,late_publication:undefined}}))}),/wrong local date/);
   assert.throws(()=>validateBatch({...lateBatch,instances:lateBatch.instances.map(x=>({...x,record:{...x.record,late_publication:{...late,reason:'A different reason.'}}}))}),/record late publication binding/);
-  assert.throws(()=>validateBatch(makeBatch('2026-10-22','2026-10-22T20:00:00Z',null).instances.length&&{...makeBatch('2026-10-22','2026-10-22T20:00:00Z',null),instances:makeBatch('2026-10-22','2026-10-22T20:00:00Z',null).instances.map(x=>({...x,record:{...x.record,late_publication:late}}))}),/late publication/);
+  assert.throws(()=>validateBatch(makeBatch('2026-10-22','2026-10-22T20:00:00Z',null).instances.length&&{...makeBatch('2026-10-22','2026-10-22T20:00:00Z',null),instances:makeBatch('2026-10-22','2026-10-22T20:00:00Z',null).instances.map(x=>({...x,record:{...x.record,late_publication:late}}))}),/wrong local date|late publication/);
   const result=publishBatch(root,lateBatch,new Date('2026-10-23T01:00:00Z'));
   assert.equal(result.status,'LOCAL_BATCH_CANDIDATE_READY');assert.equal(result.featured,'S2');
   const day=JSON.parse(fs.readFileSync(path.join(n,'daily/days/2026-10-22.json'),'utf8'));
