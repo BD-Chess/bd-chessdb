@@ -14,7 +14,7 @@ navigation additions outside the eight personal pins; no saved favorites,
 exports, notes or localStorage records are migrated or overwritten.
 
 BD's November 11 request adds a searchable research-directory entry for the
-new 8zTSP page (`../BD/BD_8ZTSP.html`), first in "Raziskave & primerjave".
+new 8zTSP page (`/tsp/8ztsp/`), first in "Raziskave & primerjave".
 Like the entry above it is a static navigation addition: no saved favorites,
 personal links, exports or localStorage records change.
 
