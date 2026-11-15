@@ -18,6 +18,11 @@ new 8zTSP page (`../BD/BD_8ZTSP.html`), first in "Raziskave & primerjave".
 Like the entry above it is a static navigation addition: no saved favorites,
 personal links, exports or localStorage records change.
 
+BD's November 15 request adds 8zTSP-web (`../bd/bd_8ztsp_web`), the 8zTSP
+engine running in the visitor's browser, right after 8zTSP in "Raziskave &
+primerjave". It is also a static navigation addition: no saved favorites,
+personal links, exports or localStorage records change.
+
 The November 12 directory update adds links to AI8 DNA, Nara and Illuminara,
 and the public OmniCPQ origin story. Searching Start also searches the public
 site catalogue, without including protected shortcuts. Results are created as
