@@ -52,3 +52,18 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: same-origin
   Content-Security-Policy: default-src 'none'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: blob:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; object-src 'none'
+
+# 8zTSP in your browser (BD x AI Lab, 15 Nov 2026): cross-origin isolation only for this demo page and its own files,
+# so that its workers can share memory (SharedArrayBuffer). Netlify matches header paths regardless of case.
+/bd/bd_8ztsp_web
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+
+/bd/bd_8ztsp_web.html
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+
+/bd/8ztsp-web/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Resource-Policy: same-origin

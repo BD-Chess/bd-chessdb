@@ -1,3 +1,5 @@
+import * as __wbg_star0 from './snippets/tsp8z-web-cc75dfdf3d8cc576/inline0.js';
+
 let wasm;
 
 let cachedUint8ArrayMemory0 = null;
@@ -291,10 +293,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg___wbindgen_throw_b855445ff6a94295 = function(arg0, arg1) {
         throw new Error(getStringFromWasm0(arg0, arg1));
     };
-    imports.wbg.__wbg_now_21c44826e0184583 = function() {
-        const ret = performance.now();
-        return ret;
-    };
     imports.wbg.__wbg_tsp8zProgress_8700e8430fd22195 = function(arg0, arg1, arg2, arg3, arg4) {
         self.tsp8zProgress(arg0, arg1, arg2, getArrayU32FromWasm0(arg3, arg4));
     };
@@ -313,6 +311,7 @@ function __wbg_get_imports() {
         table.set(offset + 3, false);
         ;
     };
+    imports['./snippets/tsp8z-web-cc75dfdf3d8cc576/inline0.js'] = __wbg_star0;
 
     return imports;
 }
