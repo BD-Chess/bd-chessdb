@@ -1,0 +1,1 @@
+export function clockNow() { return performance.timeOrigin + performance.now(); }
