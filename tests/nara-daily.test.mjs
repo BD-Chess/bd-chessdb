@@ -296,7 +296,9 @@ test('late publication: only a BD decision allows a later publication date; a sa
   assert.throws(()=>validateRecord(r),/wrong local date/);
   assert.equal(validateRecord({...r,late_publication:late}).date,'2026-10-06');
   assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_by:'GPT'}}),/BD decision/);
-  assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_on:'2026-10-07'}}),/wrong local date/);
+  assert.equal(validateRecord({...r,late_publication:{...late,decided_on:'2026-10-07'}}).date,'2026-10-06','a record may be published on a later day than the decision (after midnight)');
+  assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_on:'2026-10-09'}}),/wrong local date/,'but never before the decision');
+  assert.throws(()=>validateRecord({...r,published_at:'2026-10-07T10:00:00Z'}),/wrong local date/,'an ordinary record stays on its own day');
   assert.throws(()=>validateRecord({...r,late_publication:{...late,decided_on:'2026-10-06'}}),/decision date/);
   const l=logRecord('2026-10-06');
   assert.throws(()=>validateLog({...l,critic:'GPT'}),/independent/);
@@ -459,9 +461,9 @@ test('late additions join days that are already published without touching them 
   assert.equal(publishBatch(root,ratedDay('2026-10-22',['S1','S2']),new Date('2026-10-22T19:30:00Z')).featured,'S2');
   assert.equal(publishBatch(root,ratedDay('2026-10-23',['S1','S3']),new Date('2026-10-23T19:30:00Z')).featured,'S3');
   const pubAt='2026-10-25T09:00:00Z';
-  const lateStory=(date,S,translated)=>{
+  const lateStory=(date,S,translated,decided='2026-10-24')=>{
     const id=`NARA-D-${date}:${S}`,base=body(date,pubAt,titles[S]);
-    const late={decided_by:'BD',decided_on:'2026-10-25',reason:'Published later, at BD’s request. The story was finished but held with its day; no reader score is shown.',reason_sl:'Objavljeno naknadno, na BD-jevo željo. Zgodba je bila dokončana, a zadržana skupaj z dnevom; ocene ni.'};
+    const late={decided_by:'BD',decided_on:decided,reason:'Published later, at BD’s request. The story was finished but held with its day; no reader score is shown.',reason_sl:'Objavljeno naknadno, na BD-jevo željo. Zgodba je bila dokončana, a zadržana skupaj z dnevom; ocene ni.'};
     const record={schema:'nara.daily.instance_record.v1',id,day_id:'NARA-D-'+date,date,instance:S,published_at:pubAt,closed_at:date+'T18:00:00Z',title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes,critic_line:base.critic_line,content_sha256:base.content_sha256,...(translated?{translation_sl:sl(base,id,date)}:{}),late_publication:late};
     const log={schema:'nara.daily.instance_log.v1',id:id+'-LOG',story_id:id,day_id:'NARA-D-'+date,date,instance:S,title:base.title,proposer:'GPT',selector:'CLAUDE',author:'CLAUDE',critic:'CLAUDE',stand_in_for:'GPT',
       rounds:[{actor:'CLAUDE',stage:'STORY_SELECTION',summary:'Selected.'},{actor:'CLAUDE',stage:'AUTHOR_FINAL',summary:'Final.'},{actor:'CLAUDE',stage:'CRITIC_CLOSE',summary:'Closed.'}],final_critic_line:base.critic_line};
@@ -471,7 +473,8 @@ test('late additions join days that are already published without touching them 
   const before22=read('daily/days/2026-10-22.json'),before23=read('daily/days/2026-10-23.json');
   assert.deepEqual(checkLateAdditions(root,input).added,['NARA-D-2026-10-22:S3','NARA-D-2026-10-23:S2']);
   assert.equal(read('daily/days/2026-10-22.json'),before22,'the check writes nothing');
-  assert.throws(()=>publishLateAdditions(root,input,new Date('2026-10-26T10:00:00Z')),/decision date/);
+  assert.throws(()=>publishLateAdditions(root,input,new Date('2026-10-26T10:00:00Z')),/local day of their published_at/);
+  assert.throws(()=>checkLateAdditions(root,{...input,additions:[lateStory('2026-10-22','S3',true,'2026-10-26')]}),/wrong local date/,'never published before the decision');
   assert.throws(()=>checkLateAdditions(root,{...input,additions:[{...input.additions[0],record:{...input.additions[0].record,literary_score:scoreOf()}}]}),/no reader score/);
   function scoreOf(){return {combined:80,display:80,method:'x',blind:true,weights:{gpt:.5,claude:.5},shared_strengths:['a'],shared_reservations:['b']}}
   assert.throws(()=>checkLateAdditions(root,{...input,additions:[lateStory('2026-10-22','S2',true)]}),/featured story cannot be a late addition/);
@@ -485,6 +488,7 @@ test('late additions join days that are already published without touching them 
   }
   const added22=a22.instances.find(x=>x.late_addition),added23=a23.instances.find(x=>x.late_addition);
   assert.equal(added22.late_addition.previous_manifest_sha256,hash(before22),'the new manifest names the hash of the manifest it replaces');
+  assert.equal(added22.late_addition.decided_on,'2026-10-24');assert.equal(added22.late_addition.published_at,pubAt,'the decision of the day before, the real time of the publication');
   assert.equal(added22.instance,'S3');assert.equal(added22.combined,null);assert.equal(added22.late_addition.decided_by,'BD');assert.ok(added22.translation_file&&fs.existsSync(path.join(n,added22.translation_file)));
   assert.equal(added23.instance,'S2');assert.equal(added23.translation_file,null);assert.ok(!fs.existsSync(path.join(n,'daily/translations/sl/2026-10-23/S2.json')));
   let month=read('Nara-AI-2026-10.html');
@@ -496,6 +500,7 @@ test('late additions join days that are already published without touching them 
   assert.ok((daily.match(/data-count="3"/g)||[]).length>=2,'the calendar lists the added stories');
   const lateSection=day=>archiveDaySections(read('Nara-AI-archive.html')).find(s=>s.date===day&&/story published later/.test(s.html));
   assert.ok(lateSection('2026-10-22').html.includes('#NARA-D-2026-10-22:S3')&&lateSection('2026-10-23').html.includes('#NARA-D-2026-10-23:S2'));
+  assert.match(read('Nara-AI-archive.html'),/<strong>2026-10<\/strong><br><span class="muted">8 published stories<\/span>/,'the month counts stories (1+1+3+3), not days');
   assert.throws(()=>publishLateAdditions(root,input,new Date('2026-10-25T11:00:00Z')),/already in its day/);
   // the next nightly publication regenerates the pages and must keep every addition
   assert.equal(publishBatch(root,ratedDay('2026-10-25',['S1','S2','S3']),new Date('2026-10-25T19:30:00Z')).status,'LOCAL_BATCH_CANDIDATE_READY');
@@ -503,6 +508,7 @@ test('late additions join days that are already published without touching them 
   assert.ok(month.includes('id="NARA-D-2026-10-22:S3"')&&month.includes('id="NARA-D-2026-10-23:S2"'),'additions survive the next nightly publication');
   assert.match(month,/2026-10-23 · stories published later/);
   assert.ok(lateSection('2026-10-22')&&lateSection('2026-10-23'),'the archive keeps the late sections');
+  assert.match(read('Nara-AI-archive.html'),/<strong>2026-10<\/strong><br><span class="muted">11 published stories<\/span>/,'the nightly publication keeps counting stories');
   assert.equal(read('daily/days/2026-10-22.json'),JSON.stringify(a22,null,2)+'\n','the nightly publication leaves the day manifests alone');
 });
 

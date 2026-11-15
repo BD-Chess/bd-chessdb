@@ -10,7 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {hash,validDate,localParts,validateRecord,validateLog,validateLatePublication,loadRecords,latestPage,monthlyPage,logPage,featuredStoryPageOutputs} from './nara-daily.mjs';
+import {hash,validDate,localParts,validateRecord,validateLog,validateLatePublication,loadRecords,latestPage,monthlyPage,logPage,featuredStoryPageOutputs,monthStoryCount} from './nara-daily.mjs';
 import {instanceId,instanceRecordPath,instanceTranslationPath,dayManifestPath,validateInstanceRecord,instanceStoryHtml} from './nara-daily-batch.mjs';
 import {generateFormatEditions} from './nara-format-editions.mjs';
 
@@ -79,7 +79,7 @@ function insertEntry(html,entry,date,id){
   assert(at>=0,'monthly insertion point');
   return html.slice(0,at)+entry+'\n'+html.slice(at);
 }
-function updateArchiveCount(html,month,count){
+export function updateArchiveCount(html,month,count){
   const re=new RegExp(`(<a href="Nara-AI-${month}\\.html"><strong>${month}</strong><br><span class="muted">)\\d+( published stories</span>)`,'g');
   const hits=html.match(re)?.length??0;assert(hits===1,'archive month entry '+month);
   return html.replace(re,`$1${count}$2`);
@@ -156,7 +156,7 @@ export function publishLate(root,input,now=new Date()){
     const end=updatedMonth.lastIndexOf('</main>');assert(end>=0,'monthly main close');updatedMonth=updatedMonth.slice(0,end)+block+updatedMonth.slice(end);
   }
   pages[monthFile]=updatedMonth;
-  if(liveArchive!==null)pages['Nara-AI-archive.html']=addArchiveDay(updateArchiveCount(liveArchive,month,entries.filter(e=>e.date.startsWith(month)).length),b);
+  if(liveArchive!==null)pages['Nara-AI-archive.html']=addArchiveDay(updateArchiveCount(liveArchive,month,monthStoryCount(root,entries,month)),b);
   if(liveLog!==null)pages['Nara-AI-log.html']=generatedPart(logPage(logsOf(entries)))+liveLog.slice(logBefore.length);
   for(const [rel,data] of Object.entries(pages))write(path.join(n,rel),data);
   const formats=generateFormatEditions(root);

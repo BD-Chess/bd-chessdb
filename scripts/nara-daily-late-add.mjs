@@ -3,15 +3,17 @@
  * rest of their day went out). A late addition never changes its day: the featured story, the day's scores, the other
  * stories and their records stay byte for byte as published. The day manifest gains one entry per added story, marked
  * late_addition, with no reader score. Every addition carries BD's decision (record.late_publication), shown on the page.
+ * The decision may be older than the publication (BD decided on 14 November, the run was after midnight): decided_on is the
+ * day of the decision, published_at the real time of the run, never before the decision and on the day of the run.
  * The monthly, Daily and archive pages are derived from the manifests, so a later nightly regeneration keeps the additions.
  * CLI: node scripts/nara-daily-late-add.mjs check|publish <repoRoot> <late-add.json>
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {hash,validDate,localParts,validateLatePublication,loadRecords} from './nara-daily.mjs';
+import {hash,validDate,localParts,validateLatePublication,loadRecords,monthStoryCount} from './nara-daily.mjs';
 import {instanceRecordPath,instanceTranslationPath,dayManifestPath,validateInstanceRecord,refreshIllustratedPages} from './nara-daily-batch.mjs';
-import {validateLateLog} from './nara-daily-late.mjs';
+import {validateLateLog,updateArchiveCount} from './nara-daily-late.mjs';
 
 const assert=(x,m)=>{if(!x)throw Error(m)};
 const text=(s,n)=>typeof s==='string'&&s.trim().length>0&&s.length<=n;
@@ -32,7 +34,7 @@ export function validateLateAddBatch(b){
     const key=`${r.date}:${r.instance}`;assert(!seen.has(key),'duplicate addition '+key);seen.add(key);
     validateInstanceRecord(r,r.date,r.instance);
     const lp=validateLatePublication(r.late_publication,r.date);
-    assert(lp.decided_on===publishedOn,'published_at is not on the decision date');
+    assert(publishedOn>=lp.decided_on,'published_at is before the decision date');
     assert(r.published_at===b.published_at,'record published_at binding');
     assert(r.literary_score===undefined,'a late addition has no reader score');
     validateLateLog(a.log,r.date,r.instance,r);
@@ -95,8 +97,10 @@ function addArchiveSections(html,byDate){
 
 export function publishLateAdditions(root,input,now=new Date()){
   const b=validateLateAddBatch(input);
-  const p0=localParts(b.published_at),decidedOn=`${p0.year}-${p0.month}-${p0.day}`,np=localParts(now.toISOString());
-  assert(`${np.year}-${np.month}-${np.day}`===decidedOn,'late additions run on the decision date');
+  // BD's decision (late_publication.decided_on) may lie on an earlier day than the publication; the run itself must happen on
+  // the local day of published_at, so the time on the records is the real one.
+  const p0=localParts(b.published_at),publishedOn=`${p0.year}-${p0.month}-${p0.day}`,np=localParts(now.toISOString());
+  assert(`${np.year}-${np.month}-${np.day}`===publishedOn,'late additions must run on the local day of their published_at; build the input again');
   assert(Date.parse(b.published_at)<=now.getTime(),'future publication');
   const {n,byDate,staged,manifests,summary}=plan(root,b);
   const changed=[];
@@ -106,7 +110,11 @@ export function publishLateAdditions(root,input,now=new Date()){
   months.add(loadRecords(root).records[0].date.slice(0,7));
   for(const month of [...months].sort())changed.push(...refreshIllustratedPages(root,month).changed);
   const archiveFile=path.join(n,'Nara-AI-archive.html');
-  if(fs.existsSync(archiveFile)&&write(archiveFile,addArchiveSections(fs.readFileSync(archiveFile,'utf8'),byDate)))changed.push('Nara-AI-archive.html');
+  if(fs.existsSync(archiveFile)){
+    const {c}=loadRecords(root);let html=addArchiveSections(fs.readFileSync(archiveFile,'utf8'),byDate);
+    for(const month of [...new Set([...byDate.keys()].map(x=>x.slice(0,7)))].sort())html=updateArchiveCount(html,month,monthStoryCount(root,c.records,month));
+    if(write(archiveFile,html))changed.push('Nara-AI-archive.html');
+  }
   return {status:'LOCAL_LATE_ADDITIONS_READY',added:summary,changed:[...new Set(changed)].sort()};
 }
 
