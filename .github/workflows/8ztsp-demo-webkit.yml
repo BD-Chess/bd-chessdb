@@ -1,0 +1,43 @@
+name: 8zTSP demo on WebKit (iPhone profile)
+
+# BD's program of 15 Nov 2026 (item c): a Safari/WebKit iPhone-profile smoke of /8zTSP/ in the page gate.
+# The lock page, cross-origin isolation, the install box and a wrong password on Playwright's WebKit with the iPhone 15
+# profile; the unlocked demo only if the repository secret DEMO_PASSWORD exists (it is never written into the repository).
+on:
+  pull_request:
+    paths:
+      - 'public/8zTSP/**'
+      - 'public/_headers'
+      - 'tests/8ztsp-demo-webkit.cjs'
+      - '.github/workflows/8ztsp-demo-webkit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  webkit:
+    # Pinned Playwright 1.58.2 supports Ubuntu 24.04, not the new 26.04 runner (as in start-app.yml).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test runtime
+        run: |
+          npm install --prefix "$RUNNER_TEMP/demo-pw" --no-package-lock --ignore-scripts playwright@1.58.2
+          echo "NODE_PATH=$RUNNER_TEMP/demo-pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/demo-pw/node_modules/.bin/playwright" install --with-deps webkit
+      - name: The demo on WebKit, iPhone 15 profile
+        env:
+          DEMO_QA_EVIDENCE: ${{ runner.temp }}/demo-qa
+          DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+        run: node tests/8ztsp-demo-webkit.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 8ztsp-demo-webkit
+          path: ${{ runner.temp }}/demo-qa
+          if-no-files-found: ignore
