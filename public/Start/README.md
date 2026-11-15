@@ -18,7 +18,7 @@ new 8zTSP page (`../BD/BD_8ZTSP.html`), first in "Raziskave & primerjave".
 Like the entry above it is a static navigation addition: no saved favorites,
 personal links, exports or localStorage records change.
 
-BD's November 15 request adds 8zTSP-web (`../bd/bd_8ztsp_web`), the 8zTSP
+BD's November 15 request adds 8zTSP-web (`../8zTSP/`), the 8zTSP
 engine running in the visitor's browser, right after 8zTSP in "Raziskave &
 primerjave". It is also a static navigation addition: no saved favorites,
 personal links, exports or localStorage records change.

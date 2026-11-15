@@ -237,7 +237,7 @@ async function start(options = {}) {
     workers, deviceCores: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
     tep, reference, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
-    history: [], results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/bd/bd_8ztsp_web' };
+    history: [], results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
   render();
   let shared;
   if (crossOriginIsolated && typeof SharedArrayBuffer !== 'undefined') {
