@@ -66,7 +66,7 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
     const published=v6?publishedInstance(root,record,instance):null;
     if(!selected&&(!v6||!published))return [];
     if(v6)assert(published,'illustration requires a source-bound published instance');
-    const englishOnly=v6&&!translation&&m.sl_content_sha256===null&&published.day.late_publication&&published.entry.translation_file===null&&published.entry.translation_sha256===null;
+    const englishOnly=v6&&!translation&&m.sl_content_sha256===null&&(published.day.late_publication||published.entry.late_addition)&&published.entry.translation_file===null&&published.entry.translation_sha256===null;
     const keys=['schema','story_id','date','edition','en_content_sha256','sl_content_sha256','images',...(v2?['instance']:[])];
     assert(m&&typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).length===keys.length&&Object.keys(m).every(k=>keys.includes(k)),'illustration manifest fields');
     if(v3&&!instance){

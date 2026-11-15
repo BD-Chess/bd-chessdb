@@ -181,7 +181,7 @@ export function publishedBatchDays(root,month){
         assert(entry.record_file===expected,'published batch record path');
         const record=JSON.parse(fs.readFileSync(path.join(n,expected),'utf8'));
         assert(record.id===instanceId(day.date,entry.instance)&&record.instance===entry.instance,'published batch record identity');
-        return {instance:entry.instance,record};
+        return {instance:entry.instance,record,late:!!entry.late_addition};
       });
       assert(items.some(item=>item.instance===day.featured_instance),'published batch featured instance');
       return {date:day.date,featured:day.featured_instance,items,lateUnrated:!!day.late_publication&&day.instances.some(x=>x.combined===null)};
@@ -189,18 +189,19 @@ export function publishedBatchDays(root,month){
 }
 function patchMonthly(html,month,root){
   const days=publishedBatchDays(root,month);
-  const blocks=days.map(day=>{
+  const LATE_NOTE='<span data-language-content="en" lang="en">Published later; independent reader scores are pending.</span><span data-language-content="sl" lang="sl" hidden>Objavljeno naknadno; neodvisne bralske ocene še niso pripravljene.</span>';
+  const blocks=days.flatMap(day=>{
     const others=day.items.filter(x=>x.instance!==day.featured);
-    if(!others.length)return '';
-    const heading=day.lateUnrated?'stories published later':'complete eligible archive';
-    const note=day.lateUnrated?'<span data-language-content="en" lang="en">Published later; independent reader scores are pending.</span><span data-language-content="sl" lang="sl" hidden>Objavljeno naknadno; neodvisne bralske ocene še niso pripravljene.</span>':'These stories completed the same editorial gates but were not the featured Daily story.';
-    return `<section class="batch-archive"><header><div class="eyebrow">Other stories of ${esc(day.date)}</div><h2>${esc(day.date)} · ${heading}</h2><p class="lede">${note}</p></header>${others.map(x=>instanceStoryHtml(x,root)).join('\n')}</section>`;
+    // A late day is unrated as a whole; on an ordinary day only the stories added later by a BD decision are shown apart.
+    const later=day.lateUnrated?others:others.filter(x=>x.late),regular=day.lateUnrated?[]:others.filter(x=>!x.late);
+    const block=(list,heading,note)=>list.length?`<section class="batch-archive"><header><div class="eyebrow">Other stories of ${esc(day.date)}</div><h2>${esc(day.date)} · ${heading}</h2><p class="lede">${note}</p></header>${list.map(x=>instanceStoryHtml(x,root)).join('\n')}</section>`:'';
+    return [block(regular,'complete eligible archive','These stories completed the same editorial gates but were not the featured Daily story.'),block(later,'stories published later',LATE_NOTE)];
   }).filter(Boolean);
   return blocks.length?insertBeforeMainClose(html,blocks.join('\n')):html;
 }
 // The archive page is regenerated for every publication, so the eligible-stories section of each earlier published day
 // is carried over from the page as it stands (oldest first) and the current day is added last. Nothing already listed is lost.
-const ARCHIVE_DAY_SECTION=/<section class="notice"><h2>(\d{4}-\d{2}-\d{2}) · \d+ (?:eligible stories|stories published later)<\/h2><ul>.*?<\/ul><\/section>/g;
+const ARCHIVE_DAY_SECTION=/<section class="notice"><h2>(\d{4}-\d{2}-\d{2}) · \d+ (?:eligible stories|stories published later|story published later)<\/h2><ul>.*?<\/ul><\/section>/g;
 export function archiveDaySections(html){return [...String(html??'').matchAll(ARCHIVE_DAY_SECTION)].map(m=>({date:m[1],html:m[0]}))}
 function patchArchive(html,batch,items,featured,previous=''){
   const links=items.map(x=>`<li>${esc(x.record.instance)} · <a href="Nara-AI-${batch.date.slice(0,7)}.html#${esc(x.record.id)}">${esc(x.record.title)}</a>${x.instance===featured?' · featured':''}</li>`).join('');
@@ -300,7 +301,7 @@ export function refreshIllustratedPages(root,month){
     const day=JSON.parse(fs.readFileSync(dp,'utf8'));
     assert(day.schema==='nara.daily.day.v1'&&day.date===r.date&&day.id===r.id&&instances.includes(day.featured_instance),'refresh day identity');
     const items=day.instances.map(entry=>{
-      const noTranslation=entry.translation_file===null&&entry.translation_sha256===null&&!!day.late_publication&&entry.instance!==day.featured_instance;
+      const noTranslation=entry.translation_file===null&&entry.translation_sha256===null&&(!!day.late_publication||!!entry.late_addition)&&entry.instance!==day.featured_instance;
       assert(instances.includes(entry.instance)&&entry.record_file===instanceRecordPath(day.date,entry.instance)&&(noTranslation||entry.translation_file===instanceTranslationPath(day.date,entry.instance)),'refresh instance paths');
       const rb=fs.readFileSync(path.join(n,entry.record_file),'utf8'),tb=noTranslation?null:fs.readFileSync(path.join(n,entry.translation_file),'utf8');
       assert(hash(rb)===entry.record_sha256&&(tb===null||hash(tb)===entry.translation_sha256),'refresh frozen instance byte binding');
