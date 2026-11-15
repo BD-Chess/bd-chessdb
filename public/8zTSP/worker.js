@@ -1,4 +1,4 @@
-let api, problem, shared, token;
+let api, problem, shared, token, wasm, cities=0;
 let lastSent = -Infinity;
 const proxies = new Map();
 let nextProxy = 0;
@@ -38,17 +38,17 @@ self.onmessage = async ({data}) => {
     proxies.get(data.id)?.dispatchEvent(new MessageEvent('message',{data:data.message}));
     return;
   }
-  token = data.token;
+  token = data.token;cities=(data.text?.match(/DIMENSION\s*:\s*(\d+)/i)?.[1]||0)*1;
   try {
     if (!(data.module instanceof WebAssembly.Module)) throw Error('A page-unlocked Wasm module is required');
     const threaded = data.sharedThreads > 1;
     if (threaded && !(data.memory instanceof WebAssembly.Memory)) throw Error('Page-owned shared memory is required');
     api = await import(threaded ? './pkg-shared/tsp8z_web.js' : './pkg/tsp8z_web.js');
-    api.initSync({module:data.module,memory:data.memory});
+    wasm=api.initSync({module:data.module,memory:data.memory});
     if (threaded) self.postMessage({type:'pool-status',token,stage:'module-ready'});
     if (data.type === 'load') {
       problem?.free(); problem = new api.Problem(data.text);
-      const coordinates = problem.coordinates();
+      const coordinates = problem.coordinates();cities=coordinates.length/2;
       self.postMessage({type:'ready',token,name:problem.name(),coordinates},[coordinates.buffer]);
     } else if (data.type === 'run') {
       let probe = null;
@@ -61,14 +61,14 @@ self.onmessage = async ({data}) => {
         self.postMessage({type:'pool-status',token,stage:data.probe ? 'probe-complete' : 'configured'});
       }
       shared = data.shared ? new BigInt64Array(data.shared) : null;
-      if (!problem) problem = new api.Problem(data.text);
+      if (!problem) {problem = new api.Problem(data.text);cities=(data.text.match(/DIMENSION\s*:\s*(\d+)/i)?.[1]||0)*1;}
       const started = performance.now();
       const result = problem.solve(data.seconds,data.seed,data.maxSteps || 0,data.passes || 0,data.tep);
       const tour = result.tour();
       const poolStats = threaded ? Array.from(api.pool_stats()) : null;
       self.postMessage({type:'done',token,length:result.length,elapsed:result.elapsed,
-        wall:(performance.now()-started)/1000,steps:result.steps,tour,poolStats,probe},[tour.buffer]);
+        wall:(performance.now()-started)/1000,steps:result.steps,tour,poolStats,probe,wasmMemoryBytes:wasm.memory.buffer.byteLength},[tour.buffer]);
       result.free();
     }
-  } catch (error) { self.postMessage({type:'error',token,message:String(error)}); }
+  } catch (error) {const message=cities>=1000000 ? 'Large-map search stopped. Browser memory may be insufficient; choose a smaller example or fewer workers.' : String(error);self.postMessage({type:'error',token,message});}
 };
