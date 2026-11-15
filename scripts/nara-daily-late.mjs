@@ -23,7 +23,7 @@ const INSTANCES=['S1','S2','S3'];
 const ROLES=['GPT','CLAUDE'];
 const STAGES=new Set(['STORY_SELECTION','AUTHOR_DRAFT','CRITIC_REVIEW','AUTHOR_REVISION','AUTHOR_FINAL','CRITIC_CLOSE']);
 
-function validateLateLog(l,date,instance,record){
+export function validateLateLog(l,date,instance,record){
   assert(l&&l.schema==='nara.daily.instance_log.v1','instance log schema');
   const keys=['schema','id','story_id','day_id','date','instance','title','proposer','selector','author','critic','stand_in_for','rounds','final_critic_line'];
   assert(Object.keys(l).every(k=>keys.includes(k)),'unexpected late log field (a late day has no reader evaluation)');

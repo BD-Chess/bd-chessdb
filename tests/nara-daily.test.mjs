@@ -279,6 +279,17 @@ test('Daily calendar after the cards: weekday grid, story counts and every story
  assert.ok(!cal.includes(source.scenes[0].paragraphs[0]),'no story prose in the calendar');
 });
 
+test('a story published later by BD may keep a shape line longer than 900 characters with its hashes intact; an ordinary record may not',()=>{
+  const late={decided_by:'BD',decided_on:'2026-10-08',reason:'Published later by BD decision.',reason_sl:'Objavljeno naknadno po odločitvi BD.'};
+  const r=record('2026-10-06','2026-10-08T10:00:00Z');r.shape='s'.repeat(1180);r.content_sha256=hash(JSON.stringify({title:r.title,deck:r.deck,shape:r.shape,scenes:r.scenes}));
+  assert.throws(()=>validateRecord({...r,published_at:'2026-10-06T10:00:00Z'}),/title\/deck\/shape/,'an ordinary record is still limited to 900');
+  assert.equal(validateRecord({...r,late_publication:late}).shape.length,1180);
+  assert.throws(()=>validateRecord({...r,shape:'s'.repeat(1501),content_sha256:hash(JSON.stringify({title:r.title,deck:r.deck,shape:'s'.repeat(1501),scenes:r.scenes})),late_publication:late}),/title\/deck\/shape/,'the late allowance is bounded');
+  const t=translationSl(r);t.shape='š'.repeat(1189);t.content_sha256=hash(JSON.stringify({title:t.title,deck:t.deck,shape:t.shape,scenes:t.scenes}));
+  assert.equal(validateRecord({...r,late_publication:late,translation_sl:t}).translation_sl.shape.length,1189);
+  assert.throws(()=>validateRecord({...r,published_at:'2026-10-06T10:00:00Z',shape:'s'.repeat(300),content_sha256:hash(JSON.stringify({title:r.title,deck:r.deck,shape:'s'.repeat(300),scenes:r.scenes})),translation_sl:t}),/translation_sl text/,'an ordinary translation is limited too');
+});
+
 test('late publication: only a BD decision allows a later publication date; a same-model close must be a recorded stand-in',()=>{
   const late={decided_by:'BD',decided_on:'2026-10-08',reason:'Published later by BD decision.',reason_sl:'Objavljeno naknadno po odločitvi BD.'};
   const r=record('2026-10-06','2026-10-08T10:00:00Z');
@@ -421,6 +432,78 @@ test('batch path: a BD-decided late day with three scored stories and a recorded
   assert.deepEqual(archiveDaySections(archive()).map(x=>x.date),['2026-10-22','2026-10-24','2026-10-25'],'no day is dropped or duplicated');
   assert.equal(publishBatch(root,third,new Date('2026-10-25T20:30:00Z')).status,'ALREADY_PUBLISHED_BATCH');
   assert.deepEqual(archiveDaySections(archive()).map(x=>x.date),['2026-10-22','2026-10-24','2026-10-25']);
+});
+
+test('late additions join days that are already published without touching them and survive the next nightly publication',async t=>{
+  const {publishBatch,archiveDaySections}=await import('../scripts/nara-daily-batch.mjs');
+  const {publishLateAdditions,checkLateAdditions}=await import('../scripts/nara-daily-late-add.mjs');
+  const root=temp(t),n=path.join(root,'public/Nara'),read=rel=>fs.readFileSync(path.join(n,rel),'utf8');
+  const titles={S1:'Fixture story one',S2:'Fixture story two',S3:'Fixture story three'},scores={S1:[80,70],S2:[90,84],S3:[85,80]};
+  const body=(date,at,title)=>{const base={...record(date,at),title};base.content_sha256=hash(JSON.stringify({title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes}));return base};
+  const sl=(base,id,date)=>{const tr=translationSl(base);return {schema:'nara.daily.translation.v1',story_id:id,date,language:'sl',translated_by:'GPT',source_content_sha256:base.content_sha256,title:tr.title,deck:tr.deck,shape:tr.shape,scenes:tr.scenes,critic_line:tr.critic_line,content_sha256:tr.content_sha256}};
+  const ratedDay=(date,list)=>{
+    const at=date+'T19:20:00Z',candidates=logRecord(date).candidates.map((c,i)=>i<3?{...c,title:titles['S'+(i+1)]}:c);
+    const instances=list.map(S=>{
+      const id=`NARA-D-${date}:${S}`,base=body(date,at,titles[S]),[g,c]=scores[S],combined=(g+c)/2,display=Math.floor(combined+.5);
+      const rec={schema:'nara.daily.instance_record.v1',id,day_id:'NARA-D-'+date,date,instance:S,published_at:at,closed_at:date+'T17:00:00Z',title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes,critic_line:base.critic_line,content_sha256:base.content_sha256,
+        literary_score:{combined,display,method:'READER_APPEAL_R1 equal 50/50 mean',blind:true,weights:{gpt:.5,claude:.5},shared_strengths:['Strong.','Warm.'],shared_reservations:['Dense.','No specific drop-off passage identified.']},translation_sl:sl(base,id,date)};
+      const log={schema:'nara.daily.instance_log.v1',id:id+'-LOG',story_id:id,day_id:'NARA-D-'+date,date,instance:S,title:base.title,proposer:'GPT',selector:'CLAUDE',author:'GPT',critic:'CLAUDE',
+        rounds:[{actor:'CLAUDE',stage:'STORY_SELECTION',summary:'Selected.'},{actor:'GPT',stage:'AUTHOR_FINAL',summary:'Final.'},{actor:'CLAUDE',stage:'CRITIC_CLOSE',summary:'Closed.'}],final_critic_line:base.critic_line,
+        evaluation:{blind:true,method:'equal_weight_mean',gpt:{score:g,rubric:'READER_APPEAL_R1'},claude:{score:c,rubric:'READER_APPEAL_R1'},weights:{gpt:.5,claude:.5},combined,display,note:'Locked blind scores only.'}};
+      return {instance:S,record:rec,log};
+    });
+    return {schema:'nara.daily.batch.publish.v1',date,published_at:at,cutoff_local:'20:30',candidates,selections:['S1','S2','S3'].map(S=>({instance:S,title:titles[S],reason:'Clear conflict.',risk:'Easy ending.'})),instances};
+  };
+  for(const date of ['2026-10-20','2026-10-21']){const r=record(date,date+'T20:00:00Z');publish(root,r,logRecord(date),new Date(r.published_at))}
+  // Two ordinary rated days that went out with a story missing: S3 of the 22nd and S2 of the 23rd were held.
+  assert.equal(publishBatch(root,ratedDay('2026-10-22',['S1','S2']),new Date('2026-10-22T19:30:00Z')).featured,'S2');
+  assert.equal(publishBatch(root,ratedDay('2026-10-23',['S1','S3']),new Date('2026-10-23T19:30:00Z')).featured,'S3');
+  const pubAt='2026-10-25T09:00:00Z';
+  const lateStory=(date,S,translated)=>{
+    const id=`NARA-D-${date}:${S}`,base=body(date,pubAt,titles[S]);
+    const late={decided_by:'BD',decided_on:'2026-10-25',reason:'Published later, at BD’s request. The story was finished but held with its day; no reader score is shown.',reason_sl:'Objavljeno naknadno, na BD-jevo željo. Zgodba je bila dokončana, a zadržana skupaj z dnevom; ocene ni.'};
+    const record={schema:'nara.daily.instance_record.v1',id,day_id:'NARA-D-'+date,date,instance:S,published_at:pubAt,closed_at:date+'T18:00:00Z',title:base.title,deck:base.deck,shape:base.shape,scenes:base.scenes,critic_line:base.critic_line,content_sha256:base.content_sha256,...(translated?{translation_sl:sl(base,id,date)}:{}),late_publication:late};
+    const log={schema:'nara.daily.instance_log.v1',id:id+'-LOG',story_id:id,day_id:'NARA-D-'+date,date,instance:S,title:base.title,proposer:'GPT',selector:'CLAUDE',author:'CLAUDE',critic:'CLAUDE',stand_in_for:'GPT',
+      rounds:[{actor:'CLAUDE',stage:'STORY_SELECTION',summary:'Selected.'},{actor:'CLAUDE',stage:'AUTHOR_FINAL',summary:'Final.'},{actor:'CLAUDE',stage:'CRITIC_CLOSE',summary:'Closed.'}],final_critic_line:base.critic_line};
+    return {record,log};
+  };
+  const input={schema:'nara.daily.late_add.v1',published_at:pubAt,additions:[lateStory('2026-10-22','S3',true),lateStory('2026-10-23','S2',false)]};
+  const before22=read('daily/days/2026-10-22.json'),before23=read('daily/days/2026-10-23.json');
+  assert.deepEqual(checkLateAdditions(root,input).added,['NARA-D-2026-10-22:S3','NARA-D-2026-10-23:S2']);
+  assert.equal(read('daily/days/2026-10-22.json'),before22,'the check writes nothing');
+  assert.throws(()=>publishLateAdditions(root,input,new Date('2026-10-26T10:00:00Z')),/decision date/);
+  assert.throws(()=>checkLateAdditions(root,{...input,additions:[{...input.additions[0],record:{...input.additions[0].record,literary_score:scoreOf()}}]}),/no reader score/);
+  function scoreOf(){return {combined:80,display:80,method:'x',blind:true,weights:{gpt:.5,claude:.5},shared_strengths:['a'],shared_reservations:['b']}}
+  assert.throws(()=>checkLateAdditions(root,{...input,additions:[lateStory('2026-10-22','S2',true)]}),/featured story cannot be a late addition/);
+  assert.throws(()=>checkLateAdditions(root,{...input,additions:[lateStory('2026-10-21','S1',true)]}),/already published day/);
+  assert.equal(publishLateAdditions(root,input,new Date('2026-10-25T10:00:00Z')).status,'LOCAL_LATE_ADDITIONS_READY');
+  // the day itself is unchanged: same featured story, same scores, same published entries
+  const a22=JSON.parse(read('daily/days/2026-10-22.json')),b22=JSON.parse(before22),a23=JSON.parse(read('daily/days/2026-10-23.json')),b23=JSON.parse(before23);
+  for(const [a,b] of [[a22,b22],[a23,b23]]){
+    assert.equal(a.featured_instance,b.featured_instance);assert.equal(a.published_at,b.published_at);assert.equal(a.story_count,3);
+    assert.deepEqual(a.instances.filter(x=>!x.late_addition),b.instances,'published entries are unchanged');
+  }
+  const added22=a22.instances.find(x=>x.late_addition),added23=a23.instances.find(x=>x.late_addition);
+  assert.equal(added22.late_addition.previous_manifest_sha256,hash(before22),'the new manifest names the hash of the manifest it replaces');
+  assert.equal(added22.instance,'S3');assert.equal(added22.combined,null);assert.equal(added22.late_addition.decided_by,'BD');assert.ok(added22.translation_file&&fs.existsSync(path.join(n,added22.translation_file)));
+  assert.equal(added23.instance,'S2');assert.equal(added23.translation_file,null);assert.ok(!fs.existsSync(path.join(n,'daily/translations/sl/2026-10-23/S2.json')));
+  let month=read('Nara-AI-2026-10.html');
+  assert.ok(month.includes('id="NARA-D-2026-10-22:S3"')&&month.includes('id="NARA-D-2026-10-23:S2"'));
+  assert.match(month,/2026-10-22 · complete eligible archive/);assert.match(month,/2026-10-22 · stories published later/);assert.match(month,/2026-10-23 · stories published later/);
+  assert.match(month,/Ta zgodba je trenutno na voljo v angleščini/);assert.ok((month.match(/late-publication-note/g)||[]).length>=2);
+  const daily=read('Nara-AI-daily.html'),hrefs=[...daily.matchAll(/<h2 class="daily-index-title"><a href="([^"]+)"/g)].map(x=>x[1]);
+  assert.ok(hrefs.length>0&&hrefs.every(h=>!h.includes('#')),'Daily cards never deep-link into the archive');
+  assert.ok((daily.match(/data-count="3"/g)||[]).length>=2,'the calendar lists the added stories');
+  const lateSection=day=>archiveDaySections(read('Nara-AI-archive.html')).find(s=>s.date===day&&/story published later/.test(s.html));
+  assert.ok(lateSection('2026-10-22').html.includes('#NARA-D-2026-10-22:S3')&&lateSection('2026-10-23').html.includes('#NARA-D-2026-10-23:S2'));
+  assert.throws(()=>publishLateAdditions(root,input,new Date('2026-10-25T11:00:00Z')),/already in its day/);
+  // the next nightly publication regenerates the pages and must keep every addition
+  assert.equal(publishBatch(root,ratedDay('2026-10-25',['S1','S2','S3']),new Date('2026-10-25T19:30:00Z')).status,'LOCAL_BATCH_CANDIDATE_READY');
+  month=read('Nara-AI-2026-10.html');
+  assert.ok(month.includes('id="NARA-D-2026-10-22:S3"')&&month.includes('id="NARA-D-2026-10-23:S2"'),'additions survive the next nightly publication');
+  assert.match(month,/2026-10-23 · stories published later/);
+  assert.ok(lateSection('2026-10-22')&&lateSection('2026-10-23'),'the archive keeps the late sections');
+  assert.equal(read('daily/days/2026-10-22.json'),JSON.stringify(a22,null,2)+'\n','the nightly publication leaves the day manifests alone');
 });
 
 test('optional Slovenian easy-reading edition is source-bound and leaves the published story untouched',async()=>{
