@@ -5,6 +5,10 @@ on:
     paths:
       - 'public/index.html'
       - 'public/site-search-index.json'
+      - 'public/AI8/how/**'
+      - 'public/AI8/about/index.html'
+      - 'public/AI8/live/index.html'
+      - 'tests/ai8-how-browser.cjs'
       - 'tests/landing-header-search*.cjs'
       - '.github/workflows/landing-header-search.yml'
   workflow_run:
@@ -39,6 +43,10 @@ jobs:
         env:
           LANDING_QA_EVIDENCE: ${{ runner.temp }}/landing-qa
         run: node tests/landing-header-search-browser.cjs
+      - name: Verify bilingual Lab page in Chromium and WebKit
+        env:
+          AI8_HOW_EVIDENCE: ${{ runner.temp }}/landing-qa/ai8-how
+        run: node tests/ai8-how-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
