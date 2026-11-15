@@ -42,6 +42,7 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     return {context,state};
   }
   async function assertLayout(page, expectedLang) {
+    try {
     assert.equal(await page.locator('html').getAttribute('lang'), expectedLang);
     assert.equal(await page.locator('h1').count(), 1);
     const horizontal = await page.evaluate(() => ({viewport:document.documentElement.clientWidth,document:document.documentElement.scrollWidth}));
@@ -57,6 +58,10 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert(bounds.every(item => item.inside), JSON.stringify(bounds.filter(item => !item.inside)));
     const controls = await page.locator('[data-ai8-toolbar] button:visible').evaluateAll(buttons => buttons.map(button => {const b=button.getBoundingClientRect();return {text:button.textContent.trim(),w:b.width,h:b.height};}));
     assert(controls.every(b => b.w >= 43 && b.h >= 43), JSON.stringify(controls));
+    } catch (error) {
+      if (evidence) await page.screenshot({path:path.join(evidence,`layout-failure-${page.viewportSize().width}-${expectedLang}.png`)}).catch(() => {});
+      throw error;
+    }
   }
   try {
     for (const [engine, type] of [['chromium',chromium],['webkit',webkit]]) {
