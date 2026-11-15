@@ -12,7 +12,7 @@ Pregledano 2026-10-19 iz javnega repozitorija BD-Chess/bd-chessdb. Poti so izhod
 | HTH | https://www.mdlxdcc.org/crp/HTH.html | tlak, pretok, energijsko bilanco |
 | SORA | https://www.mdlxdcc.org/crp/SORA.html | inženirske predpostavke in merilo |
 | Trip | https://www.mdlxdcc.org/trip/demo?lang=en | prikaz in datirane benchmark pogoje |
-| TSP raziskave | https://www.mdlxdcc.org/BD/BD_8ZRP.html | instance, ciljno funkcijo, optimum, baseline |
+| TSP raziskave | https://www.mdlxdcc.org/TSP/8zrp/ | instance, ciljno funkcijo, optimum, baseline |
 | ChessBest | https://www.mdlxdcc.org/chess/ | aktualen vmesnik, zmožnosti in uporabljeni motor |
 | 8Z stiskanje | https://www.mdlxdcc.org/8Z/ | kodek, podatkovno zbirko, rekonstrukcijo in pogoje |
 | Sudoku raziskave | https://www.mdlxdcc.org/crp/AI8_Sudoku_R6.html | verzijo, vzorec ugank in primerjalno metodo |
