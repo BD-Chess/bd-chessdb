@@ -199,11 +199,16 @@
 /trip/* /Trip/:splat 200!
 
 
-# 8zTSP in your browser (BD, 15 Nov 2026: put it on /8zTSP/index.html): the short addresses lead to the one canonical,
-# password-locked demo page /bd/bd_8ztsp_web, where its relative files and its COOP/COEP headers are.
-/8ztsp /bd/bd_8ztsp_web 301!
-/8ztsp/ /bd/bd_8ztsp_web 301!
-/8ztsp/index.html /bd/bd_8ztsp_web 301!
-/8zTSP /bd/bd_8ztsp_web 301!
-/8zTSP/ /bd/bd_8ztsp_web 301!
-/8zTSP/index.html /bd/bd_8ztsp_web 301!
+# 8zTSP in your browser lives at the short address /8zTSP/ (BD, 15 Nov 2026: »ostane naj direktno na kratkem URLju«).
+# Netlify lowercases every path with capitals (301), except where a forced rule matches the exact path first: these
+# forced self-rewrites keep BD's spelling in the address bar. Lowercase and the old addresses answer 301 to it.
+/8zTSP /8zTSP/index.html 200!
+/8zTSP/ /8zTSP/index.html 200!
+/8zTSP/* /8zTSP/:splat 200!
+/8ztsp /8zTSP/ 301!
+/8ztsp/ /8zTSP/ 301!
+/8ztsp/* /8zTSP/:splat 301!
+/bd/bd_8ztsp_web /8zTSP/ 301!
+/bd/bd_8ztsp_web.html /8zTSP/ 301!
+/BD/BD_8ZTSP_WEB.html /8zTSP/ 301!
+/BD/BD_8ZTSP_WEB /8zTSP/ 301!
