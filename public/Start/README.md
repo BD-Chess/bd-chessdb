@@ -62,3 +62,5 @@ Offline changes stay local and are sent later. A forgotten password cannot be
 recovered; local data stays in each browser.
 
 Verification: `node --test tests/start-state-r2.test.cjs tests/bd-start-sync.test.mjs` and `NODE_PATH=/path/to/playwright/node_modules node tests/start-app-browser.cjs` from repository root. The browser suite covers Chromium and WebKit at desktop and mobile sizes, news integrity, favorites and search, data migration, CRUD, import/export, unsafe URLs, storage failures and concurrent tabs. For the current production publication process, see `docs/NETLIFY_DEPLOYMENT.md`; the historical one-shot Start release remains retired.
+
+BD’s November 15 publication adds the bilingual AI8 “Prazen prostor / Empty space: trial R1” report. Its searchable static shortcut is in “Raziskave & primerjave” and opens the Slovenian page; the destination links to its English companion. Both pages are listed in the public site-search catalogue.
