@@ -480,7 +480,7 @@ function __wbg_get_imports(memory) {
         table.set(offset + 3, false);
         ;
     };
-    imports.wbg.memory = memory || new WebAssembly.Memory({initial:18,maximum:16384,shared:true});
+    imports.wbg.memory = memory || new WebAssembly.Memory({initial:18,maximum:65536,shared:true});
     imports['./snippets/tsp8z-web-cc75dfdf3d8cc576/inline0.js'] = __wbg_star0;
 
     return imports;
