@@ -9,7 +9,7 @@ test('public search finds the current 8zTSP page and recent work', () => {
   const index = JSON.parse(fs.readFileSync('public/site-search-index.json', 'utf8'));
   const items = search.publicEntries(index, base);
   for (const [q, expected] of [
-    ['8ztsp', '/BD/BD_8ZTSP.html'],
+    ['8ztsp', '/TSP/8ztsp/'],
     ['ai8 dna', '/ai8-dna-v4.html'],
     ['omnicpq origin', '/AI8/omnicpq-origin-TS/'],
     ['the count the mountain asked for', '/Nara/Nara-AI-2026-11-11-S1-story.html']

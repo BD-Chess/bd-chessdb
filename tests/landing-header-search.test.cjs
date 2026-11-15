@@ -43,10 +43,10 @@ async function check(base,offline){
  vm.runInContext(seed+helpers+search+submit+';globalThis.qa={shortlist,loadIndex,get pages(){return pages}}',context);
  function checkDirectRoutes(phase){
   const tsp=context.qa.shortlist('8ztsp');
-  assert.ok(tsp.some(p=>new URL(p.url).pathname.toLowerCase().endsWith('/bd/bd_8ztsp.html')),'8zTSP is searchable '+phase);
+  assert.ok(tsp.some(p=>new URL(p.url).pathname.toLowerCase().endsWith('/tsp/8ztsp/')),'8zTSP is searchable '+phase);
   context.input.value='8ztsp';context.results=tsp;context.active=-1;navigated=null;
   submitHandler({preventDefault(){}});
-  assert.ok(new URL(navigated).pathname.toLowerCase().endsWith('/bd/bd_8ztsp.html'),'Enter opens 8zTSP '+phase);
+  assert.ok(new URL(navigated).pathname.toLowerCase().endsWith('/tsp/8ztsp/'),'Enter opens 8zTSP '+phase);
   const home=['home','dom','HOME',' DOM ','domača','domača stran'];
   const start=['start','Start','bd start','začetna','začetna stran'];
   for(const q of [...home,...start]){

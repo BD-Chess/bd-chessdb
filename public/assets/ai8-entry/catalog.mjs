@@ -44,7 +44,7 @@ export const CURATED = [
   { id: 'crosswords', title: 'Crossword × MDL', url: '/CW/', group: 'play', kind: 'game', mark: '▦', featured: false,
     sl: 'Križanke kot igra in laboratorij: sestavljanje, reševanje ter raziskovanje izbire z MDL.',
     en: 'Crosswords as a game and a laboratory: construction, solving and the study of selection with MDL.', related: ['sudoku', 'mdl-dcc'] },
-  { id: 'tsp', title: '8Z-RP / TSP', url: '/BD/BD_8ZRP.html', group: 'research', kind: 'research', mark: '⌁', featured: false,
+  { id: 'tsp', title: '8Z-RP / TSP', url: '/TSP/8zrp/', group: 'research', kind: 'research', mark: '⌁', featured: false,
     sl: 'Raziskovanje problema trgovskega potnika: krajše veljavne ture, krmiljenje iskanja in povezava z načrtovanjem resničnih poti.',
     en: 'Travelling-salesperson research: shorter valid tours, search governance and the connection to real route planning.', related: ['tripopti', 'mdl-dcc'] },
   { id: 'hth', title: 'HTH', url: '/crp/HTH.html', group: 'research', kind: 'concept', mark: '≈', featured: false,

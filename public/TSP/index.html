@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BD × AI Lab — TSP: the travelling salesman problem</title>
+<meta name="description" content="The travelling salesman problem at BD × AI Lab: 8zTSP, the demo in your browser, and our earlier TSP work, all in one place.">
+<link rel="canonical" href="https://www.mdlxdcc.org/tsp/">
+<meta property="og:title" content="BD × AI Lab — TSP: the travelling salesman problem">
+<meta property="og:description" content="The travelling salesman problem at BD × AI Lab: 8zTSP, the demo in your browser, and our earlier TSP work, all in one place.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_GB">
+<meta property="og:locale:alternate" content="sl_SI">
+<script>/* Existing MDLxDCC locale contract: manual > saved > SI country hint > English. */
+(function(){
+'use strict';
+if(window.MDLxDCCLocale)return;
+const root=document.documentElement,KEY='mdlxdcc-locale-v1',LEGACY='mdlxdcc-lang',COOKIE='mdlxdcc_locale',listeners=new Set();
+let selection=null,generation=0,controller=null;
+const valid=x=>x==='en'||x==='sl';
+const get=k=>{try{return localStorage.getItem(k);}catch(_){return null;}};
+function parse(v){try{const x=JSON.parse(v);return x&&valid(x.lang)&&['manual','geo'].includes(x.source)&&Number.isFinite(x.at)&&x.at>=0?{lang:x.lang,source:x.source,at:x.at}:null;}catch(_){return null;}}
+function cookie(){try{const x=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));return x?parse(decodeURIComponent(x.slice(COOKIE.length+1))):null;}catch(_){return null;}}
+function read(){const l=parse(get(KEY)),c=cookie();let v=!l?c:!c?l:c.at>l.at?c:l;const old=get(LEGACY);if(valid(old)&&(!v||(v.lang!==old&&(!c||(l&&l.at>=c.at)))))v={lang:old,source:'manual',at:Date.now()};return v;}
+function persist(){if(!selection)return;const data=JSON.stringify(selection);try{localStorage.setItem(LEGACY,selection.lang);localStorage.setItem('bdPortraitLang',selection.lang);localStorage.setItem(KEY,data);}catch(_){}try{if(!/^https?:$/.test(location.protocol))return;const h=location.hostname.toLowerCase(),d=h==='mdlxdcc.org'||h==='www.mdlxdcc.org'?'; Domain=mdlxdcc.org':'';document.cookie=COOKIE+'='+encodeURIComponent(data)+'; Path=/; Max-Age=31536000; SameSite=Lax'+d+(location.protocol==='https:'?'; Secure':'');}catch(_){}}
+const current=()=>selection?selection.lang:'en';
+function apply(){root.lang=current();root.dataset.lang=current();root.dataset.localeSource=selection?selection.source:'fallback';listeners.forEach(fn=>{try{fn(current());}catch(_){}});window.dispatchEvent(new CustomEvent('mdlxdcc:language',{detail:{lang:current(),source:root.dataset.localeSource}}));}
+function choose(lang){if(!valid(lang))return;generation++;if(controller)controller.abort();selection={lang,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};persist();apply();}
+function subscribe(fn){if(typeof fn!=='function')return()=>{};listeners.add(fn);fn(current());return()=>listeners.delete(fn);}
+function refresh(){const n=read();if(n&&(!selection||n.at>selection.at||n.lang!==selection.lang)){generation++;if(controller)controller.abort();selection=n;persist();apply();}}
+selection=read();try{const q=new URLSearchParams(location.search).get('lang');if(valid(q))selection={lang:q,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};}catch(_){}
+window.MDLxDCCLocale=Object.freeze({current,choose,subscribe,refresh,version:'1.0'});root.classList.add('js');if(selection)persist();apply();
+window.addEventListener('storage',e=>{if([KEY,LEGACY,null].includes(e.key))refresh();});window.addEventListener('pageshow',refresh);window.addEventListener('focus',refresh);
+if(!selection&&/^https?:$/.test(location.protocol)&&typeof fetch==='function'){
+const start=generation;controller=typeof AbortController==='function'?new AbortController():null;let expired=false;
+const timeout=setTimeout(()=>{expired=true;if(controller)controller.abort();},2200);
+fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',headers:{Accept:'application/json'},...(controller?{signal:controller.signal}:{})}).then(r=>{if(!r.ok||!(r.headers.get('content-type')||'').includes('application/json'))throw Error('No country response');return r.json();}).then(d=>{if(expired||generation!==start||selection||!d||!valid(d.language))return;selection=read()||{lang:d.language,source:'geo',at:Date.now()};persist();apply();}).catch(()=>{}).finally(()=>clearTimeout(timeout));
+}
+})();</script>
+<script>try{const f=Number(localStorage.getItem('mdlxdcc-font'));if(f>=.8&&f<=1.5)document.documentElement.style.setProperty('--scale',f);}catch(_){}</script>
+<style>:root{color-scheme:dark;--bg:#04070e;--card:#0c1727;--card2:#0a1422;--line:rgba(148,163,184,.18);--text:#e7eef9;--muted:#9daec4;--cyan:#22d3ee;--green:#34d399;--gold:#f59e0b;--scale:1;--m:1;--fs:calc(var(--scale)*var(--m))}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:calc(100%*var(--fs))}
+html:not([data-lang=sl]) .l-sl,html[data-lang=sl] .l-en{display:none!important}
+body{margin:0;background-color:var(--bg);background-image:radial-gradient(circle at 12% 0,rgba(34,211,238,.11),transparent 30%),radial-gradient(circle at 88% 10%,rgba(52,211,153,.08),transparent 28%);color:var(--text);font-family:Inter,"Segoe UI",system-ui,sans-serif;line-height:1.6}
+a{color:var(--cyan)}a:focus-visible,summary:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.wrap{width:min(1180px,calc(100% - 32px));margin:auto}
+.top{position:sticky;top:0;z-index:30;background:rgba(4,7,14,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.top .wrap{position:relative;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 0}
+.brand{font:800 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.16em;color:var(--cyan);text-decoration:none}
+.nav{display:flex;flex-wrap:wrap;gap:7px}.nav a{font:calc(11px*var(--fs)) ui-monospace,Consolas,monospace;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:6px 9px;border-radius:999px}.nav a:hover{color:var(--cyan);border-color:rgba(34,211,238,.5)}
+.top-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ubtn{display:inline-grid;place-items:center;min-width:40px;min-height:36px;border:1px solid var(--line);border-radius:9px;background:none;color:var(--muted);font:600 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;cursor:pointer;padding:4px 9px}
+.ubtn:hover{border-color:rgba(34,211,238,.5);color:var(--cyan)}.ubtn[aria-pressed=true]{background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.5);color:var(--cyan)}.ubtn:disabled{opacity:.4;cursor:default}
+.menu{border:0;padding:0;margin:0;background:none}.menu>summary{list-style:none;display:inline-grid;place-items:center;width:42px;height:36px;border:1px solid var(--line);border-radius:9px;color:var(--text);cursor:pointer}
+.menu>summary::-webkit-details-marker{display:none}.menu[open]>summary{border-color:rgba(34,211,238,.5);color:var(--cyan)}
+.menu-panel{position:absolute;z-index:40;right:0;top:calc(100% + 6px);width:min(360px,100%);max-height:min(78vh,700px);overflow:auto;overscroll-behavior:contain;padding:18px;background:#0c1727;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55)}
+.menu-h{margin:0 0 8px;color:var(--muted);font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase}
+.menu-links{display:grid;margin:0 0 16px;border-top:1px solid var(--line)}.menu-links a{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:42px;padding:8px 3px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text);font-size:calc(15px*var(--fs))}.menu-links a:hover{color:var(--cyan)}
+.menu-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:50px;color:var(--text);font-size:calc(15px*var(--fs))}.menu-row .grp{display:flex;align-items:center;gap:4px}.menu-row .ubtn{min-width:46px;min-height:42px;color:var(--text)}#font-value{min-width:62px}
+.intro{padding:30px 0 6px}
+.kicker{margin:0 0 10px;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1{margin:0 0 12px;font-size:calc(clamp(30px,5vw,50px)*var(--fs));line-height:1.08;letter-spacing:-.025em}
+.lead{max-width:820px;margin:0 0 16px;font-size:calc(17px*var(--fs))}
+.facts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.facts li{border:1px solid var(--line);border-radius:12px;background:rgba(12,23,39,.72);padding:12px 14px;font-size:calc(14px*var(--fs));color:var(--muted)}.facts b{color:var(--text)}
+.lab{display:grid;grid-template-columns:310px minmax(0,1fr);margin:20px 0;border:1px solid rgba(34,211,238,.35);border-radius:14px;overflow:hidden;background:var(--card)}
+.lab aside{padding:20px;border-right:1px solid var(--line);background:var(--card2)}
+.lab h2{margin:0 0 10px;font-size:calc(15px*var(--fs))}
+.lab label{display:block;color:var(--muted);font-size:calc(13px*var(--fs))}
+.lab input,.lab select,.lab button{font:inherit}
+.lab input[type=number],.lab select{display:block;width:100%;min-width:0;margin:5px 0 12px;padding:8px 10px;border:1px solid rgba(148,163,184,.35);border-radius:7px;background:#060d18;color:var(--text);font-size:calc(15px*var(--fs))}
+.lab input[type=file]{width:100%;margin-top:8px;font-size:calc(12px*var(--fs));color:var(--muted)}
+.file{padding:12px;border:1px dashed rgba(34,211,238,.45);border-radius:8px;color:var(--cyan)}
+.hint{margin:6px 0 12px;font-size:calc(12.5px*var(--fs));color:var(--muted);line-height:1.5}
+.row{display:flex;gap:12px}.row>*{flex:1;min-width:0}
+.lab button{width:100%;padding:10px 12px;border:0;border-radius:8px;background:var(--cyan);color:#03121a;font-weight:700;font-size:calc(14px*var(--fs));cursor:pointer}
+.lab button.secondary{background:rgba(34,211,238,.08);color:var(--text);border:1px solid rgba(34,211,238,.35)}
+.lab button:disabled{opacity:.45;cursor:default}
+.presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:0 0 6px}
+.lab .presets button{padding:8px 4px;font-size:calc(13px*var(--fs));background:none;color:var(--muted);border:1px solid var(--line)}
+.lab .presets button[aria-pressed=true]{background:rgba(34,211,238,.14);color:var(--cyan);border-color:rgba(34,211,238,.55)}
+.rule{height:1px;margin:18px 0;background:var(--line)}
+.check{display:flex!important;align-items:center;gap:8px;margin:2px 0 8px}.check input{accent-color:var(--cyan)}
+.optional{margin-left:6px;font-size:calc(11px*var(--fs));color:var(--muted)}
+.mode{margin:-4px 0 12px;padding-left:9px;border-left:2px solid var(--cyan);font-size:calc(12.5px*var(--fs));color:var(--text);line-height:1.5}
+.actions{margin-top:12px}
+.lab button.text-button{margin-top:10px;padding:4px 0;background:none;color:var(--muted);font-weight:600;font-size:calc(13px*var(--fs));text-align:left}
+.workspace{display:flex;flex-direction:column;min-width:0;padding:18px 20px 14px}
+.map-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding-bottom:10px;font:calc(12px*var(--fs)) ui-monospace,Consolas,monospace;color:var(--muted)}#mapName{overflow-wrap:anywhere}
+[hidden]{display:none!important}.lab .map-head button{width:auto;padding:6px 10px;font-size:calc(11px*var(--fs))}
+.map-window,.workspace:fullscreen{position:fixed;inset:0;z-index:10000;width:100%;height:100vh;height:100dvh;background:var(--card);padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));display:flex;flex-direction:column}
+.map-window canvas,.workspace:fullscreen canvas{height:0;min-height:0;flex:1}.map-window .stats,.workspace:fullscreen .stats{margin-top:8px;padding-top:8px}
+canvas{display:block;width:100%;height:470px;min-height:260px;flex:1;border-radius:8px;background:#050b15}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.stats span{display:block;font:600 calc(10px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.1em;color:var(--muted)}
+.stats strong{display:block;font-size:calc(clamp(17px,2vw,26px)*var(--fs));font-weight:600;font-variant-numeric:tabular-nums;color:var(--cyan)}
+#status{min-height:20px;margin:12px 0 0;font-size:calc(13px*var(--fs));color:var(--muted)}
+.credits,.more{margin:0 0 18px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:rgba(12,23,39,.72)}
+.credits h2{margin:0 0 8px;font-size:calc(16px*var(--fs))}.credits p,.more p{margin:0 0 10px;color:var(--muted);font-size:calc(14.5px*var(--fs))}.credits b,.more b{color:var(--text)}
+.more summary{cursor:pointer;color:var(--cyan);font:700 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.06em}.more[open] summary{margin-bottom:10px}
+footer{padding:6px 0 28px;color:var(--muted);font-size:calc(13px*var(--fs))}
+@media(max-width:820px){:root{--m:1.1}.top-right{width:100%;justify-content:space-between}.top-right .nav{flex:1}}
+@media(max-width:760px){.facts{grid-template-columns:1fr}.lab{grid-template-columns:1fr}.lab aside{border-right:0;border-bottom:1px solid var(--line)}.workspace{padding:14px}canvas{height:340px;flex:none}.stats{grid-template-columns:1fr 1fr}}
+
+.h1x{margin:-4px 0 14px;color:var(--muted);font-size:calc(15px*var(--fs))}.h1x .small{font-size:.85em}
+.btns{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0 6px}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:11px 20px;border-radius:12px;background:var(--cyan);color:#03121a;font-weight:800;font-size:calc(16px*var(--fs));text-decoration:none;box-shadow:0 8px 24px rgba(34,211,238,.2)}
+.btn::after{content:"→";font-weight:700}.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:none;color:var(--text);border:1px solid rgba(34,211,238,.5);box-shadow:none}
+.btn-note{margin:0 0 6px;font-size:calc(13.5px*var(--fs));color:var(--muted)}
+.nu{margin:22px 0;padding:18px 20px;border:1px solid rgba(34,211,238,.35);border-radius:14px;background:var(--card)}
+.nu-k{margin:0 0 6px;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.nu-h{margin:0 0 10px;font-size:calc(clamp(21px,3vw,30px)*var(--fs));line-height:1.2}.nu-h .c{color:var(--cyan)}
+.nu p{margin:0 0 10px;color:var(--muted);font-size:calc(15px*var(--fs))}.nu p:last-child{margin:0}
+.pages{margin:26px 0}.pages h2{margin:0 0 6px;font-size:calc(22px*var(--fs))}
+.grp{margin:18px 0 8px;font:700 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.plist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.plist li{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(12,23,39,.72)}
+.plist a.t{font-weight:700;font-size:calc(16px*var(--fs));color:var(--text);text-decoration:none}.plist a.t:hover{color:var(--cyan)}
+.plist .d{display:block;margin:2px 0 4px;font:calc(11.5px*var(--fs)) ui-monospace,Consolas,monospace;color:var(--gold)}
+.plist p{margin:0;font-size:calc(14px*var(--fs));color:var(--muted)}
+.hint2{margin:12px 0 0;font-size:calc(13px*var(--fs));color:var(--muted)}
+@media(max-width:760px){.plist{grid-template-columns:1fr}.btn{width:100%;justify-content:center}}</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><a class="brand" href="../">BD × AI LAB · TSP</a><div class="top-right"><nav class="nav"><a href="8ztsp/">8zTSP</a><a href="../8zTSP/">Demo</a><a href="8zrp/">8Z-RP</a></nav><div class="languages" role="group" aria-label="Language"><button class="ubtn" type="button" data-lang="en" aria-pressed="true" aria-label="English">EN</button><button class="ubtn" type="button" data-lang="sl" aria-pressed="false" aria-label="Slovenščina">SL</button></div><details class="menu" id="menu"><summary id="menu-trigger" aria-label="Menu" title="Menu"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></summary><div class="menu-panel" id="menu-panel"><p class="menu-h" id="menu-pages"><span class="l-en" lang="en">Pages</span><span class="l-sl" lang="sl">Strani</span></p><nav class="menu-links" aria-labelledby="menu-pages"><a href="/"><span>MDL×DCC</span><span aria-hidden="true">↗</span></a><a href="/index-search.html"><span><span class="l-en" lang="en">The method</span><span class="l-sl" lang="sl">Metoda</span></span><span aria-hidden="true">↗</span></a><a href="/index-atlas.html"><span>Atlas</span><span aria-hidden="true">↗</span></a><a href="/index-todo.html"><span><span class="l-en" lang="en">Now &amp; next</span><span class="l-sl" lang="sl">Zdaj in potem</span></span><span aria-hidden="true">↗</span></a><a href="/index-intro.html"><span><span class="l-en" lang="en">Overview</span><span class="l-sl" lang="sl">Predstavitev</span></span><span aria-hidden="true">↗</span></a><a href="/proposal1.html"><span><span class="l-en" lang="en">Discover</span><span class="l-sl" lang="sl">Odkrij</span></span><span aria-hidden="true">↗</span></a><a href="/ai8-codex.html"><span>AI8 Codex</span><span aria-hidden="true">↗</span></a><a href="/ai8-dna-v4.html"><span><span class="l-en" lang="en">AI8 DNA</span><span class="l-sl" lang="sl">AI8 DNK</span></span><span aria-hidden="true">↗</span></a><a href="/knjiga/"><span><span class="l-en" lang="en">Book</span><span class="l-sl" lang="sl">Knjiga</span></span><span aria-hidden="true">↗</span></a></nav><p class="menu-h" id="menu-settings"><span class="l-en" lang="en">Settings</span><span class="l-sl" lang="sl">Nastavitve</span></p><div class="menu-row"><span><span class="l-en" lang="en">Language</span><span class="l-sl" lang="sl">Jezik</span></span><div class="grp" role="group" aria-label="Language"><button class="ubtn" type="button" data-lang="en" aria-pressed="true" aria-label="English">EN</button><button class="ubtn" type="button" data-lang="sl" aria-pressed="false" aria-label="Slovenščina">SL</button></div></div><div class="menu-row"><span><span class="l-en" lang="en">Text size</span><span class="l-sl" lang="sl">Velikost besedila</span></span><div class="grp" role="group" aria-label="Text size"><button class="ubtn" id="font-down" type="button" aria-label="Smaller text">A−</button><button class="ubtn" id="font-value" type="button" aria-label="Reset text size to 100%" title="100%">100%</button><button class="ubtn" id="font-up" type="button" aria-label="Larger text">A+</button></div></div></div></details></div></div></div>
+<main class="wrap">
+<section class="intro">
+<p class="kicker"><span class="l-en" lang="en">TSP · the travelling salesman problem · BD × AI Lab · 15 Nov 2026</span><span class="l-sl" lang="sl">TSP · problem potujočega trgovca · BD × AI Lab · 15. nov. 2026</span></p>
+<h1><span class="l-en" lang="en">A good route through 10 million cities in 15 minutes, on one laptop.</span><span class="l-sl" lang="sl">Dobra pot skozi 10 milijonov mest v 15 minutah, na enem prenosniku.</span></h1>
+<p class="h1x"><span class="l-en" lang="en">— more than five times the 1,904,711 cities of the World TSP <span class="small">(only the number of cities is compared)</span></span><span class="l-sl" lang="sl">— več kot petkrat toliko mest, kot jih ima World TSP (1.904.711) <span class="small">(primerjamo le število mest)</span></span></p>
+<p class="lead"><span class="l-en" lang="en">With its zoom windows, 8zTSP puts 7 of the laptop’s 8 cores to work on one map at once. The standard programs, LKH and Concorde’s linkern, use one core per run: on the same laptop, with the settings used, neither got there in two hours.</span><span class="l-sl" lang="sl">Z okni zooma 8zTSP na enem zemljevidu hkrati zaposli 7 od 8 jeder prenosnika. Standardna programa, LKH in Concordov linkern, uporabljata eno jedro na tek: na istem prenosniku in z uporabljenimi nastavitvami v dveh urah do tja ni prišel nobeden od njiju.</span></p>
+<div class="btns"><a class="btn" href="../8zTSP/"><span class="l-en" lang="en">Try 8zTSP in your browser</span><span class="l-sl" lang="sl">Preizkusi 8zTSP v brskalniku</span></a><a class="btn ghost" href="8ztsp/"><span class="l-en" lang="en">The full lab page</span><span class="l-sl" lang="sl">Celotna laboratorijska stran</span></a></div>
+<p class="btn-note"><span class="l-en" lang="en">The demo is password-protected; access on request.</span><span class="l-sl" lang="sl">Demo je zaščiten z geslom; dostop na prošnjo.</span></p>
+</section>
+<section class="nu" aria-labelledby="nu-h">
+<p class="nu-k"><span class="l-en" lang="en">nu3496 · 3,496 cities in Nicaragua · optimum 96,132</span><span class="l-sl" lang="sl">nu3496 · 3.496 mest v Nikaragvi · optimum 96.132</span></p>
+<h2 class="nu-h" id="nu-h"><span class="l-en" lang="en">The optimal tour of nu3496 in about <span class="c">10 seconds</span></span><span class="l-sl" lang="sl">Optimalna pot za nu3496 v približno <span class="c">10 sekundah</span></span></h2>
+<p><span class="l-en" lang="en">With 7 threads on our laptop, all 30 runs found it (median 10.6 s). For comparison, one run on one core of the same laptop: LKH 3.0.7 did not find it in 6 hours; Concorde found the optimum after 148 min and proved it after 169 min. 8zTSP finds the optimal tour; Concorde proves it is optimal.</span><span class="l-sl" lang="sl">S 7 nitmi na našem prenosniku ga je našlo vseh 30 tekov (mediana 10,6 s). Za primerjavo en tek na enem jedru istega prenosnika: LKH 3.0.7 ga v 6 urah ni našel; Concorde je optimum našel po 148 min in ga dokazal po 169 min. 8zTSP optimalno pot najde, Concorde pa dokaže, da je optimalna.</span></p>
+<p><span class="l-en" lang="en">Checking every possible tour is hopeless: 3,496 cities mean about 10<sup>10,868</sup> tours, and already 27 cities would take longer than the age of the universe on this laptop.</span><span class="l-sl" lang="sl">Preverjanje vseh možnih poti je brezupno: 3.496 mest pomeni okoli 10<sup>10.868</sup> poti, že 27 mest pa bi na tem prenosniku trajalo dlje od starosti vesolja.</span></p>
+</section>
+<section class="pages" aria-labelledby="pages-h">
+<h2 id="pages-h"><span class="l-en" lang="en">All our TSP pages</span><span class="l-sl" lang="sl">Vse naše strani o TSP</span></h2>
+<p class="grp"><span class="l-en" lang="en">Now</span><span class="l-sl" lang="sl">Zdaj</span></p>
+<ul class="plist">
+<li><a class="t" href="8ztsp/"><span class="l-en" lang="en">8zTSP: results and the lab log</span><span class="l-sl" lang="sl">8zTSP: izidi in laboratorijski dnevnik</span></a><span class="d"><span class="l-en" lang="en">first published 11 Nov 2026</span><span class="l-sl" lang="sl">prvič objavljeno 11. nov. 2026</span></span><p><span class="l-en" lang="en">The new Rust kernel, measured on one laptop next to LKH and Concorde; every result with its conditions. Updated 15 Nov 2026.</span><span class="l-sl" lang="sl">Novo jedro v Rustu, merjeno na enem prenosniku ob LKH in Concordu; vsak izid s svojimi pogoji. Posodobljeno 15. nov. 2026.</span></p></li>
+<li><a class="t" href="../8zTSP/"><span class="l-en" lang="en">8zTSP in your browser</span><span class="l-sl" lang="sl">8zTSP v brskalniku</span></a><span class="d"><span class="l-en" lang="en">first published 14 Nov 2026</span><span class="l-sl" lang="sl">prvič objavljeno 14. nov. 2026</span></span><p><span class="l-en" lang="en">The same engine in its minimal build, on your own computer: all its cores, the map in full screen, a stop at the known optimum. Password-protected; access on request.</span><span class="l-sl" lang="sl">Isti motor v minimalni gradnji, na vašem računalniku: vsa njegova jedra, zemljevid čez cel zaslon, ustavitev pri znanem optimumu. Zaščiteno z geslom; dostop na prošnjo.</span></p></li>
+</ul>
+<p class="grp"><span class="l-en" lang="en">Earlier work</span><span class="l-sl" lang="sl">Prejšnje delo</span></p>
+<ul class="plist">
+<li><a class="t" href="8zrp/"><span class="l-en" lang="en">8Z-RP: TSP as compression</span><span class="l-sl" lang="sl">8Z-RP: TSP kot stiskanje</span></a><span class="d"><span class="l-en" lang="en">first published 14 Mar 2026</span><span class="l-sl" lang="sl">prvič objavljeno 14. mar. 2026</span></span><p><span class="l-en" lang="en">From an exact qa194 result to a nu3496 route of 96,793, with a trip optimizer in the browser.</span><span class="l-sl" lang="sl">Od natančnega izida za qa194 do poti 96.793 za nu3496, z optimizatorjem potovanj v brskalniku.</span></p></li>
+<li><a class="t" href="8zrp-nu3496/"><span class="l-en" lang="en">8Z-RP · nu3496 status</span><span class="l-sl" lang="sl">8Z-RP · stanje nu3496</span></a><span class="d"><span class="l-en" lang="en">first published 18 Mar 2026</span><span class="l-sl" lang="sl">prvič objavljeno 18. mar. 2026</span></span><p><span class="l-en" lang="en">The verified nu3496 route of 96,928 from DEV2.3, with TSPES and TSPTS.</span><span class="l-sl" lang="sl">Preverjena pot 96.928 za nu3496 iz DEV2.3, s TSPES in TSPTS.</span></p></li>
+<li><a class="t" href="ssmdl-dcc-challenge/"><span class="l-en" lang="en">ssMDL-DCC challenge</span><span class="l-sl" lang="sl">Izziv ssMDL-DCC</span></a><span class="d"><span class="l-en" lang="en">first published 18 Mar 2026</span><span class="l-sl" lang="sl">prvič objavljeno 18. mar. 2026</span></span><p><span class="l-en" lang="en">Find the best self-selecting governor for the TSP.</span><span class="l-sl" lang="sl">Poiščite najboljši samoizbirni krmilnik za TSP.</span></p></li>
+<li><a class="t" href="8zrp-qa194-map/"><span class="l-en" lang="en">qa194 tour maps</span><span class="l-sl" lang="sl">Zemljevida poti qa194</span></a><span class="d"><span class="l-en" lang="en">first published 19 Mar 2026</span><span class="l-sl" lang="sl">prvič objavljeno 19. mar. 2026</span></span><p><span class="l-en" lang="en">Qatar, 194 cities: the 8Z-RP tour on the map; <a href="8zrp-qa194-map2/">a second view</a>.</span><span class="l-sl" lang="sl">Katar, 194 mest: pot 8Z-RP na zemljevidu; <a href="8zrp-qa194-map2/">drugi pogled</a>.</span></p></li>
+<li><a class="t" href="8zrp-v1-1/"><span class="l-en" lang="en">8Z-RP v1.1</span><span class="l-sl" lang="sl">8Z-RP v1.1</span></a><span class="d"><span class="l-en" lang="en">first published 19 Mar 2026</span><span class="l-sl" lang="sl">prvič objavljeno 19. mar. 2026</span></span><p><span class="l-en" lang="en">The earliest versions of TSP as compression; also <a href="8zrp-v1-0/">v1.0</a>.</span><span class="l-sl" lang="sl">Najzgodnejši različici TSP kot stiskanja; tudi <a href="8zrp-v1-0/">v1.0</a>.</span></p></li>
+<li><a class="t" href="8zrp-arena/"><span class="l-en" lang="en">Arena Lab v2.6</span><span class="l-sl" lang="sl">Arena Lab v2.6</span></a><span class="d"><span class="l-en" lang="en">first published 21 Mar 2026</span><span class="l-sl" lang="sl">prvič objavljeno 21. mar. 2026</span></span><p><span class="l-en" lang="en">25 sensors and 685 laws for 8Z-RP; MDL decides.</span><span class="l-sl" lang="sl">25 senzorjev in 685 zakonov za 8Z-RP; odloča MDL.</span></p></li>
+<li><a class="t" href="nu3496-96928/"><span class="l-en" lang="en">nu3496: the route of 96,928</span><span class="l-sl" lang="sl">nu3496: pot 96.928</span></a><span class="d"><span class="l-en" lang="en">first published 19 Jul 2026</span><span class="l-sl" lang="sl">prvič objavljeno 19. jul. 2026</span></span><p><span class="l-en" lang="en">The verified route to zoom and pan; the routes before it: <a href="nu3496-97110/">97,110</a>, <a href="nu3496-97056/">97,056</a>, <a href="nu3496-97050/">97,050</a>, <a href="nu3496-97042/">97,042</a> and <a href="nu3496-96934/">96,934</a> (12–16 Jul 2026).</span><span class="l-sl" lang="sl">Preverjena pot za približevanje in premikanje; poti pred njo: <a href="nu3496-97110/">97.110</a>, <a href="nu3496-97056/">97.056</a>, <a href="nu3496-97050/">97.050</a>, <a href="nu3496-97042/">97.042</a> in <a href="nu3496-96934/">96.934</a> (12.–16. jul. 2026).</span></p></li>
+<li><a class="t" href="arenas-6/"><span class="l-en" lang="en">Six TSP arenas</span><span class="l-sl" lang="sl">Šest aren za TSP</span></a><span class="d"><span class="l-en" lang="en">first published 11 Sep 2026</span><span class="l-sl" lang="sl">prvič objavljeno 11. sep. 2026</span></span><p><span class="l-en" lang="en">Six arenas side by side, with the evidence receipts of <a href="arenas-6-evidence-20260911/">11 Sep</a> and <a href="arenas-6-evidence-20260912/">12 Sep</a>; <a href="arenas-5/">the earlier page with five</a>.</span><span class="l-sl" lang="sl">Šest aren drugo ob drugi, s potrdili dokazov z dne <a href="arenas-6-evidence-20260911/">11. sep.</a> in <a href="arenas-6-evidence-20260912/">12. sep.</a>; <a href="arenas-5/">prejšnja stran s petimi</a>.</span></p></li>
+<li><a class="t" href="../Trip/"><span class="l-en" lang="en">Trip Optimizer</span><span class="l-sl" lang="sl">Optimizator potovanj</span></a><span class="d"><span class="l-en" lang="en">first published 9 Jan 2026</span><span class="l-sl" lang="sl">prvič objavljeno 9. jan. 2026</span></span><p><span class="l-en" lang="en">Plan a real trip: paste the places, get a clean route and map links. Also <a href="../Trip/new/">the LAB version</a> and <a href="../Trip/TripOpti.html">TripOpti</a>.</span><span class="l-sl" lang="sl">Načrtujte pravo potovanje: prilepite kraje in dobite urejeno pot in povezave na zemljevid. Tudi <a href="../Trip/new/">različica LAB</a> in <a href="../Trip/TripOpti.html">TripOpti</a>.</span></p></li>
+</ul>
+<p class="hint2"><span class="l-en" lang="en">Every page keeps its content; the old addresses lead to the new ones.</span><span class="l-sl" lang="sl">Vsaka stran ohrani vsebino; stari naslovi vodijo na nove.</span></p>
+</section>
+<section class="credits">
+<h2><span class="l-en" lang="en">Who made it</span><span class="l-sl" lang="sl">Kdo je to naredil</span></h2>
+<p><span class="l-en" lang="en"><b>BD × AI Lab.</b> The zoom in and out is BD’s idea; GPT implemented it as the integer bitshift pyramid. TEP, the tour-enriched pyramid, was made by Claude C1 in a session BD prepared, free of old TSP knowledge, after it saw BD’s zoom in and out. Known methods such as the edge assembly crossover (EAX) of Nagata and Kobayashi run inside. Behind it is BD’s way of working with LLMs: the <a href="../BD/AIM3_MentalArena_mRHP.html">Mental Arena Lab</a>, the <a href="../BD/BD_AIM3_RHP.html">RHP protocol</a> and AI8, the team of AI sessions that built and measured 8zTSP.</span><span class="l-sl" lang="sl"><b>BD × AI Lab.</b> Zoom noter in ven je BD‑jeva zamisel; GPT jo je izvedel kot celoštevilsko bitshift piramido. TEP, piramido, obogateno s turami, je naredil Claude C1 v seji, ki jo je BD odtujil od okov starega znanja o TSP, ko je videla BD‑jev zoom noter in ven. V jedru tečejo tudi znane metode, na primer križanje s sestavljanjem robov (EAX) Nagate in Kobayashija. Za tem je BD‑jev način dela z velikimi jezikovnimi modeli: <a href="../BD/AIM3_MentalArena_mRHP.html">Mental Arena Lab</a>, <a href="../BD/BD_AIM3_RHP.html">protokol RHP</a> in AI8, ekipa sej umetne inteligence, ki je 8zTSP zgradila in izmerila.</span></p>
+</section>
+</main>
+<footer class="wrap"><span class="l-en" lang="en">BD × AI Lab · TSP · 15 Nov 2026 · <a href="8ztsp/">8zTSP: results and the lab log</a></span><span class="l-sl" lang="sl">BD × AI Lab · TSP · 15. nov. 2026 · <a href="8ztsp/">8zTSP: izidi in laboratorijski dnevnik</a></span></footer>
+<script>
+(function(){'use strict';
+const root=document.documentElement,$=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const T={"en": {"title": "BD × AI Lab — TSP: the travelling salesman problem", "desc": "The travelling salesman problem at BD × AI Lab: 8zTSP, the demo in your browser, and our earlier TSP work, all in one place."}, "sl": {"title": "BD × AI Lab — TSP: problem potujočega trgovca", "desc": "Problem potujočega trgovca v BD × AI Lab: 8zTSP, demo v brskalniku in naše prejšnje delo na TSP, vse na enem mestu."}};
+const read=k=>{try{return localStorage.getItem(k);}catch(_){return null;}},save=(k,v)=>{try{localStorage.setItem(k,String(v));}catch(_){}};
+let font=Number(read('mdlxdcc-font')||'1');if(!Number.isFinite(font))font=1;
+const down=$('#font-down'),up=$('#font-up'),value=$('#font-value'),menu=$('#menu'),trigger=$('#menu-trigger');
+function fontSize(v,persist=true){font=Math.round(Math.max(.8,Math.min(1.5,v))*100)/100;root.style.setProperty('--scale',font);down.disabled=font<=.8;up.disabled=font>=1.5;value.textContent=Math.round(font*100)+'%';if(persist)save('mdlxdcc-font',font);}
+fontSize(font,false);
+down.addEventListener('click',()=>fontSize(font-.05));value.addEventListener('click',()=>fontSize(1));up.addEventListener('click',()=>fontSize(font+.05));
+$$('button[data-lang]').forEach(b=>b.addEventListener('click',()=>window.MDLxDCCLocale.choose(b.dataset.lang)));
+window.MDLxDCCLocale.subscribe(lang=>{const sl=lang==='sl',t=sl?T.sl:T.en;
+ $$('button[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));
+ document.title=t.title;const d=$('meta[name="description"]');if(d)d.content=t.desc;
+ trigger.setAttribute('aria-label',sl?'Meni':'Menu');trigger.title=sl?'Meni':'Menu';
+ down.setAttribute('aria-label',sl?'Manjše besedilo':'Smaller text');up.setAttribute('aria-label',sl?'Večje besedilo':'Larger text');
+ value.setAttribute('aria-label',sl?'Ponastavi velikost besedila na 100 %':'Reset text size to 100%');});
+window.addEventListener('storage',e=>{if(e.key==='mdlxdcc-font'&&Number.isFinite(Number(e.newValue)))fontSize(Number(e.newValue),false);});
+document.addEventListener('click',e=>{if(menu.open&&!menu.contains(e.target))menu.open=false;});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.open){menu.open=false;trigger.focus();}});
+})();
+</script>
+</body>
+</html>

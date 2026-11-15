@@ -68,7 +68,7 @@ async function run(name,engine,url){
   // This global-only page proves that S actually loads the full index.
   await page.locator('#search-input').fill('8Z_project_files_manager');
   await page.locator('#search-results a[href*="8Z_project_files_manager"]').waitFor({state:'visible'});
-  const queries=[['8ztsp','/bd/bd_8ztsp.html'],['LAB',null],['šah lab','/chess-lab/'],['chess lab','/chess-lab/'],['lab chess','/chess-lab/'],['sudoku lab','/s/new/'],['trip lab','/trip/new/'],['flip4m lab','/f4m/new/'],['križanke lab','/cw/new/'],['crosswords lab','/cw/new/'],['Start','/start/'],['/Start/','/start/'],['začetna','/start/'],['chess','/chess/']];
+  const queries=[['8ztsp','/tsp/8ztsp/'],['LAB',null],['šah lab','/chess-lab/'],['chess lab','/chess-lab/'],['lab chess','/chess-lab/'],['sudoku lab','/s/new/'],['trip lab','/trip/new/'],['flip4m lab','/f4m/new/'],['križanke lab','/cw/new/'],['crosswords lab','/cw/new/'],['Start','/start/'],['/Start/','/start/'],['začetna','/start/'],['chess','/chess/']];
   const key=url=>new URL(url).pathname.replace(/\/index\.html$/i,'/').toLowerCase();
   for(const [query,target] of queries){
    await page.locator('#search-input').fill(query);
@@ -98,9 +98,9 @@ async function run(name,engine,url){
   await fallback.waitForFunction(()=>/quick routes|bližnjice/.test(document.querySelector('#search-status').textContent));
   await fallback.locator('#search-input').fill('LAB');assert.equal(await fallback.locator('#search-results a').count(),6);
   await fallback.locator('#search-input').fill('Start');assert.equal(key(await fallback.locator('#search-results a').first().getAttribute('href')),'/start/');
-  await fallback.locator('#search-input').fill('8ztsp');assert.equal(key(await fallback.locator('#search-results a').first().getAttribute('href')),'/bd/bd_8ztsp.html');
+  await fallback.locator('#search-input').fill('8ztsp');assert.equal(key(await fallback.locator('#search-results a').first().getAttribute('href')),'/tsp/8ztsp/');
   await offline.close();
-  await page.goto(new URL('BD/BD_8ZTSP.html',url).href,{waitUntil:'domcontentloaded'});
+  await page.goto(new URL('TSP/8ztsp/',url).href,{waitUntil:'domcontentloaded'});
   await page.locator('#menu-trigger').click();
   const before=await page.locator('#font-value').textContent();
   const leadBefore=await page.locator('.lead').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));

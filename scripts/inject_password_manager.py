@@ -52,6 +52,9 @@ HELPER_JS = r'''/*
     if (p.includes('bd_8z_dcc_meta_architecture')) return 'bd-dcc-meta';
     if (p.includes('bd_asi_origin')) return 'bd-asi-origin';
     if (p.includes('bd_8zrp_arena')) return 'bd-8zrp';
+    const tsp = p.replace(/\/(?:index\.html)?$/, '');   // R21: the TSP pages moved under /tsp/ and keep their groups
+    const TSP_MOVED = {"/tsp/8zrp": "bd-bd-bd-8zrp", "/tsp/8zrp-v1-0": "bd-bd-bd-8zrp-v1-0", "/tsp/8zrp-v1-1": "bd-bd-bd-8zrp-v1-1", "/tsp/8zrp-arena": "bd-8zrp"};
+    if (TSP_MOVED[tsp]) return TSP_MOVED[tsp];
     const slug = p.replace(/\.(?:html?|php)$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     return 'bd-' + (slug || 'protected');
   }
@@ -90,6 +93,8 @@ def group_for(rel,tag):
     if '/8zt/bdt' in p:return 'bdt'
     for needle,group in [('bd_8z_dcc_trading','bd-8z-dcc-trading'),('bd_8z_trading_book','bd-8z-trading-book'),('sm_trader','bd-sm-trader'),('zz_trader','bd-zz-trader'),('dcc_trader','bd-dcc-trader'),('bd_8z_dcc_meta_architecture','bd-dcc-meta'),('bd_asi_origin','bd-asi-origin'),('bd_8zrp_arena','bd-8zrp')]:
         if needle in p:return group
+    tsp=re.sub(r'/(?:index\.html)?$','',p);tsp_moved={'/tsp/8zrp': 'bd-bd-bd-8zrp', '/tsp/8zrp-v1-0': 'bd-bd-bd-8zrp-v1-0', '/tsp/8zrp-v1-1': 'bd-bd-bd-8zrp-v1-1', '/tsp/8zrp-arena': 'bd-8zrp'}  # R21: moved TSP pages keep their groups
+    if tsp in tsp_moved:return tsp_moved[tsp]
     slug=re.sub(r'\.(?:html?|php)$','',p);slug=re.sub(r'[^a-z0-9]+','-',slug).strip('-');return 'bd-'+(slug or 'protected')
 def normalize(tag):
     out=re.sub(r'\sautocomplete\s*=\s*(["\'])(?:off|new-password)\1',' autocomplete="current-password"',tag,flags=re.I)
