@@ -18,7 +18,8 @@ concurrency:
 jobs:
   verify:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-    runs-on: ubuntu-latest
+    # Playwright 1.57 does not support the Ubuntu 26.04 ubuntu-latest image.
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     env:
       VERIFIED_SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
