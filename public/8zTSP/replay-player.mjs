@@ -1,5 +1,6 @@
 import {ReplayTimeline,parseRecording,serializeRecording,validateRecording,REPLAY_LIMITS} from './replay-data.mjs';
 import {REPLAY_COPY} from './replay-copy.mjs';
+import {formatDistance} from './distance-format.mjs';
 export function mountReplay(root){
  let data=null,timeline=null,raf=0,previous=0,drawn=-1,scale=1,pan=[0,0],bounds=null,oldOverflow='',lastNotice='';
  const nodes={},labels=[],pointers=new Map();
@@ -48,7 +49,7 @@ export function mountReplay(root){
   const expanded=document.fullscreenElement===root||root.classList.contains('replay-expanded');nodes.expand.hidden=expanded;nodes.close.hidden=!expanded;
   if(!timeline){info.textContent=copy().empty;paint();return;}
   position.min=String(data.frames[0].at);position.max=String(data.duration);position.value=String(timeline.time);
-  const f=data.frames[timeline.index],text=`${copy().recording} · ×${timeline.speed} · ${copy().step} ${timeline.index+1}/${data.frames.length} · ${copy().solver} ${f.solverSeconds.toFixed(3)} s${data.clock==='arrival'?' · '+copy().worker+' '+(f.source+1):''} · ${copy().best} ${f.length.toLocaleString(language())}`;
+  const f=data.frames[timeline.index],text=`${copy().recording} · ×${timeline.speed} · ${copy().step} ${timeline.index+1}/${data.frames.length} · ${copy().solver} ${f.solverSeconds.toFixed(3)} s${data.clock==='arrival'?' · '+copy().worker+' '+(f.source+1):''} · ${copy().best} ${formatDistance(f.length,data.unit??null,language())}`;
   if(info.textContent!==text)info.textContent=text;
   if(drawn!==timeline.index){drawn=timeline.index;paint();}
  }

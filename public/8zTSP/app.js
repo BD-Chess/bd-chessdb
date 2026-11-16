@@ -11,15 +11,19 @@
 // R28 (8zTSP-K, 16 Nov 2026): from 8zTSP-web R5 A1 (0ce785e) the recording of a run and its slow replay (replay-data.mjs,
 // replay-player.mjs, replay-copy.mjs and replay.css are the package's; the run option is called »refinement«), from Examples
 // R1b (9d4905c) the 31 examples: Slovenia first and by default, the 27 countries by size with their continents, then the
-// three generated maps; Slovenia's dated line (examples.mjs gapStatus). Before: demo/app.before_r28.js.
+// three generated maps; Slovenia's dated line (examples.mjs gapStatus). R1c/d (33ccd10): metres for Slovenia (distance-format.mjs),
+// runs up to 86,400 s and a bounded run history (run-limits.mjs). Before: demo/app.before_r28.js.
 import { examples, exampleGroups, exampleLabel, defaultExampleId, gapDisplay } from './examples.mjs';
 import { initializeWasm, loaderState, solverModule, supportsSharedThreads } from './wasm-loader.js';
 import { createRecorder, serializeRecording } from './replay-data.mjs';
 import { mountReplay } from './replay-player.mjs';
 import { REPLAY_COPY } from './replay-copy.mjs';
+import { formatDistance } from './distance-format.mjs';
+import { RUN_LIMITS, validSeconds, retainRecent } from './run-limits.mjs';
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const canvas = $('map'), ctx = canvas.getContext('2d');
+$('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds);   // R1d: up to one day
 const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
 // R22b (8zTSP-web R3, for BD's iPhone): Safari may hide the number of cores, so up to 8 workers can be chosen anywhere and
 // an iPhone starts with 6; elsewhere the page starts with every core the device reports.
@@ -111,6 +115,8 @@ const T = {
     unknown: n => `${group(n)} cities; optimal tour not known`,
     bestKnown: (n, tourLength, b) => `${group(n)} cities; best known tour ${group(tourLength)}, lower bound ${group(b)}; optimum not confirmed`,
     replayInvalid: 'Unable to open this recording.',
+    referenceTour: v => `Known reference tour: ${v}.`, referenceLowerBound: v => `Proven lower bound: ${v}.`,
+    secondsRange: 'Enter a duration from 0.1 to 86,400 seconds.',
     siGap: (percent, date, running) => `The optimum is not proved yet: our tour is at most ${percent}% above it (Concorde's lower bound${running ? ', proof running' : ''}; as of ${date})`,
     bound: (n, b, est) => `${group(n)} cities; ${est ? 'HK estimate' : 'HK bound'} ${group(Math.round(b))}`,
     waterloo: 'National TSP collection, University of Waterloo', dimacs: 'DIMACS TSP Challenge · portgen by Lyle McGeoch',
@@ -161,6 +167,8 @@ const T = {
     unknown: n => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; optimalna pot ni znana`,
     bestKnown: (n, tourLength, b) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša znana pot ${group(tourLength)}, spodnja meja ${group(b)}; optimum ni potrjen`,
     replayInvalid: 'Posnetka ni mogoče odpreti.',
+    referenceTour: v => `Znana referenčna pot: ${v}.`, referenceLowerBound: v => `Dokazana spodnja meja: ${v}.`,
+    secondsRange: 'Vnesi trajanje od 0,1 do 86.400 sekund.',
     siGap: (percent, date, running) => `Optimum še ni dokazan: naša pot je največ ${percent} % nad njim (Concordova spodnja meja${running ? ', dokaz teče' : ''}; stanje ${date})`,
     bound: (n, b, est) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; ${est ? 'ocena HK' : 'meja HK'} ${group(Math.round(b))}`,
     waterloo: 'zbirka National TSP, Univerza Waterloo', dimacs: 'DIMACS TSP Challenge · portgen Lyla McGeocha',
@@ -202,15 +210,24 @@ function credits() {   // the source line under the examples and, for Slovenia, 
     credit.append(link(item.source, t('gurs')), ' · ', link(item.licenceUrl, item.licence), ` · ${t('siNote')}`);
     mapCredit.append(`${t('mapData')}: `, link(item.source, t('gurs')), ' · ', link(item.licenceUrl, item.licence));
   } else credit.append(link(item.source, item.generator ? t('dimacs') : t('waterloo')));
-  if (item.gapStatus && !item.optimum) { const g = gapDisplay(item.gapStatus, lang()); credit.append(` · ${t('siGap', g.percent, g.date, g.proofRunning)}`); }
+  if (item.gapStatus && !item.optimum) {
+    const g = gapDisplay(item.gapStatus, lang()), d = v => formatDistance(v, item.unit ?? null, lang());
+    if (Number.isSafeInteger(item.gapStatus.tourLength) && item.gapStatus.tourLength > 0) credit.append(` · ${t('referenceTour', d(item.gapStatus.tourLength))}`);
+    if (Number.isFinite(item.gapStatus.lowerBound) && item.gapStatus.lowerBound > 0) credit.append(` · ${t('referenceLowerBound', d(item.gapStatus.lowerBound))}`);
+    credit.append(` · ${t('siGap', g.percent, g.date, g.proofRunning)}`);
+  }
   if (item.boundKind === 'estimate') credit.append(` · ${t('estimateNote')}`);
   if (item.cities >= 1000000) credit.append(` · ${t('largeNote')}`);
 }
 function render() {
-  $('length').textContent = Number.isFinite(best) ? group(best) : '—';
+  $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
   const reference = runRecord?.reference || Number($('reference').value);
   $('gap').textContent = reference > 0 && Number.isFinite(best) ? pct((best / reference - 1) * 100) : '—';
-  $('gapLabel').textContent = t(isOptimum() ? 'gapOpt' : mapMeta?.bound && reference === mapMeta.bound ? (mapMeta.boundKind === 'estimate' ? 'gapEstimate' : mapMeta.boundKind === 'certified' ? 'gapLower' : 'gapBound') : 'gapRef');
+  $('gapLabel').textContent = t(isOptimum() ? 'gapOpt' : mapMeta?.bound && reference === mapMeta.bound ? (mapMeta.boundKind === 'estimate' ? 'gapEstimate' : mapMeta.boundKind === 'certified' ? 'gapLower' : 'gapBound')
+    : mapMeta?.gapStatus?.lowerBound && reference === mapMeta.gapStatus.lowerBound ? 'gapLower' : 'gapRef');
+  $('referenceUnit').textContent = mapMeta?.unit === 'm' ? ' (m)' : '';
+  { const r = Number($('reference').value), box = $('referenceDistance'); box.hidden = mapMeta?.unit !== 'm' || !(r > 0); box.textContent = box.hidden ? '' : formatDistance(r, 'm', lang()); }
+  $('seconds').setCustomValidity(validSeconds(Number($('seconds').value)) ? '' : t('secondsRange'));
   $('reachLabel').textContent = t(isOptimum() ? 'reachOpt' : 'reachRef');
   $('reach').textContent = runRecord?.firstReach ? `${dec(runRecord.firstReach.solverSeconds, 1)} s` : '—';
   $('elapsed').textContent = `${dec(shownElapsed, 1)} s`;
@@ -258,7 +275,7 @@ function requestProgressDraw() {   // R3: new tours are drawn at most as often a
 }
 $('refresh').onchange = () => {
   clearTimeout(renderTimer); renderTimer = null;
-  if (runRecord && active) runRecord.renderChanges.push({ seconds: (performance.now() - started) / 1000, intervalMs: Number($('refresh').value) });
+  if (runRecord && active) runRecord.renderChangesDropped += retainRecent(runRecord.renderChanges, { seconds: (performance.now() - started) / 1000, intervalMs: Number($('refresh').value) }, RUN_LIMITS.renderChanges);
   if (renderPending && active) requestProgressDraw();
 };
 new ResizeObserver(() => draw()).observe(canvas);
@@ -277,7 +294,8 @@ function controls() {
   $('replayOpen').disabled = active || !!loading || !recorder?.data.frames.length;
 }
 function acceptBest(data, worker) {
-  runRecord.history.push({ worker, length: data.length, seconds: data.elapsed, steps: data.steps });
+  runRecord.historyReceived++;
+  runRecord.historyDropped += retainRecent(runRecord.history, { worker, length: data.length, seconds: data.elapsed, steps: data.steps }, RUN_LIMITS.history);
   if (runRecord.reference && data.length <= runRecord.reference && runRecord.firstReach === null) {
     runRecord.firstReach = { worker, solverSeconds: data.elapsed, pageSeconds: (performance.now() - started) / 1000 };
   }
@@ -322,7 +340,7 @@ async function load(value, which, metadata = null, verifiedHash = null) {
   mapMeta = metadata;
   $('stopOptimum').checked = !!metadata?.optimum;
   text = value; coords = new Float64Array(); extent = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
-  $('reference').value = metadata?.optimum || metadata?.bound || '';
+  $('reference').value = metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || '';
   if (metadata) $('seconds').value = metadata.cities <= 20000 ? 60 : metadata.cities <= 200000 ? 120 : 600;
   if (which === 'random') $('seconds').value = 10;
   render();
@@ -350,7 +368,8 @@ async function load(value, which, metadata = null, verifiedHash = null) {
 async function start(options = {}) {
   unlocked();
   if (active || loading || !coords.length) throw new Message('loadFirst');
-  const seconds = options.seconds ?? number('seconds', .1, 600);
+  const seconds = options.seconds ?? number('seconds', RUN_LIMITS.minSeconds, RUN_LIMITS.maxSeconds);
+  if (!validSeconds(seconds)) throw new Message('secondsRange');
   const seed = options.seed ?? number('seed', 0, 4294967295);
   if (!Number.isInteger(seed)) throw new Message('seedInt');
   const workers = options.workers ?? Number($('workers').value);
@@ -368,15 +387,15 @@ async function start(options = {}) {
   clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
   if (options.recording !== false && coords.length >= 6) recordSafely(() => {
     recorder = createRecorder(coords, { name: mapMeta ? exampleLabel(mapMeta, lang()) : mapName, inputSha256: inputHash, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1],
-      optimum: mapMeta?.optimum || null, source: mapMeta?.source || '', credit: mapMeta?.credit || '' }, { separate: recordingSeparate });
+      unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, source: mapMeta?.source || '', credit: mapMeta?.credit || '' }, { separate: recordingSeparate });
   });
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
   runRecord = { schema: '8ztsp-web-run-v1', name: mapName, inputSha256: inputHash, cities: coords.length / 2, seconds, seed,
-    renderIntervalMs: Number($('refresh').value), renderChanges: [],
+    renderIntervalMs: Number($('refresh').value), renderChanges: [], renderChangesDropped: 0,
     workers, deviceCores: reportedCores, workerLimit: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
-    refinement, reference, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
+    refinement, reference, unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
-    history: [], results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
+    history: [], historyReceived: 0, historyDropped: 0, results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
   render();
   let shared;
   if (crossOriginIsolated && typeof SharedArrayBuffer !== 'undefined') {
@@ -514,6 +533,7 @@ $('file').onchange = safely(async () => {
   await load(await file.text(), 'file');
 });
 $('reference').oninput = render;
+$('seconds').oninput = render;
 $('workers').onchange = render;
 $('download').onclick = () => {   // R3: streamed, so a tour of millions of cities fits
   const parts = [JSON.stringify({ ...runRecord, tour: undefined }).slice(0, -1) + ',"tour":['];
@@ -551,7 +571,10 @@ document.addEventListener('fullscreenchange', expandedControls);
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && mapView.classList.contains('map-window')) closeMap(); });
 window.MDLxDCCLocale?.subscribe(() => render());
 // The same QA hook as in R1/R2/R3: it drives the same UI and worker path.
-window.tsp8zLab = { load, loadExample, start, stop, loadNu, generate, cores, reportedCores, defaultWorkers: isIPhone ? 6 : reportedCores, get canShare() { return canShare; },
+window.tsp8zLab = { load, loadExample, start, stop, loadNu, generate, cores, reportedCores, limits: RUN_LIMITS,
+  get retentionStats() { return { history: runRecord?.history.length ?? 0, historyReceived: runRecord?.historyReceived ?? 0, historyDropped: runRecord?.historyDropped ?? 0,
+    renderChanges: runRecord?.renderChanges.length ?? 0, recording: recorder?.summary() ?? null }; },
+ defaultWorkers: isIPhone ? 6 : reportedCores, get canShare() { return canShare; },
   get ready() { return loaderState.status === 'ready'; }, get loaderStatus() { return loaderState.status; },
   get wasmMetrics() { return structuredClone(loaderState.metrics); },
   get renderStats() { return { intervalMs: Number($('refresh').value), drawCount, progressDrawCount, lastDrawnTourLength, progressDrawTimes: [...progressDrawTimes] }; },

@@ -1,8 +1,10 @@
 // Recording data only. No search code or credentials.
-export const REPLAY_LIMITS=Object.freeze({bytes:8*1024*1024,frames:256,fullCities:20000,points:4096,fileBytes:16*1024*1024});
+// Actual elapsed time may include a browser/OS suspension beyond the requested day.
+export const REPLAY_LIMITS=Object.freeze({bytes:8*1024*1024,frames:256,fullCities:20000,points:4096,fileBytes:16*1024*1024,seconds:7*86400});
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const fail=()=>{throw Error('Invalid or oversized recording.');};
 export function createRecorder(coordinates,meta={},options={}){
+ if(meta.unit!==undefined&&meta.unit!==null&&meta.unit!=='m')fail();
  const n=coordinates.length/2,full=n<=REPLAY_LIMITS.fullCities;
  const limit=Math.min(options.bytes??REPLAY_LIMITS.bytes,REPLAY_LIMITS.bytes);
  const stride=Math.max(1,Math.ceil(n/REPLAY_LIMITS.points));
@@ -11,7 +13,7 @@ export function createRecorder(coordinates,meta={},options={}){
  const capacity=Math.min(REPLAY_LIMITS.frames,Math.floor((limit-points.byteLength)/frameBytes)-1);
  if(capacity<2)fail();
  const data={schema:'8ztsp-recording-v1',name:String(meta.name??'Map').slice(0,200),inputSha256:meta.inputSha256??'',cities:n,
-  metric:meta.metric==='CEIL_2D'?'CEIL_2D':'EUC_2D',optimum:meta.optimum??null,source:String(meta.source??'').slice(0,1000),
+  metric:meta.metric==='CEIL_2D'?'CEIL_2D':'EUC_2D',unit:meta.unit??null,optimum:meta.optimum??null,source:String(meta.source??'').slice(0,1000),
   credit:String(meta.credit??'').slice(0,1000),sampled:!full,clock:options.separate?'arrival':'solver',points,frames:[],duration:0,dropped:0};
  let latest=null,costMs=0,received=0;
  function append(item){
@@ -57,8 +59,9 @@ export function parseRecording(text){
  validateRecording(data);return data;
 }
 export function validateRecording(data){
+ if(data.unit!==undefined&&data.unit!==null&&data.unit!=='m')fail();
  if(data.schema!=='8ztsp-recording-v1'||typeof data.name!=='string'||data.name.length>200||typeof data.sampled!=='boolean'||!['EUC_2D','CEIL_2D'].includes(data.metric)||!['solver','arrival'].includes(data.clock))fail();
- if(!Number.isInteger(data.cities)||data.cities<3||data.cities>10000000||!finite(data.duration)||data.duration<0||data.duration>86400||!Array.isArray(data.frames)||!data.frames.length||data.frames.length>REPLAY_LIMITS.frames)fail();
+ if(!Number.isInteger(data.cities)||data.cities<3||data.cities>10000000||!finite(data.duration)||data.duration<0||data.duration>REPLAY_LIMITS.seconds||!Array.isArray(data.frames)||!data.frames.length||data.frames.length>REPLAY_LIMITS.frames)fail();
  if(!(data.points instanceof Float64Array)||data.points.length%2||data.points.length<6||data.points.length>(data.sampled?REPLAY_LIMITS.points:data.cities)*2||(!data.sampled&&(data.cities>REPLAY_LIMITS.fullCities||data.points.length!==data.cities*2)))fail();
  for(const c of data.points)if(!finite(c)||Math.abs(c)>1e12)fail();
  let bytes=data.points.byteLength,at=-1,length=Infinity;
