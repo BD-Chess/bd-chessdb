@@ -56,8 +56,10 @@ async function session(browser, width, language, theme) {
     viewport: { width, height: 900 }, reducedMotion: 'reduce', serviceWorkers: 'block'
   });
   await context.addInitScript(({ language, theme }) => {
-    if (language) localStorage.setItem('mdlxdcc-lang', language);
-    if (theme) localStorage.setItem('mdlxdcc-theme', theme);
+    // Seed a fresh visitor once; later navigations must retain the choices
+    // made through the actual toolbar rather than reapplying the fixture.
+    if (language && !localStorage.getItem('mdlxdcc-lang')) localStorage.setItem('mdlxdcc-lang', language);
+    if (theme && !localStorage.getItem('mdlxdcc-theme')) localStorage.setItem('mdlxdcc-theme', theme);
   }, { language, theme });
   const requests = [];
   await context.route('**/*', route => {
