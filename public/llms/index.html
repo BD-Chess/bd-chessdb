@@ -111,6 +111,18 @@
     th[aria-sort="ascending"] .arr, th[aria-sort="descending"] .arr { opacity: 1; color: var(--accent); }
     tr.thin td { opacity: .62; }
     .thin-mark { color: var(--plan); font-weight: 700; margin-left: .15rem; }
+    .vfilter { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .7rem; margin: .9rem 0 .2rem; }
+    .vlabel { color: var(--muted); font-size: .88rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .chip { min-height: 44px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink); padding: .2rem .75rem; font-size: .88rem; }
+    .chip .n { color: var(--muted); font-size: .82em; margin-left: .15rem; }
+    .chip:hover { border-color: var(--accent); }
+    .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 700; background: var(--surface); }
+    .vtop { display: inline-flex; align-items: center; gap: .4rem; color: var(--muted); font-size: .88rem; }
+    .vtop select { min-height: 44px; border: 1px solid var(--line); border-radius: .5rem; background: var(--panel); color: var(--ink); padding: .2rem .5rem; font: inherit; }
+    .vhelp { margin: .2rem 0; }
+    .fnote { color: var(--plan); font-size: .9rem; margin: .35rem 0; }
+    .linkbtn { border: 0; background: none; color: var(--accent); text-decoration: underline; padding: .2rem .35rem; min-height: 44px; font-size: inherit; }
     .newtag { display: inline-block; margin-left: .35rem; padding: 0 .3rem; border-radius: .3rem; background: var(--accent); color: var(--bg); font: 700 .66rem/1.5 system-ui, sans-serif; letter-spacing: .06em; vertical-align: .08em; }
     .newbox { max-width: none; margin: .7rem 0 .4rem; }
     .newbox ul { margin: .25rem 0 .35rem; }
@@ -236,6 +248,14 @@
       <h2 id="skupno-t"><span data-lang="sl">Skupna ocena</span><span data-lang="en" hidden>Overall score</span></h2>
       <p class="prose small muted" data-lang="sl">Klik na model odpre njegove ocene po kategorijah, vire in vse posamezne rezultate. Krepko = modeli, ki jih spremljamo posebej.</p>
       <p class="prose small muted" data-lang="en" hidden>Click a model to see its category scores, sources and every individual result. Bold = models we track specifically.</p>
+      <div class="vfilter" role="group" aria-label="Filter po ponudniku" data-aria-sl="Filter po ponudniku" data-aria-en="Filter by provider">
+        <span class="vlabel"><span data-lang="sl">Ponudniki:</span><span data-lang="en" hidden>Providers:</span></span>
+        <span class="chips" id="vchips"></span>
+        <label class="vtop"><span data-lang="sl">Na ponudnika:</span><span data-lang="en" hidden>Per provider:</span> <select id="vtop"></select></label>
+      </div>
+      <p class="small muted vhelp" data-lang="sl">Filter velja za vse tabele modelov na strani: skupno, kategorije in razhajanja. »Le najboljši« pokaže najboljši model vsakega ponudnika po oceni v tisti tabeli.</p>
+      <p class="small muted vhelp" data-lang="en" hidden>The filter applies to every model table on the page: overall, categories and disagreements. “Best only” shows each provider's best model by the score of that table.</p>
+      <p class="fnote" data-fnote hidden></p>
       <div class="note newbox" id="newbox" role="note" hidden></div>
       <div class="controls">
         <input type="search" id="q" autocomplete="off" placeholder="Išči model ali ponudnika …" data-ph-sl="Išči model ali ponudnika …" data-ph-en="Search model or provider …" aria-label="Išči model ali ponudnika" data-aria-sl="Išči model ali ponudnika" data-aria-en="Search model or provider">
@@ -257,6 +277,7 @@
       <div class="eyebrow"><span data-lang="sl">Po kategorijah</span><span data-lang="en" hidden>By category</span></div>
       <h2 id="kategorije-t"><span data-lang="sl">Kdo je najboljši pri čem</span><span data-lang="en" hidden>Who is best at what</span></h2>
       <ul class="tabs" id="tabs" aria-label="Kategorija" data-aria-sl="Kategorija" data-aria-en="Category"></ul>
+      <p class="fnote" data-fnote hidden></p>
       <p class="catdesc" id="catdesc"></p>
       <div class="tw"><table class="data" id="cattable"></table></div>
       <div class="controls"><button type="button" class="btn" id="cat-toggle" aria-pressed="false"></button></div>
@@ -270,6 +291,7 @@
         <h3><span data-lang="sl">Največja razhajanja med lestvicami</span><span data-lang="en" hidden>Largest spread between boards</span></h3>
         <p class="small" data-lang="sl">SD = standardni odklon popravljenih percentilov modela čez vse lestvice. Visok SD pomeni, da je model na eni lestvici blizu vrha, na drugi pa daleč spodaj.</p>
         <p class="small" data-lang="en" hidden>SD = standard deviation of the model's corrected percentiles across all boards. A high SD means the model is near the top of one board and far down another.</p>
+        <p class="fnote" data-fnote hidden></p>
         <div class="tw"><table class="data" id="disagree"></table></div>
         <h3><span data-lang="sl">Kdo vodi koliko lestvic</span><span data-lang="en" hidden>Who leads how many boards</span></h3>
         <p class="small" id="leadercounts"></p>
@@ -364,7 +386,7 @@
     var root = document.documentElement;
     var D = null, S = null, C = null;
     var BOARD = {}, CATS = ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "sl", "long_context", "speed"];
-    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {}, sort: {} };
+    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {}, sort: {}, vend: {}, top: 0 };
     var TOP = 40, CTOP = 25;
     var T = {
       sl: {
@@ -387,6 +409,8 @@
         noSl: "Modeli, ki jih spremljamo, brez slovenskih rezultatov:", commentBy: "Komentar", lead_n: "lestvic",
         cat_reasoning: "Splošno & sklepanje", cat_coding: "Programiranje", cat_agentic: "Agenti & orodja", cat_knowledge: "Znanje & halucinacije", cat_preference: "Človeška preferenca",
         cat_multilingual: "Večjezičnost", cat_sl: "Slovenščina", cat_long_context: "Dolg kontekst", cat_speed: "Hitrost", cat_other: "Drugo", cat_price: "Cena",
+        vAll: "Vsi", vOther: "Drugi", topAll: "vsi modeli", top1: "le najboljši", top3: "najboljši 3", top1n: "le najboljši na ponudnika", top3n: "najboljši 3 na ponudnika",
+        fActive: "Filter", fClear: "Počisti filter",
         sortHint: "Klik razvrsti, ponovni klik obrne vrstni red", thinTip: "Ocena iz največ 2 neodvisnih virov",
         thinNote: "Zatemnjeno z * = ocena v tej kategoriji iz največ 2 neodvisnih virov; beri previdno.",
         newTag: "NOVO", newFam: "Nova družina", released: "izšel", afterData: "po zadnjem zajemu podatkov — še brez ocene", notInData: "še ni na nobeni sprejeti lestvici — brez ocene",
@@ -414,6 +438,8 @@
         noSl: "Tracked models without any Slovenian result:", commentBy: "Commentary", lead_n: "boards",
         cat_reasoning: "General & reasoning", cat_coding: "Coding", cat_agentic: "Agents & tools", cat_knowledge: "Knowledge & hallucination", cat_preference: "Human preference",
         cat_multilingual: "Multilingual", cat_sl: "Slovenian", cat_long_context: "Long context", cat_speed: "Speed", cat_other: "Other", cat_price: "Price",
+        vAll: "All", vOther: "Others", topAll: "all models", top1: "best only", top3: "best 3", top1n: "best per provider only", top3n: "best 3 per provider",
+        fActive: "Filter", fClear: "Clear filter",
         sortHint: "Click to sort, click again to reverse", thinTip: "Score from at most 2 independent sources",
         thinNote: "Dimmed with * = score in this category from at most 2 independent sources; read with care.",
         newTag: "NEW", newFam: "New family", released: "released", afterData: "after the last data collection — not scored yet", notInData: "not yet on any accepted board — no score",
@@ -507,6 +533,48 @@
       Array.prototype.forEach.call(document.querySelectorAll("a[data-file]"), function (a) { a.setAttribute("href", dataBase() + a.getAttribute("data-file")); });
     }
 
+    // Provider filter. Chips for providers with at least 3 ranked models (ordered by their best overall rank); the rest
+    // share one "Others" chip. "Best only / best 3" keeps each provider's top model(s) by the score of the table shown.
+    var VALIAS = { "Mistral AI": "Mistral" }, VMAIN = [], VCOUNT = {}, BYID = {};
+    function vendorOf(m) { var v = (m && m.vendor) || "?"; return VALIAS[v] || v; }
+    function vkey(m) { var v = vendorOf(m); return VMAIN.indexOf(v) >= 0 ? v : "__other"; }
+    function vendActive() { return Object.keys(st.vend).length > 0; }
+    function filtering() { return vendActive() || st.top > 0; }
+    function vendOK(m) { return !vendActive() || !!st.vend[vkey(m)]; }
+    function topPer(list) { if (!st.top) return list; var n = {}; return list.filter(function (m) { var v = vendorOf(m); n[v] = (n[v] || 0) + 1; return n[v] <= st.top; }); }
+    function pick(list) { return topPer(list.filter(vendOK)); }
+    function initVendors() {
+      var best = {};
+      VCOUNT = {}; BYID = {};
+      D.models.forEach(function (m) { BYID[m.model_id] = m; });
+      byRank().forEach(function (m) { var v = vendorOf(m); VCOUNT[v] = (VCOUNT[v] || 0) + 1; if (!(v in best)) best[v] = m.overall_rank; });
+      VMAIN = Object.keys(VCOUNT).filter(function (v) { return VCOUNT[v] >= 3; }).sort(function (a, b) { return best[a] - best[b]; });
+    }
+    function renderFilter() {
+      var other = 0;
+      Object.keys(VCOUNT).forEach(function (v) { if (VMAIN.indexOf(v) < 0) other += VCOUNT[v]; });
+      var chips = [["", t("vAll"), null]].concat(VMAIN.map(function (v) { return [v, v, VCOUNT[v]]; }));
+      if (other) chips.push(["__other", t("vOther"), other]);
+      el("vchips").innerHTML = chips.map(function (c) {
+        var on = c[0] ? !!st.vend[c[0]] : !vendActive();
+        return '<button type="button" class="chip" data-vendor="' + esc(c[0]) + '" aria-pressed="' + on + '">' + esc(c[1]) + (c[2] !== null ? '<span class="n">' + esc(c[2]) + "</span>" : "") + "</button>";
+      }).join("");
+      el("vtop").innerHTML = [[0, t("topAll")], [1, t("top1")], [3, t("top3")]].map(function (o) { return '<option value="' + o[0] + '"' + (st.top === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("");
+      var note = "";
+      if (filtering()) {
+        var parts = [];
+        if (vendActive()) parts.push(Object.keys(st.vend).map(function (k) { return k === "__other" ? t("vOther") : k; }).join(", "));
+        if (st.top) parts.push(t(st.top === 1 ? "top1n" : "top3n"));
+        note = esc(t("fActive")) + ": " + esc(parts.join(" · ")) + ' <button type="button" class="linkbtn" data-fclear>' + esc(t("fClear")) + "</button>";
+      }
+      Array.prototype.forEach.call(document.querySelectorAll("[data-fnote]"), function (n) { n.innerHTML = note; n.hidden = !note; });
+    }
+    function topSet() {
+      var n = {}, out = {};
+      byRank().forEach(function (m) { var v = vendorOf(m); n[v] = (n[v] || 0) + 1; if (n[v] <= st.top) out[m.model_id] = 1; });
+      return out;
+    }
+
     function renderNew() {
       var box = el("newbox"), BY = {}, fam = {}, order = [];
       D.models.forEach(function (m) { BY[m.model_id] = m; });
@@ -590,10 +658,10 @@
     }
 
     function renderOverall() {
-      var cols = overallCols(), all = byRank(), q = st.q.trim().toLowerCase();
-      var list = q ? all.filter(function (m) { return (m.model_id + " " + (m.vendor || "")).toLowerCase().indexOf(q) >= 0; }) : all;
+      var cols = overallCols(), all = byRank(), q = st.q.trim().toLowerCase(), list = pick(all);
+      list = q ? list.filter(function (m) { return (m.model_id + " " + (m.vendor || "")).toLowerCase().indexOf(q) >= 0; }) : list;
       list = sortList(list, "overall", cols);
-      var shown = q || st.all ? list : list.slice(0, TOP);
+      var shown = q || st.all || filtering() ? list : list.slice(0, TOP);
       var head = thead("overall", cols);
       var body = shown.map(function (m) {
         var extra = '<span class="m-only"> · ' + esc(priceTxt(m.price)) + " · " + esc(m.n_sources) + " " + esc(t("srcs")) + "</span>";
@@ -604,10 +672,10 @@
       if (!shown.length) body = '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>";
       el("overall").innerHTML = head + "<tbody>" + body + "</tbody>";
       var tg = el("all-toggle");
-      tg.hidden = !!q;
+      tg.hidden = !!q || filtering();
       tg.textContent = st.all ? t("showTop") : t("showAll") + " (" + all.length + ")";
       tg.setAttribute("aria-pressed", String(st.all));
-      var un = D.models.filter(function (m) { return !m.overall_rank; }).sort(function (a, b) { return b.overall - a.overall; });
+      var un = D.models.filter(function (m) { return !m.overall_rank && vendOK(m); }).sort(function (a, b) { return b.overall - a.overall; });
       el("unranked-sum").textContent = t("unranked") + ": " + un.length;
       el("unranked").innerHTML = un.map(function (m) { return '<span class="mid">' + esc(m.model_id) + "</span> (" + esc(nf(m.overall, 1)) + ", " + esc(m.n_sources) + ")"; }).join(" · ");
     }
@@ -657,7 +725,7 @@
       var list = catList(c), total = list.length;
       RK = {};
       list.forEach(function (m, i) { RK[m.model_id] = i + 1; });
-      list = sortList(list, key, cols);
+      list = sortList(pick(list), key, cols);
       var rows = list.map(function (m) {
         var rk = '<td class="rk">' + RK[m.model_id] + "</td>";
         if (c === "speed") return rowOpen(m) + rk + "<td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.output_tokens_per_s, 0)) + '</span></td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + "</td></tr>";
@@ -682,10 +750,10 @@
       }
       if (c === "speed" && cb.boards.length) desc += " " + t("cats_in") + ": " + cb.boards.map(function (b) { return b.name; }).join(", ") + ".";
       el("catdesc").textContent = desc;
-      var shown = st.catAll ? rows : rows.slice(0, CTOP);
+      var shown = st.catAll || filtering() ? rows : rows.slice(0, CTOP);
       el("cattable").innerHTML = thead(key, cols) + "<tbody>" + (shown.join("") || '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>") + "</tbody>";
       var tg = el("cat-toggle");
-      tg.hidden = rows.length <= CTOP;
+      tg.hidden = rows.length <= CTOP || filtering();
       tg.textContent = st.catAll ? t("catShowTop") : t("catShowAll") + " (" + rows.length + ")";
       tg.setAttribute("aria-pressed", String(st.catAll));
     }
@@ -711,10 +779,12 @@
     function renderDisagree() {
       var bl = blocks();
       el("disagree-text").innerHTML = bl.filter(isDisagreeBlock).map(renderBlock).join("");
-      var dcols = disagreeCols(), rows = sortList(D.disagreements || [], "disagree", dcols).map(function (x) {
+      var dcols = disagreeCols(), ts = st.top ? topSet() : null;
+      var dl = (D.disagreements || []).filter(function (x) { var m = BYID[x.model_id]; return (!m || vendOK(m)) && (!ts || ts[x.model_id]); });
+      var rows = sortList(dl, "disagree", dcols).map(function (x) {
         return '<tr><td><span class="mid">' + esc(x.model_id) + '</span><span class="sub m-only">↑ ' + esc(boardName(x.best_board)) + "<br>↓ " + esc(boardName(x.worst_board)) + '</span></td><td class="num">' + esc(nf(x.overall, 1)) + '</td><td class="num"><span class="score">' + esc(nf(x.pct_spread_sd, 1)) + '</span></td><td class="d-only">' + esc(boardName(x.best_board)) + '</td><td class="d-only">' + esc(boardName(x.worst_board)) + "</td></tr>";
       }).join("");
-      el("disagree").innerHTML = thead("disagree", dcols) + "<tbody>" + rows + "</tbody>";
+      el("disagree").innerHTML = thead("disagree", dcols) + "<tbody>" + (rows || '<tr><td colspan="5" class="muted">' + esc(t("noResults")) + "</td></tr>") + "</tbody>";
       var lc = D.board_leader_counts || {};
       el("leadercounts").innerHTML = Object.keys(lc).sort(function (a, b) { return lc[b] - lc[a]; }).slice(0, 12).map(function (k) { return '<span class="mid">' + esc(k) + "</span> " + esc(lc[k]); }).join(" · ") + " " + esc(t("lead_n")) + ".";
       var order = { reasoning: 1, coding: 2, agentic: 3, knowledge: 4, preference: 5, multilingual: 6, long_context: 7 };
@@ -767,14 +837,56 @@
     function renderAll() {
       if (!D) return;
       Array.prototype.forEach.call(document.querySelectorAll("[data-ph-sl]"), function (n) { n.setAttribute("placeholder", n.getAttribute(L() === "en" ? "data-ph-en" : "data-ph-sl")); });
-      renderMeta(); renderNew(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderSources(); renderWeights();
+      renderMeta(); renderNew(); renderFilter(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderSources(); renderWeights();
     }
 
+    // Shareable view: provider filter, best-per-provider, category, sort orders and search live in the query string.
+    function sortTxt(x) { return x ? x.k + "." + (x.d > 0 ? "a" : "d") : ""; }
+    function syncURL() {
+      try {
+        var p = new URLSearchParams(location.search);
+        var put = function (k, v) { if (v) p.set(k, v); else p.delete(k); };
+        put("v", Object.keys(st.vend).map(function (k) { return k === "__other" ? "drugi" : k; }).join(","));
+        put("top", st.top ? String(st.top) : "");
+        put("cat", st.cat !== "reasoning" ? st.cat : "");
+        put("s", sortTxt(st.sort.overall));
+        put("cs", sortTxt(st.sort["cat:" + st.cat]));
+        put("q", st.q.trim());
+        var qs = p.toString();
+        history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+      } catch (_) {}
+    }
+    function readURL() {
+      try {
+        var p = new URLSearchParams(location.search), x;
+        (p.get("v") || "").split(",").forEach(function (v) { v = v.trim(); if (v === "drugi" || v === "other") st.vend.__other = 1; else if (VMAIN.indexOf(v) >= 0) st.vend[v] = 1; });
+        var tp = Number(p.get("top"));
+        if (tp === 1 || tp === 3) st.top = tp;
+        if (CATS.indexOf(p.get("cat")) >= 0) st.cat = p.get("cat");
+        var srt = function (v, cols) { var m = /^([a-z_]+)\.(a|d)$/.exec(v || ""); return m && cols.some(function (c) { return c.k === m[1] && c.get; }) ? { k: m[1], d: m[2] === "a" ? 1 : -1 } : null; };
+        if ((x = srt(p.get("s"), overallCols()))) st.sort.overall = x;
+        if ((x = srt(p.get("cs"), catCols(st.cat)))) st.sort["cat:" + st.cat] = x;
+        if (p.get("q")) { st.q = p.get("q"); el("q").value = st.q; }
+      } catch (_) {}
+    }
+    function refilter() { if (!D) return; renderFilter(); renderOverall(); renderCats(); renderDisagree(); syncURL(); }
+    el("vchips").addEventListener("click", function (ev) {
+      var b = ev.target.closest("button[data-vendor]");
+      if (!b) return;
+      var v = b.getAttribute("data-vendor");
+      if (!v) st.vend = {}; else if (st.vend[v]) delete st.vend[v]; else st.vend[v] = 1;
+      refilter();
+      var nb = el("vchips").querySelector('button[data-vendor="' + (window.CSS && CSS.escape ? CSS.escape(v) : v) + '"]');
+      if (nb) nb.focus();
+    });
+    el("vtop").addEventListener("change", function () { st.top = Number(el("vtop").value) || 0; refilter(); });
+    document.addEventListener("click", function (ev) { var b = ev.target && ev.target.closest ? ev.target.closest("[data-fclear]") : null; if (!b) return; st.vend = {}; st.top = 0; refilter(); var c = el("vchips").querySelector("button"); if (c) c.focus(); });
+
     var timer = 0;
-    el("q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(function () { st.q = el("q").value; if (D) renderOverall(); }, 120); });
+    el("q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(function () { st.q = el("q").value; if (D) { renderOverall(); syncURL(); } }, 120); });
     el("all-toggle").addEventListener("click", function () { st.all = !st.all; renderOverall(); });
     el("cat-toggle").addEventListener("click", function () { st.catAll = !st.catAll; renderCats(); });
-    el("tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-cat]"); if (!b) return; st.cat = b.getAttribute("data-cat"); st.catAll = false; renderCats(); var nb = el("tabs").querySelector('button[data-cat="' + st.cat + '"]'); if (nb) nb.focus(); });
+    el("tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-cat]"); if (!b) return; st.cat = b.getAttribute("data-cat"); st.catAll = false; renderCats(); syncURL(); var nb = el("tabs").querySelector('button[data-cat="' + st.cat + '"]'); if (nb) nb.focus(); });
     el("overall").addEventListener("click", function (ev) {
       var b = ev.target.closest("button[data-model]"); if (!b) return;
       var id = b.getAttribute("data-model");
@@ -800,6 +912,7 @@
       x.render();
       var nb = el(tb.id).querySelector('button.sortb[data-sort="' + k + '"]');
       if (nb) nb.focus();
+      syncURL();
     });
     new MutationObserver(function () { renderAll(); }).observe(root, { attributes: true, attributeFilter: ["lang"] });
 
@@ -809,6 +922,8 @@
       .then(function (r) {
         D = r[0]; S = r[1]; C = r[2];
         (D.boards || []).forEach(function (b) { BOARD[b.board_id] = b; });
+        initVendors();
+        readURL();
         el("status").textContent = "";
         renderAll();
         return true;
