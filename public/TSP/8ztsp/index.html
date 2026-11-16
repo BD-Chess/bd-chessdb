@@ -411,6 +411,12 @@ p.w-swipe[hidden]{display:none}
 .w-entry p.w-up{margin:8px 0 0;max-width:none;text-align:right;font:600 calc(11px*var(--fs))/1.3 var(--mono);letter-spacing:.06em}
 .w-up a{color:var(--muted);text-decoration:none}.w-up a:hover,.w-up a:focus-visible{color:var(--cyan)}
 #w-toc{scroll-margin-top:calc(100px*var(--fs))}
+/* R27b: »Results at a glance« uses the full width and its 8zTSP column wraps, so the table fits without a sideways
+   swipe (R27's longer Slovenia cell had made it 1,308 px wide in a 1,180 px box; wrapping alone capped it at 760 px). A fold opened by arriving through a link
+   (tools/page_ui.js adds .w-arrived and a span .w-hide to its label) says »· hide | · skrij« until the reader closes it. */
+.w-glance .w-ltab table{max-width:none}   /* full width, as before R27; only the 8zTSP column wraps */
+.w-glance .w-ltab td:nth-child(4){white-space:normal}
+summary .w-hide{font:600 calc(11px*var(--fs))/1 var(--mono);letter-spacing:.06em;color:var(--muted)}
 
 /* language, text size and menu (same saved settings as the landing page) */
 :root{--scale:1;--m:1;--fs:calc(var(--scale)*var(--m))}
@@ -485,6 +491,7 @@ html:not([data-lang=sl]) .l-sl,html[data-lang=sl] .l-en{display:none!important}
 <tr><th scope="row"><span class="l-en" lang="en">nu3496 (Nicaragua)</span><span class="l-sl" lang="sl">nu3496 (Nikaragva)</span></th><td><span class="l-en" lang="en">3,496</span><span class="l-sl" lang="sl">3.496</span></td><td><span class="l-en" lang="en">optimum 96,132</span><span class="l-sl" lang="sl">optimum 96.132</span></td><td><span class="l-en" lang="en">the optimal tour, median 6.1 s of 10 runs</span><span class="l-sl" lang="sl">optimalna pot, mediana 6,1 s v 10 tekih</span></td><td>7</td><td><span class="l-en" lang="en">15 Nov 2026</span><span class="l-sl" lang="sl">15. nov. 2026</span></td><td><a href="#w-log-20261115-opt"><span class="l-en" lang="en">From the lab</span><span class="l-sl" lang="sl">Iz laboratorija</span></a></td></tr>
 <tr><th scope="row"><span class="l-en" lang="en">Nine national maps, wi29 to nu3496</span><span class="l-sl" lang="sl">Devet nacionalnih zemljevidov, od wi29 do nu3496</span></th><td><span class="l-en" lang="en">29–3,496</span><span class="l-sl" lang="sl">29–3.496</span></td><td><span class="l-en" lang="en">the known optima</span><span class="l-sl" lang="sl">znani optimumi</span></td><td><span class="l-en" lang="en">the optimal tour in 90 of 90 runs</span><span class="l-sl" lang="sl">optimalna pot v 90 od 90 tekov</span></td><td>1</td><td><span class="l-en" lang="en">14 Nov 2026</span><span class="l-sl" lang="sl">14. nov. 2026</span></td><td><a href="#seeds-new"><span class="l-en" lang="en">The table</span><span class="l-sl" lang="sl">Tabela</span></a></td></tr>
 <tr><th scope="row"><span class="l-en" lang="en">si6035 (Slovenia)</span><span class="l-sl" lang="sl">si6035 (Slovenija)</span></th><td><span class="l-en" lang="en">6,035</span><span class="l-sl" lang="sl">6.035</span></td><td><span class="l-en" lang="en">Concorde’s lower bound, proof running</span><span class="l-sl" lang="sl">Concordova spodnja meja, dokaz teče</span></td><td><span class="l-en" lang="en">best tour found 8,728,465 m (run of 300 s); at most 0.013% above the optimum by Concorde’s bound</span><span class="l-sl" lang="sl">najboljša najdena pot 8.728.465 m (tek 300 s); največ 0,013 % nad optimumom po Concordovi meji</span></td><td>7</td><td><span class="l-en" lang="en">15 Nov 2026</span><span class="l-sl" lang="sl">15. nov. 2026</span></td><td><a href="#w-log-20261115-si6035"><span class="l-en" lang="en">From the lab</span><span class="l-sl" lang="sl">Iz laboratorija</span></a></td></tr>
+<tr><th scope="row">bm33708 (Burma)</th><td><span class="l-en" lang="en">33,708</span><span class="l-sl" lang="sl">33.708</span></td><td><span class="l-en" lang="en">Waterloo’s lower bound 959,011</span><span class="l-sl" lang="sl">spodnja meja Waterlooja 959.011</span></td><td><span class="l-en" lang="en">level with LKH 3.0.7 after 1 h, 0.043–0.046% above the bound (one weak seed 0.111%)</span><span class="l-sl" lang="sl">izenačeno z LKH 3.0.7 po 1 h, 0,043–0,046 % nad mejo (eno šibko seme 0,111 %)</span></td><td>1</td><td><span class="l-en" lang="en">16 Nov 2026</span><span class="l-sl" lang="sl">16. nov. 2026</span></td><td><a href="#w-log-20261116-burma"><span class="l-en" lang="en">From the lab</span><span class="l-sl" lang="sl">Iz laboratorija</span></a></td></tr>
 <tr><th scope="row">DIMACS E1M.0</th><td><span class="l-en" lang="en">1,000,000</span><span class="l-sl" lang="sl">1.000.000</span></td><td><span class="l-en" lang="en">Held–Karp bound</span><span class="l-sl" lang="sl">meja Held–Karp</span></td><td><span class="l-en" lang="en">1% above the Held–Karp bound after 5 min 33 s; 0.772% after 30 min</span><span class="l-sl" lang="sl">1 % nad mejo Held–Karp po 5 min 33 s; 0,772 % po 30 min</span></td><td>1</td><td><span class="l-en" lang="en">14 Nov 2026</span><span class="l-sl" lang="sl">14. nov. 2026</span></td><td><a href="#w-log-20261114-fair1m"><span class="l-en" lang="en">From the lab</span><span class="l-sl" lang="sl">Iz laboratorija</span></a></td></tr>
 <tr><th scope="row">DIMACS E3M.0</th><td><span class="l-en" lang="en">3,162,278</span><span class="l-sl" lang="sl">3.162.278</span></td><td><span class="l-en" lang="en">estimated Held–Karp bound</span><span class="l-sl" lang="sl">ocenjena meja Held–Karp</span></td><td><span class="l-en" lang="en">1% above the estimated Held–Karp bound after 4 min 43 s; 0.743% after 1 h</span><span class="l-sl" lang="sl">1 % nad ocenjeno mejo Held–Karp po 4 min 43 s; 0,743 % po 1 h</span></td><td>7</td><td><span class="l-en" lang="en">14 Nov 2026</span><span class="l-sl" lang="sl">14. nov. 2026</span></td><td><a href="#w-log-20261114-new7b"><span class="l-en" lang="en">From the lab</span><span class="l-sl" lang="sl">Iz laboratorija</span></a></td></tr>
 <tr><th scope="row">DIMACS E10M.0</th><td><span class="l-en" lang="en">10,000,000</span><span class="l-sl" lang="sl">10.000.000</span></td><td><span class="l-en" lang="en">estimated Held–Karp bound</span><span class="l-sl" lang="sl">ocenjena meja Held–Karp</span></td><td><span class="l-en" lang="en">1% above the estimated Held–Karp bound after 15 min 20 s; 0.745% after 2 h</span><span class="l-sl" lang="sl">1 % nad ocenjeno mejo Held–Karp po 15 min 20 s; 0,745 % po 2 h</span></td><td>7</td><td><span class="l-en" lang="en">13–14 Nov 2026</span><span class="l-sl" lang="sl">13.–14. nov. 2026</span></td><td><a href="#w-log-20261114-new7"><span class="l-en" lang="en">From the lab</span><span class="l-sl" lang="sl">Iz laboratorija</span></a></td></tr>
@@ -1233,6 +1240,25 @@ const all=()=>boxes.forEach((_,i)=>check(i));
 const ro=new ResizeObserver(all);
 boxes.forEach((b,i)=>{ro.observe(b);if(b.firstElementChild)ro.observe(b.firstElementChild);b.addEventListener('scroll',()=>check(i),{passive:true});});
 all();
+})();
+
+// R27b (8zTSP-K, 16 Nov 2026): arriving at a lab entry by a link (the »Latest result« box, »From the lab« in the table at
+// the top, a date link inside another entry, or an address ending in #w-log-…), the entry opens its »More …« fold, so its
+// table and conditions are there at once. The reader can close it again; the next link to it opens it again. Until the
+// reader closes it, its label says »· hide | · skrij« (strangers on 16 Nov tapped »More …« to see more and closed it).
+(function(){'use strict';
+const unfold=h=>{if(!/^#w-log-[\w-]+$/.test(h||''))return;const e=document.getElementById(h.slice(1));
+  const d=e&&e.matches('li.w-entry')?e.querySelector(':scope > details.w-more'):null;if(!d||d.open)return;
+  const s=d.querySelector(':scope > summary');   // »· hide | · skrij« after the label until the reader closes the fold
+  if(s&&!s.querySelector('.w-hide')){const x=document.createElement('span');x.className='w-hide';
+    x.innerHTML='<span class="l-en" lang="en"> · hide</span><span class="l-sl" lang="sl"> · skrij</span>';s.append(x);}
+  d.classList.add('w-arrived');d.open=true;};
+document.addEventListener('toggle',ev=>{const d=ev.target;if(!d||!d.classList||!d.classList.contains('w-arrived')||d.open)return;
+  d.classList.remove('w-arrived');const x=d.querySelector(':scope > summary > .w-hide');if(x)x.remove();},true);
+document.addEventListener('click',ev=>{const a=ev.target&&ev.target.closest?ev.target.closest('a[href^="#w-log-"]'):null;
+  if(a)unfold(a.getAttribute('href'));});
+addEventListener('hashchange',()=>unfold(location.hash));
+unfold(location.hash);
 })();
 </script>
 </body>
