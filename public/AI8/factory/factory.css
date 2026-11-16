@@ -1,0 +1,56 @@
+/* AI tovarna / AI factory: same family as /ai8/how/ (how.css); shared AI8 toolbar and MDLxDCC display preferences. */
+:root{color-scheme:dark;--bg:#0b1220;--ink:#eff5fc;--muted:#b9c8d7;--panel:#121e2e;--surface:#16263a;--line:#304359;--accent:#7ae3ce;--scale:1}
+html[data-theme=light]{color-scheme:light;--bg:#f5f7f9;--ink:#15233a;--muted:#42556a;--panel:#fff;--surface:#e5edf2;--line:#b8c8d2;--accent:#166c61}
+*{box-sizing:border-box}
+html{font-size:calc(100% * var(--scale));-webkit-text-size-adjust:100%;scroll-padding-top:1rem}
+body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.65 system-ui,-apple-system,"Segoe UI",sans-serif;overflow-wrap:anywhere}
+a{color:var(--accent);text-underline-offset:.22em}
+button{cursor:pointer}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+p{margin:0 0 1rem}
+h1,h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;text-wrap:balance;overflow-wrap:anywhere}
+h1{font-size:clamp(2.4rem,5.4vw,4.6rem);line-height:1.08;letter-spacing:-.04em;margin:.6rem 0 1.5rem}
+h1 em{font-style:normal;color:var(--accent)}
+h2{font-size:clamp(1.7rem,3.1vw,2.4rem);line-height:1.16;letter-spacing:-.025em;margin:.4rem 0 1.2rem}
+h3{font-size:1.1rem;line-height:1.35;margin:0 0 .55rem}
+.shell{max-width:82rem;margin-inline:auto;padding-inline:clamp(1rem,4vw,3rem)}
+.skip{position:absolute;left:-10000px;top:.5rem;padding:.65rem 1rem;background:var(--panel);border:1px solid var(--accent);z-index:10}
+.skip:focus{left:1rem}
+.js-only{display:none}
+.js .js-only{display:flex}
+.js[data-lang=en] [data-lang=sl],.js[data-lang=sl] [data-lang=en]{display:none!important}
+.site-header{border-bottom:1px solid var(--line)}
+.header-inner{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem 1.5rem;padding-block:.7rem}
+.brand{font-weight:650;letter-spacing:-.03em;color:var(--ink);text-decoration:none;min-height:44px;display:flex;align-items:center;gap:.35em}
+.brand>span{color:var(--accent)}
+.site-nav{display:flex;gap:.15rem 1rem;flex-wrap:wrap;margin-right:auto}
+.site-nav a{display:flex;align-items:center;min-height:44px;color:var(--muted);text-decoration:none;font-size:.9rem}
+.site-nav a:hover{color:var(--accent)}
+.ai8-toolbar{font-size:.94rem}
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(2rem,7vw,6rem);align-items:center;padding-block:clamp(2.5rem,7vw,5rem)}
+.hero-copy{min-width:0}
+.eyebrow,.small-label{color:var(--accent);font-size:.76rem;font-weight:650;line-height:1.5;letter-spacing:.09em;text-transform:uppercase;margin:0 0 .8rem}
+.lead{font-size:1.16rem;color:var(--muted);max-width:52ch;line-height:1.65}
+.hero-note{padding:clamp(1.3rem,3vw,2.3rem);background:var(--panel);border:1px solid var(--line);border-radius:1.2rem;min-width:0}
+.hero-note p:not(.small-label){font-size:.95rem;color:var(--muted)}
+.hero-note p:last-child{margin-bottom:0}
+.section{padding-block:clamp(2.5rem,6vw,4.5rem);border-top:1px solid var(--line);scroll-margin-top:1.5rem}
+.letter{max-width:46rem;font-size:1.1rem;line-height:1.72}
+.letter p{margin-bottom:1.15rem}
+.letter strong{font-weight:650}
+.letter .pair{margin:1.4rem 0 1.6rem;padding:.2rem 0 .2rem 1.2rem;border-left:2px solid var(--accent)}
+.letter .pair p{margin-bottom:.85rem}
+.letter .pair p:last-child{margin-bottom:0}
+.letter .signature{color:var(--muted);font-style:italic;margin-top:1.8rem}
+.resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem}
+.resource-card{padding:1.5rem;background:var(--panel);border:1px solid var(--line);border-radius:1rem;min-width:0}
+.resource-card p:last-child{margin-bottom:0;color:var(--muted)}
+.muted{color:var(--muted)}
+.site-footer{border-top:1px solid var(--line);padding-block:2rem 3rem;font-size:.85rem}
+.site-footer p{margin-bottom:.5rem}
+.site-footer a{display:inline-block;min-height:44px;padding-block:.6rem}
+@media(max-width:60rem){.resource-grid{grid-template-columns:1fr}}
+@media(max-width:52rem){.hero{grid-template-columns:1fr;gap:2rem}.hero-note{max-width:42rem}.header-inner{gap:.3rem 1rem}.ai8-toolbar{width:100%;justify-content:flex-start}}
+@media(max-width:36rem){.shell{padding-inline:1rem}.hero{padding-block:2.4rem}.letter{font-size:1.04rem}.ai8-toolbar .ai8-divider{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+@media print{.site-header,.js-only,.skip{display:none!important}body{background:#fff;color:#111}.hero-note,.resource-card{background:transparent}a{color:inherit}}

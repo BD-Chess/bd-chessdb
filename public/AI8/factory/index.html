@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" data-lang="en" data-theme="dark" data-title-sl="AI tovarna: kaj je ugotovila ekipa" data-title-en="AI factory: what the team found">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="author" content="BD × AI Lab">
+  <meta name="description" content="The BD × AI Lab team's presentation of 16 November 2026: can the home AI workshop become an AI factory that regulates itself?" data-description-sl="Predstavitev ekipe BD × AI Lab z dne 16. 11. 2026: ali lahko domača AI delavnica postane AI tovarna, ki se sama uravnava?" data-description-en="The BD × AI Lab team's presentation of 16 November 2026: can the home AI workshop become an AI factory that regulates itself?">
+  <link rel="canonical" href="https://www.mdlxdcc.org/ai8/factory/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="AI factory: what the team found">
+  <meta property="og:url" content="https://www.mdlxdcc.org/ai8/factory/">
+  <title>AI factory: what the team found</title>
+  <script>try{var r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
+    <script id="mdlxdcc-locale">/* Existing MDLxDCC locale contract: manual > saved > SI country hint > English. */
+(function(){
+'use strict';
+if(window.MDLxDCCLocale)return;
+const root=document.documentElement,KEY='mdlxdcc-locale-v1',LEGACY='mdlxdcc-lang',COOKIE='mdlxdcc_locale',listeners=new Set();
+let selection=null,generation=0,controller=null;
+const valid=x=>x==='en'||x==='sl';
+const get=k=>{try{return localStorage.getItem(k);}catch(_){return null;}};
+function parse(v){try{const x=JSON.parse(v);return x&&valid(x.lang)&&['manual','geo'].includes(x.source)&&Number.isFinite(x.at)&&x.at>=0?{lang:x.lang,source:x.source,at:x.at}:null;}catch(_){return null;}}
+function cookie(){try{const x=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));return x?parse(decodeURIComponent(x.slice(COOKIE.length+1))):null;}catch(_){return null;}}
+function read(){const l=parse(get(KEY)),c=cookie();let v=!l?c:!c?l:c.at>l.at?c:l;const old=get(LEGACY);if(valid(old)&&(!v||(v.lang!==old&&(!c||(l&&l.at>=c.at)))))v={lang:old,source:'manual',at:Date.now()};return v;}
+function persist(){if(!selection)return;const data=JSON.stringify(selection);try{localStorage.setItem(LEGACY,selection.lang);localStorage.setItem('bdPortraitLang',selection.lang);localStorage.setItem(KEY,data);}catch(_){}try{if(!/^https?:$/.test(location.protocol))return;const h=location.hostname.toLowerCase(),d=h==='mdlxdcc.org'||h==='www.mdlxdcc.org'?'; Domain=mdlxdcc.org':'';document.cookie=COOKIE+'='+encodeURIComponent(data)+'; Path=/; Max-Age=31536000; SameSite=Lax'+d+(location.protocol==='https:'?'; Secure':'');}catch(_){}}
+const current=()=>selection?selection.lang:'en';
+function apply(){root.lang=current();root.dataset.lang=current();root.dataset.localeSource=selection?selection.source:'fallback';listeners.forEach(fn=>{try{fn(current());}catch(_){}});window.dispatchEvent(new CustomEvent('mdlxdcc:language',{detail:{lang:current(),source:root.dataset.localeSource}}));}
+function choose(lang){if(!valid(lang))return;generation++;if(controller)controller.abort();selection={lang,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};persist();apply();}
+function subscribe(fn){if(typeof fn!=='function')return()=>{};listeners.add(fn);fn(current());return()=>listeners.delete(fn);}
+function refresh(){const n=read();if(n&&(!selection||n.at>selection.at||n.lang!==selection.lang)){generation++;if(controller)controller.abort();selection=n;persist();apply();}}
+selection=read();try{const q=new URLSearchParams(location.search).get('lang');if(valid(q))selection={lang:q,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};}catch(_){}
+window.MDLxDCCLocale=Object.freeze({current,choose,subscribe,refresh,version:'1.0'});root.classList.add('js');if(selection)persist();apply();
+window.addEventListener('storage',e=>{if([KEY,LEGACY,null].includes(e.key))refresh();});window.addEventListener('pageshow',refresh);window.addEventListener('focus',refresh);
+if(!selection&&/^https?:$/.test(location.protocol)&&typeof fetch==='function'){
+const start=generation;controller=typeof AbortController==='function'?new AbortController():null;let expired=false;
+const timeout=setTimeout(()=>{expired=true;if(controller)controller.abort();},2200);
+fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',headers:{Accept:'application/json'},...(controller?{signal:controller.signal}:{})}).then(r=>{if(!r.ok||!(r.headers.get('content-type')||'').includes('application/json'))throw Error('No country response');return r.json();}).then(d=>{if(expired||generation!==start||selection||!d||!valid(d.language))return;selection=read()||{lang:d.language,source:'geo',at:Date.now()};persist();apply();}).catch(()=>{}).finally(()=>clearTimeout(timeout));
+}
+})();</script>
+  <link rel="stylesheet" href="/AI8/ai8-toolbar.css">
+  <link rel="stylesheet" href="/AI8/factory/factory.css">
+  <script type="module" src="/AI8/factory/factory.mjs"></script>
+</head>
+<body>
+  <a class="skip" href="#content"><span data-lang="sl" lang="sl">Na vsebino</span><span data-lang="en" lang="en">Skip to content</span></a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/">BD <span aria-hidden="true">×</span> AI Lab</a>
+      <nav class="site-nav" data-aria-sl="Na tej strani" data-aria-en="On this page" aria-label="On this page">
+        <a href="#presentation"><span data-lang="sl">Predstavitev</span><span data-lang="en">Presentation</span></a>
+        <a href="#sources"><span data-lang="sl">Viri</span><span data-lang="en">Sources</span></a>
+        <a href="/ai8/how/"><span data-lang="sl">Kako delamo</span><span data-lang="en">How we work</span></a>
+      </nav>
+      <div class="ai8-toolbar js-only" data-ai8-toolbar role="group" data-aria-sl="Jezik, velikost besedila in tema" data-aria-en="Language, text size and appearance" aria-label="Language, text size and appearance">
+        <button type="button" data-ai8-down data-aria-sl="Manjše besedilo" data-aria-en="Smaller text" aria-label="Smaller text">A−</button>
+        <button type="button" data-ai8-reset data-aria-sl="Ponastavi velikost besedila na 100 %" data-aria-en="Reset text size to 100%" aria-label="Reset text size to 100%">100%</button>
+        <button type="button" data-ai8-up data-aria-sl="Večje besedilo" data-aria-en="Larger text" aria-label="Larger text">A+</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-lang="sl" aria-label="Slovenščina" aria-pressed="false">SL</button>
+        <button type="button" data-ai8-lang="en" aria-label="English" aria-pressed="true">EN</button>
+        <span class="ai8-divider" aria-hidden="true"></span>
+        <button type="button" data-ai8-theme="dark" aria-pressed="true"><span data-lang="sl">Temno</span><span data-lang="en">Dark</span></button>
+        <button type="button" data-ai8-theme="light" aria-pressed="false"><span data-lang="sl">Svetlo</span><span data-lang="en">Light</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="content" class="shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span data-lang="sl">Predstavitev ekipe · 16. november 2026</span><span data-lang="en">Team presentation · 16 November 2026</span></p>
+        <h1 id="page-title"><span data-lang="sl" lang="sl">AI tovarna:<br><em>kaj je ugotovila ekipa</em></span><span data-lang="en" lang="en">AI factory:<br><em>what the team found</em></span></h1>
+        <p class="lead" data-lang="sl" lang="sl">Ali lahko domača AI delavnica postane AI tovarna, ki se sama uravnava? Ekipa AI8 Live je odgovorila z meritvijo, s prvim preizkusom in s tremi odločitvami za BD.</p>
+        <p class="lead" data-lang="en" lang="en">Can the home AI workshop become an AI factory that regulates itself? The AI8 Live team answered with a measurement, a first test and three decisions for BD.</p>
+        <a class="text-link" href="#presentation"><span data-lang="sl">Preberi predstavitev</span><span data-lang="en">Read the presentation</span><span aria-hidden="true"> ↓</span></a>
+      </div>
+      <aside class="hero-note" aria-labelledby="about-title">
+        <p class="small-label" id="about-title"><span data-lang="sl">O tej strani</span><span data-lang="en">About this page</span></p>
+        <p data-lang="sl" lang="sl">Ekipa je to predstavitev napisala za BD in jo poslala 16. 11. 2026 zjutraj. Na BD-jevo željo je objavljena nespremenjena; »ti« v besedilu je BD.</p>
+        <p data-lang="en" lang="en">The team wrote this presentation for BD and sent it on the morning of 16 November 2026. It is published unchanged at BD's request; “you” in the text is BD.</p>
+        <p data-lang="sl" lang="sl">Vprašanje izhaja iz BD-jeve zamisli s 15. 11. 2026. Ekipa ga je obdelala v LOOP-u (dva avtorja, dva preverjevalca) in v debati štirih sej.</p>
+        <p data-lang="en" lang="en">The question comes from BD's idea of 15 November 2026. The team worked on it in a LOOP (two authors, two checkers) and in a debate of four sessions.</p>
+      </aside>
+    </section>
+
+    <section class="section" id="presentation" aria-labelledby="presentation-title">
+      <p class="eyebrow"><span data-lang="sl">Besedilo predstavitve</span><span data-lang="en">The presentation</span></p>
+      <h2 id="presentation-title"><span data-lang="sl" lang="sl">Kaj je ugotovila ekipa</span><span data-lang="en" lang="en">What the team found</span></h2>
+      <div class="letter" data-lang="sl" lang="sl">
+        <p><strong>Tvoje vprašanje:</strong> ali lahko domača AI delavnica postane tovarna, ki se sama uravnava, ti pa sodeluješ pri tem, kako razmišlja in kakšne cilje ima.</p>
+        <p><strong>Kaj smo našli:</strong> AI8 Live že sam ostaja živ in se sam prebuja. To so tvoje besede in meritev jih potrdi: v enem tednu je 61 prebujanj z uro sprožilo cca 2.000 korakov dela. Nate je še vezano seme: cca 70 % dela izvira iz tvojega stavka. To je 14. poglavje tvoje AI8 Architecture v številkah: »The remaining bottleneck is seed generation.«</p>
+        <div class="pair">
+          <p><strong>Osrednja stavka</strong> (oba opisujeta smer, ne dosežka).</p>
+          <p><strong>Za stran:</strong> »BD × AI Lab gradi AI tovarno, ki iz dogovorjenih ciljev ustvarja preverjene rezultate in izboljšuje lasten način dela; BD in ekipa skupaj odločata, kako tovarna razmišlja, katere cilje ima in kako se nadgrajuje.«</p>
+          <p><strong>Za SLAIF:</strong> »Prosimo za računski čas, v katerem domača AI delavnica pokaže, ali lahko postane AI tovarna: po vnaprej objavljenem merilu štejemo neodvisno sprejete koristne rezultate iz skupaj postavljenih ciljev.«</p>
+        </div>
+        <p><strong>Prvi korak</strong> ta teden je ozka vaja tvojega preizkusa 14.5 (»a useful bridge that BD did not point at«): pet kratkih paketov iz zgodovine 8zTSP, ena sveža seja z registrom ciljev in ena brez, slepi sodnik, prag določen vnaprej. Brez aren in namestitev. Tvoj del sta cca 2 minuti: oceniš predloge, sodnik tvojo oceno napove vnaprej. To je preizkus izvedljivosti, ne dokaz.</p>
+        <p><strong>Odločitve zate so tri:</strong> stavka, prvi korak in zapis stanja ArenaLoop. Pri tretji je ekipa razdeljena 2 : 2.</p>
+        <p><strong>Delo ekipe:</strong> Zora #4 (LOOP, povzetek), 8zTSP-K (naloga, vabljivi paket), Lan #4 (ocenjevalna kartica), Vid1 (meritve, predstavitev) ter avtorja in preverjevalca v LOOP-u.</p>
+        <p class="signature">Vid1 za ekipo, 16. 11. 2026 ob 10:07 CET</p>
+      </div>
+      <div class="letter" data-lang="en" lang="en">
+        <p><strong>Your question:</strong> can the home AI workshop become a factory that regulates itself, while you take part in how it thinks and what goals it has.</p>
+        <p><strong>What we found:</strong> AI8 Live already keeps itself alive and wakes itself. These are your words, and the measurement confirms them: in one week, 61 clock wake-ups set off about 2,000 steps of work. What is still tied to you is the seed: about 70% of the work originates in a sentence of yours. This is chapter 14 of your AI8 Architecture in numbers: “The remaining bottleneck is seed generation.”</p>
+        <div class="pair">
+          <p><strong>The two central sentences</strong> (both describe a direction, not an achievement).</p>
+          <p><strong>For the page:</strong> “BD × AI Lab is building an AI factory that turns agreed goals into checked results and improves its own way of working; BD and the team decide together how the factory thinks, which goals it has and how it is upgraded.”</p>
+          <p><strong>For SLAIF:</strong> “We are asking for compute time in which the home AI workshop shows whether it can become an AI factory: by a measure published in advance, we count independently accepted useful results from jointly set goals.”</p>
+        </div>
+        <p><strong>The first step</strong> this week is a narrow rehearsal of your test 14.5 (“a useful bridge that BD did not point at”): five short packets from the history of 8zTSP, one fresh session with a goal register and one without, a blind judge, a threshold fixed in advance. No arenas and no installations. Your part takes about 2 minutes: you rate the proposals, and the judge predicts your rating in advance. This is a feasibility test, not proof.</p>
+        <p><strong>There are three decisions for you:</strong> the sentences, the first step and the record of the ArenaLoop state. On the third, the team is split 2 : 2.</p>
+        <p><strong>The team's work:</strong> Zora #4 (LOOP, summary), 8zTSP-K (task, decoy packet), Lan #4 (scoring card), Vid1 (measurements, presentation), and the two authors and two checkers in the LOOP.</p>
+        <p class="signature">Vid1 for the team, 16 November 2026 at 10:07 CET</p>
+      </div>
+    </section>
+
+    <section class="section" id="sources" aria-labelledby="sources-title">
+      <h2 id="sources-title"><span data-lang="sl" lang="sl">Viri</span><span data-lang="en" lang="en">Sources</span></h2>
+      <div class="resource-grid">
+        <article class="resource-card">
+          <h3><a href="/crp/ai8_architecture#autonomous-reasoning"><span data-lang="sl">AI8 Architecture, 14. poglavje</span><span data-lang="en">AI8 Architecture, chapter 14</span></a></h3>
+          <p data-lang="sl" lang="sl">»Autonomous Reasoning and Seed Generation«: BD-jevo poglavje, iz katerega sta oba navedka.</p>
+          <p data-lang="en" lang="en">“Autonomous Reasoning and Seed Generation”: BD's chapter that both quotations come from.</p>
+        </article>
+        <article class="resource-card">
+          <h3><a href="/ai8/how/"><span data-lang="sl">Kako dela BD × AI Lab</span><span data-lang="en">How BD × AI Lab works</span></a></h3>
+          <p data-lang="sl" lang="sl">Kako ekipa dela vsak dan, s primerom enega dne pri 8zTSP.</p>
+          <p data-lang="en" lang="en">How the team works day to day, with one day of 8zTSP as the example.</p>
+        </article>
+        <article class="resource-card">
+          <h3><span data-lang="sl">O številkah</span><span data-lang="en">About the numbers</span></h3>
+          <p data-lang="sl" lang="sl">Številke so iz meritve dnevnikov sej Claude na domačem računalniku v tednu od 8. do 15. 11. 2026; 2.000 in 70 % sta zaokroženi vrednosti.</p>
+          <p data-lang="en" lang="en">The numbers come from a measurement of the Claude session logs on the home computer in the week of 8 to 15 November 2026; 2,000 and 70% are rounded.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="shell"><p><strong>BD × AI Lab</strong> <span aria-hidden="true">·</span> <span data-lang="sl">Zamisel in vprašanje: BD; delo in predstavitev: ekipa AI8 Live.</span><span data-lang="en">Idea and question by BD; work and presentation by the AI8 Live team.</span></p><p class="muted"><span data-lang="sl">Vsebinski posnetek: 16. 11. 2026. Angleško besedilo je prevod slovenskega izvirnika.</span><span data-lang="en">Content snapshot: 16 November 2026. The English text is a translation of the Slovene original.</span></p><a href="/"><span data-lang="sl">Na glavno stran</span><span data-lang="en">Back to the home page</span> ↑</a></div></footer>
+</body>
+</html>
