@@ -1,0 +1,51 @@
+name: LLM index capture verification
+
+# The existing catalogue checks do not run the LLM page's own data/UI tests.
+# This adds scoped verification only; deploy-netlify.yml remains the publisher.
+on:
+  pull_request:
+    paths:
+      - 'public/llms/**'
+      - 'public/AI8/ai8-toolbar.css'
+      - 'tests/llms-page.test.cjs'
+      - 'tests/llms-captures-browser.cjs'
+      - '.github/workflows/llms-captures.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/llms/**'
+      - 'public/AI8/ai8-toolbar.css'
+      - 'tests/llms-page.test.cjs'
+      - 'tests/llms-captures-browser.cjs'
+      - '.github/workflows/llms-captures.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    env:
+      NODE_PATH: /tmp/llms-browser-runtime/node_modules
+      LLMS_CAPTURE_EVIDENCE: /tmp/llms-captures-qa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated, pinned test tools
+        run: |
+          npm install --prefix /tmp/llms-browser-runtime --no-package-lock --ignore-scripts --no-audit --no-fund jsdom@26.1.0 playwright@1.58.2
+          /tmp/llms-browser-runtime/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Verify data, tables and capture selection
+        run: node --test tests/llms-page.test.cjs
+      - name: Verify both captures, languages and themes in Chromium and WebKit
+        run: node tests/llms-captures-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: llms-captures-evidence
+          path: /tmp/llms-captures-qa
+          if-no-files-found: ignore

@@ -53,6 +53,9 @@
     .strip .shell { padding-top: .5rem; padding-bottom: .5rem; }
     .strip strong { letter-spacing: .04em; }
     .strip .warn { display: block; font-weight: 700; }
+    .strip .cap-pick { margin-left: .8rem; white-space: nowrap; }
+    .strip .cap-pick select { font: inherit; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px; padding: .05rem .3rem; margin-left: .3rem; }
+    .strip .cap-pick select option { color: #111; background: #fff; }
 
     .intro { padding: clamp(1.8rem, 5vw, 3.6rem) 0 1.2rem; }
     .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; font-size: .8rem; font-weight: 700; }
@@ -213,6 +216,7 @@
   <div class="strip" role="note">
     <div class="shell">
       <span id="strip-text">…</span>
+      <label class="cap-pick" id="cap-pick" hidden><span id="cap-label">Datum zajema</span><select id="cap-sel"></select></label>
       <span class="warn" id="strip-warn" hidden></span>
     </div>
   </div>
@@ -399,7 +403,7 @@
         l_overall: "Skupno", tier: "Razred", bestq: "Najboljša kakovost", bestv: "Najboljša vrednost", cheapest: "Najcenejše na točko (brez praga)",
         frontier: "frontier (≥ $5)", mid: "srednji ($1–5)", budget: "poceni (< $1)",
         sd: "SD", bestb: "Najboljša lestvica", worstb: "Najslabša lestvica", board: "Lestvica", source: "Vir", cat: "Kategorija", leader: "Vodilni", result: "Rezultat", setting: "Nastavitev", date: "Datum",
-        data: "Podatki zbrani", built: "zgrajeno", stale: "Podatki so starejši od 40 dni; novejši modeli morda še niso ocenjeni.",
+        data: "Podatki zbrani", capture: "Datum zajema", archived: "Starejši zajem — za najnovejše podatke izberi zadnji datum.", built: "zgrajeno", stale: "Podatki so starejši od 40 dni; novejši modeli morda še niso ocenjeni.",
         accepted: "Sprejeti viri", accept: "sprejet", accept_limited: "sprejet z omejitvijo", why: "Zakaj je ugleden", owner: "Lastnik", measures: "Meri", method: "Metoda", lastupd: "Zadnja posodobitev",
         indep: "Neodvisnost", contam: "Kontaminacija", repro: "Ponovljivost", verdict: "Odločitev", nb: "lestvic", ne: "vnosov", norow: "Sprejeti, a brez podatkov", rejected: "Zavrnjeni viri",
         catmodels: "modelov z oceno v tej kategoriji", from: "iz", cats_in: "Lestvice v tej kategoriji", weight: "Utež", detailCats: "Ocene po kategorijah", detailSrc: "Viri",
@@ -428,7 +432,7 @@
         l_overall: "Overall", tier: "Tier", bestq: "Best quality", bestv: "Best value", cheapest: "Cheapest per point (no floor)",
         frontier: "frontier (≥ $5)", mid: "mid ($1–5)", budget: "budget (< $1)",
         sd: "SD", bestb: "Best board", worstb: "Worst board", board: "Board", source: "Source", cat: "Category", leader: "Leader", result: "Result", setting: "Setting", date: "Date",
-        data: "Data collected", built: "built", stale: "The data is older than 40 days; newer models may not be scored yet.",
+        data: "Data collected", capture: "Capture date", archived: "Older capture — choose the latest date for current data.", built: "built", stale: "The data is older than 40 days; newer models may not be scored yet.",
         accepted: "Accepted sources", accept: "accepted", accept_limited: "accepted with limits", why: "Why it is respectable", owner: "Owner", measures: "Measures", method: "Method", lastupd: "Last update",
         indep: "Independence", contam: "Contamination", repro: "Reproducibility", verdict: "Verdict", nb: "boards", ne: "entries", norow: "Accepted but without data", rejected: "Rejected sources",
         catmodels: "models with a score in this category", from: "from", cats_in: "Boards in this category", weight: "Weight", detailCats: "Category scores", detailSrc: "Sources",
@@ -457,6 +461,9 @@
       { id: "gemini-4-hydrogen", family: "Gemini 4", released: "2026-11-12", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/" }
     ];
     var NEW_DAYS = 60;
+    // Capture dates (BD, 2026-11-16: keep every capture and choose it from a list). captures.json lists them, newest first;
+    // the latest capture stays at the root, older ones are read from data/<date>/ when ?d=<date> asks for them.
+    var CAPS = null, CAPDIR = "", CAPDATE = null;
     function L() { return root.lang === "en" ? "en" : "sl"; }
     function t(k) { var v = T[L()][k]; return v === undefined ? (T.sl[k] === undefined ? k : T.sl[k]) : v; }
     function loc() { return L() === "en" ? "en-GB" : "sl-SI"; }
@@ -509,9 +516,10 @@
       var fetched = parseDate(D.data_fetched), now = new Date();
       var builtTxt = String(D.built || "").replace("T", " ").replace(/:\d\d(\.\d+)?\+00:00$/, " UTC");
       el("strip-text").textContent = t("data") + ": " + fmtDate(fetched);
-      var stale = fetched && (now - fetched) / 864e5 > 40;
-      el("strip-warn").hidden = !stale;
-      el("strip-warn").textContent = stale ? t("stale") : "";
+      var stale = !CAPDIR && fetched && (now - fetched) / 864e5 > 40;
+      el("strip-warn").hidden = !(stale || CAPDIR);
+      el("strip-warn").textContent = CAPDIR ? t("archived") : (stale ? t("stale") : "");
+      renderCapPick();
       el("foot-dates").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("built") + " " + builtTxt;
       var cards = [[c.sources_accepted, t("st_sources")], [c.boards_used, t("st_boards")], [c.models_universe, t("st_models")], [c.models_ranked, t("st_ranked")], [c.sources_rejected, t("st_rejected")]];
       el("stats").innerHTML = cards.map(function (x) { return '<li class="stat"><b>' + esc(nfi(x[0])) + "</b><span>" + esc(x[1]) + "</span></li>"; }).join("");
@@ -525,7 +533,7 @@
       var sl = slModels()[0];
       if (sl) lead.push([catLabel("sl"), sl.model_id, nf(sl.slovenian, 1)]);
       el("leaders").innerHTML = lead.map(function (x) { return '<li><span class="k"><span>' + esc(x[0]) + '</span><span class="s">' + esc(x[2]) + '</span></span><span class="v mid" title="' + esc(x[1]) + '">' + esc(x[1]) + "</span></li>"; }).join("");
-      Array.prototype.forEach.call(document.querySelectorAll("a[data-file]"), function (a) { a.setAttribute("href", dataBase() + a.getAttribute("data-file")); });
+      Array.prototype.forEach.call(document.querySelectorAll("a[data-file]"), function (a) { a.setAttribute("href", dataBase() + CAPDIR + a.getAttribute("data-file")); });
     }
 
     // Provider filter. Chips for providers with at least 3 ranked models (ordered by their best overall rank); the rest
@@ -588,6 +596,27 @@
           return '<li><span class="mid">' + esc(w.id) + "</span> — " + esc(t("released")) + " " + esc(fmtDate(rel)) + " · " + esc(txt) + (w.url ? " · " + link(w.url, t("announce")) : "") + "</li>";
         }).join("") + "</ul>";
       }).join("") + (order.length ? '<p class="small muted">' + esc(t("newNote")) + "</p>" : "");
+    }
+
+    function renderCapPick() {
+      var box = el("cap-pick"), sel = el("cap-sel");
+      if (!box || !sel) return;
+      if (!CAPS || CAPS.captures.length < 2) { box.hidden = true; return; }
+      el("cap-label").textContent = t("capture");
+      sel.innerHTML = CAPS.captures.map(function (x) { return '<option value="' + esc(x.date) + '">' + esc(fmtDate(parseDate(x.date))) + "</option>"; }).join("");
+      sel.value = CAPDATE;
+      box.hidden = false;
+      if (!sel.getAttribute("data-bound")) {
+        sel.setAttribute("data-bound", "1");
+        sel.addEventListener("change", function () {
+          try {
+            var p = new URLSearchParams(location.search);
+            if (sel.value === CAPS.latest) p.delete("d"); else p.set("d", sel.value);
+            var qs = p.toString();
+            location.assign(location.pathname + (qs ? "?" + qs : "") + location.hash);
+          } catch (_) {}
+        });
+      }
     }
 
     function byRank() { return D.models.filter(function (m) { return m.overall_rank; }).sort(function (a, b) { return a.overall_rank - b.overall_rank; }); }
@@ -913,7 +942,19 @@
 
     el("status").textContent = t("loading");
     function getJSON(name) { return fetch(dataBase() + name, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status + " " + name); return r.json(); }); }
-    window.__llmsReady = Promise.all([getJSON("meta_index.json"), getJSON("sources.json").catch(function () { return null; }), getJSON("commentary_sl.json").catch(function () { return null; })])
+    function pickCapture(c) {
+      CAPS = c && c.captures && c.captures.length ? c : null;
+      if (!CAPS) return;
+      var want = null;
+      try { want = new URLSearchParams(location.search).get("d"); } catch (_) {}
+      var hit = CAPS.captures.filter(function (x) { return x.date === want; })[0];
+      if (hit && hit.date !== CAPS.latest && /^data\/\d{4}-\d{2}-\d{2}\/$/.test(hit.path || "")) { CAPDIR = hit.path; CAPDATE = hit.date; }
+      else CAPDATE = CAPS.latest;
+    }
+    window.__llmsReady = getJSON("captures.json").catch(function () { return null; }).then(function (c) {
+      pickCapture(c);
+      return Promise.all([getJSON(CAPDIR + "meta_index.json"), getJSON(CAPDIR + "sources.json").catch(function () { return null; }), getJSON(CAPDIR + "commentary_sl.json").catch(function () { return null; })]);
+    })
       .then(function (r) {
         D = r[0]; S = r[1]; C = r[2];
         (D.boards || []).forEach(function (b) { BOARD[b.board_id] = b; });
