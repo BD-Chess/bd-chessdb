@@ -128,6 +128,11 @@
     .linkbtn { border: 0; background: none; color: var(--accent); text-decoration: underline; padding: .2rem .35rem; min-height: 44px; font-size: inherit; }
     .newtag { display: inline-block; margin-left: .35rem; padding: 0 .3rem; border-radius: .3rem; background: var(--accent); color: var(--bg); font: 700 .66rem/1.5 system-ui, sans-serif; letter-spacing: .06em; vertical-align: .08em; }
     .newbox { max-width: none; margin: .7rem 0 .4rem; }
+    .newtag.pareto { background: var(--plan); }
+    tr[data-belowq] td { opacity: .5; }
+    .qf-pick { white-space: nowrap; }
+    .qf-pick select { font: inherit; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 6px; padding: .1rem .3rem; margin-left: .3rem; min-height: 44px; }
+    .qf-pick select option { color: #111; background: #fff; }
     .newbox ul { margin: .25rem 0 .35rem; }
     .newbox p { margin: .2rem 0 0; }
     .conf.medium { color: var(--plan); border-color: var(--plan); }
@@ -148,6 +153,14 @@
       table.data { font-size: .9rem; }
       table.data th, table.data td { padding: .4rem .3rem; }
       table.data td.rk { width: 1.6rem; }
+      /* Keep model names and Value visible together after tapping its sort header. */
+      #overall { table-layout: fixed; }
+      #overall th:nth-child(1) { width: 2rem; }
+      #overall th:nth-child(3) { width: 4.5rem; }
+      #overall th:nth-child(6) { width: 4.5rem; }
+      #overall .mbtn { max-width: 100%; }
+      #overall .mbtn .chev { flex-shrink: 0; }
+      #overall .mid { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
       .leaders li { padding: .45rem .6rem; }
       .leaders .v { font-size: .9rem; }
     }
@@ -231,14 +244,14 @@
         <li><strong>Normalizacija:</strong> vsaka lestvica se pretvori v percentilni rang 0–100 med modeli v indeksu (100 = najboljši, 50 = sredina). Nato se popravi za moč polja (prvo mesto na stari lestvici s starimi modeli šteje manj kot prvo mesto med najnovejšimi) in uteži po ugledu vira, svežini in pomenu. Skupna ocena je tehtano povprečje kategorij.</li>
         <li><strong>Ocene so relativne, ne absolutne.</strong> Razlika nekaj točk na vrhu je manjša od negotovosti metode, zato prvih pet beri kot skupino, ne kot strog vrstni red.</li>
         <li><strong>Večinoma pri največjem naporu:</strong> pri vsakem modelu šteje njegova najboljša nastavitev na posamezni lestvici, običajno max/xhigh razmišljanje. Hitrejše ali cenejše nastavitve istega modela so lahko precej slabše.</li>
-        <li><strong>Cene so na žeton, ne na nalogo</strong> (USD na 1 M žetonov, vhod/izhod, standardni cenik). Modeli, ki veliko razmišljajo, porabijo več žetonov in so v praksi dražji, kot kaže tabela. Vrednost = skupna ocena ÷ mešana cena (3 : 1 vhod : izhod).</li>
+        <li><strong>Cene so na žeton, ne na nalogo</strong> (USD na 1 M žetonov, vhod/izhod, standardni cenik). Modeli, ki veliko razmišljajo, porabijo več žetonov in so v praksi dražji, kot kaže tabela. Vrednost = (skupna ocena − prag kakovosti) ÷ mešana cena (3 : 1 vhod : izhod). Prag se izbere v seznamu »Prag kakovosti« (privzeto 50; ocene so relativne, zato je prag nastavljiva meja za izračun Vrednosti). Modeli pod pragom nimajo vrednosti. Oznaka »najboljše razmerje« (Pareto) pomeni, da noben drug uvrščen model ni vsaj enako dober in cenejši ali boljši za enako ceno; pokaže se le nad pragom.</li>
         <li><strong>Zaupanje</strong> = število neodvisnih virov (visoko ≥ 6, srednje 3–5, nizko ≤ 2). Rangiran je le model z vsaj <b data-k="rank_min_sources">3</b> viri in pokritostjo kategorij vsaj <b data-k="rank_min_coverage">45 %</b>.</li>
       </ul>
       <ul class="plain small" data-lang="en" hidden>
         <li><strong>Normalisation:</strong> every board is turned into a percentile rank 0–100 among the models in the index (100 = best, 50 = middle). It is then corrected for field strength (1st place on a stale board of old models counts less than 1st place among the newest ones) and weighted by source respectability, freshness and relevance. The overall score is a weighted mean of the categories.</li>
         <li><strong>Scores are relative, not absolute.</strong> A gap of a few points at the top is smaller than the method's uncertainty, so read the top five as a group, not a strict order.</li>
         <li><strong>Mostly at maximum effort:</strong> each model counts with its best setting on each board, usually max/xhigh reasoning. Faster or cheaper settings of the same model can be much weaker.</li>
-        <li><strong>Prices are per token, not per task</strong> (USD per 1M tokens, input/output, standard list price). Models that think a lot use more tokens and cost more in practice than the table shows. Value = overall score ÷ blended price (3 : 1 input : output).</li>
+        <li><strong>Prices are per token, not per task</strong> (USD per 1M tokens, input/output, standard list price). Models that think a lot use more tokens and cost more in practice than the table shows. Value = (overall score − quality floor) ÷ blended price (3 : 1 input : output). The floor is chosen in the “Quality floor” list (default 50; scores are relative, so the floor is an adjustable cutoff for the Value calculation). Models below the floor have no value. The “best trade-off” tag (Pareto) means that no other ranked model is at least as good and cheaper, or better for the same price; it is shown only above the floor.</li>
         <li><strong>Confidence</strong> = number of independent sources (high ≥ 6, medium 3–5, low ≤ 2). A model is ranked only with at least <b data-k="rank_min_sources">3</b> sources and category coverage of at least <b data-k="rank_min_coverage">45 %</b>.</li>
       </ul>
       <ul class="stats" id="stats" aria-live="polite"></ul>
@@ -264,16 +277,18 @@
       <div class="controls">
         <input type="search" id="q" autocomplete="off" placeholder="Išči model ali ponudnika …" data-ph-sl="Išči model ali ponudnika …" data-ph-en="Search model or provider …" aria-label="Išči model ali ponudnika" data-aria-sl="Išči model ali ponudnika" data-aria-en="Search model or provider">
         <button type="button" class="btn" id="all-toggle" aria-pressed="false"></button>
+        <label class="qf-pick" id="qf-pick"><span id="qf-label">Prag kakovosti</span><select id="qf-sel"></select></label>
       </div>
       <div class="tw"><table class="data" id="overall"></table></div>
+      <p class="small muted" id="value-note"></p>
       <details class="more" id="unranked-box">
         <summary id="unranked-sum"></summary>
         <p class="small muted" id="unranked"></p>
       </details>
 
       <h3><span data-lang="sl">Najboljša vrednost po cenovnih razredih</span><span data-lang="en" hidden>Best value by price tier</span></h3>
-      <p class="prose small muted" data-lang="sl">Razred po mešani ceni: frontier ≥ $5, srednji $1–5, poceni &lt; $1 na 1 M žetonov. Najboljša vrednost upošteva le rangirane modele s skupno oceno vsaj <b data-k="value_min_overall">50</b>; zadnji stolpec je brez praga kakovosti.</p>
-      <p class="prose small muted" data-lang="en" hidden>Tier by blended price: frontier ≥ $5, mid $1–5, budget &lt; $1 per 1M tokens. Best value only considers ranked models with an overall score of at least <b data-k="value_min_overall">50</b>; the last column has no quality floor.</p>
+      <p class="prose small muted" data-lang="sl">Razred po mešani ceni: frontier ≥ $5, srednji $1–5, poceni &lt; $1 na 1 M žetonov. Najboljša vrednost šteje le točke nad izbranim pragom kakovosti (<b data-k="value_min_overall">50</b>): (skupno − prag) ÷ mešana cena. Zadnji stolpec je brez praga (skupno ÷ cena).</p>
+      <p class="prose small muted" data-lang="en" hidden>Tier by blended price: frontier ≥ $5, mid $1–5, budget &lt; $1 per 1M tokens. Best value counts only the points above the chosen quality floor (<b data-k="value_min_overall">50</b>): (overall − floor) ÷ blended price. The last column has no floor (overall ÷ price).</p>
       <div class="tw"><table class="data" id="tiers"></table></div>
     </section>
 
@@ -395,7 +410,7 @@
     var T = {
       sl: {
         loading: "Nalagam podatke …", failed: "Podatkov ni bilo mogoče naložiti.", noResults: "Ni zadetkov.",
-        rank: "#", model: "Model", vendor: "Ponudnik", overall: "Skupno", conf: "Zaupanje", price: "Cena vhod/izhod", value: "Vrednost (točk/$)", valueShort: "Točk/$",
+        rank: "#", model: "Model", vendor: "Ponudnik", overall: "Skupno", conf: "Zaupanje", price: "Cena vhod/izhod", value: "Vrednost (točk/$)", valueShort: "Točk/$", qfLabel: "Prag kakovosti", qfNone: "brez praga", qfHint: "Ocene so relativne; privzeti prag 50 je nastavljiva meja za izračun Vrednosti. Vrednost šteje le točke nad pragom.", belowQ: "pod pragom kakovosti", pareto: "najboljše razmerje", paretoTip: "Noben drug uvrščen model ni vsaj enako dober in cenejši ali boljši za enako ceno.", valueNote: "Vrednost = (skupno − prag {p}) ÷ mešana cena. Modeli pod pragom nimajo vrednosti; pri razvrščanju po vrednosti so sivi in na dnu.", valueNote0: "Vrednost = skupno ÷ mešana cena (brez praga kakovosti).",
         high: "visoko", medium: "srednje", low: "nizko", srcs: "virov", src1: "vir", boards: "lestvic", showAll: "Pokaži vse rangirane", showTop: "Pokaži prvih 40",
         catShowAll: "Pokaži vse", catShowTop: "Pokaži prvih 25", score: "Ocena", nsrc: "Viri", nboards: "Lestvice", sl: "SL ocena", slraw: "Surovi slovenski rezultati",
         tps: "Žetonov/s", unranked: "Ni rangirano (manj kot 3 neodvisni viri ali pokritost kategorij pod 45 %)", shown: "Prikazano", of: "od",
@@ -424,7 +439,7 @@
       },
       en: {
         loading: "Loading data …", failed: "The data could not be loaded.", noResults: "No matches.",
-        rank: "#", model: "Model", vendor: "Provider", overall: "Overall", conf: "Confidence", price: "Price in/out", value: "Value (pts/$)", valueShort: "Pts/$",
+        rank: "#", model: "Model", vendor: "Provider", overall: "Overall", conf: "Confidence", price: "Price in/out", value: "Value (pts/$)", valueShort: "Pts/$", qfLabel: "Quality floor", qfNone: "no floor", qfHint: "Scores are relative; the default floor of 50 is an adjustable cutoff for the Value calculation. Value counts only points above the floor.", belowQ: "below the quality floor", pareto: "best trade-off", paretoTip: "No other ranked model is at least as good and cheaper, or better for the same price.", valueNote: "Value = (overall − floor {p}) ÷ blended price. Models below the floor have no value; sorted by value they are greyed out and last.", valueNote0: "Value = overall ÷ blended price (no quality floor).",
         high: "high", medium: "medium", low: "low", srcs: "sources", src1: "source", boards: "boards", showAll: "Show all ranked", showTop: "Show top 40",
         catShowAll: "Show all", catShowTop: "Show top 25", score: "Score", nsrc: "Sources", nboards: "Boards", sl: "SL score", slraw: "Raw Slovenian results",
         tps: "Tokens/s", unranked: "Not ranked (fewer than 3 independent sources or category coverage below 45 %)", shown: "Showing", of: "of",
@@ -464,6 +479,21 @@
     // Capture dates (BD, 2026-11-16: keep every capture and choose it from a list). captures.json lists them, newest first;
     // the latest capture stays at the root, older ones are read from data/<date>/ when ?d=<date> asks for them.
     var CAPS = null, CAPDIR = "", CAPDATE = null;
+    // Value (BD, 2026-11-16: »jaz bi dal več teže kvaliteti odgovorov«; a quality-floor list, default 50).
+    // value = max(0, overall - floor) / blended price; below the floor a model has no value and sorts last.
+    // The floor comes from the list or ?qf= (0-95). It is computed here, so it works the same for every capture.
+    var QF_DEFAULT = 50, QF_OPTIONS = [0, 40, 50, 60, 70, 80], VMIN = QF_DEFAULT, PARETO = {};
+    function belowQ(m) { return VMIN > 0 && !(m.overall >= VMIN); }
+    function valueOf(m) { var p = m.price ? m.price.blended_3to1 : null; return p > 0 && !belowQ(m) ? Math.max(0, m.overall - VMIN) / p : null; }
+    function computePareto() {
+      PARETO = {};
+      var c = D.models.filter(function (m) { return m.overall_rank && m.price && m.price.blended_3to1 > 0; });
+      c.forEach(function (m) {
+        var pm = m.price.blended_3to1;
+        var dom = c.some(function (o) { var po = o.price.blended_3to1; return o !== m && o.overall >= m.overall && po <= pm && (o.overall > m.overall || po < pm); });
+        if (!dom) PARETO[m.model_id] = 1;
+      });
+    }
     function L() { return root.lang === "en" ? "en" : "sl"; }
     function t(k) { var v = T[L()][k]; return v === undefined ? (T.sl[k] === undefined ? k : T.sl[k]) : v; }
     function loc() { return L() === "en" ? "en-GB" : "sl-SI"; }
@@ -511,7 +541,7 @@
       var c = D.counts || {}, cfg = D.config || {};
       var vals = { sources_accepted: c.sources_accepted, boards_used: c.boards_used, models_universe: c.models_universe, models_ranked: c.models_ranked,
                    rank_min_sources: cfg.rank_min_sources, rank_min_coverage: cfg.rank_min_coverage !== undefined ? Math.round(cfg.rank_min_coverage * 100) + " %" : undefined,
-                   value_min_overall: cfg.value_min_overall !== undefined ? nf(cfg.value_min_overall, 0) : undefined };
+                   value_min_overall: nf(VMIN, 0) };
       Array.prototype.forEach.call(document.querySelectorAll("[data-k]"), function (n) { var v = vals[n.getAttribute("data-k")]; if (v !== undefined && v !== null) n.textContent = typeof v === "number" ? nfi(v) : v; });
       var fetched = parseDate(D.data_fetched), now = new Date();
       var builtTxt = String(D.built || "").replace("T", " ").replace(/:\d\d(\.\d+)?\+00:00$/, " UTC");
@@ -619,6 +649,22 @@
       }
     }
 
+    function renderQF() {
+      var sel = el("qf-sel");
+      if (!sel) return;
+      var opts = QF_OPTIONS.slice();
+      if (opts.indexOf(VMIN) < 0) { opts.push(VMIN); opts.sort(function (a, b) { return a - b; }); }
+      el("qf-label").textContent = t("qfLabel");
+      el("qf-pick").title = t("qfHint");
+      sel.innerHTML = opts.map(function (v) { return '<option value="' + v + '">' + (v === 0 ? esc(t("qfNone")) : esc(nf(v, 0))) + "</option>"; }).join("");
+      sel.value = String(VMIN);
+      el("value-note").textContent = VMIN > 0 ? t("valueNote").replace("{p}", nf(VMIN, 0)) : t("valueNote0");
+      if (!sel.getAttribute("data-bound")) {
+        sel.setAttribute("data-bound", "1");
+        sel.addEventListener("change", function () { var v = Number(sel.value); if (isFinite(v)) { VMIN = v; syncURL(); renderAll(); } });
+      }
+    }
+
     function byRank() { return D.models.filter(function (m) { return m.overall_rank; }).sort(function (a, b) { return a.overall_rank - b.overall_rank; }); }
     function slModels() { return D.models.filter(function (m) { return m.slovenian !== null && m.slovenian !== undefined; }).sort(function (a, b) { return b.slovenian - a.slovenian; }); }
 
@@ -677,7 +723,7 @@
         { k: "overall", label: esc(t("overall")), num: true, get: function (m) { return m.overall; } },
         { k: "conf", label: esc(t("conf")), cls: "d-only", get: function (m) { return m.n_sources; } },
         { k: "price", label: esc(t("price")), num: true, cls: "d-only", d0: 1, get: blended },
-        { k: "value", label: '<span class="d-only">' + esc(t("value")) + '</span><span class="m-only">' + esc(t("valueShort")) + "</span>", num: true, get: function (m) { return m.value_score_per_usd; } }
+        { k: "value", label: '<span class="d-only">' + esc(t("value")) + '</span><span class="m-only">' + esc(t("valueShort")) + "</span>", num: true, get: valueOf }
       ];
     }
 
@@ -688,13 +734,15 @@
       var shown = q || st.all || filtering() ? list : list.slice(0, TOP);
       var head = thead("overall", cols);
       var body = shown.map(function (m) {
-        var extra = '<span class="m-only"> · ' + esc(priceTxt(m.price)) + " · " + esc(m.n_sources) + " " + esc(t("srcs")) + "</span>";
-        var r = rowOpen(m) + '<td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + confBadge(m) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + esc(nf(m.value_score_per_usd, 1)) + "</td></tr>";
+        var extra = (PARETO[m.model_id] && !belowQ(m) ? '<span class="newtag pareto" title="' + esc(t("paretoTip")) + '">' + esc(t("pareto")) + "</span>" : "") + '<span class="m-only"> · ' + esc(priceTxt(m.price)) + " · " + esc(m.n_sources) + " " + esc(t("srcs")) + "</span>";
+        var dim = st.sort.overall && st.sort.overall.k === "value" && belowQ(m);
+        var r = (dim ? rowOpen(m).replace("<tr", '<tr data-belowq="1"') : rowOpen(m)) + '<td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + confBadge(m) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + (belowQ(m) ? '<span class="muted" title="' + esc(t("belowQ")) + '">' + esc(t("none")) + "</span>" : esc(nf(valueOf(m), 1))) + "</td></tr>";
         if (st.open[m.model_id]) r += detailRow(m, 6);
         return r;
       }).join("");
       if (!shown.length) body = '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>";
       el("overall").innerHTML = head + "<tbody>" + body + "</tbody>";
+      renderQF();
       var tg = el("all-toggle");
       tg.hidden = !!q || filtering();
       tg.textContent = st.all ? t("showTop") : t("showAll") + " (" + all.length + ")";
@@ -704,12 +752,18 @@
       el("unranked").innerHTML = un.map(function (m) { return '<span class="mid">' + esc(m.model_id) + "</span> (" + esc(nf(m.overall, 1)) + ", " + esc(m.n_sources) + ")"; }).join(" · ");
     }
 
+    function tierOf(p) { return p >= 5 ? "frontier" : p >= 1 ? "mid" : "budget"; }
     function renderTiers() {
-      var vt = D.value_tiers || {}, BY = {};
-      D.models.forEach(function (m) { BY[m.model_id] = m; });
-      var rows = ["frontier", "mid", "budget"].filter(function (k) { return vt[k]; }).map(function (k) {
-        var x = vt[k];
-        return "<tr><td>" + esc(t(k)) + '</td><td><span class="mid">' + esc(x.best_quality) + "</span> (" + esc(nf(x.best_quality_overall, 1)) + ")</td><td><span class=\"mid\">" + esc(x.best_value) + "</span> (" + esc(nf(x.best_value_overall, 1)) + ", " + esc(nf(x.best_value_score_per_usd, 1)) + " " + esc(t("valueShort").toLowerCase()) + ')<span class="sub">' + esc(priceTxt((BY[x.best_value] || {}).price)) + '</span></td><td class="d-only"><span class="mid">' + esc(x.best_value_any_quality) + "</span></td></tr>";
+      var R = D.models.filter(function (m) { return m.overall_rank && m.price && m.price.blended_3to1 > 0; });
+      var rows = ["frontier", "mid", "budget"].map(function (k) {
+        var inT = R.filter(function (m) { return tierOf(m.price.blended_3to1) === k; });
+        if (!inT.length) return "";
+        var bq = inT.slice().sort(function (a, b) { return b.overall - a.overall; })[0];
+        var bv = inT.filter(function (m) { return !belowQ(m); }).sort(function (a, b) { return valueOf(b) - valueOf(a) || b.overall - a.overall; })[0];
+        var anyq = inT.slice().sort(function (a, b) { return b.overall / b.price.blended_3to1 - a.overall / a.price.blended_3to1; })[0];
+        return "<tr><td>" + esc(t(k)) + '</td><td><span class="mid">' + esc(bq.model_id) + "</span> (" + esc(nf(bq.overall, 1)) + ")</td><td>" +
+          (bv ? '<span class="mid">' + esc(bv.model_id) + "</span> (" + esc(nf(bv.overall, 1)) + ", " + esc(nf(valueOf(bv), 1)) + " " + esc(t("valueShort").toLowerCase()) + ')<span class="sub">' + esc(priceTxt(bv.price)) + "</span>" : esc(t("none"))) +
+          '</td><td class="d-only"><span class="mid">' + esc(anyq.model_id) + "</span></td></tr>";
       }).join("");
       el("tiers").innerHTML = "<thead><tr><th>" + esc(t("tier")) + "</th><th>" + esc(t("bestq")) + "</th><th>" + esc(t("bestv")) + '</th><th class="d-only">' + esc(t("cheapest")) + "</th></tr></thead><tbody>" + rows + "</tbody>";
     }
@@ -876,6 +930,7 @@
         put("s", sortTxt(st.sort.overall));
         put("cs", sortTxt(st.sort["cat:" + st.cat]));
         put("q", st.q.trim());
+        put("qf", VMIN !== QF_DEFAULT ? String(VMIN) : "");
         var qs = p.toString();
         history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
       } catch (_) {}
@@ -883,6 +938,7 @@
     function readURL() {
       try {
         var p = new URLSearchParams(location.search), x;
+        var qf = p.get("qf"); if (qf !== null && qf !== "" && isFinite(Number(qf)) && Number(qf) >= 0 && Number(qf) <= 95) VMIN = Number(qf);
         (p.get("v") || "").split(",").forEach(function (v) { v = v.trim(); if (v === "drugi" || v === "other") st.vend.__other = 1; else if (VMAIN.indexOf(v) >= 0) st.vend[v] = 1; });
         var tp = Number(p.get("top"));
         if (tp === 1 || tp === 3) st.top = tp;
@@ -957,6 +1013,7 @@
     })
       .then(function (r) {
         D = r[0]; S = r[1]; C = r[2];
+        computePareto();
         (D.boards || []).forEach(function (b) { BOARD[b.board_id] = b; });
         initVendors();
         readURL();
