@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta name="theme-color" content="#0b1220">
-  <meta name="description" content="LLM meta indeks: rezultati več deset uglednih neodvisnih lestvic, normalizirani v eno oceno po kategorijah (sklepanje, programiranje, agenti, znanje, preferenca, večjezičnost in slovenščina, hitrost), s cenami in vrednostjo na dolar. Osvežitev vsak mesec. LLM meta-index of respected independent leaderboards, refreshed monthly.">
+  <meta name="description" content="LLM meta indeks: rezultati več deset uglednih neodvisnih lestvic, normalizirani v eno oceno po kategorijah (sklepanje, programiranje, agenti, znanje, preferenca, večjezičnost in slovenščina, hitrost), s cenami in vrednostjo na dolar. LLM meta-index of respected independent leaderboards.">
   <link rel="canonical" href="https://www.mdlxdcc.org/llms/">
   <title>LLM meta indeks — kateri model je res najboljši</title>
   <script>try{var r=document.documentElement,t=localStorage.getItem('mdlxdcc-theme'),n=Number(localStorage.getItem('mdlxdcc-font'));r.dataset.theme=t==='light'?'light':'dark';if(Number.isFinite(n)&&n>=.8&&n<=1.5)r.style.setProperty('--scale',n)}catch(_){}</script>
@@ -28,8 +28,13 @@
     /* top toolbar – same look and storage keys as the shared AI8 toolbar */
     .site-header { background: var(--bg); border-bottom: 1px solid var(--line); z-index: 20; }
     .header-inner { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem 1rem; padding-top: .5rem; padding-bottom: .5rem; }
-    .brand { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; }
-    .brand .dot { color: var(--accent); margin: 0 .3em; }
+    /* site brand, same form as the MDL×DCC.org landing page: MDL×DCC.org | BD×AI Lab */
+    .brand { display: inline-flex; align-items: center; gap: .7rem; min-height: 44px; white-space: nowrap; }
+    .brand-mark { color: var(--ink); font-weight: 650; font-size: 1.2rem; letter-spacing: -.05em; text-decoration: none; }
+    .brand-mark em { font-style: normal; color: var(--accent); }
+    .brand-sub { font: 500 .78rem/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .06em; color: var(--muted); border-left: 1px solid var(--line); padding-left: .7rem; }
+    .brand-sub a { color: inherit; text-decoration: none; display: inline-block; padding: .55rem .05rem; }
+    .brand-mark:hover, .brand-sub a:hover { color: var(--accent); }
     .site-nav { display: flex; flex-wrap: wrap; gap: 0 .9rem; margin-right: auto; }
     .site-nav a { color: var(--muted); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
     .site-nav a:hover { color: var(--accent); }
@@ -98,6 +103,30 @@
     .bar i { display: block; height: 100%; background: var(--accent); border-radius: .2rem; }
     .conf { display: inline-block; font-size: .78rem; border-radius: 999px; padding: 0 .45rem; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
     .conf.high { color: var(--accent); border-color: var(--accent); }
+    .sortb { display: inline-flex; align-items: center; gap: .25rem; min-height: 32px; padding: .1rem 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 600; text-align: inherit; white-space: nowrap; }
+    th.num .sortb { justify-content: flex-end; }
+    .sortb:hover { color: var(--accent); }
+    .sortb .arr { font-size: .78em; opacity: .4; }
+    th[aria-sort="ascending"] .sortb, th[aria-sort="descending"] .sortb { color: var(--ink); }
+    th[aria-sort="ascending"] .arr, th[aria-sort="descending"] .arr { opacity: 1; color: var(--accent); }
+    tr.thin td { opacity: .62; }
+    .thin-mark { color: var(--plan); font-weight: 700; margin-left: .15rem; }
+    .vfilter { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .7rem; margin: .9rem 0 .2rem; }
+    .vlabel { color: var(--muted); font-size: .88rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .chip { min-height: 44px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink); padding: .2rem .75rem; font-size: .88rem; }
+    .chip .n { color: var(--muted); font-size: .82em; margin-left: .15rem; }
+    .chip:hover { border-color: var(--accent); }
+    .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 700; background: var(--surface); }
+    .vtop { display: inline-flex; align-items: center; gap: .4rem; color: var(--muted); font-size: .88rem; }
+    .vtop select { min-height: 44px; border: 1px solid var(--line); border-radius: .5rem; background: var(--panel); color: var(--ink); padding: .2rem .5rem; font: inherit; }
+    .vhelp { margin: .2rem 0; }
+    .fnote { color: var(--plan); font-size: .9rem; margin: .35rem 0; }
+    .linkbtn { border: 0; background: none; color: var(--accent); text-decoration: underline; padding: .2rem .35rem; min-height: 44px; font-size: inherit; }
+    .newtag { display: inline-block; margin-left: .35rem; padding: 0 .3rem; border-radius: .3rem; background: var(--accent); color: var(--bg); font: 700 .66rem/1.5 system-ui, sans-serif; letter-spacing: .06em; vertical-align: .08em; }
+    .newbox { max-width: none; margin: .7rem 0 .4rem; }
+    .newbox ul { margin: .25rem 0 .35rem; }
+    .newbox p { margin: .2rem 0 0; }
     .conf.medium { color: var(--plan); border-color: var(--plan); }
     .mbtn { background: none; border: 0; padding: 0; color: inherit; text-align: left; display: inline-flex; gap: .35rem; align-items: baseline; min-height: 32px; }
     .mbtn .chev { color: var(--accent); display: inline-block; width: .8em; transition: transform .15s; }
@@ -158,7 +187,7 @@
 
   <header class="site-header">
     <div class="shell header-inner">
-      <a class="brand" href="../AI8/">AI8<span class="dot">·</span><span data-lang="sl">LLM meta indeks</span><span data-lang="en" hidden>LLM meta-index</span></a>
+      <div class="brand"><a class="brand-mark" href="https://www.mdlxdcc.org/">MDL<em>×</em>DCC.org</a><nav class="brand-sub" aria-label="BD × AI Lab"><a href="https://www.mdlxdcc.org/start/">BD</a>×<a href="https://www.mdlxdcc.org/AI8/">AI</a> <a href="https://www.mdlxdcc.org/">Lab</a></nav></div>
       <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
         <a href="https://www.mdlxdcc.org/llms/chats.html"><span data-lang="sl">AI klepeti</span><span data-lang="en" hidden>AI chats</span></a>
         <a href="#skupno"><span data-lang="sl">Skupno</span><span data-lang="en" hidden>Overall</span></a>
@@ -190,7 +219,7 @@
 
   <main class="shell" id="content">
     <div class="intro">
-      <div class="eyebrow"><span data-lang="sl">AI8 · LLM meta indeks · mesečno</span><span data-lang="en" hidden>AI8 · LLM meta-index · monthly</span></div>
+      <div class="eyebrow"><span data-lang="sl">AI8 · LLM meta indeks</span><span data-lang="en" hidden>AI8 · LLM meta-index</span></div>
       <h1><span data-lang="sl">LLM meta indeks — kateri model je res najboljši</span><span data-lang="en" hidden>LLM meta-index — which model is really the best</span></h1>
       <p class="lead" data-lang="sl">Ena lestvica ne pove dosti: vsaka meri nekaj drugega, nekatere so zastarele, nekatere vodijo prodajalci podatkov. Meta indeks zato združi <b data-k="sources_accepted">33</b> uglednih virov (<b data-k="boards_used">144</b> lestvic) v primerljivo oceno za <b data-k="models_universe">203</b> modelov, od tega jih je <b data-k="models_ranked">150</b> rangiranih.</p>
       <p class="lead" data-lang="en" hidden>A single leaderboard says little: each measures something different, some are stale, some are run by data vendors. The meta-index therefore combines <b data-k="sources_accepted">33</b> respected sources (<b data-k="boards_used">144</b> boards) into one comparable score for <b data-k="models_universe">203</b> models, <b data-k="models_ranked">150</b> of them ranked.</p>
@@ -219,6 +248,15 @@
       <h2 id="skupno-t"><span data-lang="sl">Skupna ocena</span><span data-lang="en" hidden>Overall score</span></h2>
       <p class="prose small muted" data-lang="sl">Klik na model odpre njegove ocene po kategorijah, vire in vse posamezne rezultate. Krepko = modeli, ki jih spremljamo posebej.</p>
       <p class="prose small muted" data-lang="en" hidden>Click a model to see its category scores, sources and every individual result. Bold = models we track specifically.</p>
+      <div class="vfilter" role="group" aria-label="Filter po ponudniku" data-aria-sl="Filter po ponudniku" data-aria-en="Filter by provider">
+        <span class="vlabel"><span data-lang="sl">Ponudniki:</span><span data-lang="en" hidden>Providers:</span></span>
+        <span class="chips" id="vchips"></span>
+        <label class="vtop"><span data-lang="sl">Na ponudnika:</span><span data-lang="en" hidden>Per provider:</span> <select id="vtop"></select></label>
+      </div>
+      <p class="small muted vhelp" data-lang="sl">Filter velja za vse tabele modelov na strani: skupno, kategorije in razhajanja. »Le najboljši« pokaže najboljši model vsakega ponudnika po oceni v tisti tabeli.</p>
+      <p class="small muted vhelp" data-lang="en" hidden>The filter applies to every model table on the page: overall, categories and disagreements. “Best only” shows each provider's best model by the score of that table.</p>
+      <p class="fnote" data-fnote hidden></p>
+      <div class="note newbox" id="newbox" role="note" hidden></div>
       <div class="controls">
         <input type="search" id="q" autocomplete="off" placeholder="Išči model ali ponudnika …" data-ph-sl="Išči model ali ponudnika …" data-ph-en="Search model or provider …" aria-label="Išči model ali ponudnika" data-aria-sl="Išči model ali ponudnika" data-aria-en="Search model or provider">
         <button type="button" class="btn" id="all-toggle" aria-pressed="false"></button>
@@ -239,6 +277,7 @@
       <div class="eyebrow"><span data-lang="sl">Po kategorijah</span><span data-lang="en" hidden>By category</span></div>
       <h2 id="kategorije-t"><span data-lang="sl">Kdo je najboljši pri čem</span><span data-lang="en" hidden>Who is best at what</span></h2>
       <ul class="tabs" id="tabs" aria-label="Kategorija" data-aria-sl="Kategorija" data-aria-en="Category"></ul>
+      <p class="fnote" data-fnote hidden></p>
       <p class="catdesc" id="catdesc"></p>
       <div class="tw"><table class="data" id="cattable"></table></div>
       <div class="controls"><button type="button" class="btn" id="cat-toggle" aria-pressed="false"></button></div>
@@ -252,6 +291,7 @@
         <h3><span data-lang="sl">Največja razhajanja med lestvicami</span><span data-lang="en" hidden>Largest spread between boards</span></h3>
         <p class="small" data-lang="sl">SD = standardni odklon popravljenih percentilov modela čez vse lestvice. Visok SD pomeni, da je model na eni lestvici blizu vrha, na drugi pa daleč spodaj.</p>
         <p class="small" data-lang="en" hidden>SD = standard deviation of the model's corrected percentiles across all boards. A high SD means the model is near the top of one board and far down another.</p>
+        <p class="fnote" data-fnote hidden></p>
         <div class="tw"><table class="data" id="disagree"></table></div>
         <h3><span data-lang="sl">Kdo vodi koliko lestvic</span><span data-lang="en" hidden>Who leads how many boards</span></h3>
         <p class="small" id="leadercounts"></p>
@@ -328,8 +368,8 @@
       </ul>
       <h3><span data-lang="sl">Podatki</span><span data-lang="en" hidden>Data</span></h3>
       <p class="prose small"><a data-file="meta_index.json" href="meta_index.json"><code>meta_index.json</code></a> · <a data-file="sources.json" href="sources.json"><code>sources.json</code></a> · <a data-file="commentary_sl.json" href="commentary_sl.json"><code>commentary_sl.json</code></a></p>
-      <p class="prose small muted" data-lang="sl">Indeks se osveži samodejno vsak 1. v mesecu ob 5.30 (Ljubljana): viri se ponovno zajamejo, izračun ponovi in objavi. Strani so brez piškotkov; nastavitve videza ostanejo le v tem brskalniku.</p>
-      <p class="prose small muted" data-lang="en" hidden>The index refreshes automatically on the 1st of every month at 05:30 (Ljubljana): the sources are collected again, the computation is rerun and published. No cookies; display settings stay in this browser only.</p>
+      <p class="prose small muted" data-lang="sl">Osvežitev ni samodejna: nov zajem podatkov sprožimo ročno. Ob zajemu se viri ponovno zajamejo, izračun ponovi in objavi. Strani so brez piškotkov; nastavitve videza ostanejo le v tem brskalniku.</p>
+      <p class="prose small muted" data-lang="en" hidden>The index is not refreshed automatically: a new data collection is started by hand. Each time, the sources are collected again, the computation is rerun and published. No cookies; display settings stay in this browser only.</p>
     </section>
   </main>
 
@@ -346,7 +386,7 @@
     var root = document.documentElement;
     var D = null, S = null, C = null;
     var BOARD = {}, CATS = ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "sl", "long_context", "speed"];
-    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {} };
+    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {}, sort: {}, vend: {}, top: 0 };
     var TOP = 40, CTOP = 25;
     var T = {
       sl: {
@@ -359,7 +399,7 @@
         l_overall: "Skupno", tier: "Razred", bestq: "Najboljša kakovost", bestv: "Najboljša vrednost", cheapest: "Najcenejše na točko (brez praga)",
         frontier: "frontier (≥ $5)", mid: "srednji ($1–5)", budget: "poceni (< $1)",
         sd: "SD", bestb: "Najboljša lestvica", worstb: "Najslabša lestvica", board: "Lestvica", source: "Vir", cat: "Kategorija", leader: "Vodilni", result: "Rezultat", setting: "Nastavitev", date: "Datum",
-        data: "Podatki zbrani", built: "zgrajeno", next: "Naslednja osvežitev", at: "ob 5.30 (Ljubljana)", stale: "Podatki so starejši od 40 dni — mesečna osvežitev je morda zamudila.",
+        data: "Podatki zbrani", built: "zgrajeno", stale: "Podatki so starejši od 40 dni; novejši modeli morda še niso ocenjeni.",
         accepted: "Sprejeti viri", accept: "sprejet", accept_limited: "sprejet z omejitvijo", why: "Zakaj je ugleden", owner: "Lastnik", measures: "Meri", method: "Metoda", lastupd: "Zadnja posodobitev",
         indep: "Neodvisnost", contam: "Kontaminacija", repro: "Ponovljivost", verdict: "Odločitev", nb: "lestvic", ne: "vnosov", norow: "Sprejeti, a brez podatkov", rejected: "Zavrnjeni viri",
         catmodels: "modelov z oceno v tej kategoriji", from: "iz", cats_in: "Lestvice v tej kategoriji", weight: "Utež", detailCats: "Ocene po kategorijah", detailSrc: "Viri",
@@ -369,6 +409,13 @@
         noSl: "Modeli, ki jih spremljamo, brez slovenskih rezultatov:", commentBy: "Komentar", lead_n: "lestvic",
         cat_reasoning: "Splošno & sklepanje", cat_coding: "Programiranje", cat_agentic: "Agenti & orodja", cat_knowledge: "Znanje & halucinacije", cat_preference: "Človeška preferenca",
         cat_multilingual: "Večjezičnost", cat_sl: "Slovenščina", cat_long_context: "Dolg kontekst", cat_speed: "Hitrost", cat_other: "Drugo", cat_price: "Cena",
+        vAll: "Vsi", vOther: "Drugi", topAll: "vsi modeli", top1: "le najboljši", top3: "najboljši 3", top1n: "le najboljši na ponudnika", top3n: "najboljši 3 na ponudnika",
+        fActive: "Filter", fClear: "Počisti filter",
+        sortHint: "Klik razvrsti, ponovni klik obrne vrstni red", thinTip: "Ocena iz največ 2 neodvisnih virov",
+        thinNote: "Zatemnjeno z * = ocena v tej kategoriji iz največ 2 neodvisnih virov; beri previdno.",
+        newTag: "NOVO", newFam: "Nova družina", released: "izšel", afterData: "po zadnjem zajemu podatkov — še brez ocene", notInData: "še ni na nobeni sprejeti lestvici — brez ocene",
+        notRanked: "še ni rangiran", announce: "objava",
+        newNote: "Številke so iz zadnje gradnje. Nov model dobi oceno, ko ga pokrijejo vsaj 3 neodvisni viri; do takrat je tu naveden brez številk.",
         none: "–"
       },
       en: {
@@ -381,7 +428,7 @@
         l_overall: "Overall", tier: "Tier", bestq: "Best quality", bestv: "Best value", cheapest: "Cheapest per point (no floor)",
         frontier: "frontier (≥ $5)", mid: "mid ($1–5)", budget: "budget (< $1)",
         sd: "SD", bestb: "Best board", worstb: "Worst board", board: "Board", source: "Source", cat: "Category", leader: "Leader", result: "Result", setting: "Setting", date: "Date",
-        data: "Data collected", built: "built", next: "Next refresh", at: "at 05:30 (Ljubljana)", stale: "The data is older than 40 days — the monthly refresh may have been missed.",
+        data: "Data collected", built: "built", stale: "The data is older than 40 days; newer models may not be scored yet.",
         accepted: "Accepted sources", accept: "accepted", accept_limited: "accepted with limits", why: "Why it is respectable", owner: "Owner", measures: "Measures", method: "Method", lastupd: "Last update",
         indep: "Independence", contam: "Contamination", repro: "Reproducibility", verdict: "Verdict", nb: "boards", ne: "entries", norow: "Accepted but without data", rejected: "Rejected sources",
         catmodels: "models with a score in this category", from: "from", cats_in: "Boards in this category", weight: "Weight", detailCats: "Category scores", detailSrc: "Sources",
@@ -391,9 +438,25 @@
         noSl: "Tracked models without any Slovenian result:", commentBy: "Commentary", lead_n: "boards",
         cat_reasoning: "General & reasoning", cat_coding: "Coding", cat_agentic: "Agents & tools", cat_knowledge: "Knowledge & hallucination", cat_preference: "Human preference",
         cat_multilingual: "Multilingual", cat_sl: "Slovenian", cat_long_context: "Long context", cat_speed: "Speed", cat_other: "Other", cat_price: "Price",
+        vAll: "All", vOther: "Others", topAll: "all models", top1: "best only", top3: "best 3", top1n: "best per provider only", top3n: "best 3 per provider",
+        fActive: "Filter", fClear: "Clear filter",
+        sortHint: "Click to sort, click again to reverse", thinTip: "Score from at most 2 independent sources",
+        thinNote: "Dimmed with * = score in this category from at most 2 independent sources; read with care.",
+        newTag: "NEW", newFam: "New family", released: "released", afterData: "after the last data collection — not scored yet", notInData: "not yet on any accepted board — no score",
+        notRanked: "not ranked yet", announce: "announcement",
+        newNote: "The numbers come from the latest build. A new model gets a score once at least 3 independent sources cover it; until then it is listed here without numbers.",
         none: "–"
       }
     };
+    // New model families to point out until a new build has caught up with them. Only names, release dates and
+    // announcement links live here; every score shown comes from meta_index.json. Entries hide themselves after NEW_DAYS
+    // once the build contains the model.
+    var WATCH = [
+      { id: "gemini-4-argon", family: "Gemini 4", released: "2026-09-30" },
+      { id: "gemini-4-carbon", family: "Gemini 4", released: "2026-10-28" },
+      { id: "gemini-4-hydrogen", family: "Gemini 4", released: "2026-11-12", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/" }
+    ];
+    var NEW_DAYS = 60;
     function L() { return root.lang === "en" ? "en" : "sl"; }
     function t(k) { var v = T[L()][k]; return v === undefined ? (T.sl[k] === undefined ? k : T.sl[k]) : v; }
     function loc() { return L() === "en" ? "en-GB" : "sl-SI"; }
@@ -406,20 +469,17 @@
     function el(id) { return document.getElementById(id); }
     function parseDate(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ""); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
     function fmtDate(d) { if (!d) return t("none"); return L() === "en" ? d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : d.getDate() + ". " + (d.getMonth() + 1) + ". " + d.getFullYear(); }
-    function nextRefresh(now) {
-      var d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      if (now.getDate() === 1 && (now.getHours() < 5 || (now.getHours() === 5 && now.getMinutes() < 30))) d = new Date(now.getFullYear(), now.getMonth(), 1);
-      return d;
-    }
     function dataBase() { var p = location.pathname; if (/\/$/.test(p) || /\.html?$/i.test(p)) return ""; return p.split("/").pop() + "/"; }
     function catLabel(c) { return t("cat_" + c); }
     function boardName(id) { var b = BOARD[id]; return b ? b.name : id; }
     function confBadge(m) { var c = m.confidence || "low"; return '<span class="conf ' + esc(c) + '">' + esc(t(c)) + " · " + esc(m.n_sources) + "</span>"; }
     function priceTxt(p) { return p ? money(p.input) + " / " + money(p.output) : t("none"); }
     function bar(v) { var w = Math.max(0, Math.min(100, Number(v) || 0)); return '<span class="bar" aria-hidden="true"><i style="width:' + w.toFixed(1) + '%"></i></span>'; }
+    function watchOf(id) { for (var i = 0; i < WATCH.length; i++) if (WATCH[i].id === id) return WATCH[i]; return null; }
+    function isNew(id) { var w = watchOf(id), d = w && parseDate(w.released); return !!d && (new Date() - d) / 864e5 <= NEW_DAYS; }
     function modelCell(m, withBtn, extra) {
       var name = '<span class="mid">' + esc(m.model_id) + "</span>";
-      var sub = '<span class="sub">' + esc(m.vendor || "") + (extra || "") + "</span>";
+      var sub = '<span class="sub">' + esc(m.vendor || "") + (isNew(m.model_id) ? '<span class="newtag">' + esc(t("newTag")) + "</span>" : "") + (extra || "") + "</span>";
       if (!withBtn) return name + sub;
       var open = !!st.open[m.model_id];
       return '<button type="button" class="mbtn" data-model="' + esc(m.model_id) + '" aria-expanded="' + open + '"><span class="chev" aria-hidden="true">›</span>' + name + "</button>" + sub;
@@ -446,13 +506,13 @@
                    rank_min_sources: cfg.rank_min_sources, rank_min_coverage: cfg.rank_min_coverage !== undefined ? Math.round(cfg.rank_min_coverage * 100) + " %" : undefined,
                    value_min_overall: cfg.value_min_overall !== undefined ? nf(cfg.value_min_overall, 0) : undefined };
       Array.prototype.forEach.call(document.querySelectorAll("[data-k]"), function (n) { var v = vals[n.getAttribute("data-k")]; if (v !== undefined && v !== null) n.textContent = typeof v === "number" ? nfi(v) : v; });
-      var fetched = parseDate(D.data_fetched), now = new Date(), nx = nextRefresh(now);
+      var fetched = parseDate(D.data_fetched), now = new Date();
       var builtTxt = String(D.built || "").replace("T", " ").replace(/:\d\d(\.\d+)?\+00:00$/, " UTC");
-      el("strip-text").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("next") + ": " + fmtDate(nx) + " " + t("at");
+      el("strip-text").textContent = t("data") + ": " + fmtDate(fetched);
       var stale = fetched && (now - fetched) / 864e5 > 40;
       el("strip-warn").hidden = !stale;
       el("strip-warn").textContent = stale ? t("stale") : "";
-      el("foot-dates").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("built") + " " + builtTxt + " · " + t("next") + ": " + fmtDate(nx) + " " + t("at");
+      el("foot-dates").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("built") + " " + builtTxt;
       var cards = [[c.sources_accepted, t("st_sources")], [c.boards_used, t("st_boards")], [c.models_universe, t("st_models")], [c.models_ranked, t("st_ranked")], [c.sources_rejected, t("st_rejected")]];
       el("stats").innerHTML = cards.map(function (x) { return '<li class="stat"><b>' + esc(nfi(x[0])) + "</b><span>" + esc(x[1]) + "</span></li>"; }).join("");
       var lead = [];
@@ -466,6 +526,68 @@
       if (sl) lead.push([catLabel("sl"), sl.model_id, nf(sl.slovenian, 1)]);
       el("leaders").innerHTML = lead.map(function (x) { return '<li><span class="k"><span>' + esc(x[0]) + '</span><span class="s">' + esc(x[2]) + '</span></span><span class="v mid" title="' + esc(x[1]) + '">' + esc(x[1]) + "</span></li>"; }).join("");
       Array.prototype.forEach.call(document.querySelectorAll("a[data-file]"), function (a) { a.setAttribute("href", dataBase() + a.getAttribute("data-file")); });
+    }
+
+    // Provider filter. Chips for providers with at least 3 ranked models (ordered by their best overall rank); the rest
+    // share one "Others" chip. "Best only / best 3" keeps each provider's top model(s) by the score of the table shown.
+    var VALIAS = { "Mistral AI": "Mistral" }, VMAIN = [], VCOUNT = {}, BYID = {};
+    function vendorOf(m) { var v = (m && m.vendor) || "?"; return VALIAS[v] || v; }
+    function vkey(m) { var v = vendorOf(m); return VMAIN.indexOf(v) >= 0 ? v : "__other"; }
+    function vendActive() { return Object.keys(st.vend).length > 0; }
+    function filtering() { return vendActive() || st.top > 0; }
+    function vendOK(m) { return !vendActive() || !!st.vend[vkey(m)]; }
+    function topPer(list) { if (!st.top) return list; var n = {}; return list.filter(function (m) { var v = vendorOf(m); n[v] = (n[v] || 0) + 1; return n[v] <= st.top; }); }
+    function pick(list) { return topPer(list.filter(vendOK)); }
+    function initVendors() {
+      var best = {};
+      VCOUNT = {}; BYID = {};
+      D.models.forEach(function (m) { BYID[m.model_id] = m; });
+      byRank().forEach(function (m) { var v = vendorOf(m); VCOUNT[v] = (VCOUNT[v] || 0) + 1; if (!(v in best)) best[v] = m.overall_rank; });
+      VMAIN = Object.keys(VCOUNT).filter(function (v) { return VCOUNT[v] >= 3; }).sort(function (a, b) { return best[a] - best[b]; });
+    }
+    function renderFilter() {
+      var other = 0;
+      Object.keys(VCOUNT).forEach(function (v) { if (VMAIN.indexOf(v) < 0) other += VCOUNT[v]; });
+      var chips = [["", t("vAll"), null]].concat(VMAIN.map(function (v) { return [v, v, VCOUNT[v]]; }));
+      if (other) chips.push(["__other", t("vOther"), other]);
+      el("vchips").innerHTML = chips.map(function (c) {
+        var on = c[0] ? !!st.vend[c[0]] : !vendActive();
+        return '<button type="button" class="chip" data-vendor="' + esc(c[0]) + '" aria-pressed="' + on + '">' + esc(c[1]) + (c[2] !== null ? '<span class="n">' + esc(c[2]) + "</span>" : "") + "</button>";
+      }).join("");
+      el("vtop").innerHTML = [[0, t("topAll")], [1, t("top1")], [3, t("top3")]].map(function (o) { return '<option value="' + o[0] + '"' + (st.top === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("");
+      var note = "";
+      if (filtering()) {
+        var parts = [];
+        if (vendActive()) parts.push(Object.keys(st.vend).map(function (k) { return k === "__other" ? t("vOther") : k; }).join(", "));
+        if (st.top) parts.push(t(st.top === 1 ? "top1n" : "top3n"));
+        note = esc(t("fActive")) + ": " + esc(parts.join(" · ")) + ' <button type="button" class="linkbtn" data-fclear>' + esc(t("fClear")) + "</button>";
+      }
+      Array.prototype.forEach.call(document.querySelectorAll("[data-fnote]"), function (n) { n.innerHTML = note; n.hidden = !note; });
+    }
+    function topSet() {
+      var n = {}, out = {};
+      byRank().forEach(function (m) { var v = vendorOf(m); n[v] = (n[v] || 0) + 1; if (n[v] <= st.top) out[m.model_id] = 1; });
+      return out;
+    }
+
+    function renderNew() {
+      var box = el("newbox"), BY = {}, fam = {}, order = [];
+      D.models.forEach(function (m) { BY[m.model_id] = m; });
+      var fetched = parseDate(D.data_fetched);
+      WATCH.filter(function (w) { return isNew(w.id) || !BY[w.id]; }).forEach(function (w) {
+        if (!fam[w.family]) { fam[w.family] = []; order.push(w.family); }
+        fam[w.family].push(w);
+      });
+      box.hidden = !order.length;
+      box.innerHTML = order.map(function (f) {
+        return "<strong>" + esc(t("newFam")) + ": " + esc(f) + '</strong><ul class="plain small">' + fam[f].map(function (w) {
+          var m = BY[w.id], rel = parseDate(w.released), txt;
+          if (m && m.overall_rank) txt = "#" + m.overall_rank + " · " + t("overall").toLowerCase() + " " + nf(m.overall, 1) + " · " + t("conf").toLowerCase() + " " + t(m.confidence || "low") + " · " + m.n_sources;
+          else if (m) txt = t("notRanked") + " · " + m.n_sources + " " + t("srcs");
+          else txt = fetched && rel && rel > fetched ? t("afterData") : t("notInData");
+          return '<li><span class="mid">' + esc(w.id) + "</span> — " + esc(t("released")) + " " + esc(fmtDate(rel)) + " · " + esc(txt) + (w.url ? " · " + link(w.url, t("announce")) : "") + "</li>";
+        }).join("") + "</ul>";
+      }).join("") + (order.length ? '<p class="small muted">' + esc(t("newNote")) + "</p>" : "");
     }
 
     function byRank() { return D.models.filter(function (m) { return m.overall_rank; }).sort(function (a, b) { return a.overall_rank - b.overall_rank; }); }
@@ -492,24 +614,63 @@
         '<div class="tw"><table class="data bs"><thead><tr><th>' + esc(t("board")) + '</th><th class="num">' + esc(t("raw")) + '</th><th class="num">' + esc(t("pct")) + '</th><th class="num">' + esc(t("adj")) + '</th><th class="num d-only">' + esc(t("weight")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details></td></tr>";
     }
 
+    // Click-to-sort column headers. The first click puts the best first: high → low for scores and counts,
+    // A → Z for text, cheapest first for prices, #1 first for ranks. A second click on the same column reverses.
+    // Missing values always go last, in either direction; rank numbers stay the fixed ranks, they are not renumbered.
+    function blank(v) { return v === null || v === undefined || v === "" || (typeof v === "number" && !isFinite(v)); }
+    function sortList(list, key, cols) {
+      var s = st.sort[key], col = s && cols.filter(function (c) { return c.k === s.k && c.get; })[0];
+      if (!col) return list;
+      return list.map(function (x, i) { return { x: x, i: i, v: col.get(x) }; }).sort(function (a, b) {
+        var an = blank(a.v), bn = blank(b.v);
+        if (an || bn) return an && bn ? a.i - b.i : an ? 1 : -1;
+        var r = col.text ? String(a.v).localeCompare(String(b.v), loc(), { numeric: true, sensitivity: "base" }) : a.v - b.v;
+        return r * s.d || a.i - b.i;
+      }).map(function (o) { return o.x; });
+    }
+    function thead(key, cols) {
+      var s = st.sort[key];
+      return "<thead><tr>" + cols.map(function (c) {
+        var cls = ((c.num ? "num " : "") + (c.cls || "")).trim(), attr = cls ? ' class="' + cls + '"' : "";
+        if (!c.get) return '<th scope="col"' + attr + ">" + c.label + "</th>";
+        var on = s && s.k === c.k;
+        return '<th scope="col"' + attr + ' aria-sort="' + (on ? (s.d > 0 ? "ascending" : "descending") : "none") + '"><button type="button" class="sortb" data-sort="' + c.k + '" title="' + esc(t("sortHint")) + '">' +
+          c.label + '<span class="arr" aria-hidden="true">' + (on ? (s.d > 0 ? "▲" : "▼") : "↕") + "</span></button></th>";
+      }).join("") + "</tr></thead>";
+    }
+    function blended(m) { return m.price ? m.price.blended_3to1 : null; }
+    function rowOpen(m, thin) { var c = ((m.named ? "named " : "") + (thin ? "thin" : "")).trim(); return "<tr" + (c ? ' class="' + c + '"' : "") + ">"; }
+
+    function overallCols() {
+      return [
+        { k: "rank", label: esc(t("rank")), d0: 1, get: function (m) { return m.overall_rank; } },
+        { k: "model", label: esc(t("model")), d0: 1, text: true, get: function (m) { return m.model_id; } },
+        { k: "overall", label: esc(t("overall")), num: true, get: function (m) { return m.overall; } },
+        { k: "conf", label: esc(t("conf")), cls: "d-only", get: function (m) { return m.n_sources; } },
+        { k: "price", label: esc(t("price")), num: true, cls: "d-only", d0: 1, get: blended },
+        { k: "value", label: '<span class="d-only">' + esc(t("value")) + '</span><span class="m-only">' + esc(t("valueShort")) + "</span>", num: true, get: function (m) { return m.value_score_per_usd; } }
+      ];
+    }
+
     function renderOverall() {
-      var all = byRank(), q = st.q.trim().toLowerCase();
-      var list = q ? all.filter(function (m) { return (m.model_id + " " + (m.vendor || "")).toLowerCase().indexOf(q) >= 0; }) : all;
-      var shown = q || st.all ? list : list.slice(0, TOP);
-      var head = '<thead><tr><th scope="col">' + t("rank") + '</th><th scope="col">' + esc(t("model")) + '</th><th scope="col" class="num">' + esc(t("overall")) + '</th><th scope="col" class="d-only">' + esc(t("conf")) + '</th><th scope="col" class="num d-only">' + esc(t("price")) + '</th><th scope="col" class="num"><span class="d-only">' + esc(t("value")) + '</span><span class="m-only">' + esc(t("valueShort")) + "</span></th></tr></thead>";
+      var cols = overallCols(), all = byRank(), q = st.q.trim().toLowerCase(), list = pick(all);
+      list = q ? list.filter(function (m) { return (m.model_id + " " + (m.vendor || "")).toLowerCase().indexOf(q) >= 0; }) : list;
+      list = sortList(list, "overall", cols);
+      var shown = q || st.all || filtering() ? list : list.slice(0, TOP);
+      var head = thead("overall", cols);
       var body = shown.map(function (m) {
         var extra = '<span class="m-only"> · ' + esc(priceTxt(m.price)) + " · " + esc(m.n_sources) + " " + esc(t("srcs")) + "</span>";
-        var r = "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + confBadge(m) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + esc(nf(m.value_score_per_usd, 1)) + "</td></tr>";
+        var r = rowOpen(m) + '<td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + confBadge(m) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + esc(nf(m.value_score_per_usd, 1)) + "</td></tr>";
         if (st.open[m.model_id]) r += detailRow(m, 6);
         return r;
       }).join("");
       if (!shown.length) body = '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>";
       el("overall").innerHTML = head + "<tbody>" + body + "</tbody>";
       var tg = el("all-toggle");
-      tg.hidden = !!q;
+      tg.hidden = !!q || filtering();
       tg.textContent = st.all ? t("showTop") : t("showAll") + " (" + all.length + ")";
       tg.setAttribute("aria-pressed", String(st.all));
-      var un = D.models.filter(function (m) { return !m.overall_rank; }).sort(function (a, b) { return b.overall - a.overall; });
+      var un = D.models.filter(function (m) { return !m.overall_rank && vendOK(m); }).sort(function (a, b) { return b.overall - a.overall; });
       el("unranked-sum").textContent = t("unranked") + ": " + un.length;
       el("unranked").innerHTML = un.map(function (m) { return '<span class="mid">' + esc(m.model_id) + "</span> (" + esc(nf(m.overall, 1)) + ", " + esc(m.n_sources) + ")"; }).join(" · ");
     }
@@ -536,55 +697,94 @@
       return a ? String(a.name).split(" (")[0] : id;
     }
 
+    var RK = {};
+    function catCols(c) {
+      var rk = { k: "rank", label: esc(t("rank")), d0: 1, get: function (m) { return RK[m.model_id]; } };
+      var mdl = { k: "model", label: esc(t("model")), d0: 1, text: true, get: function (m) { return m.model_id; } };
+      var ov = { k: "overall", label: esc(t("overall")), num: true, get: function (m) { return m.overall; } };
+      if (c === "speed") return [rk, mdl, { k: "tps", label: esc(t("tps")), num: true, get: function (m) { return m.output_tokens_per_s; } }, ov, { k: "price", label: esc(t("price")), num: true, cls: "d-only", d0: 1, get: blended }];
+      if (c === "sl") return [rk, mdl, { k: "sl", label: esc(t("sl")), num: true, get: function (m) { return m.slovenian; } }, ov, { k: "slraw", label: esc(t("slraw")), cls: "d-only" }];
+      return [rk, mdl, { k: "score", label: esc(t("score")), num: true, get: function (m) { return m.categories[c].score; } },
+        { k: "nsrc", label: esc(t("nsrc")), num: true, get: function (m) { return m.categories[c].n_sources; } },
+        { k: "nboards", label: esc(t("nboards")), num: true, cls: "d-only", get: function (m) { return m.categories[c].n_boards; } }, ov];
+    }
+    function catList(c) {
+      if (c === "speed") return D.models.filter(function (m) { return m.output_tokens_per_s; }).sort(function (a, b) { return b.output_tokens_per_s - a.output_tokens_per_s; });
+      if (c === "sl") return slModels();
+      return D.models.filter(function (m) { return (m.categories || {})[c]; }).sort(function (a, b) { return b.categories[c].score - a.categories[c].score || b.overall - a.overall; });
+    }
+
     function renderCats() {
       el("tabs").innerHTML = CATS.map(function (c) { return '<li><button type="button" data-cat="' + c + '" aria-pressed="' + (st.cat === c) + '">' + esc(catLabel(c)) + "</button></li>"; }).join("");
-      var c = st.cat, rows = [], head = "", list = [], cb = catBoards(c), desc = "";
-      if (c === "speed") {
-        list = D.models.filter(function (m) { return m.output_tokens_per_s; }).sort(function (a, b) { return b.output_tokens_per_s - a.output_tokens_per_s; });
-        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("tps")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="num d-only">' + esc(t("price")) + "</th></tr>";
-        rows = list.map(function (m, i) { return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.output_tokens_per_s, 0)) + '</span></td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + "</td></tr>"; });
-        desc = t("speedNote");
-      } else if (c === "sl") {
-        list = slModels();
-        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("sl")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="d-only">' + esc(t("slraw")) + "</th></tr>";
-        rows = list.map(function (m, i) {
+      var c = st.cat, key = "cat:" + c, cols = catCols(c), cb = catBoards(c), desc = "", thinAny = false;
+      var list = catList(c), total = list.length;
+      RK = {};
+      list.forEach(function (m, i) { RK[m.model_id] = i + 1; });
+      list = sortList(pick(list), key, cols);
+      var rows = list.map(function (m) {
+        var rk = '<td class="rk">' + RK[m.model_id] + "</td>";
+        if (c === "speed") return rowOpen(m) + rk + "<td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.output_tokens_per_s, 0)) + '</span></td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + "</td></tr>";
+        if (c === "sl") {
           var raw = (m.slovenian_raw || []).map(function (r) { return esc(boardName(r.board_id)) + " " + esc(nf(r.score, 2)); }).join("; ");
-          return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.slovenian, 1)) + "</span>" + bar(m.slovenian) + '</td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="d-only small">' + raw + "</td></tr>";
-        });
+          return rowOpen(m) + rk + "<td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.slovenian, 1)) + "</span>" + bar(m.slovenian) + '</td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="d-only small">' + raw + "</td></tr>";
+        }
+        // dim only where the category has enough sources for that to mean something (preference and long context have 1–2 in total)
+        var k = m.categories[c], thin = cb.sources.length >= 4 && k.n_sources <= 2;
+        if (thin) thinAny = true;
+        return rowOpen(m, thin) + rk + "<td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(k.score, 1)) + "</span>" + bar(k.score) + '</td><td class="num">' + esc(k.n_sources) +
+          (thin ? '<span class="thin-mark" title="' + esc(t("thinTip")) + '">*</span>' : "") + '</td><td class="num d-only">' + esc(k.n_boards) + '</td><td class="num">' + esc(nf(m.overall, 1)) + "</td></tr>";
+      });
+      if (c === "speed") desc = t("speedNote");
+      else if (c === "sl") {
         var named = D.models.filter(function (m) { return m.named && (m.slovenian === null || m.slovenian === undefined); }).map(function (m) { return m.model_id; });
         desc = t("slNote") + (named.length ? " " + t("noSl") + " " + named.join(", ") + "." : "");
       } else {
-        list = D.models.filter(function (m) { return (m.categories || {})[c]; }).sort(function (a, b) { return b.categories[c].score - a.categories[c].score || b.overall - a.overall; });
-        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("score")) + '</th><th class="num">' + esc(t("nsrc")) + '</th><th class="num d-only">' + esc(t("nboards")) + '</th><th class="num">' + esc(t("overall")) + "</th></tr>";
-        rows = list.map(function (m, i) {
-          var k = m.categories[c];
-          return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(k.score, 1)) + "</span>" + bar(k.score) + '</td><td class="num">' + esc(k.n_sources) + '</td><td class="num d-only">' + esc(k.n_boards) + '</td><td class="num">' + esc(nf(m.overall, 1)) + "</td></tr>";
-        });
         var w = ((D.config || {}).category_weights || {})[c];
-        desc = nfi(list.length) + " " + t("catmodels") + " · " + t("cats_in") + ": " + cb.boards.length + " " + t("from") + " " + cb.sources.length + " " + t("srcs") + " (" + cb.sources.map(srcShort).join(", ") + ")" + (w !== undefined ? " · " + t("weight") + " " + nf(w * 100, 0) + " %" : "") + ".";
+        desc = nfi(total) + " " + t("catmodels") + " · " + t("cats_in") + ": " + cb.boards.length + " " + t("from") + " " + cb.sources.length + " " + t("srcs") + " (" + cb.sources.map(srcShort).join(", ") + ")" + (w !== undefined ? " · " + t("weight") + " " + nf(w * 100, 0) + " %" : "") + ".";
+        if (thinAny) desc += " " + t("thinNote");
       }
       if (c === "speed" && cb.boards.length) desc += " " + t("cats_in") + ": " + cb.boards.map(function (b) { return b.name; }).join(", ") + ".";
       el("catdesc").textContent = desc;
-      var shown = st.catAll ? rows : rows.slice(0, CTOP);
-      el("cattable").innerHTML = "<thead>" + head + "</thead><tbody>" + (shown.join("") || '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>") + "</tbody>";
+      var shown = st.catAll || filtering() ? rows : rows.slice(0, CTOP);
+      el("cattable").innerHTML = thead(key, cols) + "<tbody>" + (shown.join("") || '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>") + "</tbody>";
       var tg = el("cat-toggle");
-      tg.hidden = rows.length <= CTOP;
+      tg.hidden = rows.length <= CTOP || filtering();
       tg.textContent = st.catAll ? t("catShowTop") : t("catShowAll") + " (" + rows.length + ")";
       tg.setAttribute("aria-pressed", String(st.catAll));
+    }
+
+    function disagreeCols() {
+      return [
+        { k: "model", label: esc(t("model")), d0: 1, text: true, get: function (x) { return x.model_id; } },
+        { k: "overall", label: esc(t("overall")), num: true, get: function (x) { return x.overall; } },
+        { k: "sd", label: esc(t("sd")), num: true, get: function (x) { return x.pct_spread_sd; } },
+        { k: "best", label: esc(t("bestb")), cls: "d-only", d0: 1, text: true, get: function (x) { return boardName(x.best_board); } },
+        { k: "worst", label: esc(t("worstb")), cls: "d-only", d0: 1, text: true, get: function (x) { return boardName(x.worst_board); } }
+      ];
+    }
+    function leaderCols() {
+      return [
+        { k: "board", label: esc(t("board")), d0: 1, text: true, get: function (b) { return boardName(b.board_id); } },
+        { k: "leader", label: esc(t("leader")), d0: 1, text: true, get: function (b) { return b.leader; } },
+        { k: "result", label: esc(t("result")), num: true, get: function (b) { return b.leader_score; } },
+        { k: "date", label: esc(t("date")), cls: "d-only", text: true, get: function (b) { return b.data_date_parsed; } }
+      ];
     }
 
     function renderDisagree() {
       var bl = blocks();
       el("disagree-text").innerHTML = bl.filter(isDisagreeBlock).map(renderBlock).join("");
-      var rows = (D.disagreements || []).map(function (x) {
+      var dcols = disagreeCols(), ts = st.top ? topSet() : null;
+      var dl = (D.disagreements || []).filter(function (x) { var m = BYID[x.model_id]; return (!m || vendOK(m)) && (!ts || ts[x.model_id]); });
+      var rows = sortList(dl, "disagree", dcols).map(function (x) {
         return '<tr><td><span class="mid">' + esc(x.model_id) + '</span><span class="sub m-only">↑ ' + esc(boardName(x.best_board)) + "<br>↓ " + esc(boardName(x.worst_board)) + '</span></td><td class="num">' + esc(nf(x.overall, 1)) + '</td><td class="num"><span class="score">' + esc(nf(x.pct_spread_sd, 1)) + '</span></td><td class="d-only">' + esc(boardName(x.best_board)) + '</td><td class="d-only">' + esc(boardName(x.worst_board)) + "</td></tr>";
       }).join("");
-      el("disagree").innerHTML = "<thead><tr><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="num">' + esc(t("sd")) + '</th><th class="d-only">' + esc(t("bestb")) + '</th><th class="d-only">' + esc(t("worstb")) + "</th></tr></thead><tbody>" + rows + "</tbody>";
+      el("disagree").innerHTML = thead("disagree", dcols) + "<tbody>" + (rows || '<tr><td colspan="5" class="muted">' + esc(t("noResults")) + "</td></tr>") + "</tbody>";
       var lc = D.board_leader_counts || {};
       el("leadercounts").innerHTML = Object.keys(lc).sort(function (a, b) { return lc[b] - lc[a]; }).slice(0, 12).map(function (k) { return '<span class="mid">' + esc(k) + "</span> " + esc(lc[k]); }).join(" · ") + " " + esc(t("lead_n")) + ".";
       var order = { reasoning: 1, coding: 2, agentic: 3, knowledge: 4, preference: 5, multilingual: 6, long_context: 7 };
-      var bls = (D.board_leaders || []).slice().sort(function (a, b) { return (order[a.category] || 9) - (order[b.category] || 9) || (a.board_id < b.board_id ? -1 : 1); });
-      el("boardleaders").innerHTML = "<thead><tr><th>" + esc(t("board")) + "</th><th>" + esc(t("leader")) + '</th><th class="num">' + esc(t("result")) + '</th><th class="d-only">' + esc(t("date")) + "</th></tr></thead><tbody>" + bls.map(function (b) {
+      var lcols = leaderCols(), bls = sortList((D.board_leaders || []).slice().sort(function (a, b) { return (order[a.category] || 9) - (order[b.category] || 9) || (a.board_id < b.board_id ? -1 : 1); }), "boardleaders", lcols);
+      el("boardleaders").innerHTML = thead("boardleaders", lcols) + "<tbody>" + bls.map(function (b) {
         var bd = BOARD[b.board_id] || {};
         return "<tr><td>" + link(bd.url, bd.name || b.board_id) + '<span class="sub">' + esc(catLabel(b.category)) + " · " + esc(srcShort(b.source_id)) + '</span></td><td><span class="mid">' + esc(b.leader) + "</span>" + (b.leader_setting ? '<span class="sub">' + esc(b.leader_setting) + "</span>" : "") + '</td><td class="num">' + esc(nf(b.leader_score, 2)) + '</td><td class="d-only small">' + esc(b.data_date_parsed || "") + "</td></tr>";
       }).join("") + "</tbody>";
@@ -620,28 +820,94 @@
       el("rejected").innerHTML = rej.map(function (a) { return "<li><b>" + link(a.url, a.name) + "</b> — " + esc(a.verdict_reason || a.reason || "") + "</li>"; }).join("");
     }
 
+    function weightCols() {
+      var w = (D.config || {}).category_weights || {};
+      return [{ k: "cat", label: esc(t("cat")), d0: 1, text: true, get: function (k) { return catLabel(k); } }, { k: "weight", label: esc(t("weight")), num: true, get: function (k) { return w[k]; } }];
+    }
     function renderWeights() {
       var w = (D.config || {}).category_weights || {};
-      el("weights").innerHTML = "<thead><tr><th>" + esc(t("cat")) + '</th><th class="num">' + esc(t("weight")) + "</th></tr></thead><tbody>" + Object.keys(w).map(function (k) { return "<tr><td>" + esc(catLabel(k)) + '</td><td class="num">' + esc(nf(w[k] * 100, 0)) + " %</td></tr>"; }).join("") + "</tbody>";
+      el("weights").innerHTML = thead("weights", weightCols()) + "<tbody>" + sortList(Object.keys(w), "weights", weightCols()).map(function (k) { return "<tr><td>" + esc(catLabel(k)) + '</td><td class="num">' + esc(nf(w[k] * 100, 0)) + " %</td></tr>"; }).join("") + "</tbody>";
     }
 
     function renderAll() {
       if (!D) return;
       Array.prototype.forEach.call(document.querySelectorAll("[data-ph-sl]"), function (n) { n.setAttribute("placeholder", n.getAttribute(L() === "en" ? "data-ph-en" : "data-ph-sl")); });
-      renderMeta(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderSources(); renderWeights();
+      renderMeta(); renderNew(); renderFilter(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderSources(); renderWeights();
     }
 
+    // Shareable view: provider filter, best-per-provider, category, sort orders and search live in the query string.
+    function sortTxt(x) { return x ? x.k + "." + (x.d > 0 ? "a" : "d") : ""; }
+    function syncURL() {
+      try {
+        var p = new URLSearchParams(location.search);
+        var put = function (k, v) { if (v) p.set(k, v); else p.delete(k); };
+        put("v", Object.keys(st.vend).map(function (k) { return k === "__other" ? "drugi" : k; }).join(","));
+        put("top", st.top ? String(st.top) : "");
+        put("cat", st.cat !== "reasoning" ? st.cat : "");
+        put("s", sortTxt(st.sort.overall));
+        put("cs", sortTxt(st.sort["cat:" + st.cat]));
+        put("q", st.q.trim());
+        var qs = p.toString();
+        history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+      } catch (_) {}
+    }
+    function readURL() {
+      try {
+        var p = new URLSearchParams(location.search), x;
+        (p.get("v") || "").split(",").forEach(function (v) { v = v.trim(); if (v === "drugi" || v === "other") st.vend.__other = 1; else if (VMAIN.indexOf(v) >= 0) st.vend[v] = 1; });
+        var tp = Number(p.get("top"));
+        if (tp === 1 || tp === 3) st.top = tp;
+        if (CATS.indexOf(p.get("cat")) >= 0) st.cat = p.get("cat");
+        var srt = function (v, cols) { var m = /^([a-z_]+)\.(a|d)$/.exec(v || ""); return m && cols.some(function (c) { return c.k === m[1] && c.get; }) ? { k: m[1], d: m[2] === "a" ? 1 : -1 } : null; };
+        if ((x = srt(p.get("s"), overallCols()))) st.sort.overall = x;
+        if ((x = srt(p.get("cs"), catCols(st.cat)))) st.sort["cat:" + st.cat] = x;
+        if (p.get("q")) { st.q = p.get("q"); el("q").value = st.q; }
+      } catch (_) {}
+    }
+    function refilter() { if (!D) return; renderFilter(); renderOverall(); renderCats(); renderDisagree(); syncURL(); }
+    el("vchips").addEventListener("click", function (ev) {
+      var b = ev.target.closest("button[data-vendor]");
+      if (!b) return;
+      var v = b.getAttribute("data-vendor");
+      if (!v) st.vend = {}; else if (st.vend[v]) delete st.vend[v]; else st.vend[v] = 1;
+      refilter();
+      var nb = el("vchips").querySelector('button[data-vendor="' + (window.CSS && CSS.escape ? CSS.escape(v) : v) + '"]');
+      if (nb) nb.focus();
+    });
+    el("vtop").addEventListener("change", function () { st.top = Number(el("vtop").value) || 0; refilter(); });
+    document.addEventListener("click", function (ev) { var b = ev.target && ev.target.closest ? ev.target.closest("[data-fclear]") : null; if (!b) return; st.vend = {}; st.top = 0; refilter(); var c = el("vchips").querySelector("button"); if (c) c.focus(); });
+
     var timer = 0;
-    el("q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(function () { st.q = el("q").value; if (D) renderOverall(); }, 120); });
+    el("q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(function () { st.q = el("q").value; if (D) { renderOverall(); syncURL(); } }, 120); });
     el("all-toggle").addEventListener("click", function () { st.all = !st.all; renderOverall(); });
     el("cat-toggle").addEventListener("click", function () { st.catAll = !st.catAll; renderCats(); });
-    el("tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-cat]"); if (!b) return; st.cat = b.getAttribute("data-cat"); st.catAll = false; renderCats(); var nb = el("tabs").querySelector('button[data-cat="' + st.cat + '"]'); if (nb) nb.focus(); });
+    el("tabs").addEventListener("click", function (ev) { var b = ev.target.closest("button[data-cat]"); if (!b) return; st.cat = b.getAttribute("data-cat"); st.catAll = false; renderCats(); syncURL(); var nb = el("tabs").querySelector('button[data-cat="' + st.cat + '"]'); if (nb) nb.focus(); });
     el("overall").addEventListener("click", function (ev) {
       var b = ev.target.closest("button[data-model]"); if (!b) return;
       var id = b.getAttribute("data-model");
       if (st.open[id]) delete st.open[id]; else st.open[id] = 1;
       renderOverall();
       var nb = el("overall").querySelector('button[data-model="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); if (nb) nb.focus();
+    });
+    var SORTERS = {
+      overall: function () { return { key: "overall", cols: overallCols(), render: renderOverall }; },
+      cattable: function () { return { key: "cat:" + st.cat, cols: catCols(st.cat), render: renderCats }; },
+      disagree: function () { return { key: "disagree", cols: disagreeCols(), render: renderDisagree }; },
+      boardleaders: function () { return { key: "boardleaders", cols: leaderCols(), render: renderDisagree }; },
+      weights: function () { return { key: "weights", cols: weightCols(), render: renderWeights }; }
+    };
+    document.addEventListener("click", function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest("button.sortb") : null;
+      var tb = b && b.closest("table"), f = tb && SORTERS[tb.id];
+      if (!f || !D) return;
+      var x = f(), k = b.getAttribute("data-sort"), col = x.cols.filter(function (c) { return c.k === k && c.get; })[0];
+      if (!col) return;
+      var s = st.sort[x.key];
+      st.sort[x.key] = s && s.k === k ? { k: k, d: -s.d } : { k: k, d: col.d0 || -1 };
+      x.render();
+      var nb = el(tb.id).querySelector('button.sortb[data-sort="' + k + '"]');
+      if (nb) nb.focus();
+      syncURL();
     });
     new MutationObserver(function () { renderAll(); }).observe(root, { attributes: true, attributeFilter: ["lang"] });
 
@@ -651,6 +917,8 @@
       .then(function (r) {
         D = r[0]; S = r[1]; C = r[2];
         (D.boards || []).forEach(function (b) { BOARD[b.board_id] = b; });
+        initVendors();
+        readURL();
         el("status").textContent = "";
         renderAll();
         return true;

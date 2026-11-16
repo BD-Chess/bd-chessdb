@@ -58,7 +58,7 @@ test('shipped JSON matches the schema the page reads', () => {
   assert.ok(SRC.accepted.length >= 10 && SRC.rejected.length >= 1);
   assert.equal(SRC.accepted.length, META.counts.sources_accepted);
   // No raw scraped pages and nothing secret-looking in the shipped data.
-  for (const f of fs.readdirSync(DIR)) assert.ok(['index.html', 'meta_index.json', 'sources.json', 'commentary_sl.json'].includes(f), 'unexpected file ' + f);
+  for (const f of fs.readdirSync(DIR)) assert.ok(['index.html', 'chats.html', 'meta_index.json', 'sources.json', 'commentary_sl.json'].includes(f), 'unexpected file ' + f);
   const all = HTML + JSON.stringify(META) + JSON.stringify(SRC) + JSON.stringify(COM);
   assert.equal(/sk-ant-|ghp_[A-Za-z0-9]{20}|AIza[0-9A-Za-z_-]{30}|BD_GDrive|rclone\.conf|refresh_token/.test(all), false);
 });
@@ -95,14 +95,16 @@ test('page renders every table from its own data (SL)', async () => {
   assert.equal(doc.querySelectorAll('#rejected li').length, SRC.rejected.length);
   assert.ok(doc.querySelectorAll('#leaders li').length >= 7);
   assert.equal(rows(doc, 'weights'), Object.keys(META.config.category_weights).length);
-  assert.match(doc.getElementById('strip-text').textContent, /Podatki zbrani: .+ · Naslednja osvežitev: 1\. \d+\. \d{4}/);
+  assert.match(doc.getElementById('strip-text').textContent, /^Podatki zbrani: \d+\. \d+\. \d{4}$/);
+  // No automatic refresh: the page must not promise one (BD, 2026-11-16).
+  assert.doesNotMatch(HTML, /Naslednja osvežitev|Next refresh|samodejno vsak|refreshes automatically|· mesečno|refreshed monthly/);
   assert.equal(doc.querySelector('[data-k="sources_accepted"]').textContent, String(META.counts.sources_accepted));
   for (const a of doc.querySelectorAll('#accepted a[href], #rejected a[href]')) assert.match(a.getAttribute('href'), /^https?:\/\//);
   // Language toggle re-renders the dynamic parts.
   doc.querySelector('[data-ai8-lang="en"]').click();
   await new Promise(r => window.setTimeout(r, 0)); // MutationObserver callback
   assert.equal(doc.documentElement.lang, 'en');
-  assert.match(doc.getElementById('strip-text').textContent, /Data collected: .+ · Next refresh: 1 \w+ \d{4}/);
+  assert.match(doc.getElementById('strip-text').textContent, /^Data collected: \d+ \w+ \d{4}$/);
   assert.match(cellText(doc, '#overall thead'), /Overall/);
   assert.equal(doc.title, 'LLM meta-index — which model is really the best');
   window.close();
@@ -116,4 +118,74 @@ test('relative data path works without trailing slash and on GitHub Pages', asyn
     assert.equal(doc.querySelector('a[data-file="meta_index.json"]').href, new URL(prefix + 'meta_index.json', url).href);
     window.close();
   }
+});
+
+test('site brand, Gemini 4 note, sortable headers, provider filter and URL state', async () => {
+  const { window, doc, errors } = await boot('https://www.mdlxdcc.org/llms/');
+  assert.deepEqual(errors, []);
+  // Brand: MDL×DCC.org | BD×AI Lab, as on the landing page.
+  assert.equal(doc.querySelector('.site-header .brand-mark').textContent, 'MDL×DCC.org');
+  assert.equal(doc.querySelector('.site-header .brand-sub').textContent.replace(/\s+/g, ''), 'BD×AILab');
+  assert.equal(doc.querySelector('.site-header .brand-sub a').getAttribute('href'), 'https://www.mdlxdcc.org/start/');
+  // New models: Gemini 4 Hydrogen is not in this build, so the note lists it without numbers.
+  assert.equal(META.models.some(m => m.model_id === 'gemini-4-hydrogen'), false);
+  assert.equal(doc.getElementById('newbox').hidden, false);
+  assert.match(doc.getElementById('newbox').textContent, /gemini-4-hydrogen — izšel 12\. 11\. 2026 · po zadnjem zajemu podatkov/);
+
+  const ranked = META.models.filter(m => m.overall_rank);
+  const firstMid = id => cellText(doc, '#' + id + ' tbody tr .mid');
+  const ariaOf = (id, k) => doc.querySelector('#' + id + ' button.sortb[data-sort="' + k + '"]').closest('th').getAttribute('aria-sort');
+  const sortBy = (id, k) => doc.querySelector('#' + id + ' button.sortb[data-sort="' + k + '"]').click();
+  // First click on price: cheapest first; second click: most expensive first; models without a price stay last.
+  sortBy('overall', 'price');
+  assert.equal(ariaOf('overall', 'price'), 'ascending');
+  const priced = ranked.filter(m => m.price).sort((a, b) => a.price.blended_3to1 - b.price.blended_3to1);
+  assert.equal(META.models.find(m => m.model_id === firstMid('overall')).price.blended_3to1, priced[0].price.blended_3to1);
+  sortBy('overall', 'price');
+  assert.equal(ariaOf('overall', 'price'), 'descending');
+  assert.equal(META.models.find(m => m.model_id === firstMid('overall')).price.blended_3to1, priced[priced.length - 1].price.blended_3to1);
+  doc.getElementById('all-toggle').click();
+  const trs = [...doc.querySelectorAll('#overall tbody tr')];
+  const lastId = trs[trs.length - 1].querySelector('.mid').textContent;
+  if (ranked.some(m => !m.price)) assert.equal(META.models.find(m => m.model_id === lastId).price, null);
+  // Rank numbers stay the fixed overall ranks after sorting.
+  for (const tr of trs.slice(0, 10)) assert.equal(tr.querySelector('.rk').textContent, String(META.models.find(m => m.model_id === tr.querySelector('.mid').textContent).overall_rank));
+  // First click on a score column: highest first.
+  sortBy('overall', 'overall');
+  assert.equal(ariaOf('overall', 'overall'), 'descending');
+  assert.equal(firstMid('overall'), META.ranking[0]);
+  // Every model table has sortable headers.
+  for (const id of ['overall', 'cattable', 'disagree', 'boardleaders', 'weights']) assert.ok(doc.querySelectorAll('#' + id + ' th button.sortb').length >= 2, 'sortable headers: ' + id);
+
+  // Provider filter: Anthropic only, then its best model only.
+  doc.querySelector('#vchips button[data-vendor="Anthropic"]').click();
+  const anth = ranked.filter(m => m.vendor === 'Anthropic');
+  assert.equal(rows(doc, 'overall'), anth.length);
+  for (const s of doc.querySelectorAll('#overall tbody tr .sub')) assert.match(s.textContent, /^Anthropic/);
+  const sel = doc.getElementById('vtop');
+  sel.value = '1';
+  sel.dispatchEvent(new window.Event('change'));
+  assert.equal(rows(doc, 'overall'), 1);
+  assert.match(window.location.search, /v=Anthropic/);
+  assert.match(window.location.search, /top=1/);
+  assert.equal([...doc.querySelectorAll('[data-fnote]')].filter(n => !n.hidden).length, 3);
+  doc.querySelector('#tabs button[data-cat="coding"]').click();
+  assert.equal(rows(doc, 'cattable'), 1);
+  assert.match(window.location.search, /cat=coding/);
+  doc.querySelector('[data-fclear]').click();
+  assert.equal(rows(doc, 'overall'), ranked.length); // "show all ranked" was switched on above
+  assert.equal(doc.getElementById('all-toggle').hidden, false);
+  assert.doesNotMatch(window.location.search, /v=|top=/);
+  window.close();
+
+  // The same view opens again from its link.
+  const b = await boot('https://www.mdlxdcc.org/llms/?v=Anthropic,Google&top=1&cat=coding&s=price.a&cs=overall.d');
+  assert.deepEqual(b.errors, []);
+  assert.deepEqual([...b.doc.querySelectorAll('#vchips button[aria-pressed="true"]')].map(x => x.getAttribute('data-vendor')).sort(), ['Anthropic', 'Google']);
+  assert.equal(b.doc.getElementById('vtop').value, '1');
+  assert.equal(rows(b.doc, 'overall'), 2);
+  assert.equal(b.doc.querySelector('#overall button.sortb[data-sort="price"]').closest('th').getAttribute('aria-sort'), 'ascending');
+  assert.equal(b.doc.querySelector('#tabs button[aria-pressed="true"]').getAttribute('data-cat'), 'coding');
+  assert.equal(b.doc.querySelector('#cattable button.sortb[data-sort="overall"]').closest('th').getAttribute('aria-sort'), 'descending');
+  b.window.close();
 });
