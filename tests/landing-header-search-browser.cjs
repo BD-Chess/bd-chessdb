@@ -11,6 +11,8 @@ async function localServer(){
   const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   let file=path.resolve(pub,'.'+pathname);
   if(!file.startsWith(pub+path.sep)&&file!==pub){res.writeHead(403);return res.end();}
+  // The deployed canonical URL is lowercase; the unchanged source directory is TSP.
+  if(!fs.existsSync(file)&&pathname.startsWith('/tsp/media/'))file=path.resolve(pub,'TSP/media/'+pathname.slice('/tsp/media/'.length));
   if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');
   if(!fs.existsSync(file)){res.writeHead(404);return res.end();}
   const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.mp4':'video/mp4','.webmanifest':'application/manifest+json'};
@@ -36,12 +38,12 @@ async function row(page,width){
  return boxes;
 }
 async function homeStudies(name,browser,url){
- const report={browser:name,layouts:[],media:[],errors:[]};
+ const report={browser:name,sourceCommit:process.env.GITHUB_SHA||null,layouts:[],media:[],errors:[]};
  const origin=new URL(url).origin;
  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',serviceWorkers:'block'});
- const page=await context.newPage(),requests=[];
+ const page=await context.newPage(),requests=[],mediaPaths=[];
  page.on('pageerror',error=>report.errors.push(String(error)));
- page.on('request',request=>{if(/\.mp4(?:\?|$)/.test(request.url()))requests.push(request.url());});
+ page.on('request',request=>{if(/\.mp4(?:\?|$)/.test(request.url()))requests.push(request.url());if(request.url().includes('8ztsp-nu3496-engine-at-work'))mediaPaths.push(new URL(request.url()).pathname);});
  await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
  const go=async(language='en')=>{
   const target=new URL(url);target.searchParams.set('lang',language);
@@ -52,14 +54,15 @@ async function homeStudies(name,browser,url){
  async function fit(width){
   const boxes=await page.evaluate(()=>{
    const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,w:r.width,h:r.height};};
-   return {hero:box('.hero'),study:box('#study'),intro:box('.lab-intro'),card:box('#tsp-start-card'),engine:box('.tsp-engine'),review:box('.tsp-review-link'),header:box('.topbar')};
+   return {hero:box('.hero'),study:box('#study'),intro:box('.lab-intro'),card:box('#tsp-start-card'),access:box('.tsp-card-access'),cta:box('.tsp-hero-cta'),context:box('#tsp-hero-context'),engine:box('.tsp-engine'),review:box('.tsp-review-link'),header:box('.topbar')};
   });
-  for(const key of ['study','intro','card','engine','review']){
+  for(const key of ['study','intro','card','access','cta','context','engine','review']){
    const b=boxes[key];assert.ok(b.x>=-1&&b.right<=width+1&&b.w>0,key+' fits '+width+': '+JSON.stringify(b));
   }
   assert.ok(boxes.intro.y>=boxes.hero.bottom-1,'Introduction follows the hero');
   assert.ok(boxes.engine.y>=boxes.intro.bottom-1,'Engine follows introduction/card');
   assert.ok(boxes.study.y>=boxes.header.bottom-1,'Hero does not overlap header');
+  assert.ok(boxes.context.y>=boxes.cta.bottom-1,'Recording context follows hero CTA');
   return boxes;
  }
  try{
@@ -76,6 +79,12 @@ async function homeStudies(name,browser,url){
    for(const language of ['en','sl']){
     await page.evaluate(lang=>window.MDLxDCCLocale.choose(lang),language);
     await page.waitForFunction(lang=>document.querySelector('#tsp-hero-poster').src.endsWith('-'+lang+'.webp'),language);
+    const hint=language==='en'?'password; access on request':'z geslom; dostop na prošnjo';
+    assert.ok((await page.locator('#tsp-hero-link').innerText()).includes(hint),'Password hint is visible before hero click');
+    assert.ok((await page.locator('#tsp-hero-link').getAttribute('aria-label')).includes(hint),'Hero accessible name includes access condition');
+    assert.ok((await page.locator('#tsp-start-card').innerText()).includes(hint),'Card states access condition before click');
+    const contextText=await page.locator('#tsp-hero-context').innerText();
+    for(const term of language==='en'?['4 workers','7 cores','15 Nov 2026']:['4 delavci','7 jedri','15. 11. 2026'])assert.ok(contextText.includes(term),'Recording/native context in '+language+': '+term);
     for(const theme of ['dark','light']){
      await page.locator('#main-menu-trigger').click();
      if(await page.locator('html').getAttribute('data-theme')!==theme)await page.locator('#theme').click();
@@ -164,8 +173,10 @@ async function homeStudies(name,browser,url){
   await page.locator('#tsp-hero-link').focus();
   await Promise.all([page.waitForURL(value=>value.pathname==='/8zTSP/'),page.keyboard.press('Enter')]);
   assert.match(await page.title(),/8zTSP/,'Hero link opens the public browser tool');
+  assert.ok(mediaPaths.length>0&&mediaPaths.every(value=>value.startsWith('/tsp/media/')),'All runtime poster/video URLs use canonical lowercase path');
+  report.mediaPaths=mediaPaths;
   assert.deepEqual(report.errors,[],'No home JavaScript errors');
-  console.log('PASS '+name+': four hero studies, old details/fullscreen navigation, EN/SL 320/390/1440/3840, dark/light, 200% zoom, selected media, reduced/manual motion and failed-video keyboard navigation');
+  console.log('PASS '+name+': four hero studies, old details/fullscreen navigation, EN/SL 320/390/1440/3840, dark/light, 200% zoom, visible/accessibility password hints, browser/native timing context, canonical lowercase media, reduced/manual motion and failed-video keyboard navigation');
  }catch(error){
   if(evidence)await page.screenshot({path:path.join(evidence,name+'-home-failure.png')}).catch(()=>{});
   throw error;
