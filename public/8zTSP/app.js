@@ -12,8 +12,10 @@
 // replay-player.mjs, replay-copy.mjs and replay.css are the package's; the run option is called »refinement«), from Examples
 // R1b (9d4905c) the 31 examples: Slovenia first and by default, the 27 countries by size with their continents, then the
 // three generated maps; Slovenia's dated line (examples.mjs gapStatus). R1c/d (33ccd10): metres for Slovenia (distance-format.mjs),
-// runs up to 86,400 s and a bounded run history (run-limits.mjs). Before: demo/app.before_r28.js.
-import { examples, exampleGroups, exampleLabel, defaultExampleId, gapDisplay } from './examples.mjs';
+// runs up to 86,400 s and a bounded run history (run-limits.mjs). R1f-i (caea33b): 62 maps, with continents and countries
+// as .tsp.gz (checked by SHA-256 before and after unpacking), maps above 300,000 cities on a desktop only, a »Hard instances«
+// group, four of them fetched from the authors' repository when chosen. Before: demo/app.before_r28.js.
+import { examples, exampleGroups, exampleLabel, defaultExampleId, gapDisplay, desktopOnly } from './examples.mjs';
 import { initializeWasm, loaderState, solverModule, supportsSharedThreads } from './wasm-loader.js';
 import { createRecorder, serializeRecording } from './replay-data.mjs';
 import { mountReplay } from './replay-player.mjs';
@@ -32,17 +34,23 @@ const isIPhone = /iPhone/i.test(navigator.userAgent);
 const cores = Math.max(reportedCores, 8);
 const canShare = supportsSharedThreads();
 // R3: the 10M example only on a desktop that reports at least 8 GB of memory
-const desktopLarge = !/iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) && Number(navigator.deviceMemory) >= 8;
+const desktopLarge0 = !/iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) && Number(navigator.deviceMemory) >= 8;   // R3's rule, kept for the record
+// R1f-i: phones and tablets (also an iPad that reports a desktop browser) never load maps above 300,000 cities
+const mobileDevice = /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+const desktopLarge = !mobileDevice && Number(navigator.deviceMemory) >= 8;
+const deviceAllows = item => item.cities === 10000000 ? desktopLarge : desktopOnly(item) ? !mobileDevice : true;
 for (let n = 1; n <= cores; n++) $('workers').add(new Option(String(n), String(n)));
 $('workers').value = String(isIPhone ? 6 : reportedCores);
 // R28 (Examples R1b): the maps in the order of examples.mjs (Slovenia, then the 27 countries by size, largest first), then
 // the generated ones in a group of their own; render() writes the labels in the page's language
 {
-  const add = (item, parent) => { const option = new Option(item.id, item.id); option.disabled = item.cities === 10000000 && !desktopLarge; parent.append(option); };
-  for (const item of examples.filter(e => !e.generator)) add(item, $('example'));
-  const section = document.createElement('optgroup'); section.dataset.group = 'random'; section.label = exampleGroups.find(g => g.id === 'random').names.en;
-  for (const item of examples.filter(e => e.generator)) add(item, section);
-  $('example').append(section);
+  const add = (item, parent) => { const option = new Option(item.id, item.id); option.disabled = !deviceAllows(item); parent.append(option); };
+  for (const item of examples.filter(e => !['hard', 'random'].includes(e.group))) add(item, $('example'));
+  for (const gid of ['hard', 'random']) {   // R1f-i: the hard instances, then the generated maps, each in a group of its own
+    const section = document.createElement('optgroup'); section.dataset.group = gid; section.label = exampleGroups.find(g => g.id === gid).names.en;
+    for (const item of examples.filter(e => e.group === gid)) add(item, section);
+    $('example').append(section);
+  }
 }
 $('example').value = DEFAULT_EXAMPLE;
 let text = '', coords = new Float64Array(), tour = null, pool = [], loading = null, rejectLoading = null, extent = null;
@@ -109,14 +117,23 @@ const T = {
     modeOneNoShare: (n, c) => `Mode: 1 worker; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
     hintIPhone: 'iPhone: 6 workers by default; Safari may hide the number of cores. More workers than cores do not help.',
     hintCores: c => `Your browser reports ${c} ${c === 1 ? 'core' : 'cores'}. More workers than cores do not help.`,
-    option: item => exampleLabel(item, 'en') + (item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device') : ''),
+    option: item => exampleLabel(item, 'en') + (item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device')
+      : desktopOnly(item) ? (mobileDevice ? ' · desktop only, not on this device' : ' · desktop only') : ''),
     live: 'Live · 0.15 s',
     known: (n, opt) => `${group(n)} cities, known optimal tour ${group(opt)}`,
     unknown: n => `${group(n)} cities; optimal tour not known`,
     bestKnown: (n, tourLength, b) => `${group(n)} cities; best known tour ${group(tourLength)}, lower bound ${group(b)}; optimum not confirmed`,
     replayInvalid: 'Unable to open this recording.',
-    referenceTour: v => `Known reference tour: ${v}.`, referenceLowerBound: v => `Proven lower bound: ${v}.`,
+    referenceTour: (v, src, date) => `Known reference tour: ${v}; ${src}, ${date}.`, referenceLowerBound: (v, src, when) => `${src} lower bound: ${v}; ${when}.`,
     secondsRange: 'Enter a duration from 0.1 to 86,400 seconds.',
+    desktopRequired: 'Maps above 300,000 cities open only on a desktop computer; this one is unavailable on this device.',
+    challengeBest: (n, tourLength, b) => `${group(n)} cities; best tour of the 2002 DIMACS Challenge ${group(tourLength)}, Held–Karp lower bound ${group(Math.round(b))}; optimum not known`,
+    hardProof: (opt, s) => `Optimum ${group(opt)} (proved). Finding a tour and proving it optimal are different tasks: Concorde needed on average ${proofTime(s)} to PROVE this optimum. These instances are hard to prove because the lower bound lies far below the optimum.`,
+    beingProved: 'Optimum being proved.',
+    remoteSource: 'Not hosted here: loaded from the authors’ repository when chosen and checked by SHA-256.',
+    remoteUnavailable: 'The authors’ repository could not be reached; try again later.',
+    remoteChanged: 'The authors’ file no longer matches the checked SHA-256; it was not loaded.',
+    gzipUnavailable: 'This browser cannot unpack the compressed map.',
     siGap: (percent, date, running) => `The optimum is not proved yet: our tour is at most ${percent}% above it (Concorde's lower bound${running ? ', proof running' : ''}; as of ${date})`,
     bound: (n, b, est) => `${group(n)} cities; ${est ? 'HK estimate' : 'HK bound'} ${group(Math.round(b))}`,
     waterloo: 'National TSP collection, University of Waterloo', dimacs: 'DIMACS TSP Challenge · portgen by Lyle McGeoch',
@@ -161,14 +178,24 @@ const T = {
     modeOneNoShare: (n, c) => `Način: 1 delavec; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
     hintIPhone: 'iPhone: privzeto 6 delavcev; Safari lahko skrije število jeder. Več delavcev kot jeder ne pomaga.',
     hintCores: c => `Vaš brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Več delavcev kot jeder ne pomaga.`,
-    option: item => exampleLabel(item, 'sl') + (item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi') : ''),
+    option: item => exampleLabel(item, 'sl') + (item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi')
+      : desktopOnly(item) ? (mobileDevice ? ' · samo za namizni računalnik, ne na tej napravi' : ' · samo za namizni računalnik') : ''),
     live: 'V živo · 0,15 s',
     known: (n, opt) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}, znana optimalna pot ${group(opt)}`,
     unknown: n => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; optimalna pot ni znana`,
     bestKnown: (n, tourLength, b) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša znana pot ${group(tourLength)}, spodnja meja ${group(b)}; optimum ni potrjen`,
     replayInvalid: 'Posnetka ni mogoče odpreti.',
-    referenceTour: v => `Znana referenčna pot: ${v}.`, referenceLowerBound: v => `Dokazana spodnja meja: ${v}.`,
+    referenceTour: (v, src, date) => `Znana referenčna pot: ${v}; ${src}, ${date}.`,
+    referenceLowerBound: (v, src, when) => `${src === 'Concorde' ? 'Concordova spodnja meja' : 'Spodnja meja (' + src + ')'}: ${v}; ${when}.`,
     secondsRange: 'Vnesi trajanje od 0,1 do 86.400 sekund.',
+    desktopRequired: 'Zemljevidi z več kot 300.000 mesti se odprejo le na namiznem računalniku; na tej napravi ta ni na voljo.',
+    challengeBest: (n, tourLength, b) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša pot izziva DIMACS 2002 ${group(tourLength)}, spodnja meja Held–Karp ${group(Math.round(b))}; optimum ni znan`,
+    hardProof: (opt, s) => `Optimum ${group(opt)} (dokazan). Najti pot in dokazati, da je optimalna, sta različni nalogi: Concorde je za DOKAZ tega optimuma povprečno potreboval ${proofTime(s)}. Ti primeri so težki za dokaz, ker je spodnja meja daleč pod optimumom.`,
+    beingProved: 'Optimum se še dokazuje.',
+    remoteSource: 'Ni shranjen tukaj: ob izbiri se naloži iz repozitorija avtorjev in preveri s SHA-256.',
+    remoteUnavailable: 'Repozitorija avtorjev ni bilo mogoče doseči; poskusi pozneje.',
+    remoteChanged: 'Datoteka avtorjev se ne ujema več s preverjenim SHA-256; ni naložena.',
+    gzipUnavailable: 'Ta brskalnik ne more razpakirati stisnjenega zemljevida.',
     siGap: (percent, date, running) => `Optimum še ni dokazan: naša pot je največ ${percent} % nad njim (Concordova spodnja meja${running ? ', dokaz teče' : ''}; stanje ${date})`,
     bound: (n, b, est) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; ${est ? 'ocena HK' : 'meja HK'} ${group(Math.round(b))}`,
     waterloo: 'zbirka National TSP, Univerza Waterloo', dimacs: 'DIMACS TSP Challenge · portgen Lyla McGeocha',
@@ -179,6 +206,12 @@ const T = {
     mapData: 'Podatki zemljevida',
   },
 };
+// R1f-i: average proof time as published by Hougardy and Zhong (2021); not measured here
+function proofTime(seconds) {
+  const sl = lang() === 'sl', one = v => dec(v, 1);
+  const extra = seconds >= 86400 ? one(seconds / 86400) + (sl ? ' dneva' : ' days') : seconds >= 3600 ? one(seconds / 3600) + (sl ? ' ure' : ' hours') : '';
+  return `${group(seconds)} s (${extra ? extra + ', ' : ''}${sl ? 'Xeon 2,2 GHz, Hougardy in Zhong 2021' : 'Xeon 2.2 GHz, Hougardy and Zhong 2021'})`;
+}
 const t = (key, ...args) => { const v = T[lang()][key]; return typeof v === 'function' ? v(...args) : v; };
 const english = (key, ...args) => T.en[key] instanceof Function ? T.en[key](...args) : T.en[key];
 class Message extends Error { constructor(key, ...args) { super(english(key, ...args)); this.key = [key, ...args]; } }
@@ -203,19 +236,30 @@ function credits() {   // the source line under the examples and, for Slovenia, 
   credit.replaceChildren(); mapCredit.replaceChildren();
   const item = tab === 'nu' ? examples.find(e => e.id === $('example').value) : null;
   if (!item) return;
-  const parts = [item.optimum ? t('known', item.cities, item.optimum) : item.bestKnownTour ? t('bestKnown', item.cities, item.bestKnownTour, item.bound)
+  const parts = [item.optimum ? t('known', item.cities, item.optimum)
+    : item.bestKnownTour ? (item.bestTourKind === 'challenge-2002' ? t('challengeBest', item.cities, item.bestKnownTour, item.bound) : t('bestKnown', item.cities, item.bestKnownTour, item.bound))
     : item.gapStatus ? t('cities', item.cities) : item.bound ? t('bound', item.cities, item.bound, item.boundKind === 'estimate') : t('unknown', item.cities)];
   credit.append(`${exName(item)}: ${parts[0]} · `);
-  if (item.licence) {
+  if (item.id === 'si6035_gurs_20261115') {   // Slovenia's GURS line (R1f-i: other maps with a licence take the general line below)
     credit.append(link(item.source, t('gurs')), ' · ', link(item.licenceUrl, item.licence), ` · ${t('siNote')}`);
     mapCredit.append(`${t('mapData')}: `, link(item.source, t('gurs')), ' · ', link(item.licenceUrl, item.licence));
-  } else credit.append(link(item.source, item.generator ? t('dimacs') : t('waterloo')));
+  } else {   // R1f-i: the map's own source, its licence and further credits (e.g. Natural Earth), also under the map
+    const label = item.generator ? t('dimacs') : !item.credit || item.credit === 'National TSP collection, University of Waterloo' ? t('waterloo') : item.credit;
+    const links = [link(item.source, label), ...(item.licence ? [link(item.licenceUrl, item.licence)] : []), ...(item.links || []).map(x => link(x.href, x.text[lang()] || x.text.en))];
+    links.forEach((a, i) => credit.append(...(i ? [' · ', a] : [a])));
+    if (item.licence || item.links?.length) { mapCredit.append(`${t('mapData')}: `); links.forEach((a, i) => mapCredit.append(...(i ? [' · ', a.cloneNode(true)] : [a.cloneNode(true)]))); }
+    const description = item.descriptions?.[lang()] || item.description;
+    if (description) credit.append(` · ${description}`);
+  }
   if (item.gapStatus && !item.optimum) {
     const g = gapDisplay(item.gapStatus, lang()), d = v => formatDistance(v, item.unit ?? null, lang());
-    if (Number.isSafeInteger(item.gapStatus.tourLength) && item.gapStatus.tourLength > 0) credit.append(` · ${t('referenceTour', d(item.gapStatus.tourLength))}`);
-    if (Number.isFinite(item.gapStatus.lowerBound) && item.gapStatus.lowerBound > 0) credit.append(` · ${t('referenceLowerBound', d(item.gapStatus.lowerBound))}`);
+    if (Number.isSafeInteger(item.gapStatus.tourLength) && item.gapStatus.tourLength > 0) credit.append(` · ${t('referenceTour', d(item.gapStatus.tourLength), item.gapStatus.tourSource, g.tourDate)}`);
+    if (Number.isFinite(item.gapStatus.lowerBound) && item.gapStatus.lowerBound > 0) credit.append(` · ${t('referenceLowerBound', d(item.gapStatus.lowerBound), item.gapStatus.boundSource, g.boundAsOf)}`);
     credit.append(` · ${t('siGap', g.percent, g.date, g.proofRunning)}`);
   }
+  if (item.proof && item.optimum) credit.append(` · ${t('hardProof', item.optimum, item.proof.averageSeconds)}`);
+  if (item.optimumStatus === 'being-proved') credit.append(` · ${t('beingProved')}`);
+  if (item.remote) credit.append(` · ${t('remoteSource')}`);
   if (item.boundKind === 'estimate') credit.append(` · ${t('estimateNote')}`);
   if (item.cities >= 1000000) credit.append(` · ${t('largeNote')}`);
 }
@@ -472,10 +516,36 @@ function generate() {
   for (let i = 0; i < n; i++) lines.push(`${i + 1} ${Math.floor(random() * 1000000)} ${Math.floor(random() * 1000000)}`);
   lines.push('EOF'); return load(lines.join('\n'), 'random');
 }
+const sha256Hex = async bytes => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join('');
+// R1f-i: the checked text of a map. Remote maps are never hosted or cached here; hosted .tsp.gz files are checked before and
+// after unpacking (a server may also unpack them on the way).
+async function exampleText(item) {
+  if (item.remote) {
+    let response;
+    try { response = await fetch(item.remoteUrl, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' }); } catch { throw new Message('remoteUnavailable'); }
+    if (!response.ok) throw new Message('remoteUnavailable');
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (await sha256Hex(bytes) !== item.sha256) throw new Message('remoteChanged');
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  }
+  const response = await fetch(new URL(item.path, import.meta.url));
+  if (!response.ok) throw Error(String(response.status));
+  if (item.compression !== 'gzip') return response.text();
+  let bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+    if (await sha256Hex(bytes) !== item.gzipSha256) throw new Message('checksum');
+    if (typeof DecompressionStream !== 'function') throw new Message('gzipUnavailable');
+    bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+  }
+  if (await sha256Hex(bytes) !== item.sha256) throw new Message('checksum');
+  return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+}
+let exampleRequest = 0;
 async function loadExample(id = $('example').value) {
   unlocked();
   const item = examples.find(e => e.id === id); if (!item) throw new Message('exFail', id);
-  if (item.cities === 10000000 && !desktopLarge) throw new Message('tenM');
+  if (!deviceAllows(item)) throw new Message(item.cities === 10000000 ? 'tenM' : 'desktopRequired');
+  const request = ++exampleRequest;
   $('example').value = id; render();
   if (item.generator) {   // R3: DIMACS portgen on the device, then the checksum of the generated file
     clearReplay(); text = ''; coords = new Float64Array(); extent = null; tour = null; runRecord = null; mapMeta = null; $('stopOptimum').checked = false; best = Infinity; draw();
@@ -493,12 +563,13 @@ async function loadExample(id = $('example').value) {
   }
   status('exLoading', exName(item));
   let value;
-  try {
-    const response = await fetch(new URL(item.path, import.meta.url));
-    if (!response.ok) throw Error(String(response.status));
-    value = await response.text();
-  } catch (_) { throw new Message('exFail', exName(item)); }
-  await load(value, item.id, item);
+  try { value = await exampleText(item); }
+  catch (error) {   // the map shown stays, and so does its name in the list
+    if (request === exampleRequest && mapMeta && !active && !loading) { $('example').value = mapMeta.id; render(); }
+    throw error?.key ? error : new Message('exFail', exName(item));
+  }
+  if (request !== exampleRequest) return;
+  await load(value, item.id, item, item.compression === 'gzip' || item.remote ? item.sha256 : null);
 }
 const loadNu = () => loadExample(DEFAULT_EXAMPLE);
 const safely = fn => async () => {
