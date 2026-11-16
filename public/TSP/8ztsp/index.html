@@ -411,9 +411,10 @@ p.w-swipe[hidden]{display:none}
 .w-entry p.w-up{margin:8px 0 0;max-width:none;text-align:right;font:600 calc(11px*var(--fs))/1.3 var(--mono);letter-spacing:.06em}
 .w-up a{color:var(--muted);text-decoration:none}.w-up a:hover,.w-up a:focus-visible{color:var(--cyan)}
 #w-toc{scroll-margin-top:calc(100px*var(--fs))}
-/* R27b: in »Results at a glance« the 8zTSP column wraps on wide screens too, so the table fits without a sideways swipe
-   (R27's longer Slovenia cell had made it 1,308 px wide in a 1,180 px box). A fold opened by arriving through a link
+/* R27b: »Results at a glance« uses the full width and its 8zTSP column wraps, so the table fits without a sideways
+   swipe (R27's longer Slovenia cell had made it 1,308 px wide in a 1,180 px box; wrapping alone capped it at 760 px). A fold opened by arriving through a link
    (tools/page_ui.js adds .w-arrived and a span .w-hide to its label) says »· hide | · skrij« until the reader closes it. */
+.w-glance .w-ltab table{max-width:none}   /* full width, as before R27; only the 8zTSP column wraps */
 .w-glance .w-ltab td:nth-child(4){white-space:normal}
 summary .w-hide{font:600 calc(11px*var(--fs))/1 var(--mono);letter-spacing:.06em;color:var(--muted)}
 
