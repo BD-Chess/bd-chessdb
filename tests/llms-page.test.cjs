@@ -95,14 +95,16 @@ test('page renders every table from its own data (SL)', async () => {
   assert.equal(doc.querySelectorAll('#rejected li').length, SRC.rejected.length);
   assert.ok(doc.querySelectorAll('#leaders li').length >= 7);
   assert.equal(rows(doc, 'weights'), Object.keys(META.config.category_weights).length);
-  assert.match(doc.getElementById('strip-text').textContent, /Podatki zbrani: .+ · Naslednja osvežitev: 1\. \d+\. \d{4}/);
+  assert.match(doc.getElementById('strip-text').textContent, /^Podatki zbrani: \d+\. \d+\. \d{4}$/);
+  // No automatic refresh: the page must not promise one (BD, 2026-11-16).
+  assert.doesNotMatch(HTML, /Naslednja osvežitev|Next refresh|samodejno vsak|refreshes automatically|· mesečno|refreshed monthly/);
   assert.equal(doc.querySelector('[data-k="sources_accepted"]').textContent, String(META.counts.sources_accepted));
   for (const a of doc.querySelectorAll('#accepted a[href], #rejected a[href]')) assert.match(a.getAttribute('href'), /^https?:\/\//);
   // Language toggle re-renders the dynamic parts.
   doc.querySelector('[data-ai8-lang="en"]').click();
   await new Promise(r => window.setTimeout(r, 0)); // MutationObserver callback
   assert.equal(doc.documentElement.lang, 'en');
-  assert.match(doc.getElementById('strip-text').textContent, /Data collected: .+ · Next refresh: 1 \w+ \d{4}/);
+  assert.match(doc.getElementById('strip-text').textContent, /^Data collected: \d+ \w+ \d{4}$/);
   assert.match(cellText(doc, '#overall thead'), /Overall/);
   assert.equal(doc.title, 'LLM meta-index — which model is really the best');
   window.close();
