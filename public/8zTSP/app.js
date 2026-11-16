@@ -14,13 +14,15 @@
 // three generated maps; Slovenia's dated line (examples.mjs gapStatus). R1c/d (33ccd10): metres for Slovenia (distance-format.mjs),
 // runs up to 86,400 s and a bounded run history (run-limits.mjs). R1f-i (caea33b): 62 maps, with continents and countries
 // as .tsp.gz (checked by SHA-256 before and after unpacking), maps above 300,000 cities on a desktop only, a »Hard instances«
-// group, four of them fetched from the authors' repository when chosen. Before: demo/app.before_r28.js.
-import { examples, exampleGroups, exampleLabel, defaultExampleId, gapDisplay, desktopOnly } from './examples.mjs';
+// group, four of them fetched from the authors' repository when chosen. R1k + R1k-a (7967cee): one flat list of 64 maps
+// (Slovenia first, then by city count), metre maps shown in kilometres with the reference field in km, Slovenia's best known
+// tour 8,728,254 m and Concorde's bound of 16 Nov 21:09. Before: demo/app.before_r28.js; before R1k: demo/app.before_r1k.js.
+import { examples, exampleLabel, defaultExampleId, gapDisplay, desktopOnly } from './examples.mjs';
 import { initializeWasm, loaderState, solverModule, supportsSharedThreads } from './wasm-loader.js';
 import { createRecorder, serializeRecording } from './replay-data.mjs';
 import { mountReplay } from './replay-player.mjs';
 import { REPLAY_COPY } from './replay-copy.mjs';
-import { formatDistance } from './distance-format.mjs';
+import { formatDistance, referenceFieldValue, referenceFromField } from './distance-format.mjs';
 import { RUN_LIMITS, validSeconds, retainRecent } from './run-limits.mjs';
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
@@ -41,21 +43,25 @@ const desktopLarge = !mobileDevice && Number(navigator.deviceMemory) >= 8;
 const deviceAllows = item => item.cities === 10000000 ? desktopLarge : desktopOnly(item) ? !mobileDevice : true;
 for (let n = 1; n <= cores; n++) $('workers').add(new Option(String(n), String(n)));
 $('workers').value = String(isIPhone ? 6 : reportedCores);
-// R28 (Examples R1b): the maps in the order of examples.mjs (Slovenia, then the 27 countries by size, largest first), then
-// the generated ones in a group of their own; render() writes the labels in the page's language
+// R1k: one flat list in the order of examples.mjs (Slovenia first, then every other map by city count); render() writes
+// the labels in the page's language
 {
   const add = (item, parent) => { const option = new Option(item.id, item.id); option.disabled = !deviceAllows(item); parent.append(option); };
-  for (const item of examples.filter(e => !['hard', 'random'].includes(e.group))) add(item, $('example'));
-  for (const gid of ['hard', 'random']) {   // R1f-i: the hard instances, then the generated maps, each in a group of its own
-    const section = document.createElement('optgroup'); section.dataset.group = gid; section.label = exampleGroups.find(g => g.id === gid).names.en;
-    for (const item of examples.filter(e => e.group === gid)) add(item, section);
-    $('example').append(section);
-  }
+  for (const item of examples) add(item, $('example'));
 }
 $('example').value = DEFAULT_EXAMPLE;
 let text = '', coords = new Float64Array(), tour = null, pool = [], loading = null, rejectLoading = null, extent = null;
 let generation = 0, best = Infinity, started = 0, timer, active = false, runRecord = null, shownElapsed = 0, rejectActive = null;
 let mapName = '', inputHash = '', lastDraw = 0, preset = '', tab = 'nu', statusKey = ['wasm'], mapMeta = null;
+// R1k: the reference in the map's own units (metres for unit m); the field shows kilometres for unit m; an untouched or
+// restored default keeps the exact stored value, an edit replaces it
+let referenceRaw = null, referenceDefault = { raw: null, text: '' };
+function setReference(raw) {
+  const unit = mapMeta?.unit ?? null, input = $('reference');
+  referenceRaw = typeof raw === 'number' && Number.isFinite(raw) && raw > 0 ? raw : null;
+  referenceDefault = { raw: referenceRaw, text: referenceFieldValue(referenceRaw, unit) };
+  input.value = referenceDefault.text; input.min = unit === 'm' ? '0.001' : '1';
+}
 let renderTimer = null, renderPending = false, drawCount = 0, progressDrawCount = 0, lastDrawnTourLength = null;
 const progressDrawTimes = [];
 // R28 (R5 A1): the recording of a run; after the run »Replay slowly« plays it in its own panel (the result, the map and the
@@ -123,8 +129,9 @@ const T = {
     known: (n, opt) => `${group(n)} cities, known optimal tour ${group(opt)}`,
     unknown: n => `${group(n)} cities; optimal tour not known`,
     bestKnown: (n, tourLength, b) => `${group(n)} cities; best known tour ${group(tourLength)}, lower bound ${group(b)}; optimum not confirmed`,
+    bestKnownOnly: (n, tourLength, by) => `${group(n)} cities; best known tour ${group(tourLength)}${by ? ` (${by})` : ''}; not proved optimal`,
     replayInvalid: 'Unable to open this recording.',
-    referenceTour: (v, src, date) => `Known reference tour: ${v}; ${src}, ${date}.`, referenceLowerBound: (v, src, when) => `${src} lower bound: ${v}; ${when}.`,
+    referenceTour: (v, src, date) => `Best known tour: ${v}; ${src}, ${date}.`, referenceLowerBound: (v, src, when) => `${src} lower bound: ${v}; ${when}.`,
     secondsRange: 'Enter a duration from 0.1 to 86,400 seconds.',
     desktopRequired: 'Maps above 300,000 cities open only on a desktop computer; this one is unavailable on this device.',
     challengeBest: (n, tourLength, b) => `${group(n)} cities; best tour of the 2002 DIMACS Challenge ${group(tourLength)}, Held–Karp lower bound ${group(Math.round(b))}; optimum not known`,
@@ -184,8 +191,9 @@ const T = {
     known: (n, opt) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}, znana optimalna pot ${group(opt)}`,
     unknown: n => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; optimalna pot ni znana`,
     bestKnown: (n, tourLength, b) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša znana pot ${group(tourLength)}, spodnja meja ${group(b)}; optimum ni potrjen`,
+    bestKnownOnly: (n, tourLength, by) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša znana pot ${group(tourLength)}${by ? ` (${by})` : ''}; optimalnost ni dokazana`,
     replayInvalid: 'Posnetka ni mogoče odpreti.',
-    referenceTour: (v, src, date) => `Znana referenčna pot: ${v}; ${src}, ${date}.`,
+    referenceTour: (v, src, date) => `Najboljša znana pot: ${v}; ${src}, ${date}.`,
     referenceLowerBound: (v, src, when) => `${src === 'Concorde' ? 'Concordova spodnja meja' : 'Spodnja meja (' + src + ')'}: ${v}; ${when}.`,
     secondsRange: 'Vnesi trajanje od 0,1 do 86.400 sekund.',
     desktopRequired: 'Zemljevidi z več kot 300.000 mesti se odprejo le na namiznem računalniku; na tej napravi ta ni na voljo.',
@@ -216,7 +224,7 @@ const t = (key, ...args) => { const v = T[lang()][key]; return typeof v === 'fun
 const english = (key, ...args) => T.en[key] instanceof Function ? T.en[key](...args) : T.en[key];
 class Message extends Error { constructor(key, ...args) { super(english(key, ...args)); this.key = [key, ...args]; } }
 const status = (...key) => { statusKey = key; $('status').textContent = t(...key); };
-const isOptimum = () => !!mapMeta?.optimum && Number($('reference').value) === mapMeta.optimum;
+const isOptimum = () => !!mapMeta?.optimum && referenceRaw === mapMeta.optimum;
 const unlocked = (shared = false) => { try { return solverModule(shared); } catch { throw new Message('unavailable'); } };
 function number(id, low, high) {
   const value = Number($(id).value);
@@ -237,7 +245,8 @@ function credits() {   // the source line under the examples and, for Slovenia, 
   const item = tab === 'nu' ? examples.find(e => e.id === $('example').value) : null;
   if (!item) return;
   const parts = [item.optimum ? t('known', item.cities, item.optimum)
-    : item.bestKnownTour ? (item.bestTourKind === 'challenge-2002' ? t('challengeBest', item.cities, item.bestKnownTour, item.bound) : t('bestKnown', item.cities, item.bestKnownTour, item.bound))
+    : item.bestKnownTour ? (!Number.isFinite(item.bound) ? t('bestKnownOnly', item.cities, item.bestKnownTour, item.bestKnownBy?.[lang()] ?? '')   // R1k: no bound (usa115475)
+      : item.bestTourKind === 'challenge-2002' ? t('challengeBest', item.cities, item.bestKnownTour, item.bound) : t('bestKnown', item.cities, item.bestKnownTour, item.bound))
     : item.gapStatus ? t('cities', item.cities) : item.bound ? t('bound', item.cities, item.bound, item.boundKind === 'estimate') : t('unknown', item.cities)];
   credit.append(`${exName(item)}: ${parts[0]} · `);
   if (item.id === 'si6035_gurs_20261115') {   // Slovenia's GURS line (R1f-i: other maps with a licence take the general line below)
@@ -265,12 +274,12 @@ function credits() {   // the source line under the examples and, for Slovenia, 
 }
 function render() {
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
-  const reference = runRecord?.reference || Number($('reference').value);
+  const reference = runRecord?.reference || referenceRaw || 0;
   $('gap').textContent = reference > 0 && Number.isFinite(best) ? pct((best / reference - 1) * 100) : '—';
   $('gapLabel').textContent = t(isOptimum() ? 'gapOpt' : mapMeta?.bound && reference === mapMeta.bound ? (mapMeta.boundKind === 'estimate' ? 'gapEstimate' : mapMeta.boundKind === 'certified' ? 'gapLower' : 'gapBound')
     : mapMeta?.gapStatus?.lowerBound && reference === mapMeta.gapStatus.lowerBound ? 'gapLower' : 'gapRef');
-  $('referenceUnit').textContent = mapMeta?.unit === 'm' ? ' (m)' : '';
-  { const r = Number($('reference').value), box = $('referenceDistance'); box.hidden = mapMeta?.unit !== 'm' || !(r > 0); box.textContent = box.hidden ? '' : formatDistance(r, 'm', lang()); }
+  $('referenceUnit').textContent = mapMeta?.unit === 'm' ? ' (km)' : '';
+  { const r = referenceRaw, box = $('referenceDistance'); box.hidden = mapMeta?.unit !== 'm' || !(r > 0); box.textContent = box.hidden ? '' : formatDistance(r, 'm', lang()); }
   $('seconds').setCustomValidity(validSeconds(Number($('seconds').value)) ? '' : t('secondsRange'));
   $('reachLabel').textContent = t(isOptimum() ? 'reachOpt' : 'reachRef');
   $('reach').textContent = runRecord?.firstReach ? `${dec(runRecord.firstReach.solverSeconds, 1)} s` : '—';
@@ -280,7 +289,6 @@ function render() {
   $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
   $('workerHint').textContent = isIPhone ? t('hintIPhone') : t('hintCores', reportedCores);
   for (const option of $('example').options) { const item = examples.find(e => e.id === option.value); if (item) option.text = t('option', item); }
-  for (const section of $('example').querySelectorAll('optgroup')) { const g = exampleGroups.find(x => x.id === section.dataset.group); if (g) section.label = g.names[lang()]; }
   $('replayPanel').setAttribute('aria-label', REPLAY_COPY[lang()].heading);
   $('refresh').options[0].text = t('live');
   canvas.setAttribute('aria-label', t('canvas'));
@@ -384,7 +392,7 @@ async function load(value, which, metadata = null, verifiedHash = null) {
   mapMeta = metadata;
   $('stopOptimum').checked = !!metadata?.optimum;
   text = value; coords = new Float64Array(); extent = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
-  $('reference').value = metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || '';
+  setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || null);
   if (metadata) $('seconds').value = metadata.cities <= 20000 ? 60 : metadata.cities <= 200000 ? 120 : 600;
   if (which === 'random') $('seconds').value = 10;
   render();
@@ -426,7 +434,7 @@ async function start(options = {}) {
   const module = unlocked(sharedThreads);
   const memory = sharedThreads ? new WebAssembly.Memory({ initial: 18, maximum: 65536, shared: true }) : undefined;
   const topology = workers === 1 ? 'single worker' : sharedThreads ? 'shared workers' : 'separate workers';
-  const reference = options.reference ?? (Number($('reference').value) || null);
+  const reference = options.reference ?? (referenceRaw || null);
   const refinement = options.refinement ?? $('refinement').checked;
   clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
   if (options.recording !== false && coords.length >= 6) recordSafely(() => {
@@ -548,7 +556,7 @@ async function loadExample(id = $('example').value) {
   const request = ++exampleRequest;
   $('example').value = id; render();
   if (item.generator) {   // R3: DIMACS portgen on the device, then the checksum of the generated file
-    clearReplay(); text = ''; coords = new Float64Array(); extent = null; tour = null; runRecord = null; mapMeta = null; $('stopOptimum').checked = false; best = Infinity; draw();
+    clearReplay(); text = ''; coords = new Float64Array(); extent = null; tour = null; runRecord = null; mapMeta = null; $('stopOptimum').checked = false; setReference(null); best = Infinity; draw();
     status('generating', item.id);
     const worker = loading = new Worker(new URL('./generator-worker.js', import.meta.url), { type: 'module' }); controls();
     const data = await new Promise((resolve, reject) => {
@@ -603,7 +611,11 @@ $('file').onchange = safely(async () => {
   if (file.size > 32 * 1024 * 1024) throw new Message('fileLimit');
   await load(await file.text(), 'file');
 });
-$('reference').oninput = render;
+$('reference').oninput = () => {   // R1k: an edit in km becomes whole metres; the untouched default keeps the exact value
+  const value = $('reference').value;
+  referenceRaw = value === referenceDefault.text ? referenceDefault.raw : referenceFromField(value, mapMeta?.unit ?? null);
+  render();
+};
 $('seconds').oninput = render;
 $('workers').onchange = render;
 $('download').onclick = () => {   // R3: streamed, so a tour of millions of cities fits
@@ -642,7 +654,7 @@ document.addEventListener('fullscreenchange', expandedControls);
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && mapView.classList.contains('map-window')) closeMap(); });
 window.MDLxDCCLocale?.subscribe(() => render());
 // The same QA hook as in R1/R2/R3: it drives the same UI and worker path.
-window.tsp8zLab = { load, loadExample, start, stop, loadNu, generate, cores, reportedCores, limits: RUN_LIMITS,
+window.tsp8zLab = { load, loadExample, start, stop, loadNu, generate, cores, reportedCores, limits: RUN_LIMITS, get reference() { return referenceRaw; },
   get retentionStats() { return { history: runRecord?.history.length ?? 0, historyReceived: runRecord?.historyReceived ?? 0, historyDropped: runRecord?.historyDropped ?? 0,
     renderChanges: runRecord?.renderChanges.length ?? 0, recording: recorder?.summary() ?? null }; },
  defaultWorkers: isIPhone ? 6 : reportedCores, get canShare() { return canShare; },
