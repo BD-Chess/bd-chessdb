@@ -203,6 +203,18 @@ let base;
                   badge: !!tr.querySelector('.pareto')
                 })));
                 assert.equal(result.length, models.length);
+                if (date === captures.latest) {
+                  const geometry = await s.page.locator('#overall').evaluate(table => {
+                    const box = table.parentElement;
+                    const name = table.querySelector('tbody .mid').getBoundingClientRect();
+                    const visible = box.getBoundingClientRect();
+                    return { scrollWidth: box.scrollWidth, width: box.clientWidth,
+                      nameX: name.x, nameRight: name.right, left: visible.x, right: visible.right };
+                  });
+                  assert.ok(geometry.scrollWidth <= geometry.width + 1, 'mobile table fits after Value click: ' + JSON.stringify(geometry));
+                  assert.ok(geometry.nameX >= geometry.left - 1 && geometry.nameRight <= geometry.right + 1, 'mobile name remains visible');
+                }
+
                 const eligible = result.filter(r => value(byId[r.id]) !== null);
                 assert.deepEqual(result.slice(0, eligible.length).map(r => r.id), eligible.map(r => r.id), 'unknown values last');
                 for (let i = 1; i < eligible.length; i++) {
