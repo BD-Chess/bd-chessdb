@@ -240,7 +240,7 @@ function credits() {   // the source line under the examples and, for Slovenia, 
     : item.bestKnownTour ? (item.bestTourKind === 'challenge-2002' ? t('challengeBest', item.cities, item.bestKnownTour, item.bound) : t('bestKnown', item.cities, item.bestKnownTour, item.bound))
     : item.gapStatus ? t('cities', item.cities) : item.bound ? t('bound', item.cities, item.bound, item.boundKind === 'estimate') : t('unknown', item.cities)];
   credit.append(`${exName(item)}: ${parts[0]} · `);
-  if (item.licence) {
+  if (item.id === 'si6035_gurs_20261115') {   // Slovenia's GURS line (R1f-i: other maps with a licence take the general line below)
     credit.append(link(item.source, t('gurs')), ' · ', link(item.licenceUrl, item.licence), ` · ${t('siNote')}`);
     mapCredit.append(`${t('mapData')}: `, link(item.source, t('gurs')), ' · ', link(item.licenceUrl, item.licence));
   } else {   // R1f-i: the map's own source, its licence and further credits (e.g. Natural Earth), also under the map
