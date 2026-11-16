@@ -25,7 +25,7 @@ async function boot(url, lang) {
       window.fetch = async (u) => {
         const abs = new URL(u, window.location.href);
         requested.push(abs.pathname);
-        const m = /(?:^|\/)llms\/(meta_index|sources|commentary_sl)\.json$/.exec(abs.pathname);
+        const m = /(?:^|\/)llms\/((?:data\/\d{4}-\d{2}-\d{2}\/)?(?:meta_index|sources|commentary_sl)|captures)\.json$/.exec(abs.pathname);
         if (!m) return { ok: false, status: 404, json: async () => { throw new Error('404'); } };
         const text = fs.readFileSync(path.join(DIR, m[1] + '.json'), 'utf8');
         return { ok: true, status: 200, json: async () => JSON.parse(text) };
@@ -58,7 +58,24 @@ test('shipped JSON matches the schema the page reads', () => {
   assert.ok(SRC.accepted.length >= 10 && SRC.rejected.length >= 1);
   assert.equal(SRC.accepted.length, META.counts.sources_accepted);
   // No raw scraped pages and nothing secret-looking in the shipped data.
-  for (const f of fs.readdirSync(DIR)) assert.ok(['index.html', 'chats.html', 'meta_index.json', 'sources.json', 'commentary_sl.json'].includes(f), 'unexpected file ' + f);
+  for (const f of fs.readdirSync(DIR)) assert.ok(['index.html', 'chats.html', 'meta_index.json', 'sources.json', 'commentary_sl.json', 'captures.json', 'data'].includes(f), 'unexpected file ' + f);
+  // Every capture stays published (BD, 2026-11-16): captures.json lists them newest first, each has its three files,
+  // and the root files are the latest capture.
+  const CAPS = JSON.parse(fs.readFileSync(path.join(DIR, 'captures.json'), 'utf8'));
+  assert.equal(CAPS.schema, 'ai8-llm-meta-captures-v1');
+  assert.ok(CAPS.captures.length >= 2 && CAPS.captures.some(c => c.date === '2026-10-30'), 'the 30. 10. capture is kept');
+  assert.equal(CAPS.latest, CAPS.captures[0].date);
+  assert.equal(META.data_fetched, CAPS.latest);
+  for (const c of CAPS.captures) {
+    assert.equal(c.path, 'data/' + c.date + '/');
+    for (const n of ['meta_index.json', 'sources.json', 'commentary_sl.json']) {
+      const p = path.join(DIR, 'data', c.date, n);
+      assert.ok(fs.existsSync(p), 'capture file ' + c.date + '/' + n);
+      if (c.date === CAPS.latest) assert.ok(fs.readFileSync(p).equals(fs.readFileSync(path.join(DIR, n))), 'root = latest capture: ' + n);
+    }
+    assert.equal(JSON.parse(fs.readFileSync(path.join(DIR, 'data', c.date, 'meta_index.json'), 'utf8')).data_fetched, c.date);
+  }
+  for (const d of fs.readdirSync(path.join(DIR, 'data'))) assert.ok(CAPS.captures.some(c => c.date === d), 'listed capture ' + d);
   const all = HTML + JSON.stringify(META) + JSON.stringify(SRC) + JSON.stringify(COM);
   assert.equal(/sk-ant-|ghp_[A-Za-z0-9]{20}|AIza[0-9A-Za-z_-]{30}|BD_GDrive|rclone\.conf|refresh_token/.test(all), false);
 });
@@ -66,7 +83,7 @@ test('shipped JSON matches the schema the page reads', () => {
 test('page renders every table from its own data (SL)', async () => {
   const { window, doc, requested, errors } = await boot('https://www.mdlxdcc.org/llms/');
   assert.deepEqual(errors, []);
-  assert.deepEqual(requested.slice().sort(), ['/llms/commentary_sl.json', '/llms/meta_index.json', '/llms/sources.json']);
+  assert.deepEqual(requested.slice().sort(), ['/llms/captures.json', '/llms/commentary_sl.json', '/llms/meta_index.json', '/llms/sources.json']);
   assert.equal(doc.getElementById('status').textContent, '');
   const ranked = META.models.filter(m => m.overall_rank).length;
   assert.equal(rows(doc, 'overall'), Math.min(40, ranked));
@@ -127,10 +144,13 @@ test('site brand, Gemini 4 note, sortable headers, provider filter and URL state
   assert.equal(doc.querySelector('.site-header .brand-mark').textContent, 'MDL×DCC.org');
   assert.equal(doc.querySelector('.site-header .brand-sub').textContent.replace(/\s+/g, ''), 'BD×AILab');
   assert.equal(doc.querySelector('.site-header .brand-sub a').getAttribute('href'), 'https://www.mdlxdcc.org/start/');
-  // New models: Gemini 4 Hydrogen is not in this build, so the note lists it without numbers.
-  assert.equal(META.models.some(m => m.model_id === 'gemini-4-hydrogen'), false);
-  assert.equal(doc.getElementById('newbox').hidden, false);
-  assert.match(doc.getElementById('newbox').textContent, /gemini-4-hydrogen — izšel 12\. 11\. 2026 · po zadnjem zajemu podatkov/);
+  // New models: Gemini 4 Hydrogen is ranked in the 16. 11. 2026 build, so while it is new the note shows its rank.
+  const hy = META.models.find(m => m.model_id === 'gemini-4-hydrogen');
+  assert.ok(hy && hy.overall_rank, 'Hydrogen is ranked in the latest build');
+  if ((Date.now() - Date.UTC(2026, 10, 12)) / 864e5 <= 59) {
+    assert.equal(doc.getElementById('newbox').hidden, false);
+    assert.match(doc.getElementById('newbox').textContent, new RegExp('gemini-4-hydrogen — izšel 12\\. 11\\. 2026 · #' + hy.overall_rank + ' '));
+  }
 
   const ranked = META.models.filter(m => m.overall_rank);
   const firstMid = id => cellText(doc, '#' + id + ' tbody tr .mid');
@@ -187,5 +207,30 @@ test('site brand, Gemini 4 note, sortable headers, provider filter and URL state
   assert.equal(b.doc.querySelector('#overall button.sortb[data-sort="price"]').closest('th').getAttribute('aria-sort'), 'ascending');
   assert.equal(b.doc.querySelector('#tabs button[aria-pressed="true"]').getAttribute('data-cat'), 'coding');
   assert.equal(b.doc.querySelector('#cattable button.sortb[data-sort="overall"]').closest('th').getAttribute('aria-sort'), 'descending');
+  b.window.close();
+});
+
+test('older captures stay available: ?d= loads them and the list switches between dates', async () => {
+  const CAPS = JSON.parse(fs.readFileSync(path.join(DIR, 'captures.json'), 'utf8'));
+  const OLD = JSON.parse(fs.readFileSync(path.join(DIR, 'data', '2026-10-30', 'meta_index.json'), 'utf8'));
+  const { window, doc, requested, errors } = await boot('https://www.mdlxdcc.org/llms/?d=2026-10-30');
+  assert.deepEqual(errors, []);
+  assert.ok(requested.includes('/llms/data/2026-10-30/meta_index.json'), requested.join(','));
+  assert.ok(!requested.includes('/llms/meta_index.json'));
+  assert.match(doc.getElementById('strip-text').textContent, /^Podatki zbrani: 30\. 10\. 2026$/);
+  assert.equal(cellText(doc, '#overall tbody tr .mid'), OLD.ranking[0]);
+  const sel = doc.getElementById('cap-sel');
+  assert.equal(doc.getElementById('cap-pick').hidden, false);
+  assert.equal(sel.value, '2026-10-30');
+  assert.equal(sel.options.length, CAPS.captures.length);
+  assert.equal(doc.getElementById('strip-warn').hidden, false, 'older capture is marked');
+  assert.equal(doc.querySelector('a[data-file="meta_index.json"]').getAttribute('href'), 'data/2026-10-30/meta_index.json');
+  // Hydrogen came out after this capture, so the note lists it without numbers.
+  assert.match(doc.getElementById('newbox').textContent, /gemini-4-hydrogen — izšel 12\. 11\. 2026 · po zadnjem zajemu podatkov/);
+  window.close();
+  const b = await boot('https://www.mdlxdcc.org/llms/?d=1999-01-01');
+  assert.deepEqual(b.errors, []);
+  assert.equal(b.doc.getElementById('cap-sel').value, CAPS.latest, 'an unknown date falls back to the latest capture');
+  assert.ok(b.requested.includes('/llms/meta_index.json'));
   b.window.close();
 });
