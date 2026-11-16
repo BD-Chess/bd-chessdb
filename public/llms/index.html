@@ -103,6 +103,10 @@
     .bar i { display: block; height: 100%; background: var(--accent); border-radius: .2rem; }
     .conf { display: inline-block; font-size: .78rem; border-radius: 999px; padding: 0 .45rem; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
     .conf.high { color: var(--accent); border-color: var(--accent); }
+    .newtag { display: inline-block; margin-left: .35rem; padding: 0 .3rem; border-radius: .3rem; background: var(--accent); color: var(--bg); font: 700 .66rem/1.5 system-ui, sans-serif; letter-spacing: .06em; vertical-align: .08em; }
+    .newbox { max-width: none; margin: .7rem 0 .4rem; }
+    .newbox ul { margin: .25rem 0 .35rem; }
+    .newbox p { margin: .2rem 0 0; }
     .conf.medium { color: var(--plan); border-color: var(--plan); }
     .mbtn { background: none; border: 0; padding: 0; color: inherit; text-align: left; display: inline-flex; gap: .35rem; align-items: baseline; min-height: 32px; }
     .mbtn .chev { color: var(--accent); display: inline-block; width: .8em; transition: transform .15s; }
@@ -224,6 +228,7 @@
       <h2 id="skupno-t"><span data-lang="sl">Skupna ocena</span><span data-lang="en" hidden>Overall score</span></h2>
       <p class="prose small muted" data-lang="sl">Klik na model odpre njegove ocene po kategorijah, vire in vse posamezne rezultate. Krepko = modeli, ki jih spremljamo posebej.</p>
       <p class="prose small muted" data-lang="en" hidden>Click a model to see its category scores, sources and every individual result. Bold = models we track specifically.</p>
+      <div class="note newbox" id="newbox" role="note" hidden></div>
       <div class="controls">
         <input type="search" id="q" autocomplete="off" placeholder="Išči model ali ponudnika …" data-ph-sl="Išči model ali ponudnika …" data-ph-en="Search model or provider …" aria-label="Išči model ali ponudnika" data-aria-sl="Išči model ali ponudnika" data-aria-en="Search model or provider">
         <button type="button" class="btn" id="all-toggle" aria-pressed="false"></button>
@@ -374,6 +379,9 @@
         noSl: "Modeli, ki jih spremljamo, brez slovenskih rezultatov:", commentBy: "Komentar", lead_n: "lestvic",
         cat_reasoning: "Splošno & sklepanje", cat_coding: "Programiranje", cat_agentic: "Agenti & orodja", cat_knowledge: "Znanje & halucinacije", cat_preference: "Človeška preferenca",
         cat_multilingual: "Večjezičnost", cat_sl: "Slovenščina", cat_long_context: "Dolg kontekst", cat_speed: "Hitrost", cat_other: "Drugo", cat_price: "Cena",
+        newTag: "NOVO", newFam: "Nova družina", released: "izšel", afterData: "po zadnjem zajemu podatkov — še brez ocene", notInData: "še ni na nobeni sprejeti lestvici — brez ocene",
+        notRanked: "še ni rangiran", announce: "objava",
+        newNote: "Številke so iz zadnje mesečne gradnje. Nov model dobi oceno, ko ga pokrijejo vsaj 3 neodvisni viri; do takrat je tu naveden brez številk.",
         none: "–"
       },
       en: {
@@ -396,9 +404,21 @@
         noSl: "Tracked models without any Slovenian result:", commentBy: "Commentary", lead_n: "boards",
         cat_reasoning: "General & reasoning", cat_coding: "Coding", cat_agentic: "Agents & tools", cat_knowledge: "Knowledge & hallucination", cat_preference: "Human preference",
         cat_multilingual: "Multilingual", cat_sl: "Slovenian", cat_long_context: "Long context", cat_speed: "Speed", cat_other: "Other", cat_price: "Price",
+        newTag: "NEW", newFam: "New family", released: "released", afterData: "after the last data collection — not scored yet", notInData: "not yet on any accepted board — no score",
+        notRanked: "not ranked yet", announce: "announcement",
+        newNote: "The numbers come from the latest monthly build. A new model gets a score once at least 3 independent sources cover it; until then it is listed here without numbers.",
         none: "–"
       }
     };
+    // New model families to point out until the monthly build has caught up with them. Only names, release dates and
+    // announcement links live here; every score shown comes from meta_index.json. Entries hide themselves after NEW_DAYS
+    // once the build contains the model.
+    var WATCH = [
+      { id: "gemini-4-argon", family: "Gemini 4", released: "2026-09-30" },
+      { id: "gemini-4-carbon", family: "Gemini 4", released: "2026-10-28" },
+      { id: "gemini-4-hydrogen", family: "Gemini 4", released: "2026-11-12", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/" }
+    ];
+    var NEW_DAYS = 60;
     function L() { return root.lang === "en" ? "en" : "sl"; }
     function t(k) { var v = T[L()][k]; return v === undefined ? (T.sl[k] === undefined ? k : T.sl[k]) : v; }
     function loc() { return L() === "en" ? "en-GB" : "sl-SI"; }
@@ -422,9 +442,11 @@
     function confBadge(m) { var c = m.confidence || "low"; return '<span class="conf ' + esc(c) + '">' + esc(t(c)) + " · " + esc(m.n_sources) + "</span>"; }
     function priceTxt(p) { return p ? money(p.input) + " / " + money(p.output) : t("none"); }
     function bar(v) { var w = Math.max(0, Math.min(100, Number(v) || 0)); return '<span class="bar" aria-hidden="true"><i style="width:' + w.toFixed(1) + '%"></i></span>'; }
+    function watchOf(id) { for (var i = 0; i < WATCH.length; i++) if (WATCH[i].id === id) return WATCH[i]; return null; }
+    function isNew(id) { var w = watchOf(id), d = w && parseDate(w.released); return !!d && (new Date() - d) / 864e5 <= NEW_DAYS; }
     function modelCell(m, withBtn, extra) {
       var name = '<span class="mid">' + esc(m.model_id) + "</span>";
-      var sub = '<span class="sub">' + esc(m.vendor || "") + (extra || "") + "</span>";
+      var sub = '<span class="sub">' + esc(m.vendor || "") + (isNew(m.model_id) ? '<span class="newtag">' + esc(t("newTag")) + "</span>" : "") + (extra || "") + "</span>";
       if (!withBtn) return name + sub;
       var open = !!st.open[m.model_id];
       return '<button type="button" class="mbtn" data-model="' + esc(m.model_id) + '" aria-expanded="' + open + '"><span class="chev" aria-hidden="true">›</span>' + name + "</button>" + sub;
@@ -471,6 +493,26 @@
       if (sl) lead.push([catLabel("sl"), sl.model_id, nf(sl.slovenian, 1)]);
       el("leaders").innerHTML = lead.map(function (x) { return '<li><span class="k"><span>' + esc(x[0]) + '</span><span class="s">' + esc(x[2]) + '</span></span><span class="v mid" title="' + esc(x[1]) + '">' + esc(x[1]) + "</span></li>"; }).join("");
       Array.prototype.forEach.call(document.querySelectorAll("a[data-file]"), function (a) { a.setAttribute("href", dataBase() + a.getAttribute("data-file")); });
+    }
+
+    function renderNew() {
+      var box = el("newbox"), BY = {}, fam = {}, order = [];
+      D.models.forEach(function (m) { BY[m.model_id] = m; });
+      var fetched = parseDate(D.data_fetched);
+      WATCH.filter(function (w) { return isNew(w.id) || !BY[w.id]; }).forEach(function (w) {
+        if (!fam[w.family]) { fam[w.family] = []; order.push(w.family); }
+        fam[w.family].push(w);
+      });
+      box.hidden = !order.length;
+      box.innerHTML = order.map(function (f) {
+        return "<strong>" + esc(t("newFam")) + ": " + esc(f) + '</strong><ul class="plain small">' + fam[f].map(function (w) {
+          var m = BY[w.id], rel = parseDate(w.released), txt;
+          if (m && m.overall_rank) txt = "#" + m.overall_rank + " · " + t("overall").toLowerCase() + " " + nf(m.overall, 1) + " · " + t("conf").toLowerCase() + " " + t(m.confidence || "low") + " · " + m.n_sources;
+          else if (m) txt = t("notRanked") + " · " + m.n_sources + " " + t("srcs");
+          else txt = fetched && rel && rel > fetched ? t("afterData") : t("notInData");
+          return '<li><span class="mid">' + esc(w.id) + "</span> — " + esc(t("released")) + " " + esc(fmtDate(rel)) + " · " + esc(txt) + (w.url ? " · " + link(w.url, t("announce")) : "") + "</li>";
+        }).join("") + "</ul>";
+      }).join("") + (order.length ? '<p class="small muted">' + esc(t("newNote")) + "</p>" : "");
     }
 
     function byRank() { return D.models.filter(function (m) { return m.overall_rank; }).sort(function (a, b) { return a.overall_rank - b.overall_rank; }); }
@@ -633,7 +675,7 @@
     function renderAll() {
       if (!D) return;
       Array.prototype.forEach.call(document.querySelectorAll("[data-ph-sl]"), function (n) { n.setAttribute("placeholder", n.getAttribute(L() === "en" ? "data-ph-en" : "data-ph-sl")); });
-      renderMeta(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderSources(); renderWeights();
+      renderMeta(); renderNew(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderSources(); renderWeights();
     }
 
     var timer = 0;
