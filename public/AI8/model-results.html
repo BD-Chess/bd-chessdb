@@ -20,7 +20,7 @@
     <div class="shell header-inner">
       <a class="brand" href="../AI8/">AI8 <span>·</span> <span data-lang="sl">Rezultati LLM testov</span><span data-lang="en" hidden>LLM test results</span></a>
       <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
-        <a href="#linux-windows">Linux / Windows</a><a href="#local-cloud"><span data-lang="sl">Lokalni / oblak</span><span data-lang="en" hidden>Local / cloud</span></a><a href="#comparison"><span data-lang="sl">Primerjava</span><span data-lang="en" hidden>Compare</span></a><a href="#home">HOME</a><a href="#home-plus"><span data-lang="sl">HOME dopolnila</span><span data-lang="en" hidden>HOME supplements</span></a><a href="#cloud">Cloud</a><a href="#slaif">SLAIF</a><a href="#method"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></a>
+        <a href="#linux-windows">Linux / Windows</a><a href="#local-cloud"><span data-lang="sl">Lokalni / oblak</span><span data-lang="en" hidden>Local / cloud</span></a><a href="#comparison"><span data-lang="sl">Primerjava</span><span data-lang="en" hidden>Compare</span></a><a href="#home">HOME</a><a href="#home-plus"><span data-lang="sl">HOME dopolnila</span><span data-lang="en" hidden>HOME supplements</span></a><a href="#cloud">Cloud</a><a href="#deepseek-ui">DeepSeek UI</a><a href="#slaif">SLAIF</a><a href="#method"><span data-lang="sl">Metoda</span><span data-lang="en" hidden>Method</span></a>
         <a href="../AI8/cli-loops.html">CLI Loops ↗</a><a href="../hmal/">HMAL ↗</a>
       </nav>
       <div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Jezik, velikost in tema" data-aria-sl="Jezik, velikost in tema" data-aria-en="Language, text size and appearance">
@@ -99,6 +99,38 @@
         <div><strong>6 · <span data-lang="sl">brez ustreznega izida v pregledanih virih</span><span data-lang="en" hidden>no qualifying output in reviewed sources</span></strong><p>ChatGPT, Claude, Qwen, MiniMax, Mistral, Kimi</p></div>
       </div>
       <div class="details-list" id="cloud-details"></div>
+    </section>
+
+
+    <section id="deepseek-ui" class="sections-dashboard" aria-labelledby="deepseek-ui-title">
+      <div class="eyebrow"><time datetime="2026-11-11">11. 11. 2026</time> · Edge UI</div>
+      <h2 id="deepseek-ui-title">DeepSeek-V4-Flash</h2>
+      <p class="section-intro"><strong><span data-lang="sl">Spletni vmesnik, ne API.</span><span data-lang="en" hidden>Web interface, not API.</span></strong> <span data-lang="sl">Ločen tek T001–T010 prek brskalnika Edge. Ime modela je oznaka v vmesniku; zaledni model ni neodvisno preverjen. Rezultat ni vključen v lokalno lestvico ali primerjavo meritev API.</span><span data-lang="en" hidden>A separate T001–T010 run through the Edge browser. The model name is the interface label; the backend model was not independently verified. This result is excluded from the local ranking and API timing comparisons.</span></p>
+      <div class="summary" aria-label="DeepSeek UI">
+        <div><strong>8/10</strong><span data-lang="sl">PASS · tudi strogo ocenjevanje 8/10</span><span data-lang="en" hidden>PASS · strict scoring also 8/10</span></div>
+        <div><strong>1.75 s</strong><span data-lang="sl">Mediana devetih časov spletnega vmesnika</span><span data-lang="en" hidden>Median of nine web-interface timings</span></div>
+        <div><strong>T002 · T004</strong><span data-lang="sl">Nalogi z napačnim odgovorom</span><span data-lang="en" hidden>Cases with incorrect answers</span></div>
+      </div>
+      <table>
+        <caption><span data-lang="sl">Posamezne naloge · zamrznjeni ocenjevalnik</span><span data-lang="en" hidden>Per-case results · frozen scorer</span></caption>
+        <thead><tr><th scope="col"><span data-lang="sl">Naloga</span><span data-lang="en" hidden>Case</span></th><th scope="col"><span data-lang="sl">Izid</span><span data-lang="en" hidden>Outcome</span></th></tr></thead>
+        <tbody>
+          <tr><th scope="row">T001</th><td>PASS</td></tr>
+          <tr><th scope="row">T002</th><td>FAIL</td></tr>
+          <tr><th scope="row">T003</th><td>PASS</td></tr>
+          <tr><th scope="row">T004</th><td>FAIL</td></tr>
+          <tr><th scope="row">T005</th><td>PASS</td></tr>
+          <tr><th scope="row">T006</th><td>PASS</td></tr>
+          <tr><th scope="row">T007</th><td>PASS</td></tr>
+          <tr><th scope="row">T008</th><td>PASS</td></tr>
+          <tr><th scope="row">T009</th><td>PASS</td></tr>
+          <tr><th scope="row">T010</th><td>PASS</td></tr>
+        </tbody>
+      </table>
+      <p class="small" data-lang="sl">Metoda: privzete nastavitve spletnega vmesnika; nastavitev »thinking« ni preverjena. Pri T002–T010 sta bili sistemsko in uporabniško besedilo poslani skupaj kot eno uporabniško sporočilo. Zgoščene vrednosti vseh desetih odgovorov in skupnega nabora nalog so preverjene; izide določa zamrznjeni ocenjevalnik po opaženem zaključku odgovora. To je en tek s tem postopkom, ne splošna ocena modela.</p>
+      <p class="small" data-lang="en" hidden>Method: default web-interface settings; the thinking setting was not verified. For T002–T010, system and user text were submitted together as one user message. Hashes for all ten answers and the shared case set were checked; the frozen scorer determines outcomes after observed answer completion. This is one run with this procedure, not a general model rating.</p>
+      <p class="small" data-lang="sl">Čas vključuje avtomatizacijo brskalnika: od pošiljanja do opaženega odgovora in znova omogočenega vmesnika. Mediana je 1,749 s (zaokroženo 1,75 s) za devet primerov. Pri T002 je na voljo le zgornja meja 58,473 s, zato ni v mediani. Ni surovega izhoda API, meritev žetonov ali hitrosti generiranja; teh časov ne primerjamo neposredno z native HTTP ali lokalnimi meritvami.</p>
+      <p class="small" data-lang="en" hidden>Timing includes browser automation, from sending to observation of the answer and re-enabled interface. The median is 1.749 s (rounded to 1.75 s) across nine cases. T002 has only an upper bound of 58.473 s and is excluded from that median. No raw API output, token counts or generation throughput are available; these times are not directly comparable with native HTTP or local measurements.</p>
     </section>
 
     <section id="slaif" aria-labelledby="slaif-title">
