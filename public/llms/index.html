@@ -28,8 +28,13 @@
     /* top toolbar – same look and storage keys as the shared AI8 toolbar */
     .site-header { background: var(--bg); border-bottom: 1px solid var(--line); z-index: 20; }
     .header-inner { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem 1rem; padding-top: .5rem; padding-bottom: .5rem; }
-    .brand { color: var(--ink); font-weight: 700; text-decoration: none; white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; }
-    .brand .dot { color: var(--accent); margin: 0 .3em; }
+    /* site brand, same form as the MDL×DCC.org landing page: MDL×DCC.org | BD×AI Lab */
+    .brand { display: inline-flex; align-items: center; gap: .7rem; min-height: 44px; white-space: nowrap; }
+    .brand-mark { color: var(--ink); font-weight: 650; font-size: 1.2rem; letter-spacing: -.05em; text-decoration: none; }
+    .brand-mark em { font-style: normal; color: var(--accent); }
+    .brand-sub { font: 500 .78rem/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .06em; color: var(--muted); border-left: 1px solid var(--line); padding-left: .7rem; }
+    .brand-sub a { color: inherit; text-decoration: none; display: inline-block; padding: .55rem .05rem; }
+    .brand-mark:hover, .brand-sub a:hover { color: var(--accent); }
     .site-nav { display: flex; flex-wrap: wrap; gap: 0 .9rem; margin-right: auto; }
     .site-nav a { color: var(--muted); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
     .site-nav a:hover { color: var(--accent); }
@@ -158,7 +163,7 @@
 
   <header class="site-header">
     <div class="shell header-inner">
-      <a class="brand" href="../AI8/">AI8<span class="dot">·</span><span data-lang="sl">LLM meta indeks</span><span data-lang="en" hidden>LLM meta-index</span></a>
+      <div class="brand"><a class="brand-mark" href="https://www.mdlxdcc.org/">MDL<em>×</em>DCC.org</a><nav class="brand-sub" aria-label="BD × AI Lab"><a href="https://www.mdlxdcc.org/start/">BD</a>×<a href="https://www.mdlxdcc.org/AI8/">AI</a> <a href="https://www.mdlxdcc.org/">Lab</a></nav></div>
       <nav class="site-nav" aria-label="Razdelki" data-aria-sl="Razdelki" data-aria-en="Sections">
         <a href="https://www.mdlxdcc.org/llms/chats.html"><span data-lang="sl">AI klepeti</span><span data-lang="en" hidden>AI chats</span></a>
         <a href="#skupno"><span data-lang="sl">Skupno</span><span data-lang="en" hidden>Overall</span></a>
