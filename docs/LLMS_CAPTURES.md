@@ -26,3 +26,24 @@ layout, date-selection and preference checks without vendor calls. Evidence
 includes screenshots and a machine-readable report. This workflow covers the
 new capture-specific browser checks. It only verifies; the shared tested-main
 Netlify workflow remains the sole publisher.
+
+## Adjustable Value view
+
+The quality-floor list defaults to 50 and offers 0 (no floor), 40, 50, 60,
+70 and 80. Share links use `qf`; `q` remains the text search. Changing the
+capture, filters or sort preserves this choice. The displayed Value is
+`max(0, overall - floor) / blended_3to1`. Below-floor observations and unknown
+or nonpositive prices have no displayed Value and sort last in either Value
+direction; a priced model exactly at the floor has Value zero. This is a
+chosen cutoff on relative scores, not a claim that 50 is their median.
+
+The view recomputes tier winners. A best-trade-off (Pareto) badge means no
+other ranked, positively priced observation has both score >= this score and
+price <= this price with at least one strict inequality. Only observations
+meeting the selected floor show a badge. Equal score/price observations do
+not dominate each other. Neither the badges nor token prices guarantee
+quality or cost on a particular task.
+
+Captured `value_score_per_usd` and `value_tiers` retain their original meanings
+and bytes; the adjustable metric is a separate browser view. The last tier
+column explicitly remains score/price without a floor.

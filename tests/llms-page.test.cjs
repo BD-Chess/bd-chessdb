@@ -15,7 +15,7 @@ const META = read('meta_index.json');
 const SRC = read('sources.json');
 const COM = read('commentary_sl.json');
 
-async function boot(url, lang) {
+async function boot(url, lang, metaFixture) {
   const requested = [];
   const errors = [];
   const dom = new JSDOM(HTML, {
@@ -28,7 +28,7 @@ async function boot(url, lang) {
         const m = /(?:^|\/)llms\/((?:data\/\d{4}-\d{2}-\d{2}\/)?(?:meta_index|sources|commentary_sl)|captures)\.json$/.exec(abs.pathname);
         if (!m) return { ok: false, status: 404, json: async () => { throw new Error('404'); } };
         const text = fs.readFileSync(path.join(DIR, m[1] + '.json'), 'utf8');
-        return { ok: true, status: 200, json: async () => JSON.parse(text) };
+        return { ok: true, status: 200, json: async () => metaFixture && /(?:^|\/)meta_index$/.test(m[1]) ? JSON.parse(JSON.stringify(metaFixture)) : JSON.parse(text) };
       };
       window.addEventListener('error', e => errors.push(String(e.message || e.error)));
     }
@@ -233,4 +233,150 @@ test('older captures stay available: ?d= loads them and the list switches betwee
   assert.equal(b.doc.getElementById('cap-sel').value, CAPS.latest, 'an unknown date falls back to the latest capture');
   assert.ok(b.requested.includes('/llms/meta_index.json'));
   b.window.close();
+});
+
+test('value: quality floor list (default 50), only points above the floor count, below-floor models last, Pareto, ?qf=', async () => {
+  const byId = Object.fromEntries(META.models.map(m => [m.model_id, m]));
+  const val = (m, f) => m.price && m.price.blended_3to1 > 0 && (f === 0 || m.overall >= f) ? Math.max(0, m.overall - f) / m.price.blended_3to1 : null;
+  const { window, doc, errors } = await boot('https://www.mdlxdcc.org/llms/');
+  assert.deepEqual(errors, []);
+  const sel = doc.getElementById('qf-sel');
+  assert.equal(sel.value, '50', 'default floor 50');
+  assert.deepEqual([...sel.options].map(o => o.value), ['0', '40', '50', '60', '70', '80']);
+  assert.match(doc.getElementById('value-note').textContent, /50/);
+  doc.getElementById('all-toggle').click();
+  const rowsOf = () => [...doc.querySelectorAll('#overall tbody tr')].filter(tr => !tr.classList.contains('detail'));
+  const idsOf = () => rowsOf().map(tr => tr.querySelector('.mid').textContent);
+  for (const dir of ['desc', 'asc']) {
+    doc.querySelector('#overall button.sortb[data-sort="value"]').click();
+    const ids = idsOf();
+    const n = ids.filter(id => val(byId[id], 50) !== null).length;
+    assert.ok(n > 10);
+    for (let i = 0; i < n; i++) assert.ok(val(byId[ids[i]], 50) !== null, dir + ': rows with a value come first: ' + ids[i]);
+    for (let i = 1; i < n; i++) {
+      const a = val(byId[ids[i - 1]], 50), b = val(byId[ids[i]], 50);
+      assert.ok(dir === 'desc' ? a >= b - 1e-9 : a <= b + 1e-9, dir + ' order at ' + ids[i]);
+    }
+    for (const tr of rowsOf().slice(n)) {
+      const m = byId[tr.querySelector('.mid').textContent];
+      if (m.overall < 50) assert.ok(tr.hasAttribute('data-belowq'), 'below-floor row greyed: ' + m.model_id);
+    }
+  }
+  // Pareto: at least as good and cheaper, or better for the same price; tagged only above the floor.
+  const cand = META.models.filter(m => m.overall_rank && m.price && m.price.blended_3to1 > 0);
+  const dominated = m => cand.some(o => o !== m && o.overall >= m.overall && o.price.blended_3to1 <= m.price.blended_3to1 && (o.overall > m.overall || o.price.blended_3to1 < m.price.blended_3to1));
+  const want = cand.filter(m => !dominated(m) && m.overall >= 50).map(m => m.model_id).sort();
+  const got = [...doc.querySelectorAll('#overall .newtag.pareto')].map(s => s.closest('tr').querySelector('.mid').textContent).sort();
+  assert.deepEqual(got, want);
+  assert.ok(want.length >= 3);
+  // Changing the floor recomputes value, tiers and the note, and goes into the URL.
+  sel.value = '70';
+  sel.dispatchEvent(new window.Event('change'));
+  assert.match(window.location.search, /qf=70/);
+  assert.match(doc.getElementById('value-note').textContent, /70/);
+  const first = byId[idsOf()[0]];
+  assert.ok(first.overall >= 70, 'with floor 70 the first row is above 70');
+  assert.equal(rowsOf().filter(tr => tr.hasAttribute('data-belowq')).length, rowsOf().filter(tr => byId[tr.querySelector('.mid').textContent].overall < 70).length);
+  sel.value = '50';
+  sel.dispatchEvent(new window.Event('change'));
+  assert.doesNotMatch(window.location.search, /qf=/, 'the default floor is not written to the URL');
+  window.close();
+  // The floor opens again from its link; 0 means no floor (overall / price) and nothing is greyed.
+  const b = await boot('https://www.mdlxdcc.org/llms/?qf=0');
+  assert.deepEqual(b.errors, []);
+  assert.equal(b.doc.getElementById('qf-sel').value, '0');
+  b.doc.getElementById('all-toggle').click();
+  b.doc.querySelector('#overall button.sortb[data-sort="value"]').click();
+  assert.equal(b.doc.querySelectorAll('#overall tr[data-belowq]').length, 0);
+  const top0 = b.doc.querySelector('#overall tbody tr .mid').textContent;
+  const best0 = cand.slice().sort((x, y) => y.overall / y.price.blended_3to1 - x.overall / x.price.blended_3to1)[0].model_id;
+  assert.equal(top0, best0);
+  b.window.close();
+  // The older capture uses the same floor from the link.
+  const c = await boot('https://www.mdlxdcc.org/llms/?d=2026-10-30&qf=60');
+  assert.deepEqual(c.errors, []);
+  assert.equal(c.doc.getElementById('qf-sel').value, '60');
+  assert.match(c.doc.getElementById('value-note').textContent, /60/);
+  c.window.close();
+});
+
+
+// Deliberately small, hand-worked observations: boundary, tied points and
+// missing prices do not depend on the current real-world model ranking.
+test('quality floor boundaries, zero/unknown prices and weak Pareto ties', async () => {
+  const fixture = JSON.parse(JSON.stringify(META));
+  const seed = fixture.models.find(m => m.overall_rank);
+  const points = [
+    ['below', 49.9, .01], ['edge', 50, 2], ['above', 50.1, 2],
+    ['equal-above', 50.1, 2], ['lower-price', 50.1, 1],
+    ['same-frontier', 50.1, 1], ['higher-expensive', 60, 3],
+    ['higher-same-price', 60, 2], ['unknown-price', 99, null],
+    ['zero-price', 99, 0], ['negative-price', 99, -1]
+  ];
+  fixture.models = points.map(([id, score, price], i) => ({ ...seed,
+    model_id: id, overall: score, overall_rank: i + 1,
+    price: price === null ? null : { input: price, output: price, blended_3to1: price }
+  }));
+  fixture.models.push({ ...seed, model_id: 'unranked', overall: 100,
+    overall_rank: null, price: { input: .001, output: .001, blended_3to1: .001 } });
+  fixture.ranking = points.map(p => p[0]);
+  fixture.counts.models_ranked = points.length;
+  fixture.counts.models_universe = fixture.models.length;
+  const b = await boot('https://www.mdlxdcc.org/llms/?s=value.d', 'en', fixture);
+  try {
+    assert.deepEqual(b.errors, []);
+    const trs = () => [...b.doc.querySelectorAll('#overall tbody tr:not(.detail)')];
+    const ids = () => trs().map(tr => tr.querySelector('.mid').textContent);
+    const row = id => trs().find(tr => tr.querySelector('.mid').textContent === id);
+    const validDesc = ['higher-same-price', 'higher-expensive', 'lower-price',
+      'same-frontier', 'above', 'equal-above', 'edge'];
+    assert.deepEqual(ids().slice(0, 7), validDesc);
+    assert.equal(row('below').hasAttribute('data-belowq'), true);
+    assert.equal(row('edge').hasAttribute('data-belowq'), false);
+    assert.equal(row('above').hasAttribute('data-belowq'), false);
+    assert.equal(row('edge').lastElementChild.textContent.trim(), '0.0');
+    for (const id of ['below', 'unknown-price', 'zero-price', 'negative-price'])
+      assert.equal(row(id).lastElementChild.textContent.trim(), '–', id);
+    assert.deepEqual([...b.doc.querySelectorAll('#overall .pareto')]
+      .map(s => s.closest('tr').querySelector('.mid').textContent).sort(),
+      ['higher-same-price', 'lower-price', 'same-frontier']);
+    b.doc.querySelector('#overall [data-sort="value"]').click();
+    assert.deepEqual(ids().slice(0, 7), ['edge', 'above', 'equal-above',
+      'lower-price', 'same-frontier', 'higher-expensive', 'higher-same-price']);
+    // Unknown values remain last in both directions; a below-floor model
+    // still offers its ordinary keyboard/button-operated details.
+    row('below').querySelector('button[data-model]').click();
+    assert.equal(b.doc.querySelectorAll('#overall tr.detail').length, 1);
+    b.doc.querySelector('#overall [data-sort="overall"]').click();
+    assert.equal(b.doc.querySelectorAll('#overall tr[data-belowq]').length, 0);
+    const select = b.doc.getElementById('qf-sel');
+    select.value = '80'; select.dispatchEvent(new b.window.Event('change'));
+    assert.equal(b.doc.querySelectorAll('#overall .pareto').length, 0);
+    for (const tr of b.doc.querySelectorAll('#tiers tbody tr'))
+      assert.equal(tr.children[2].textContent.trim(), '–', 'empty eligible tier');
+  } finally { b.window.close(); }
+});
+
+test('quality floor URL handles invalid values and coexists with search, filters and sort', async () => {
+  for (const value of ['', 'bogus', '-1', '96', 'Infinity']) {
+    const b = await boot('https://www.mdlxdcc.org/llms/?qf=' + value);
+    try { assert.deepEqual(b.errors, []); assert.equal(b.doc.getElementById('qf-sel').value, '50', value); }
+    finally { b.window.close(); }
+  }
+  const b = await boot('https://www.mdlxdcc.org/llms/?d=2026-10-30&q=gpt&qf=0&s=value.a#skupno', 'en');
+  try {
+    assert.equal(b.doc.getElementById('q').value, 'gpt');
+    assert.equal(b.doc.getElementById('qf-sel').value, '0');
+    const sel = b.doc.getElementById('qf-sel');
+    sel.value = '70'; sel.dispatchEvent(new b.window.Event('change'));
+    b.doc.querySelector('#vchips [data-vendor="OpenAI"]').click();
+    b.doc.querySelector('#overall [data-sort="value"]').click();
+    const u = new URL(b.window.location.href);
+    assert.equal(u.searchParams.get('q'), 'gpt');
+    assert.equal(u.searchParams.get('qf'), '70');
+    assert.equal(u.searchParams.get('d'), '2026-10-30');
+    assert.equal(u.searchParams.get('v'), 'OpenAI');
+    assert.equal(u.searchParams.get('s'), 'value.d');
+    assert.equal(u.hash, '#skupno');
+  } finally { b.window.close(); }
 });

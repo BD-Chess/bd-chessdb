@@ -23,7 +23,7 @@ const approvedHistorical = {
   'commentary_sl.json': '25e4f29905f65ec9d3e31e040a43ba64b5642a5297466fe5ca2ed71ac9857f81'
 };
 const report = {
-  physicalDevice: false, externalProvidersCalled: false, cases: [], navigation: [],
+  physicalDevice: false, externalProvidersCalled: false, cases: [], navigation: [], qualityFloors: [],
   historicalBaseline: 'd6ce5f37983f82ebae0980080344538deb8e9331',
   historicalHashes: {}, errors: []
 };
@@ -115,7 +115,10 @@ let base;
                       firstModel: document.querySelector('#overall tbody tr .mid')?.textContent,
                       download: document.querySelector('a[data-file="meta_index.json"]').href,
                       dateText: document.querySelector('#strip-text').textContent,
-                      label: document.querySelector('#cap-label').textContent
+                      label: document.querySelector('#cap-label').textContent,
+                      qualityFloor: document.querySelector('#qf-sel').value,
+                      floorLabel: document.querySelector('#qf-label').textContent,
+                      floorBox: (() => { const b = document.querySelector('#qf-sel').getBoundingClientRect(); return { x: b.x, right: b.right, height: b.height }; })()
                     };
                   });
                   assert.equal(result.lang, language);
@@ -130,6 +133,10 @@ let base;
                   assert.equal(result.firstModel, data[date].ranking[0]);
                   assert.equal(new URL(result.download).pathname, downloadPath(date));
                   assert.equal(result.label, language === 'sl' ? 'Datum zajema' : 'Capture date');
+                  assert.equal(result.qualityFloor, '50');
+                  assert.equal(result.floorLabel, language === 'sl' ? 'Prag kakovosti' : 'Quality floor');
+                  assert.ok(result.floorBox.height >= 44, 'floor select touch target');
+                  assert.ok(result.floorBox.x >= -1 && result.floorBox.right <= width + 1, 'floor select fits viewport');
                   const screenshot = (width === 320 || width === 1280) &&
                     ((language === 'sl' && theme === 'dark') || (language === 'en' && theme === 'light'));
                   const name = [engine, width, language, theme, date].join('-');
@@ -145,7 +152,7 @@ let base;
         // language/theme preferences and the hash in both directions.
         const s = await session(browser, 390, 'en', 'light');
         try {
-          const suffix = '&v=Anthropic,Google&top=1&cat=coding&s=price.a&cs=overall.d#skupno';
+          const suffix = '&v=Anthropic,Google&top=1&cat=coding&s=price.a&cs=overall.d&q=gpt&qf=70#skupno';
           await s.page.goto(base + '/llms/?d=' + historical + suffix);
           await ready(s.page);
           const before = new URL(s.page.url());
@@ -156,7 +163,7 @@ let base;
             ]);
             await ready(s.page);
             const after = new URL(s.page.url());
-            for (const key of ['v', 'top', 'cat', 's', 'cs']) assert.equal(after.searchParams.get(key), before.searchParams.get(key), key);
+            for (const key of ['v', 'top', 'cat', 's', 'cs', 'q', 'qf']) assert.equal(after.searchParams.get(key), before.searchParams.get(key), key);
             assert.equal(after.hash, '#skupno');
             assert.equal(after.searchParams.get('d'), target === captures.latest ? null : historical);
             assert.equal(await s.page.locator('#cap-sel').inputValue(), target);
@@ -171,6 +178,70 @@ let base;
           assert.equal(await s.page.locator('#cap-sel').inputValue(), historical);
           report.navigation.push({ engine, roundTrip: true, filtersPreserved: true, preferencesRetained: true });
         } finally { await s.context.close(); }
+
+
+        // Real menu changes on both captures exercise every supported floor
+        // and both Value sort directions, without mutating the source data.
+        for (const date of [captures.latest, historical]) {
+          const s = await session(browser, date === captures.latest ? 320 : 1280,
+            date === captures.latest ? 'sl' : 'en', date === captures.latest ? 'dark' : 'light');
+          try {
+            await s.page.goto(captureURL(date)); await ready(s.page);
+            await s.page.locator('#all-toggle').click();
+            await s.page.locator('#overall [data-sort="value"]').click();
+            const models = data[date].models.filter(m => m.overall_rank);
+            const byId = Object.fromEntries(models.map(m => [m.model_id, m]));
+            for (const floor of [0, 40, 50, 60, 70, 80]) {
+              await s.page.locator('#qf-sel').selectOption(String(floor));
+              assert.equal(new URL(s.page.url()).searchParams.get('qf'), floor === 50 ? null : String(floor));
+              const value = m => m.price && m.price.blended_3to1 > 0 && m.overall >= floor
+                ? (m.overall - floor) / m.price.blended_3to1 : null;
+              for (const direction of ['descending', 'ascending']) {
+                const result = await s.page.locator('#overall tbody tr:not(.detail)').evaluateAll(rows => rows.map(tr => ({
+                  id: tr.querySelector('.mid').textContent,
+                  dim: tr.hasAttribute('data-belowq'),
+                  badge: !!tr.querySelector('.pareto')
+                })));
+                assert.equal(result.length, models.length);
+                const eligible = result.filter(r => value(byId[r.id]) !== null);
+                assert.deepEqual(result.slice(0, eligible.length).map(r => r.id), eligible.map(r => r.id), 'unknown values last');
+                for (let i = 1; i < eligible.length; i++) {
+                  const a = value(byId[eligible[i - 1].id]), b = value(byId[eligible[i].id]);
+                  assert.ok(direction === 'descending' ? a >= b - 1e-9 : a <= b + 1e-9, 'Value order');
+                }
+                for (const row of result) assert.equal(row.dim, byId[row.id].overall < floor);
+                const pareto = result.filter(r => r.badge).map(r => r.id).sort();
+                assert.ok(pareto.every(id => byId[id].overall >= floor));
+                if (date === captures.latest && floor === 50) {
+                  assert.deepEqual(pareto, ['claude-fable-5.2', 'gemini-4-carbon', 'gemini-4-hydrogen',
+                    'gpt-6.1-sol', 'gpt-6.1-terra', 'muse-ember'].sort());
+                  if (direction === 'descending') assert.deepEqual(result.slice(0, 10).map(r => r.id), [
+                    'muse-ember', 'deepseek-v4.1-flash', 'gpt-6.1-terra', 'qwen4-max', 'inkling-2-small',
+                    'gemini-4-hydrogen', 'gpt-6.1-sol', 'muse-spark-1.3', 'gemini-3.7-flash', 'qwen3.8-flash-next']);
+                }
+                report.qualityFloors.push({ engine, date, floor, direction, rows: result.length,
+                  pricedEligible: eligible.length, firstModel: result[0].id, pareto });
+                await s.page.locator('#overall [data-sort="value"]').click();
+              }
+              if (floor === 50 || floor === 80) {
+                await s.page.locator('#qf-pick').scrollIntoViewIfNeeded();
+                await s.page.screenshot({ path: path.join(out, [engine, 'quality', date, floor].join('-') + '.png') });
+              }
+            }
+            // Zero survives a real reload and date navigation with search.
+            await s.page.locator('#qf-sel').selectOption('0');
+            await s.page.locator('#q').fill('gpt');
+            await s.page.waitForFunction(() => new URL(location.href).searchParams.get('q') === 'gpt');
+            await s.page.reload(); await ready(s.page);
+            assert.equal(await s.page.locator('#qf-sel').inputValue(), '0');
+            assert.equal(await s.page.locator('#q').inputValue(), 'gpt');
+            const target = date === captures.latest ? historical : captures.latest;
+            await Promise.all([s.page.waitForNavigation({ waitUntil: 'domcontentloaded' }), s.page.locator('#cap-sel').selectOption(target)]);
+            await ready(s.page);
+            assert.equal(await s.page.locator('#qf-sel').inputValue(), '0');
+            assert.equal(await s.page.locator('#q').inputValue(), 'gpt');
+          } finally { await s.context.close(); }
+        }
 
         // The existing root URLs keep working when the optional manifest is
         // unavailable; an unknown date also cannot select an arbitrary path.
@@ -192,8 +263,9 @@ let base;
     }
     assert.deepEqual(report.errors, []);
     assert.equal(report.cases.length, 64);
+    assert.equal(report.qualityFloors.length, 48);
     report.status = 'PASS';
-    console.log('LLMS_CAPTURES_BROWSER_PASS: 64 layouts; 2 engines; real date round-trip, preferences and fallback.');
+    console.log('LLMS_CAPTURES_BROWSER_PASS: 64 layouts; 48 floor/sort checks; 2 engines; date, search, zero floor, preferences and fallback.');
   } finally {
     fs.writeFileSync(path.join(out, 'report.json'), JSON.stringify(report, null, 2) + '\n');
     await new Promise(resolve => server.close(resolve));
