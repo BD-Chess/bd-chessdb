@@ -211,6 +211,11 @@ let base;
                     return { scrollWidth: box.scrollWidth, width: box.clientWidth,
                       nameX: name.x, nameRight: name.right, left: visible.x, right: visible.right };
                   });
+                  if (geometry.scrollWidth > geometry.width + 1) {
+                    report.mobileOverflow = { engine, date, floor, direction, ...geometry,
+                      headers: await s.page.locator('#overall th').evaluateAll(cells => cells.map(c => ({ text: c.textContent, width: c.clientWidth, scroll: c.scrollWidth }))) };
+                    await s.page.screenshot({ path: path.join(out, engine + '-mobile-overflow.png') });
+                  }
                   assert.ok(geometry.scrollWidth <= geometry.width + 1, 'mobile table fits after Value click: ' + JSON.stringify(geometry));
                   assert.ok(geometry.nameX >= geometry.left - 1 && geometry.nameRight <= geometry.right + 1, 'mobile name remains visible');
                 }
