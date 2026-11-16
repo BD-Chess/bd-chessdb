@@ -63,7 +63,7 @@ self.onmessage = async ({data}) => {
       shared = data.shared ? new BigInt64Array(data.shared) : null;
       if (!problem) {problem = new api.Problem(data.text);cities=(data.text.match(/DIMENSION\s*:\s*(\d+)/i)?.[1]||0)*1;}
       const started = performance.now();
-      const result = problem.solve(data.seconds,data.seed,data.maxSteps || 0,data.passes || 0,data.tep);
+      const result = problem.solve(data.seconds,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement);
       const tour = result.tour();
       const poolStats = threaded ? Array.from(api.pool_stats()) : null;
       self.postMessage({type:'done',token,length:result.length,elapsed:result.elapsed,

@@ -1,16 +1,49 @@
-export const examples = [
+export const defaultExampleId = "si6035_gurs_20261115";
+export const exampleGroups = [
   {
-    "id": "qa194",
-    "label": "Qatar · 194",
-    "path": "./examples/qa194.tsp",
-    "cities": 194,
-    "optimum": 9352,
-    "sha256": "bb222094681b642ddff1bc62a8289de645e8629f51456a61c4661d4619f7d48d",
-    "bytes": 5324,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "id": "europe",
+    "names": {
+      "en": "Europe",
+      "sl": "Evropa"
+    }
   },
   {
+    "id": "americas",
+    "names": {
+      "en": "Americas",
+      "sl": "Amerika"
+    }
+  },
+  {
+    "id": "asia",
+    "names": {
+      "en": "Asia",
+      "sl": "Azija"
+    }
+  },
+  {
+    "id": "africa",
+    "names": {
+      "en": "Africa",
+      "sl": "Afrika"
+    }
+  },
+  {
+    "id": "random",
+    "names": {
+      "en": "Random",
+      "sl": "Naključni"
+    }
+  }
+];
+export const examples = [
+  {
     "id": "si6035_gurs_20261115",
+    "gapStatus": {
+      "maximumPercent": "0.011",
+      "asOf": "2026-11-16",
+      "proofRunning": true
+    },
     "label": "Slovenija · vsa naselja (6.035)",
     "cities": 6035,
     "path": "./examples/si6035_gurs_20261115.tsp",
@@ -20,88 +53,506 @@ export const examples = [
     "credit": "Geodetska uprava Republike Slovenije · RPE Naselja · prevzem 2026-11-15",
     "licence": "CC BY 4.0",
     "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
-    "description": "Derived boundary centroids, rounded D96/TM metres; straight-line distances, not roads. Optimum unknown.",
-    "provenance": "./examples/si6035_gurs_20261115_provenance.json"
+    "provenance": "./examples/si6035_gurs_20261115_provenance.json",
+    "names": {
+      "en": "Slovenia · all settlements",
+      "sl": "Slovenija · vsa naselja"
+    },
+    "group": "europe",
+    "descriptions": {
+      "en": "Derived settlement centroids, rounded D96/TM metres; straight-line distances, not roads.",
+      "sl": "Izpeljana središča naselij, zaokroženi metri D96/TM; zračne razdalje, ne ceste."
+    }
   },
   {
-    "id": "uy734",
-    "label": "Uruguay · 734",
-    "path": "./examples/uy734.tsp",
-    "cities": 734,
-    "optimum": 79114,
-    "sha256": "b3028d537f425882b61aed5326f4ba4cc2451bad639e1f41b4f7dde7ecb49af2",
-    "bytes": 19906,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "id": "ch71009",
+    "label": "China · 71,009",
+    "names": {
+      "en": "China",
+      "sl": "Kitajska"
+    },
+    "group": "asia",
+    "path": "./examples/ch71009.tsp",
+    "cities": 71009,
+    "sha256": "abade36c9367578eb2cc82a027b8ea62e4ef6b66ff990328d762605d6408c6bf",
+    "bytes": 2116902,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/ch71009.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "bestKnownTour": 4566506,
+    "bound": 4565452,
+    "boundKind": "certified"
   },
   {
-    "id": "zi929",
-    "label": "Zimbabwe · 929",
-    "path": "./examples/zi929.tsp",
-    "cities": 929,
-    "optimum": 95345,
-    "sha256": "4a079085f92852b0b87962ff0b11f90599df53b02c6da62153b5612b1a19a6e9",
-    "bytes": 25172,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "id": "bm33708",
+    "label": "Burma · 33,708",
+    "names": {
+      "en": "Burma",
+      "sl": "Burma"
+    },
+    "group": "asia",
+    "path": "./examples/bm33708.tsp",
+    "cities": 33708,
+    "sha256": "a41cb09449eaa14e332efae40de727a894daf9941f93da93167cbb5e7e0f3644",
+    "bytes": 967231,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/bm33708.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "bestKnownTour": 959289,
+    "bound": 959011,
+    "boundKind": "certified"
   },
   {
-    "id": "lu980",
-    "label": "Luxembourg · 980",
-    "path": "./examples/lu980.tsp",
-    "cities": 980,
-    "optimum": 11340,
-    "sha256": "2b2e49fc300249cfdf3ccf8f0aee258a29904106ed71a7828cea81a94b47e693",
-    "bytes": 25571,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "id": "sw24978",
+    "label": "Sweden · 24,978",
+    "names": {
+      "en": "Sweden",
+      "sl": "Švedska"
+    },
+    "group": "europe",
+    "path": "./examples/sw24978.tsp",
+    "cities": 24978,
+    "sha256": "85b1b3acd0e56a228632685638e7febc83571fefa084b626584dba88de0c674a",
+    "bytes": 713457,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/sw24978.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 855597
   },
   {
-    "id": "rw1621",
-    "label": "Rwanda · 1,621",
-    "path": "./examples/rw1621.tsp",
-    "cities": 1621,
-    "optimum": 26051,
-    "sha256": "08926829060a8e38543417dcffd214104c0dea89ac46ae0d9f0c6ed49aca274e",
-    "bytes": 42858,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "id": "vm22775",
+    "label": "Vietnam · 22,775",
+    "names": {
+      "en": "Vietnam",
+      "sl": "Vietnam"
+    },
+    "group": "asia",
+    "path": "./examples/vm22775.tsp",
+    "cities": 22775,
+    "sha256": "b5204a782fe7e3d0d0444764612498aa08e052d00f4cdabe1f8642cdc7673aec",
+    "bytes": 670999,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/vm22775.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 569288
   },
   {
-    "id": "mu1979",
-    "label": "Oman · 1,979",
-    "path": "./examples/mu1979.tsp",
-    "cities": 1979,
-    "optimum": 86891,
-    "sha256": "8448c46b9d57cd296811d6a523df552d0c42f31b01678ff0eb48577b7ddb1866",
-    "bytes": 54501,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "id": "it16862",
+    "label": "Italy · 16,862",
+    "names": {
+      "en": "Italy",
+      "sl": "Italija"
+    },
+    "group": "europe",
+    "path": "./examples/it16862.tsp",
+    "cities": 16862,
+    "sha256": "d248da34c36b73bf15e1e99fe2d2ff03c92ff82b7bbbdfc897052da86efade32",
+    "bytes": 474304,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/it16862.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 557315
   },
   {
-    "id": "nu3496",
-    "label": "Nicaragua · 3,496",
-    "path": "./examples/nu3496.tsp",
-    "cities": 3496,
-    "optimum": 96132,
-    "sha256": "95aebc8fd9907b94ef644a7e9bd0662e24644cfc58963bc121abbe6696c96e74",
-    "bytes": 96982,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "id": "ho14473",
+    "label": "Honduras · 14,473",
+    "names": {
+      "en": "Honduras",
+      "sl": "Honduras"
+    },
+    "group": "americas",
+    "path": "./examples/ho14473.tsp",
+    "cities": 14473,
+    "sha256": "4fab086f1761036bdb23fe7a36169d98804b75075b481f865c16492fe55b7bb4",
+    "bytes": 408814,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/ho14473.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 177092
   },
   {
-    "id": "ca4663",
-    "label": "Canada · 4,663",
-    "path": "./examples/ca4663.tsp",
-    "cities": 4663,
-    "optimum": 1290319,
-    "sha256": "032a7837db3b4d70b796280778fa8107db6ee2a2e21bcc4350f4c41f1f614fb8",
-    "bytes": 131597,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "id": "mo14185",
+    "label": "Morocco · 14,185",
+    "names": {
+      "en": "Morocco",
+      "sl": "Maroko"
+    },
+    "group": "africa",
+    "path": "./examples/mo14185.tsp",
+    "cities": 14185,
+    "sha256": "037e20e74751e0c9cc4ed369322232d5d93f87f22fec5f6e30e82b67f4872cb9",
+    "bytes": 386531,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/mo14185.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 427377
+  },
+  {
+    "id": "fi10639",
+    "label": "Finland · 10,639",
+    "names": {
+      "en": "Finland",
+      "sl": "Finska"
+    },
+    "group": "europe",
+    "path": "./examples/fi10639.tsp",
+    "cities": 10639,
+    "sha256": "2499b941abfb1d59fa9d7ddf5ff76dfa2e646dcb260580b6ec26da2b10544450",
+    "bytes": 297627,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/fi10639.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 520527
+  },
+  {
+    "id": "kz9976",
+    "label": "Kazakhstan · 9,976",
+    "names": {
+      "en": "Kazakhstan",
+      "sl": "Kazahstan"
+    },
+    "group": "asia",
+    "path": "./examples/kz9976.tsp",
+    "cities": 9976,
+    "sha256": "f316b9b3937dcd03d26d182366c6a66d9f7c7b2d5ed2c67c6e3817d70add8b0c",
+    "bytes": 278423,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/kz9976.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 1061881
+  },
+  {
+    "id": "gr9882",
+    "label": "Greece · 9,882",
+    "names": {
+      "en": "Greece",
+      "sl": "Grčija"
+    },
+    "group": "europe",
+    "path": "./examples/gr9882.tsp",
+    "cities": 9882,
+    "sha256": "f53bedc46af763d380aceaf8c661b600bc569b38c07d72456bc6df4645a3b60e",
+    "bytes": 275787,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/gr9882.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 300899
+  },
+  {
+    "id": "ja9847",
+    "label": "Japan · 9,847",
+    "names": {
+      "en": "Japan",
+      "sl": "Japonska"
+    },
+    "group": "asia",
+    "path": "./examples/ja9847.tsp",
+    "cities": 9847,
+    "sha256": "5845b29c01cece9311a7aa2c37df6bed653b3825ad839adce6f355a894c3304f",
+    "bytes": 284653,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/ja9847.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 491924
+  },
+  {
+    "id": "ar9152",
+    "label": "Argentina · 9,152",
+    "names": {
+      "en": "Argentina",
+      "sl": "Argentina"
+    },
+    "group": "americas",
+    "path": "./examples/ar9152.tsp",
+    "cities": 9152,
+    "sha256": "219db5136b3dfe50aee7e8a3679b72875c7d2ec1acb6a31beb33dbf764ac7da5",
+    "bytes": 255350,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/ar9152.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 837479
+  },
+  {
+    "id": "ei8246",
+    "label": "Ireland · 8,246",
+    "names": {
+      "en": "Ireland",
+      "sl": "Irska"
+    },
+    "group": "europe",
+    "path": "./examples/ei8246.tsp",
+    "cities": 8246,
+    "sha256": "3bc6e2f70e7631526a539f39ac6f38a178fa14e5997d51d079f9822f8148518e",
+    "bytes": 221937,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/ei8246.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 206171
+  },
+  {
+    "id": "pm8079",
+    "label": "Panama · 8,079",
+    "names": {
+      "en": "Panama",
+      "sl": "Panama"
+    },
+    "group": "americas",
+    "path": "./examples/pm8079.tsp",
+    "cities": 8079,
+    "sha256": "f1d80e695c7771c8651b885015944036da9ac3f29d26c5eeb89877bd25bd78f4",
+    "bytes": 217224,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/pm8079.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 114855
+  },
+  {
+    "id": "ym7663",
+    "label": "Yemen · 7,663",
+    "names": {
+      "en": "Yemen",
+      "sl": "Jemen"
+    },
+    "group": "asia",
+    "path": "./examples/ym7663.tsp",
+    "cities": 7663,
+    "sha256": "3bbf55d1ae4f198ddf5bde1de217c3984d8cc0e96ee3df3ecba295c6827163bf",
+    "bytes": 213654,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/ym7663.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 238314
+  },
+  {
+    "id": "eg7146",
+    "label": "Egypt · 7,146",
+    "names": {
+      "en": "Egypt",
+      "sl": "Egipt"
+    },
+    "group": "africa",
+    "path": "./examples/eg7146.tsp",
+    "cities": 7146,
+    "sha256": "da62d0f91fe91093bc4eff69c8637c7ab0f68c24dfdc5532b5962fcc35d0d981",
+    "bytes": 199178,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/eg7146.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 172386
   },
   {
     "id": "tz6117",
     "label": "Tanzania · 6,117",
+    "names": {
+      "en": "Tanzania",
+      "sl": "Tanzanija"
+    },
+    "group": "africa",
     "path": "./examples/tz6117.tsp",
     "cities": 6117,
-    "optimum": 394718,
     "sha256": "45486c69d1c38d653e2c33bf501fabb2bf6061df6d5a9cd331e76408e023063d",
     "bytes": 164919,
-    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html"
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/tz6117.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 394718
+  },
+  {
+    "id": "ca4663",
+    "label": "Canada · 4,663",
+    "names": {
+      "en": "Canada",
+      "sl": "Kanada"
+    },
+    "group": "americas",
+    "path": "./examples/ca4663.tsp",
+    "cities": 4663,
+    "sha256": "032a7837db3b4d70b796280778fa8107db6ee2a2e21bcc4350f4c41f1f614fb8",
+    "bytes": 131597,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/ca4663.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 1290319
+  },
+  {
+    "id": "nu3496",
+    "label": "Nicaragua · 3,496",
+    "names": {
+      "en": "Nicaragua",
+      "sl": "Nikaragva"
+    },
+    "group": "americas",
+    "path": "./examples/nu3496.tsp",
+    "cities": 3496,
+    "sha256": "95aebc8fd9907b94ef644a7e9bd0662e24644cfc58963bc121abbe6696c96e74",
+    "bytes": 96982,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/nu3496.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 96132
+  },
+  {
+    "id": "mu1979",
+    "label": "Oman · 1,979",
+    "names": {
+      "en": "Oman",
+      "sl": "Oman"
+    },
+    "group": "asia",
+    "path": "./examples/mu1979.tsp",
+    "cities": 1979,
+    "sha256": "8448c46b9d57cd296811d6a523df552d0c42f31b01678ff0eb48577b7ddb1866",
+    "bytes": 54501,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/mu1979.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 86891
+  },
+  {
+    "id": "rw1621",
+    "label": "Rwanda · 1,621",
+    "names": {
+      "en": "Rwanda",
+      "sl": "Ruanda"
+    },
+    "group": "africa",
+    "path": "./examples/rw1621.tsp",
+    "cities": 1621,
+    "sha256": "08926829060a8e38543417dcffd214104c0dea89ac46ae0d9f0c6ed49aca274e",
+    "bytes": 42858,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/rw1621.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 26051
+  },
+  {
+    "id": "lu980",
+    "label": "Luxembourg · 980",
+    "names": {
+      "en": "Luxembourg",
+      "sl": "Luksemburg"
+    },
+    "group": "europe",
+    "path": "./examples/lu980.tsp",
+    "cities": 980,
+    "sha256": "2b2e49fc300249cfdf3ccf8f0aee258a29904106ed71a7828cea81a94b47e693",
+    "bytes": 25571,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/lu980.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 11340
+  },
+  {
+    "id": "zi929",
+    "label": "Zimbabwe · 929",
+    "names": {
+      "en": "Zimbabwe",
+      "sl": "Zimbabve"
+    },
+    "group": "africa",
+    "path": "./examples/zi929.tsp",
+    "cities": 929,
+    "sha256": "4a079085f92852b0b87962ff0b11f90599df53b02c6da62153b5612b1a19a6e9",
+    "bytes": 25172,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/zi929.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 95345
+  },
+  {
+    "id": "uy734",
+    "label": "Uruguay · 734",
+    "names": {
+      "en": "Uruguay",
+      "sl": "Urugvaj"
+    },
+    "group": "americas",
+    "path": "./examples/uy734.tsp",
+    "cities": 734,
+    "sha256": "b3028d537f425882b61aed5326f4ba4cc2451bad639e1f41b4f7dde7ecb49af2",
+    "bytes": 19906,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/uy734.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 79114
+  },
+  {
+    "id": "qa194",
+    "label": "Qatar · 194",
+    "names": {
+      "en": "Qatar",
+      "sl": "Katar"
+    },
+    "group": "asia",
+    "path": "./examples/qa194.tsp",
+    "cities": 194,
+    "sha256": "bb222094681b642ddff1bc62a8289de645e8629f51456a61c4661d4619f7d48d",
+    "bytes": 5324,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/qa194.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 9352
+  },
+  {
+    "id": "dj38",
+    "label": "Djibouti · 38",
+    "names": {
+      "en": "Djibouti",
+      "sl": "Džibuti"
+    },
+    "group": "africa",
+    "path": "./examples/dj38.tsp",
+    "cities": 38,
+    "sha256": "abdd86fd061acef713a571750a8f290cef804fe6b61eb768f8623be7ad8038bd",
+    "bytes": 1465,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/dj38.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 6656
+  },
+  {
+    "id": "wi29",
+    "label": "Western Sahara · 29",
+    "names": {
+      "en": "Western Sahara",
+      "sl": "Zahodna Sahara"
+    },
+    "group": "africa",
+    "path": "./examples/wi29.tsp",
+    "cities": 29,
+    "sha256": "412a7aed609f2586ee53746b750f1ad6244a44ce0ad9f8d017a8987ae0664ce8",
+    "bytes": 944,
+    "source": "https://www.math.uwaterloo.ca/tsp/world/summary.html",
+    "dataSource": "https://www.math.uwaterloo.ca/tsp/world/wi29.tsp",
+    "credit": "National TSP collection, University of Waterloo",
+    "referenceDate": "2022-07-31",
+    "optimum": 27603
   },
   {
     "id": "E100k.0",
@@ -112,7 +563,12 @@ export const examples = [
     "bytes": 1967211,
     "bound": 224330692.072818,
     "boundKind": "bound",
-    "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html"
+    "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html",
+    "group": "random",
+    "names": {
+      "en": "DIMACS E100k.0",
+      "sl": "DIMACS E100k.0"
+    }
   },
   {
     "id": "E1M.0",
@@ -123,7 +579,12 @@ export const examples = [
     "bytes": 20667926,
     "bound": 708703512.913668,
     "boundKind": "bound",
-    "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html"
+    "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html",
+    "group": "random",
+    "names": {
+      "en": "DIMACS E1M.0",
+      "sl": "DIMACS E1M.0"
+    }
   },
   {
     "id": "E10M.0",
@@ -134,6 +595,30 @@ export const examples = [
     "bytes": 216667663,
     "bound": 2238892584,
     "boundKind": "estimate",
-    "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html"
+    "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html",
+    "group": "random",
+    "names": {
+      "en": "DIMACS E10M.0",
+      "sl": "DIMACS E10M.0"
+    }
   }
 ];
+
+export function exampleLabel(item, language='en') {
+  const lang=language.startsWith('sl')?'sl':'en';
+  const count=item.cities.toLocaleString(lang==='sl'?'sl-SI':'en-US',{useGrouping:'always'});
+  const continent=!item.generator&&item.id!==defaultExampleId?' · '+exampleGroups.find(g=>g.id===item.group).names[lang]:'';
+  return `${item.names[lang]}${continent} · ${count}${item.generator?(lang==='sl'?' · ustvarjeno na napravi':' · generated on device'):''}`;
+}
+export function gapDisplay(status, language='en') {
+  const value=String(status.maximumPercent);
+  if(!/^\d+(?:\.\d+)?$/.test(value))throw Error('Invalid reference percentage');
+  const [whole,fraction='']=value.split('.');
+  const units=BigInt(whole)*1000n+BigInt((fraction+'000').slice(0,3))+(/[1-9]/.test(fraction.slice(3))?1n:0n);
+  const lang=language.startsWith('sl')?'sl':'en';
+  const percent=String(units/1000n)+(lang==='sl'?',':'.')+String(units%1000n).padStart(3,'0');
+  const date=new Date(status.asOf+'T00:00:00Z');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(status.asOf)||!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==status.asOf)throw Error('Invalid reference date');
+  const [year,month,day]=status.asOf.split('-');
+  return {percent,date:lang==='sl'?`${Number(day)}. ${Number(month)}. ${year}`:date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}),proofRunning:status.proofRunning!==false};
+}

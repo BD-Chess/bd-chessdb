@@ -181,11 +181,11 @@ export class Problem {
      * @param {number} seed
      * @param {number} max_steps
      * @param {number} passes
-     * @param {boolean} tep
+     * @param {boolean} refinement
      * @returns {Solution}
      */
-    solve(seconds, seed, max_steps, passes, tep) {
-        const ret = wasm.problem_solve(this.__wbg_ptr, seconds, seed, max_steps, passes, tep);
+    solve(seconds, seed, max_steps, passes, refinement) {
+        const ret = wasm.problem_solve(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }

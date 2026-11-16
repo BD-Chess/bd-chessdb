@@ -8,12 +8,19 @@
 // anywhere since R22b part 1), the expanded map, the stop at a known optimum (now every example with one).
 // worker.js, pool-worker.js, generator-worker.js, portgen.mjs, wasm-loader.js, wasm-crypto.mjs, examples.mjs, examples/,
 // pkg/ and pkg-shared/ are the package's, unchanged. The part-1 version is demo/app.r22b1.js.
-import { examples } from './examples.mjs';
+// R28 (8zTSP-K, 16 Nov 2026): from 8zTSP-web R5 A1 (0ce785e) the recording of a run and its slow replay (replay-data.mjs,
+// replay-player.mjs, replay-copy.mjs and replay.css are the package's; the run option is called »refinement«), from Examples
+// R1b (9d4905c) the 31 examples: Slovenia first and by default, the 27 countries by size with their continents, then the
+// three generated maps; Slovenia's dated line (examples.mjs gapStatus). Before: demo/app.before_r28.js.
+import { examples, exampleGroups, exampleLabel, defaultExampleId, gapDisplay } from './examples.mjs';
 import { initializeWasm, loaderState, solverModule, supportsSharedThreads } from './wasm-loader.js';
+import { createRecorder, serializeRecording } from './replay-data.mjs';
+import { mountReplay } from './replay-player.mjs';
+import { REPLAY_COPY } from './replay-copy.mjs';
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const canvas = $('map'), ctx = canvas.getContext('2d');
-const DEFAULT_EXAMPLE = 'nu3496';
+const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
 // R22b (8zTSP-web R3, for BD's iPhone): Safari may hide the number of cores, so up to 8 workers can be chosen anywhere and
 // an iPhone starts with 6; elsewhere the page starts with every core the device reports.
 const reportedCores = Math.max(1, Math.floor(Number(navigator.hardwareConcurrency) || 1));
@@ -24,10 +31,14 @@ const canShare = supportsSharedThreads();
 const desktopLarge = !/iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) && Number(navigator.deviceMemory) >= 8;
 for (let n = 1; n <= cores; n++) $('workers').add(new Option(String(n), String(n)));
 $('workers').value = String(isIPhone ? 6 : reportedCores);
-for (const item of examples) {
-  const option = new Option(item.id, item.id);
-  option.disabled = item.cities === 10000000 && !desktopLarge;
-  $('example').add(option);
+// R28 (Examples R1b): the maps in the order of examples.mjs (Slovenia, then the 27 countries by size, largest first), then
+// the generated ones in a group of their own; render() writes the labels in the page's language
+{
+  const add = (item, parent) => { const option = new Option(item.id, item.id); option.disabled = item.cities === 10000000 && !desktopLarge; parent.append(option); };
+  for (const item of examples.filter(e => !e.generator)) add(item, $('example'));
+  const section = document.createElement('optgroup'); section.dataset.group = 'random'; section.label = exampleGroups.find(g => g.id === 'random').names.en;
+  for (const item of examples.filter(e => e.generator)) add(item, section);
+  $('example').append(section);
 }
 $('example').value = DEFAULT_EXAMPLE;
 let text = '', coords = new Float64Array(), tour = null, pool = [], loading = null, rejectLoading = null, extent = null;
@@ -35,6 +46,12 @@ let generation = 0, best = Infinity, started = 0, timer, active = false, runReco
 let mapName = '', inputHash = '', lastDraw = 0, preset = '', tab = 'nu', statusKey = ['wasm'], mapMeta = null;
 let renderTimer = null, renderPending = false, drawCount = 0, progressDrawCount = 0, lastDrawnTourLength = null;
 const progressDrawTimes = [];
+// R28 (R5 A1): the recording of a run; after the run »Replay slowly« plays it in its own panel (the result, the map and the
+// clock of the run stay as they are). If recording fails, only the recording stops; the search goes on.
+let recorder = null, lastSolverSeconds = 0, recordingSeparate = false, recordingFailed = false;
+const replayPlayer = mountReplay($('replayPanel'));
+function clearReplay() { replayPlayer.clear(); $('replayPanel').hidden = true; $('replayOpen').disabled = true; recorder = null; lastSolverSeconds = 0; recordingFailed = false; }
+function recordSafely(fn) { try { fn(); } catch { recorder = null; recordingFailed = true; } }
 const lang = () => root.dataset.lang === 'sl' ? 'sl' : 'en';
 const group = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, lang() === 'sl' ? '.' : ',');
 const dec = (x, d) => { const s = x.toFixed(d); return lang() === 'sl' ? s.replace('.', ',') : s; };
@@ -44,7 +61,7 @@ const ofCoresSl = c => `${c} ${c === 1 ? 'jedra' : 'jeder'}`;
 // more workers than reported cores (an iPhone starts with 6 where Safari may report fewer): say so instead of »6 of 4 cores«
 const ofEn = (n, c) => n <= c ? `${n} of ${c} cores` : `${n} workers (the device reports ${c} ${c === 1 ? 'core' : 'cores'})`;
 const odSl = (n, c) => n <= c ? `${n} od ${ofCoresSl(c)}` : `${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')} (naprava javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')})`;
-// the examples' names in both languages (examples.mjs has one label each, English or Slovene)
+// the examples' names in both languages: since R28 from examples.mjs (item.names); this list is the fallback of R22b
 const NAMES = {
   qa194: ['Qatar', 'Katar'], si6035_gurs_20261115: ['Slovenia · all settlements', 'Slovenija · vsa naselja'], uy734: ['Uruguay', 'Urugvaj'],
   zi929: ['Zimbabwe', 'Zimbabve'], lu980: ['Luxembourg', 'Luksemburg'], rw1621: ['Rwanda', 'Ruanda'], mu1979: ['Oman', 'Oman'],
@@ -52,7 +69,7 @@ const NAMES = {
   'E100k.0': ['DIMACS E100k.0, generated', 'DIMACS E100k.0, ustvarjen'], 'E1M.0': ['DIMACS E1M.0, generated', 'DIMACS E1M.0, ustvarjen'],
   'E10M.0': ['DIMACS E10M.0, generated', 'DIMACS E10M.0, ustvarjen'],
 };
-const exName = item => (NAMES[item.id] || [item.label, item.label])[lang() === 'sl' ? 1 : 0];
+const exName = item => item.names?.[lang()] || (NAMES[item.id] || [item.label, item.label])[lang() === 'sl' ? 1 : 0];
 const T = {
   en: {
     wasm: 'Loading WebAssembly…', exLoading: name => `Loading ${name}…`, reading: 'Reading the map…',
@@ -77,7 +94,7 @@ const T = {
     range: (label, lo, hi) => `${label}: enter a number from ${group(lo)} to ${group(hi)}`,
     integers: 'Cities and seed must be whole numbers', seedInt: 'The seed must be a whole number',
     workers: n => `Choose 1 to ${n} workers`, loadFirst: 'Load a map before running', fileLimit: 'File limit: 32 MB',
-    gapOpt: 'ABOVE THE OPTIMUM', gapRef: 'ABOVE THE REFERENCE', gapBound: 'ABOVE THE HK BOUND', gapEstimate: 'ABOVE THE HK ESTIMATE',
+    gapOpt: 'ABOVE THE OPTIMUM', gapRef: 'ABOVE THE REFERENCE', gapBound: 'ABOVE THE HK BOUND', gapEstimate: 'ABOVE THE HK ESTIMATE', gapLower: 'ABOVE THE LOWER BOUND',
     reachOpt: 'OPTIMUM FIRST REACHED', reachRef: 'REFERENCE FIRST REACHED',
     count: 'Random cities', seed: 'Seed', seconds: 'Seconds', reference: 'Reference length',
     placeholder: 'for the gap and the first-reach time', canvas: 'Points and the best tour',
@@ -88,10 +105,13 @@ const T = {
     modeOneNoShare: (n, c) => `Mode: 1 worker; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
     hintIPhone: 'iPhone: 6 workers by default; Safari may hide the number of cores. More workers than cores do not help.',
     hintCores: c => `Your browser reports ${c} ${c === 1 ? 'core' : 'cores'}. More workers than cores do not help.`,
-    option: item => `${exName(item)} · ${group(item.cities)}` + (item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device') : ''),
+    option: item => exampleLabel(item, 'en') + (item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device') : ''),
     live: 'Live · 0.15 s',
     known: (n, opt) => `${group(n)} cities, known optimal tour ${group(opt)}`,
     unknown: n => `${group(n)} cities; optimal tour not known`,
+    bestKnown: (n, tourLength, b) => `${group(n)} cities; best known tour ${group(tourLength)}, lower bound ${group(b)}; optimum not confirmed`,
+    replayInvalid: 'Unable to open this recording.',
+    siGap: (percent, date, running) => `The optimum is not proved yet: our tour is at most ${percent}% above it (Concorde's lower bound${running ? ', proof running' : ''}; as of ${date})`,
     bound: (n, b, est) => `${group(n)} cities; ${est ? 'HK estimate' : 'HK bound'} ${group(Math.round(b))}`,
     waterloo: 'National TSP collection, University of Waterloo', dimacs: 'DIMACS TSP Challenge · portgen by Lyle McGeoch',
     gurs: 'Surveying and Mapping Authority of the Republic of Slovenia (GURS) · RPE settlements · retrieved 15 Nov 2026',
@@ -124,7 +144,7 @@ const T = {
     range: (label, lo, hi) => `${label}: vnesite število od ${group(lo)} do ${group(hi)}`,
     integers: 'Število mest in seme morata biti celi števili', seedInt: 'Seme mora biti celo število',
     workers: n => `Izberite od 1 do ${n} delavcev`, loadFirst: 'Pred zagonom naložite zemljevid', fileLimit: 'Omejitev datoteke: 32 MB',
-    gapOpt: 'NAD OPTIMUMOM', gapRef: 'NAD REFERENCO', gapBound: 'NAD MEJO HK', gapEstimate: 'NAD OCENO HK',
+    gapOpt: 'NAD OPTIMUMOM', gapRef: 'NAD REFERENCO', gapBound: 'NAD MEJO HK', gapEstimate: 'NAD OCENO HK', gapLower: 'NAD SPODNJO MEJO',
     reachOpt: 'OPTIMUM PRVIČ DOSEŽEN', reachRef: 'REFERENCA PRVIČ DOSEŽENA',
     count: 'Naključna mesta', seed: 'Seme', seconds: 'Sekunde', reference: 'Referenčna dolžina',
     placeholder: 'za odmik in čas prvega dosega', canvas: 'Točke in najboljša pot',
@@ -135,10 +155,13 @@ const T = {
     modeOneNoShare: (n, c) => `Način: 1 delavec; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
     hintIPhone: 'iPhone: privzeto 6 delavcev; Safari lahko skrije število jeder. Več delavcev kot jeder ne pomaga.',
     hintCores: c => `Vaš brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Več delavcev kot jeder ne pomaga.`,
-    option: item => `${exName(item)} · ${group(item.cities)}` + (item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi') : ''),
+    option: item => exampleLabel(item, 'sl') + (item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi') : ''),
     live: 'V živo · 0,15 s',
     known: (n, opt) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}, znana optimalna pot ${group(opt)}`,
     unknown: n => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; optimalna pot ni znana`,
+    bestKnown: (n, tourLength, b) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša znana pot ${group(tourLength)}, spodnja meja ${group(b)}; optimum ni potrjen`,
+    replayInvalid: 'Posnetka ni mogoče odpreti.',
+    siGap: (percent, date, running) => `Optimum še ni dokazan: naša pot je največ ${percent} % nad njim (Concordova spodnja meja${running ? ', dokaz teče' : ''}; stanje ${date})`,
     bound: (n, b, est) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; ${est ? 'ocena HK' : 'meja HK'} ${group(Math.round(b))}`,
     waterloo: 'zbirka National TSP, Univerza Waterloo', dimacs: 'DIMACS TSP Challenge · portgen Lyla McGeocha',
     gurs: 'Geodetska uprava Republike Slovenije (GURS) · RPE Naselja · prevzem 15. 11. 2026',
@@ -172,12 +195,14 @@ function credits() {   // the source line under the examples and, for Slovenia, 
   credit.replaceChildren(); mapCredit.replaceChildren();
   const item = tab === 'nu' ? examples.find(e => e.id === $('example').value) : null;
   if (!item) return;
-  const parts = [item.optimum ? t('known', item.cities, item.optimum) : item.bound ? t('bound', item.cities, item.bound, item.boundKind === 'estimate') : t('unknown', item.cities)];
+  const parts = [item.optimum ? t('known', item.cities, item.optimum) : item.bestKnownTour ? t('bestKnown', item.cities, item.bestKnownTour, item.bound)
+    : item.gapStatus ? t('cities', item.cities) : item.bound ? t('bound', item.cities, item.bound, item.boundKind === 'estimate') : t('unknown', item.cities)];
   credit.append(`${exName(item)}: ${parts[0]} · `);
   if (item.licence) {
     credit.append(link(item.source, t('gurs')), ' · ', link(item.licenceUrl, item.licence), ` · ${t('siNote')}`);
     mapCredit.append(`${t('mapData')}: `, link(item.source, t('gurs')), ' · ', link(item.licenceUrl, item.licence));
   } else credit.append(link(item.source, item.generator ? t('dimacs') : t('waterloo')));
+  if (item.gapStatus && !item.optimum) { const g = gapDisplay(item.gapStatus, lang()); credit.append(` · ${t('siGap', g.percent, g.date, g.proofRunning)}`); }
   if (item.boundKind === 'estimate') credit.append(` · ${t('estimateNote')}`);
   if (item.cities >= 1000000) credit.append(` · ${t('largeNote')}`);
 }
@@ -185,7 +210,7 @@ function render() {
   $('length').textContent = Number.isFinite(best) ? group(best) : '—';
   const reference = runRecord?.reference || Number($('reference').value);
   $('gap').textContent = reference > 0 && Number.isFinite(best) ? pct((best / reference - 1) * 100) : '—';
-  $('gapLabel').textContent = t(isOptimum() ? 'gapOpt' : mapMeta?.bound && reference === mapMeta.bound ? (mapMeta.boundKind === 'estimate' ? 'gapEstimate' : 'gapBound') : 'gapRef');
+  $('gapLabel').textContent = t(isOptimum() ? 'gapOpt' : mapMeta?.bound && reference === mapMeta.bound ? (mapMeta.boundKind === 'estimate' ? 'gapEstimate' : mapMeta.boundKind === 'certified' ? 'gapLower' : 'gapBound') : 'gapRef');
   $('reachLabel').textContent = t(isOptimum() ? 'reachOpt' : 'reachRef');
   $('reach').textContent = runRecord?.firstReach ? `${dec(runRecord.firstReach.solverSeconds, 1)} s` : '—';
   $('elapsed').textContent = `${dec(shownElapsed, 1)} s`;
@@ -194,6 +219,8 @@ function render() {
   $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
   $('workerHint').textContent = isIPhone ? t('hintIPhone') : t('hintCores', reportedCores);
   for (const option of $('example').options) { const item = examples.find(e => e.id === option.value); if (item) option.text = t('option', item); }
+  for (const section of $('example').querySelectorAll('optgroup')) { const g = exampleGroups.find(x => x.id === section.dataset.group); if (g) section.label = g.names[lang()]; }
+  $('replayPanel').setAttribute('aria-label', REPLAY_COPY[lang()].heading);
   $('refresh').options[0].text = t('live');
   canvas.setAttribute('aria-label', t('canvas'));
   $('status').textContent = t(...statusKey);
@@ -243,10 +270,11 @@ function controls() {
   const ready = loaderState.status === 'ready';
   $('run').disabled = !ready || active || !!loading || !coords.length;
   $('stop').disabled = !active && !loading;
-  ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'tep', 'reference', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
+  ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'refinement', 'reference', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
   $('refresh').disabled = !ready;
   $('stopOptimum').disabled = active || !ready || !mapMeta?.optimum;
   $('download').disabled = !tour?.length;
+  $('replayOpen').disabled = active || !!loading || !recorder?.data.frames.length;
 }
 function acceptBest(data, worker) {
   runRecord.history.push({ worker, length: data.length, seconds: data.elapsed, steps: data.steps });
@@ -260,6 +288,7 @@ function acceptBest(data, worker) {
       // R3: a tour of more than 200,000 cities stays a typed array on the page (the export streams it)
       tour = data.tour; runRecord.tour = tour.length <= 200000 ? Array.from(tour, x => x + 1) : null;
       runRecord.tourStorage = tour.length > 200000 ? 'typed on page; export includes tour' : 'record'; runRecord.tourLength = data.length;
+      recordSafely(() => recorder?.capture(tour, data.length, data.elapsed, worker, (performance.now() - started) / 1000));
       requestProgressDraw();
     }
     render();
@@ -269,10 +298,14 @@ function finish(...key) {
   clearInterval(timer); active = false;
   if (runRecord) { runRecord.pageSeconds = (performance.now() - started) / 1000; runRecord.status = english(...key); shownElapsed = runRecord.pageSeconds; }
   killPool(); rejectActive = null; controls(); status(...key); render(); draw('final');
+  if (recorder) recordSafely(() => recorder.finish(recordingSeparate ? (performance.now() - started) / 1000 : lastSolverSeconds));
+  if (runRecord) runRecord.recording = recorder?.summary() ?? { failed: recordingFailed };
+  controls();
 }
 async function load(value, which, metadata = null, verifiedHash = null) {
   if (active) return;
   const module = unlocked();
+  clearReplay();
   loading?.terminate(); killPool(); clearTimeout(renderTimer); renderTimer = null; renderPending = false;
   const token = ++generation;
   loading = { terminate() {} };
@@ -331,12 +364,17 @@ async function start(options = {}) {
   const memory = sharedThreads ? new WebAssembly.Memory({ initial: 18, maximum: 65536, shared: true }) : undefined;
   const topology = workers === 1 ? 'single worker' : sharedThreads ? 'shared workers' : 'separate workers';
   const reference = options.reference ?? (Number($('reference').value) || null);
-  const tep = options.tep ?? $('tep').checked;
+  const refinement = options.refinement ?? $('refinement').checked;
+  clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
+  if (options.recording !== false && coords.length >= 6) recordSafely(() => {
+    recorder = createRecorder(coords, { name: mapMeta ? exampleLabel(mapMeta, lang()) : mapName, inputSha256: inputHash, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1],
+      optimum: mapMeta?.optimum || null, source: mapMeta?.source || '', credit: mapMeta?.credit || '' }, { separate: recordingSeparate });
+  });
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
   runRecord = { schema: '8ztsp-web-run-v1', name: mapName, inputSha256: inputHash, cities: coords.length / 2, seconds, seed,
     renderIntervalMs: Number($('refresh').value), renderChanges: [],
     workers, deviceCores: reportedCores, workerLimit: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
-    tep, reference, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
+    refinement, reference, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
     history: [], results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
   render();
@@ -378,6 +416,7 @@ async function start(options = {}) {
         }
         if (data.type === 'pool-terminate') { children.get(data.id)?.terminate(); return; }
         if (data.type === 'error') { fail(data.message); return; }
+        lastSolverSeconds = Math.max(lastSolverSeconds, data.elapsed || 0);
         acceptBest(data, i);
         // BD's wish 3: a map with a known optimum (checksum-checked catalogue) stops when a full tour reaches it.
         if (runRecord.optimum && data.length <= runRecord.optimum && data.tour?.length === coords.length / 2) {
@@ -400,7 +439,7 @@ async function start(options = {}) {
         }
       };
       worker.onerror = event => { if (token !== generation || !active) return; finish('workerFail', event.message); reject(Error(event.message)); };
-      worker.postMessage({ type: 'run', token, module, memory, text, seconds, seed: (seed + i) >>> 0, tep, shared, sharedThreads: sharedThreads ? workers : 0,
+      worker.postMessage({ type: 'run', token, module, memory, text, seconds, seed: (seed + i) >>> 0, refinement, shared, sharedThreads: sharedThreads ? workers : 0,
         probe: !!options.probe, maxSteps: options.maxSteps, passes: options.passes });
     }
   });
@@ -420,7 +459,7 @@ async function loadExample(id = $('example').value) {
   if (item.cities === 10000000 && !desktopLarge) throw new Message('tenM');
   $('example').value = id; render();
   if (item.generator) {   // R3: DIMACS portgen on the device, then the checksum of the generated file
-    text = ''; coords = new Float64Array(); extent = null; tour = null; runRecord = null; mapMeta = null; $('stopOptimum').checked = false; best = Infinity; draw();
+    clearReplay(); text = ''; coords = new Float64Array(); extent = null; tour = null; runRecord = null; mapMeta = null; $('stopOptimum').checked = false; best = Infinity; draw();
     status('generating', item.id);
     const worker = loading = new Worker(new URL('./generator-worker.js', import.meta.url), { type: 'module' }); controls();
     const data = await new Promise((resolve, reject) => {
@@ -483,6 +522,13 @@ $('download').onclick = () => {   // R3: streamed, so a tour of millions of citi
   const url = URL.createObjectURL(new Blob(parts, { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = '8ztsp-run.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
+$('replayOpen').onclick = () => {   // R28: play the last run's recording slowly, in its own panel below
+  if (!recorder?.data.frames.length || active) return;
+  try {
+    $('replayPanel').hidden = false; replayPlayer.setRecording(recorder.data); $('replayPanel').focus();
+    $('replayPanel').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('replayPlay').click();
+  } catch { status('replayInvalid'); }
+};
 // BD's wish 2: the map in full screen where the browser allows it (Fullscreen API), otherwise over the whole window;
 // the search and the drawing go on; Close or Escape returns.
 const mapView = $('mapView'); let oldOverflow = '';
@@ -511,6 +557,8 @@ window.tsp8zLab = { load, loadExample, start, stop, loadNu, generate, cores, rep
   get renderStats() { return { intervalMs: Number($('refresh').value), drawCount, progressDrawCount, lastDrawnTourLength, progressDrawTimes: [...progressDrawTimes] }; },
   get record() { return runRecord; }, get coordinates() { return coords; }, get tourSummary() { return { cities: tour?.length || 0, bytes: tour?.byteLength || 0 }; },
   get liveWorkers() { return pool.length; } };
+window.tsp8zReplay = { get data() { return recorder?.data; }, get summary() { return recorder?.summary(); },
+  export() { if (!recorder?.data.frames.length) throw Error('No recording yet.'); return serializeRecording(recorder.data); }, get player() { return replayPlayer; } };
 choose('nu');
 controls(); render();
 try {
