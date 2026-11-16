@@ -103,6 +103,14 @@
     .bar i { display: block; height: 100%; background: var(--accent); border-radius: .2rem; }
     .conf { display: inline-block; font-size: .78rem; border-radius: 999px; padding: 0 .45rem; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
     .conf.high { color: var(--accent); border-color: var(--accent); }
+    .sortb { display: inline-flex; align-items: center; gap: .25rem; min-height: 32px; padding: .1rem 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 600; text-align: inherit; white-space: nowrap; }
+    th.num .sortb { justify-content: flex-end; }
+    .sortb:hover { color: var(--accent); }
+    .sortb .arr { font-size: .78em; opacity: .4; }
+    th[aria-sort="ascending"] .sortb, th[aria-sort="descending"] .sortb { color: var(--ink); }
+    th[aria-sort="ascending"] .arr, th[aria-sort="descending"] .arr { opacity: 1; color: var(--accent); }
+    tr.thin td { opacity: .62; }
+    .thin-mark { color: var(--plan); font-weight: 700; margin-left: .15rem; }
     .newtag { display: inline-block; margin-left: .35rem; padding: 0 .3rem; border-radius: .3rem; background: var(--accent); color: var(--bg); font: 700 .66rem/1.5 system-ui, sans-serif; letter-spacing: .06em; vertical-align: .08em; }
     .newbox { max-width: none; margin: .7rem 0 .4rem; }
     .newbox ul { margin: .25rem 0 .35rem; }
@@ -356,7 +364,7 @@
     var root = document.documentElement;
     var D = null, S = null, C = null;
     var BOARD = {}, CATS = ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "sl", "long_context", "speed"];
-    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {} };
+    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {}, sort: {} };
     var TOP = 40, CTOP = 25;
     var T = {
       sl: {
@@ -379,6 +387,8 @@
         noSl: "Modeli, ki jih spremljamo, brez slovenskih rezultatov:", commentBy: "Komentar", lead_n: "lestvic",
         cat_reasoning: "Splošno & sklepanje", cat_coding: "Programiranje", cat_agentic: "Agenti & orodja", cat_knowledge: "Znanje & halucinacije", cat_preference: "Človeška preferenca",
         cat_multilingual: "Večjezičnost", cat_sl: "Slovenščina", cat_long_context: "Dolg kontekst", cat_speed: "Hitrost", cat_other: "Drugo", cat_price: "Cena",
+        sortHint: "Klik razvrsti, ponovni klik obrne vrstni red", thinTip: "Ocena iz največ 2 neodvisnih virov",
+        thinNote: "Zatemnjeno z * = ocena v tej kategoriji iz največ 2 neodvisnih virov; beri previdno.",
         newTag: "NOVO", newFam: "Nova družina", released: "izšel", afterData: "po zadnjem zajemu podatkov — še brez ocene", notInData: "še ni na nobeni sprejeti lestvici — brez ocene",
         notRanked: "še ni rangiran", announce: "objava",
         newNote: "Številke so iz zadnje mesečne gradnje. Nov model dobi oceno, ko ga pokrijejo vsaj 3 neodvisni viri; do takrat je tu naveden brez številk.",
@@ -404,6 +414,8 @@
         noSl: "Tracked models without any Slovenian result:", commentBy: "Commentary", lead_n: "boards",
         cat_reasoning: "General & reasoning", cat_coding: "Coding", cat_agentic: "Agents & tools", cat_knowledge: "Knowledge & hallucination", cat_preference: "Human preference",
         cat_multilingual: "Multilingual", cat_sl: "Slovenian", cat_long_context: "Long context", cat_speed: "Speed", cat_other: "Other", cat_price: "Price",
+        sortHint: "Click to sort, click again to reverse", thinTip: "Score from at most 2 independent sources",
+        thinNote: "Dimmed with * = score in this category from at most 2 independent sources; read with care.",
         newTag: "NEW", newFam: "New family", released: "released", afterData: "after the last data collection — not scored yet", notInData: "not yet on any accepted board — no score",
         notRanked: "not ranked yet", announce: "announcement",
         newNote: "The numbers come from the latest monthly build. A new model gets a score once at least 3 independent sources cover it; until then it is listed here without numbers.",
@@ -539,14 +551,53 @@
         '<div class="tw"><table class="data bs"><thead><tr><th>' + esc(t("board")) + '</th><th class="num">' + esc(t("raw")) + '</th><th class="num">' + esc(t("pct")) + '</th><th class="num">' + esc(t("adj")) + '</th><th class="num d-only">' + esc(t("weight")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details></td></tr>";
     }
 
+    // Click-to-sort column headers. The first click puts the best first: high → low for scores and counts,
+    // A → Z for text, cheapest first for prices, #1 first for ranks. A second click on the same column reverses.
+    // Missing values always go last, in either direction; rank numbers stay the fixed ranks, they are not renumbered.
+    function blank(v) { return v === null || v === undefined || v === "" || (typeof v === "number" && !isFinite(v)); }
+    function sortList(list, key, cols) {
+      var s = st.sort[key], col = s && cols.filter(function (c) { return c.k === s.k && c.get; })[0];
+      if (!col) return list;
+      return list.map(function (x, i) { return { x: x, i: i, v: col.get(x) }; }).sort(function (a, b) {
+        var an = blank(a.v), bn = blank(b.v);
+        if (an || bn) return an && bn ? a.i - b.i : an ? 1 : -1;
+        var r = col.text ? String(a.v).localeCompare(String(b.v), loc(), { numeric: true, sensitivity: "base" }) : a.v - b.v;
+        return r * s.d || a.i - b.i;
+      }).map(function (o) { return o.x; });
+    }
+    function thead(key, cols) {
+      var s = st.sort[key];
+      return "<thead><tr>" + cols.map(function (c) {
+        var cls = ((c.num ? "num " : "") + (c.cls || "")).trim(), attr = cls ? ' class="' + cls + '"' : "";
+        if (!c.get) return '<th scope="col"' + attr + ">" + c.label + "</th>";
+        var on = s && s.k === c.k;
+        return '<th scope="col"' + attr + ' aria-sort="' + (on ? (s.d > 0 ? "ascending" : "descending") : "none") + '"><button type="button" class="sortb" data-sort="' + c.k + '" title="' + esc(t("sortHint")) + '">' +
+          c.label + '<span class="arr" aria-hidden="true">' + (on ? (s.d > 0 ? "▲" : "▼") : "↕") + "</span></button></th>";
+      }).join("") + "</tr></thead>";
+    }
+    function blended(m) { return m.price ? m.price.blended_3to1 : null; }
+    function rowOpen(m, thin) { var c = ((m.named ? "named " : "") + (thin ? "thin" : "")).trim(); return "<tr" + (c ? ' class="' + c + '"' : "") + ">"; }
+
+    function overallCols() {
+      return [
+        { k: "rank", label: esc(t("rank")), d0: 1, get: function (m) { return m.overall_rank; } },
+        { k: "model", label: esc(t("model")), d0: 1, text: true, get: function (m) { return m.model_id; } },
+        { k: "overall", label: esc(t("overall")), num: true, get: function (m) { return m.overall; } },
+        { k: "conf", label: esc(t("conf")), cls: "d-only", get: function (m) { return m.n_sources; } },
+        { k: "price", label: esc(t("price")), num: true, cls: "d-only", d0: 1, get: blended },
+        { k: "value", label: '<span class="d-only">' + esc(t("value")) + '</span><span class="m-only">' + esc(t("valueShort")) + "</span>", num: true, get: function (m) { return m.value_score_per_usd; } }
+      ];
+    }
+
     function renderOverall() {
-      var all = byRank(), q = st.q.trim().toLowerCase();
+      var cols = overallCols(), all = byRank(), q = st.q.trim().toLowerCase();
       var list = q ? all.filter(function (m) { return (m.model_id + " " + (m.vendor || "")).toLowerCase().indexOf(q) >= 0; }) : all;
+      list = sortList(list, "overall", cols);
       var shown = q || st.all ? list : list.slice(0, TOP);
-      var head = '<thead><tr><th scope="col">' + t("rank") + '</th><th scope="col">' + esc(t("model")) + '</th><th scope="col" class="num">' + esc(t("overall")) + '</th><th scope="col" class="d-only">' + esc(t("conf")) + '</th><th scope="col" class="num d-only">' + esc(t("price")) + '</th><th scope="col" class="num"><span class="d-only">' + esc(t("value")) + '</span><span class="m-only">' + esc(t("valueShort")) + "</span></th></tr></thead>";
+      var head = thead("overall", cols);
       var body = shown.map(function (m) {
         var extra = '<span class="m-only"> · ' + esc(priceTxt(m.price)) + " · " + esc(m.n_sources) + " " + esc(t("srcs")) + "</span>";
-        var r = "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + confBadge(m) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + esc(nf(m.value_score_per_usd, 1)) + "</td></tr>";
+        var r = rowOpen(m) + '<td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + confBadge(m) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + esc(nf(m.value_score_per_usd, 1)) + "</td></tr>";
         if (st.open[m.model_id]) r += detailRow(m, 6);
         return r;
       }).join("");
@@ -583,55 +634,92 @@
       return a ? String(a.name).split(" (")[0] : id;
     }
 
+    var RK = {};
+    function catCols(c) {
+      var rk = { k: "rank", label: esc(t("rank")), d0: 1, get: function (m) { return RK[m.model_id]; } };
+      var mdl = { k: "model", label: esc(t("model")), d0: 1, text: true, get: function (m) { return m.model_id; } };
+      var ov = { k: "overall", label: esc(t("overall")), num: true, get: function (m) { return m.overall; } };
+      if (c === "speed") return [rk, mdl, { k: "tps", label: esc(t("tps")), num: true, get: function (m) { return m.output_tokens_per_s; } }, ov, { k: "price", label: esc(t("price")), num: true, cls: "d-only", d0: 1, get: blended }];
+      if (c === "sl") return [rk, mdl, { k: "sl", label: esc(t("sl")), num: true, get: function (m) { return m.slovenian; } }, ov, { k: "slraw", label: esc(t("slraw")), cls: "d-only" }];
+      return [rk, mdl, { k: "score", label: esc(t("score")), num: true, get: function (m) { return m.categories[c].score; } },
+        { k: "nsrc", label: esc(t("nsrc")), num: true, get: function (m) { return m.categories[c].n_sources; } },
+        { k: "nboards", label: esc(t("nboards")), num: true, cls: "d-only", get: function (m) { return m.categories[c].n_boards; } }, ov];
+    }
+    function catList(c) {
+      if (c === "speed") return D.models.filter(function (m) { return m.output_tokens_per_s; }).sort(function (a, b) { return b.output_tokens_per_s - a.output_tokens_per_s; });
+      if (c === "sl") return slModels();
+      return D.models.filter(function (m) { return (m.categories || {})[c]; }).sort(function (a, b) { return b.categories[c].score - a.categories[c].score || b.overall - a.overall; });
+    }
+
     function renderCats() {
       el("tabs").innerHTML = CATS.map(function (c) { return '<li><button type="button" data-cat="' + c + '" aria-pressed="' + (st.cat === c) + '">' + esc(catLabel(c)) + "</button></li>"; }).join("");
-      var c = st.cat, rows = [], head = "", list = [], cb = catBoards(c), desc = "";
-      if (c === "speed") {
-        list = D.models.filter(function (m) { return m.output_tokens_per_s; }).sort(function (a, b) { return b.output_tokens_per_s - a.output_tokens_per_s; });
-        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("tps")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="num d-only">' + esc(t("price")) + "</th></tr>";
-        rows = list.map(function (m, i) { return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.output_tokens_per_s, 0)) + '</span></td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + "</td></tr>"; });
-        desc = t("speedNote");
-      } else if (c === "sl") {
-        list = slModels();
-        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("sl")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="d-only">' + esc(t("slraw")) + "</th></tr>";
-        rows = list.map(function (m, i) {
+      var c = st.cat, key = "cat:" + c, cols = catCols(c), cb = catBoards(c), desc = "", thinAny = false;
+      var list = catList(c), total = list.length;
+      RK = {};
+      list.forEach(function (m, i) { RK[m.model_id] = i + 1; });
+      list = sortList(list, key, cols);
+      var rows = list.map(function (m) {
+        var rk = '<td class="rk">' + RK[m.model_id] + "</td>";
+        if (c === "speed") return rowOpen(m) + rk + "<td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.output_tokens_per_s, 0)) + '</span></td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + "</td></tr>";
+        if (c === "sl") {
           var raw = (m.slovenian_raw || []).map(function (r) { return esc(boardName(r.board_id)) + " " + esc(nf(r.score, 2)); }).join("; ");
-          return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.slovenian, 1)) + "</span>" + bar(m.slovenian) + '</td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="d-only small">' + raw + "</td></tr>";
-        });
+          return rowOpen(m) + rk + "<td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(m.slovenian, 1)) + "</span>" + bar(m.slovenian) + '</td><td class="num">' + esc(nf(m.overall, 1)) + '</td><td class="d-only small">' + raw + "</td></tr>";
+        }
+        // dim only where the category has enough sources for that to mean something (preference and long context have 1–2 in total)
+        var k = m.categories[c], thin = cb.sources.length >= 4 && k.n_sources <= 2;
+        if (thin) thinAny = true;
+        return rowOpen(m, thin) + rk + "<td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(k.score, 1)) + "</span>" + bar(k.score) + '</td><td class="num">' + esc(k.n_sources) +
+          (thin ? '<span class="thin-mark" title="' + esc(t("thinTip")) + '">*</span>' : "") + '</td><td class="num d-only">' + esc(k.n_boards) + '</td><td class="num">' + esc(nf(m.overall, 1)) + "</td></tr>";
+      });
+      if (c === "speed") desc = t("speedNote");
+      else if (c === "sl") {
         var named = D.models.filter(function (m) { return m.named && (m.slovenian === null || m.slovenian === undefined); }).map(function (m) { return m.model_id; });
         desc = t("slNote") + (named.length ? " " + t("noSl") + " " + named.join(", ") + "." : "");
       } else {
-        list = D.models.filter(function (m) { return (m.categories || {})[c]; }).sort(function (a, b) { return b.categories[c].score - a.categories[c].score || b.overall - a.overall; });
-        head = "<tr><th>" + t("rank") + "</th><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("score")) + '</th><th class="num">' + esc(t("nsrc")) + '</th><th class="num d-only">' + esc(t("nboards")) + '</th><th class="num">' + esc(t("overall")) + "</th></tr>";
-        rows = list.map(function (m, i) {
-          var k = m.categories[c];
-          return "<tr" + (m.named ? ' class="named"' : "") + '><td class="rk">' + (i + 1) + "</td><td>" + modelCell(m) + '</td><td class="num"><span class="score">' + esc(nf(k.score, 1)) + "</span>" + bar(k.score) + '</td><td class="num">' + esc(k.n_sources) + '</td><td class="num d-only">' + esc(k.n_boards) + '</td><td class="num">' + esc(nf(m.overall, 1)) + "</td></tr>";
-        });
         var w = ((D.config || {}).category_weights || {})[c];
-        desc = nfi(list.length) + " " + t("catmodels") + " · " + t("cats_in") + ": " + cb.boards.length + " " + t("from") + " " + cb.sources.length + " " + t("srcs") + " (" + cb.sources.map(srcShort).join(", ") + ")" + (w !== undefined ? " · " + t("weight") + " " + nf(w * 100, 0) + " %" : "") + ".";
+        desc = nfi(total) + " " + t("catmodels") + " · " + t("cats_in") + ": " + cb.boards.length + " " + t("from") + " " + cb.sources.length + " " + t("srcs") + " (" + cb.sources.map(srcShort).join(", ") + ")" + (w !== undefined ? " · " + t("weight") + " " + nf(w * 100, 0) + " %" : "") + ".";
+        if (thinAny) desc += " " + t("thinNote");
       }
       if (c === "speed" && cb.boards.length) desc += " " + t("cats_in") + ": " + cb.boards.map(function (b) { return b.name; }).join(", ") + ".";
       el("catdesc").textContent = desc;
       var shown = st.catAll ? rows : rows.slice(0, CTOP);
-      el("cattable").innerHTML = "<thead>" + head + "</thead><tbody>" + (shown.join("") || '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>") + "</tbody>";
+      el("cattable").innerHTML = thead(key, cols) + "<tbody>" + (shown.join("") || '<tr><td colspan="6" class="muted">' + esc(t("noResults")) + "</td></tr>") + "</tbody>";
       var tg = el("cat-toggle");
       tg.hidden = rows.length <= CTOP;
       tg.textContent = st.catAll ? t("catShowTop") : t("catShowAll") + " (" + rows.length + ")";
       tg.setAttribute("aria-pressed", String(st.catAll));
     }
 
+    function disagreeCols() {
+      return [
+        { k: "model", label: esc(t("model")), d0: 1, text: true, get: function (x) { return x.model_id; } },
+        { k: "overall", label: esc(t("overall")), num: true, get: function (x) { return x.overall; } },
+        { k: "sd", label: esc(t("sd")), num: true, get: function (x) { return x.pct_spread_sd; } },
+        { k: "best", label: esc(t("bestb")), cls: "d-only", d0: 1, text: true, get: function (x) { return boardName(x.best_board); } },
+        { k: "worst", label: esc(t("worstb")), cls: "d-only", d0: 1, text: true, get: function (x) { return boardName(x.worst_board); } }
+      ];
+    }
+    function leaderCols() {
+      return [
+        { k: "board", label: esc(t("board")), d0: 1, text: true, get: function (b) { return boardName(b.board_id); } },
+        { k: "leader", label: esc(t("leader")), d0: 1, text: true, get: function (b) { return b.leader; } },
+        { k: "result", label: esc(t("result")), num: true, get: function (b) { return b.leader_score; } },
+        { k: "date", label: esc(t("date")), cls: "d-only", text: true, get: function (b) { return b.data_date_parsed; } }
+      ];
+    }
+
     function renderDisagree() {
       var bl = blocks();
       el("disagree-text").innerHTML = bl.filter(isDisagreeBlock).map(renderBlock).join("");
-      var rows = (D.disagreements || []).map(function (x) {
+      var dcols = disagreeCols(), rows = sortList(D.disagreements || [], "disagree", dcols).map(function (x) {
         return '<tr><td><span class="mid">' + esc(x.model_id) + '</span><span class="sub m-only">↑ ' + esc(boardName(x.best_board)) + "<br>↓ " + esc(boardName(x.worst_board)) + '</span></td><td class="num">' + esc(nf(x.overall, 1)) + '</td><td class="num"><span class="score">' + esc(nf(x.pct_spread_sd, 1)) + '</span></td><td class="d-only">' + esc(boardName(x.best_board)) + '</td><td class="d-only">' + esc(boardName(x.worst_board)) + "</td></tr>";
       }).join("");
-      el("disagree").innerHTML = "<thead><tr><th>" + esc(t("model")) + '</th><th class="num">' + esc(t("overall")) + '</th><th class="num">' + esc(t("sd")) + '</th><th class="d-only">' + esc(t("bestb")) + '</th><th class="d-only">' + esc(t("worstb")) + "</th></tr></thead><tbody>" + rows + "</tbody>";
+      el("disagree").innerHTML = thead("disagree", dcols) + "<tbody>" + rows + "</tbody>";
       var lc = D.board_leader_counts || {};
       el("leadercounts").innerHTML = Object.keys(lc).sort(function (a, b) { return lc[b] - lc[a]; }).slice(0, 12).map(function (k) { return '<span class="mid">' + esc(k) + "</span> " + esc(lc[k]); }).join(" · ") + " " + esc(t("lead_n")) + ".";
       var order = { reasoning: 1, coding: 2, agentic: 3, knowledge: 4, preference: 5, multilingual: 6, long_context: 7 };
-      var bls = (D.board_leaders || []).slice().sort(function (a, b) { return (order[a.category] || 9) - (order[b.category] || 9) || (a.board_id < b.board_id ? -1 : 1); });
-      el("boardleaders").innerHTML = "<thead><tr><th>" + esc(t("board")) + "</th><th>" + esc(t("leader")) + '</th><th class="num">' + esc(t("result")) + '</th><th class="d-only">' + esc(t("date")) + "</th></tr></thead><tbody>" + bls.map(function (b) {
+      var lcols = leaderCols(), bls = sortList((D.board_leaders || []).slice().sort(function (a, b) { return (order[a.category] || 9) - (order[b.category] || 9) || (a.board_id < b.board_id ? -1 : 1); }), "boardleaders", lcols);
+      el("boardleaders").innerHTML = thead("boardleaders", lcols) + "<tbody>" + bls.map(function (b) {
         var bd = BOARD[b.board_id] || {};
         return "<tr><td>" + link(bd.url, bd.name || b.board_id) + '<span class="sub">' + esc(catLabel(b.category)) + " · " + esc(srcShort(b.source_id)) + '</span></td><td><span class="mid">' + esc(b.leader) + "</span>" + (b.leader_setting ? '<span class="sub">' + esc(b.leader_setting) + "</span>" : "") + '</td><td class="num">' + esc(nf(b.leader_score, 2)) + '</td><td class="d-only small">' + esc(b.data_date_parsed || "") + "</td></tr>";
       }).join("") + "</tbody>";
@@ -667,9 +755,13 @@
       el("rejected").innerHTML = rej.map(function (a) { return "<li><b>" + link(a.url, a.name) + "</b> — " + esc(a.verdict_reason || a.reason || "") + "</li>"; }).join("");
     }
 
+    function weightCols() {
+      var w = (D.config || {}).category_weights || {};
+      return [{ k: "cat", label: esc(t("cat")), d0: 1, text: true, get: function (k) { return catLabel(k); } }, { k: "weight", label: esc(t("weight")), num: true, get: function (k) { return w[k]; } }];
+    }
     function renderWeights() {
       var w = (D.config || {}).category_weights || {};
-      el("weights").innerHTML = "<thead><tr><th>" + esc(t("cat")) + '</th><th class="num">' + esc(t("weight")) + "</th></tr></thead><tbody>" + Object.keys(w).map(function (k) { return "<tr><td>" + esc(catLabel(k)) + '</td><td class="num">' + esc(nf(w[k] * 100, 0)) + " %</td></tr>"; }).join("") + "</tbody>";
+      el("weights").innerHTML = thead("weights", weightCols()) + "<tbody>" + sortList(Object.keys(w), "weights", weightCols()).map(function (k) { return "<tr><td>" + esc(catLabel(k)) + '</td><td class="num">' + esc(nf(w[k] * 100, 0)) + " %</td></tr>"; }).join("") + "</tbody>";
     }
 
     function renderAll() {
@@ -689,6 +781,25 @@
       if (st.open[id]) delete st.open[id]; else st.open[id] = 1;
       renderOverall();
       var nb = el("overall").querySelector('button[data-model="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); if (nb) nb.focus();
+    });
+    var SORTERS = {
+      overall: function () { return { key: "overall", cols: overallCols(), render: renderOverall }; },
+      cattable: function () { return { key: "cat:" + st.cat, cols: catCols(st.cat), render: renderCats }; },
+      disagree: function () { return { key: "disagree", cols: disagreeCols(), render: renderDisagree }; },
+      boardleaders: function () { return { key: "boardleaders", cols: leaderCols(), render: renderDisagree }; },
+      weights: function () { return { key: "weights", cols: weightCols(), render: renderWeights }; }
+    };
+    document.addEventListener("click", function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest("button.sortb") : null;
+      var tb = b && b.closest("table"), f = tb && SORTERS[tb.id];
+      if (!f || !D) return;
+      var x = f(), k = b.getAttribute("data-sort"), col = x.cols.filter(function (c) { return c.k === k && c.get; })[0];
+      if (!col) return;
+      var s = st.sort[x.key];
+      st.sort[x.key] = s && s.k === k ? { k: k, d: -s.d } : { k: k, d: col.d0 || -1 };
+      x.render();
+      var nb = el(tb.id).querySelector('button.sortb[data-sort="' + k + '"]');
+      if (nb) nb.focus();
     });
     new MutationObserver(function () { renderAll(); }).observe(root, { attributes: true, attributeFilter: ["lang"] });
 
