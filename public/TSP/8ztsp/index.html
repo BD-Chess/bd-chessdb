@@ -411,6 +411,12 @@ p.w-swipe[hidden]{display:none}
 .w-entry p.w-up{margin:8px 0 0;max-width:none;text-align:right;font:600 calc(11px*var(--fs))/1.3 var(--mono);letter-spacing:.06em}
 .w-up a{color:var(--muted);text-decoration:none}.w-up a:hover,.w-up a:focus-visible{color:var(--cyan)}
 #w-toc{scroll-margin-top:calc(100px*var(--fs))}
+/* R27b: in »Results at a glance« the 8zTSP column wraps on wide screens too, so the table fits without a sideways swipe
+   (R27's longer Slovenia cell had made it 1,308 px wide in a 1,180 px box). A fold opened by arriving through a link
+   (tools/page_ui.js adds .w-arrived) says »· hide | · skrij« after its label until the reader closes it. */
+.w-glance .w-ltab td:nth-child(4){white-space:normal}
+details.w-more.w-arrived[open] > summary::after{content:" · hide";font:600 calc(11px*var(--fs))/1 var(--mono);letter-spacing:.06em;color:var(--muted)}
+html[data-lang=sl] details.w-more.w-arrived[open] > summary::after{content:" · skrij"}
 
 /* language, text size and menu (same saved settings as the landing page) */
 :root{--scale:1;--m:1;--fs:calc(var(--scale)*var(--m))}
@@ -1238,10 +1244,13 @@ all();
 
 // R27b (8zTSP-K, 16 Nov 2026): arriving at a lab entry by a link (the »Latest result« box, »From the lab« in the table at
 // the top, a date link inside another entry, or an address ending in #w-log-…), the entry opens its »More …« fold, so its
-// table and conditions are there at once. The reader can close it again; the next link to it opens it again.
+// table and conditions are there at once. The reader can close it again; the next link to it opens it again. Until the
+// reader closes it, its label says »· hide | · skrij« (strangers on 16 Nov tapped »More …« to see more and closed it).
 (function(){'use strict';
 const unfold=h=>{if(!/^#w-log-[\w-]+$/.test(h||''))return;const e=document.getElementById(h.slice(1));
-  const d=e&&e.matches('li.w-entry')?e.querySelector(':scope > details.w-more'):null;if(d&&!d.open)d.open=true;};
+  const d=e&&e.matches('li.w-entry')?e.querySelector(':scope > details.w-more'):null;
+  if(d&&!d.open){d.classList.add('w-arrived');d.open=true;}};   // .w-arrived: »· hide« after the label until it is closed
+document.addEventListener('toggle',ev=>{const d=ev.target;if(d&&d.classList&&d.classList.contains('w-arrived')&&!d.open)d.classList.remove('w-arrived');},true);
 document.addEventListener('click',ev=>{const a=ev.target&&ev.target.closest?ev.target.closest('a[href^="#w-log-"]'):null;
   if(a)unfold(a.getAttribute('href'));});
 addEventListener('hashchange',()=>unfold(location.hash));
