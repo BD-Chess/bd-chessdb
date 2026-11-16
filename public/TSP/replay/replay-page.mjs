@@ -25,7 +25,9 @@ async function open(path, button) {
     if (token !== request) return;
     message.textContent = '';
     player.setRecording(data);
-    root.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    // below the site's sticky top bar, whatever its height (on a phone its links take several rows)
+    const bar = document.querySelector('.top')?.getBoundingClientRect().bottom || 0;
+    scrollTo({ top: scrollY + root.getBoundingClientRect().top - bar - 12, behavior: 'smooth' });
     document.getElementById('replayPlay')?.click();
   } catch { if (token === request) message.textContent = REPLAY_COPY[lang()].invalid; }
 }
