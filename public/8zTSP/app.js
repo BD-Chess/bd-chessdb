@@ -137,6 +137,7 @@ const T = {
     challengeBest: (n, tourLength, b) => `${group(n)} cities; best tour of the 2002 DIMACS Challenge ${group(tourLength)}, Held–Karp lower bound ${group(Math.round(b))}; optimum not known`,
     hardProof: (opt, s) => `Optimum ${group(opt)} (proved). Finding a tour and proving it optimal are different tasks: Concorde needed on average ${proofTime(s)} to PROVE this optimum. These instances are hard to prove because the lower bound lies far below the optimum.`,
     beingProved: 'Optimum being proved.',
+    provedHere: (opt, s, d) => `Optimum ${group(opt)}, proved with Concorde on our laptop in ${s.toLocaleString('en-GB', {maximumFractionDigits: 1})} s (${d}).`,   // R41 (R1k-b): the evolved maps, 17 Nov
     remoteSource: 'Not hosted here: loaded from the authors’ repository when chosen and checked by SHA-256.',
     remoteUnavailable: 'The authors’ repository could not be reached; try again later.',
     remoteChanged: 'The authors’ file no longer matches the checked SHA-256; it was not loaded.',
@@ -200,6 +201,7 @@ const T = {
     challengeBest: (n, tourLength, b) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša pot izziva DIMACS 2002 ${group(tourLength)}, spodnja meja Held–Karp ${group(Math.round(b))}; optimum ni znan`,
     hardProof: (opt, s) => `Optimum ${group(opt)} (dokazan). Najti pot in dokazati, da je optimalna, sta različni nalogi: Concorde je za DOKAZ tega optimuma povprečno potreboval ${proofTime(s)}. Ti primeri so težki za dokaz, ker je spodnja meja daleč pod optimumom.`,
     beingProved: 'Optimum se še dokazuje.',
+    provedHere: (opt, s, d) => `Optimum ${group(opt)}, dokazan s Concordom na našem prenosniku v ${s.toLocaleString('sl-SI', {maximumFractionDigits: 1})} s (${d}).`,
     remoteSource: 'Ni shranjen tukaj: ob izbiri se naloži iz repozitorija avtorjev in preveri s SHA-256.',
     remoteUnavailable: 'Repozitorija avtorjev ni bilo mogoče doseči; poskusi pozneje.',
     remoteChanged: 'Datoteka avtorjev se ne ujema več s preverjenim SHA-256; ni naložena.',
@@ -267,6 +269,7 @@ function credits() {   // the source line under the examples and, for Slovenia, 
     credit.append(` · ${t('siGap', g.percent, g.date, g.proofRunning)}`);
   }
   if (item.proof && item.optimum) credit.append(` · ${t('hardProof', item.optimum, item.proof.averageSeconds)}`);
+  if (item.provedBy && item.optimum) credit.append(` · ${t('provedHere', item.optimum, item.provedBy.seconds, item.provedBy.dateText?.[lang()] || '')}`);
   if (item.optimumStatus === 'being-proved') credit.append(` · ${t('beingProved')}`);
   if (item.remote) credit.append(` · ${t('remoteSource')}`);
   if (item.boundKind === 'estimate') credit.append(` · ${t('estimateNote')}`);
