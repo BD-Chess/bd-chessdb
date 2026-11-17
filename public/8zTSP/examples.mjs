@@ -424,7 +424,7 @@ export const examples = [
     "cities": 1000,
     "sha256": "42c261d4d9aab0f4ffa8992c77bcee6dbcbbc531493128ba349616fb363f2b4c",
     "bytes": 17889,
-    "optimumStatus": "being-proved",
+    "optimum": 17693560, "provedBy": {"solver": "Concorde", "seconds": 25.24, "dateText": {"en": "17 Nov 2026", "sl": "17. nov. 2026"}},
     "source": "https://github.com/mvseiler/PPSN_TSP_DL",
     "credit": "Seiler, Pohl, Bossek, Kerschke and Trautmann, PPSN 2020",
     "links": [
@@ -459,7 +459,7 @@ export const examples = [
     "cities": 1000,
     "sha256": "094905d19b29684569e146004d588822e6e14a1c2298d675432a236e26d01686",
     "bytes": 17885,
-    "optimumStatus": "being-proved",
+    "optimum": 16980565, "provedBy": {"solver": "Concorde", "seconds": 10.51, "dateText": {"en": "17 Nov 2026", "sl": "17. nov. 2026"}},
     "source": "https://github.com/mvseiler/PPSN_TSP_DL",
     "credit": "Seiler, Pohl, Bossek, Kerschke and Trautmann, PPSN 2020",
     "links": [
@@ -494,7 +494,7 @@ export const examples = [
     "cities": 1000,
     "sha256": "cf7f65ae6185e2b3f92d079d7f53965d55b8339447c7e7d4667ab5a9d9011333",
     "bytes": 17822,
-    "optimumStatus": "being-proved",
+    "optimum": 23172007, "provedBy": {"solver": "Concorde", "seconds": 101.91, "dateText": {"en": "17 Nov 2026", "sl": "17. nov. 2026"}},
     "source": "https://github.com/mvseiler/PPSN_TSP_DL",
     "credit": "Seiler, Pohl, Bossek, Kerschke and Trautmann, PPSN 2020",
     "links": [
@@ -529,7 +529,7 @@ export const examples = [
     "cities": 1000,
     "sha256": "7b1bbfc27f8f6e4bf2d5d600418bb7d6080299eddf8c400bfc5dfd941544cd42",
     "bytes": 17944,
-    "optimumStatus": "being-proved",
+    "optimum": 19767397, "provedBy": {"solver": "Concorde", "seconds": 166.18, "dateText": {"en": "17 Nov 2026", "sl": "17. nov. 2026"}},
     "source": "https://github.com/mvseiler/PPSN_TSP_DL",
     "credit": "Seiler, Pohl, Bossek, Kerschke and Trautmann, PPSN 2020",
     "links": [
