@@ -126,7 +126,7 @@ const T = {
     option: item => exampleLabel(item, 'en') + (item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device')
       : desktopOnly(item) ? (mobileDevice ? ' · desktop only, not on this device' : ' · desktop only') : ''),
     live: 'Live · 0.15 s',
-    known: (n, opt) => `${group(n)} cities, known optimal tour ${group(opt)}`,
+    known: (n, opt) => `${group(n)} cities, known optimal tour ${opt}`,   // R46: opt comes formatted (with m for maps in metres)
     unknown: n => `${group(n)} cities; optimal tour not known`,
     bestKnown: (n, tourLength, b) => `${group(n)} cities; best known tour ${group(tourLength)}, lower bound ${group(b)}; optimum not confirmed`,
     bestKnownOnly: (n, tourLength, by) => `${group(n)} cities; best known tour ${group(tourLength)}${by ? ` (${by})` : ''}; not proved optimal`,
@@ -137,7 +137,7 @@ const T = {
     challengeBest: (n, tourLength, b) => `${group(n)} cities; best tour of the 2002 DIMACS Challenge ${group(tourLength)}, Held–Karp lower bound ${group(Math.round(b))}; optimum not known`,
     hardProof: (opt, s) => `Optimum ${group(opt)} (proved). Finding a tour and proving it optimal are different tasks: Concorde needed on average ${proofTime(s)} to PROVE this optimum. These instances are hard to prove because the lower bound lies far below the optimum.`,
     beingProved: 'Optimum being proved.',
-    provedHere: (opt, s, d) => `Optimum ${group(opt)}, proved with Concorde on our laptop in ${s.toLocaleString('en-GB', {maximumFractionDigits: 1})} s (${d}).`,   // R41 (R1k-b): the evolved maps, 17 Nov
+    provedHere: (opt, s, d) => `Optimum ${opt}, proved with Concorde on our laptop in ${s.toLocaleString('en-GB', {maximumFractionDigits: 1})} s (${d}).`,   // R41 (R1k-b): the evolved maps, 17 Nov; R46: opt comes formatted (km and m for maps in metres)
     remoteSource: 'Not hosted here: loaded from the authors’ repository when chosen and checked by SHA-256.',
     remoteUnavailable: 'The authors’ repository could not be reached; try again later.',
     remoteChanged: 'The authors’ file no longer matches the checked SHA-256; it was not loaded.',
@@ -189,7 +189,7 @@ const T = {
     option: item => exampleLabel(item, 'sl') + (item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi')
       : desktopOnly(item) ? (mobileDevice ? ' · samo za namizni računalnik, ne na tej napravi' : ' · samo za namizni računalnik') : ''),
     live: 'V živo · 0,15 s',
-    known: (n, opt) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}, znana optimalna pot ${group(opt)}`,
+    known: (n, opt) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}, znana optimalna pot ${opt}`,
     unknown: n => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; optimalna pot ni znana`,
     bestKnown: (n, tourLength, b) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša znana pot ${group(tourLength)}, spodnja meja ${group(b)}; optimum ni potrjen`,
     bestKnownOnly: (n, tourLength, by) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša znana pot ${group(tourLength)}${by ? ` (${by})` : ''}; optimalnost ni dokazana`,
@@ -201,7 +201,7 @@ const T = {
     challengeBest: (n, tourLength, b) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}; najboljša pot izziva DIMACS 2002 ${group(tourLength)}, spodnja meja Held–Karp ${group(Math.round(b))}; optimum ni znan`,
     hardProof: (opt, s) => `Optimum ${group(opt)} (dokazan). Najti pot in dokazati, da je optimalna, sta različni nalogi: Concorde je za DOKAZ tega optimuma povprečno potreboval ${proofTime(s)}. Ti primeri so težki za dokaz, ker je spodnja meja daleč pod optimumom.`,
     beingProved: 'Optimum se še dokazuje.',
-    provedHere: (opt, s, d) => `Optimum ${group(opt)}, dokazan s Concordom na našem prenosniku v ${s.toLocaleString('sl-SI', {maximumFractionDigits: 1})} s (${d}).`,
+    provedHere: (opt, s, d) => `Optimum ${opt}, dokazan s Concordom na našem prenosniku v ${s.toLocaleString('sl-SI', {maximumFractionDigits: 1})} s (${d}).`,
     remoteSource: 'Ni shranjen tukaj: ob izbiri se naloži iz repozitorija avtorjev in preveri s SHA-256.',
     remoteUnavailable: 'Repozitorija avtorjev ni bilo mogoče doseči; poskusi pozneje.',
     remoteChanged: 'Datoteka avtorjev se ne ujema več s preverjenim SHA-256; ni naložena.',
@@ -246,7 +246,7 @@ function credits() {   // the source line under the examples and, for Slovenia, 
   credit.replaceChildren(); mapCredit.replaceChildren();
   const item = tab === 'nu' ? examples.find(e => e.id === $('example').value) : null;
   if (!item) return;
-  const parts = [item.optimum ? t('known', item.cities, item.optimum)
+  const parts = [item.optimum ? t('known', item.cities, item.unit === 'm' ? `${group(item.optimum)} m` : group(item.optimum))
     : item.bestKnownTour ? (!Number.isFinite(item.bound) ? t('bestKnownOnly', item.cities, item.bestKnownTour, item.bestKnownBy?.[lang()] ?? '')   // R1k: no bound (usa115475)
       : item.bestTourKind === 'challenge-2002' ? t('challengeBest', item.cities, item.bestKnownTour, item.bound) : t('bestKnown', item.cities, item.bestKnownTour, item.bound))
     : item.gapStatus ? t('cities', item.cities) : item.bound ? t('bound', item.cities, item.bound, item.boundKind === 'estimate') : t('unknown', item.cities)];
@@ -269,7 +269,7 @@ function credits() {   // the source line under the examples and, for Slovenia, 
     credit.append(` · ${t('siGap', g.percent, g.date, g.proofRunning)}`);
   }
   if (item.proof && item.optimum) credit.append(` · ${t('hardProof', item.optimum, item.proof.averageSeconds)}`);
-  if (item.provedBy && item.optimum) credit.append(` · ${t('provedHere', item.optimum, item.provedBy.seconds, item.provedBy.dateText?.[lang()] || '')}`);
+  if (item.provedBy && item.optimum) credit.append(` · ${t('provedHere', item.unit === 'm' ? `${formatDistance(item.optimum, 'm', lang())} (${group(item.optimum)} m)` : group(item.optimum), item.provedBy.seconds, item.provedBy.dateText?.[lang()] || '')}`);   // R46: Switzerland in km and m
   if (item.optimumStatus === 'being-proved') credit.append(` · ${t('beingProved')}`);
   if (item.remote) credit.append(` · ${t('remoteSource')}`);
   if (item.boundKind === 'estimate') credit.append(` · ${t('estimateNote')}`);
