@@ -37,10 +37,16 @@ test('TP01/02 all ten full sources, roots, anchors and hashes bind actual nonemp
  assert.equal(games.length,10);assert.equal(registry.entries.length,10);
  for(const {review}of games){const entry=Core.resolveEvidence(review,registry);assert(entry);const e=Core.attachEvidence(review,data(entry),Chess,entry);
   assert.equal(e.evidence.positions.length,review.totalPly+1);assert(e.evidence.coverage.cdb_positions>0);
-  if(entry.alias==='dreev-kasparov-1996'){assert.equal(e.evidence.decisions.length,12);assert.equal(e.evidence.coverage.cdb_scored,58);assert.equal(e.evidence.coverage.sf_positions,100);}
+  if(entry.alias==='dreev-kasparov-1996'){assert.equal(e.evidence.decisions.length,12);assert.equal(e.evidence.coverage.cdb_scored,58);assert.equal(e.evidence.coverage.sf_positions,100);
+   // Review V4 keeps its SF source; Stockfish 19 (16 Nov 2026) is a second dated measurement at every position.
+   assert.equal(e.evidence.sources.sf.engine,'Stockfish dev-20260930-49ea5ded');assert.equal(e.evidence.sources.sf_second.engine,'Stockfish 19');
+   assert(e.evidence.positions.every(p=>p.observations.some(o=>o.provider==='sf'&&o.engine==='Stockfish 19'&&o.at.startsWith('2026-11-16'))));}
   else {const anchor=e.evidence.positions[entry.anchor.ply];assert(anchor.observations.length>0,entry.id);assert(e.evidence.notes.some(n=>n.ply===entry.anchor.ply));
-   assert(e.evidence.provenance.archive.members['moves.csv'].sha256);assert(e.evidence.coverage.sf_positions<=1);
-   if(e.evidence.coverage.sf_positions===0){assert.equal(e.evidence.sources.sf.date,null);assert.equal(e.evidence.sources.sf.engine,null);}}
+   assert(e.evidence.provenance.archive.members['moves.csv'].sha256);
+   // Stockfish 19 whole-game baseline (C10, 16 Nov 2026) at every position; SF Lite receipts stay dated observations.
+   assert.equal(e.evidence.coverage.sf_positions,review.totalPly+1,entry.id);
+   assert.equal(e.evidence.sources.sf.engine,'Stockfish 19');assert.equal(e.evidence.sources.sf.date,'2026-11-16');assert.equal(e.evidence.sources.sf.baseline_nodes,10000000);
+   assert(e.evidence.positions.every(p=>p.sf.engine==='Stockfish 19'&&p.sf.candidates.length>0&&p.sf.at.startsWith('2026-11-16')),entry.id);}
  }
 });
 test('TP01 no matching names, truncated/foreign line, root mismatch, fake alias or injected URL can inherit evidence',()=>{
@@ -58,8 +64,8 @@ test('TP03 sparse source counts, mate units, both POVs, missing vs zero and gaps
  assert.equal(Core.scoreText({type:'cp',cp:0},black),'0.00');assert.equal(Core.scoreText({type:'unknown'},black),'Unknown');
  const entry=registry.entries.find(e=>e.id==='gukesh-ding-wch-2024-28-qc8');
  const r=games.find(g=>Core.hashText(g.review.moves.join(' '))===entry.mainline_sha256).review;
- const e=Core.attachEvidence(r,data(entry),Chess,entry);assert.equal(e.evidence.coverage.sf_positions,0);
- assert.equal(Core.plotSeries(e.evidence.positions,'sf').length,0);
+ const e=Core.attachEvidence(r,data(entry),Chess,entry);assert.equal(e.evidence.coverage.sf_positions,r.totalPly+1);
+ assert(Core.plotSeries(e.evidence.positions,'sf').length>=1);
  const rows=[{ply:0,fen:black,cdb:{positionScore:{type:'cp',cp:25,pov:'white'}}},
   {ply:1,fen:black,cdb:{positionScore:{type:'unknown'}}},{ply:2,fen:black,cdb:{positionScore:{type:'cp',cp:0,pov:'white'}}}];
  assert.deepEqual(Core.plotSeries(rows,'cdb').map(s=>s.length),[1,1]);assert.equal(Core.plotSeries(rows,'cdb','mover')[0][0].cp,-25);
@@ -79,10 +85,14 @@ test('TP04 missing or invalid registry fails without fetching any unregistered p
 });
 test('TP03 restricted roots and partial TCEC summaries cannot claim a global best or an exact cross-search loss',async t=>{
  const f=await fixture(t);f.reveal();await f.until(()=>!!f.el('gameReviewGraph'));
- const source=[...f.w.document.querySelectorAll('.game-review-observation')].find(el=>el.textContent.includes('restricted root: 2'));
+ const cards=()=>[...f.w.document.querySelectorAll('.game-review-observation')];
+ const source=cards().find(el=>el.textContent.startsWith('SF Lite')&&el.textContent.includes('depth 30')&&el.textContent.includes('restricted root: 2'));
  assert(source);assert.match(source.textContent,/256 cp \(mover POV\).*Limited to this dated candidate set/);
+ // The later Stockfish 19 deep check is its own dated, restricted-root observation with its own budget.
+ const sf19=cards().find(el=>el.textContent.startsWith('Stockfish 19 · deep check'));
+ assert(sf19);assert.match(sf19.textContent,/restricted root: 2/);assert.match(sf19.textContent,/461 cp \(mover POV\).*Limited to this dated candidate set/);
  await f.change(state(games[8]));f.reveal();await f.until(()=>!!f.el('gameReviewGraph'));
- const summaries=[...f.w.document.querySelectorAll('.game-review-observation')].filter(el=>el.dataset.provider==='sf');
+ const summaries=cards().filter(el=>el.dataset.provider==='sf'&&el.textContent.startsWith('SF Lite'));
  assert(summaries.length);for(const el of summaries){assert.match(el.textContent,/forced played-move search may be separate/);assert.doesNotMatch(el.textContent,/Same-root gap/);}
 });
 test('TP05 reveal hides future analysis, result, notes, accessible graph text and does not fetch until explicit reveal',async t=>{
