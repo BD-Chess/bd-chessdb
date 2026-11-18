@@ -75,16 +75,6 @@ export function pool_probe() {
     return v1;
 }
 
-/**
- * @returns {Uint32Array}
- */
-export function pool_stats() {
-    const ret = wasm.pool_stats();
-    var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
-    return v1;
-}
-
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_externrefs.get(idx);
     wasm.__externref_table_dealloc(idx);
@@ -98,6 +88,16 @@ export function configure_pool(threads) {
     if (ret[1]) {
         throw takeFromExternrefTable0(ret[0]);
     }
+}
+
+/**
+ * @returns {Uint32Array}
+ */
+export function pool_stats() {
+    const ret = wasm.pool_stats();
+    var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+    return v1;
 }
 
 let cachedFloat64ArrayMemory0 = null;
