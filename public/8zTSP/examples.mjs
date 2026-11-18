@@ -57,20 +57,26 @@ export const exampleGroups = [
     }
   }
 ];
-export const defaultCollectionId = "ours";
+export const defaultCollectionId = "selected";
 export const collections = [
   {
-    "id": "ours",
+    "id": "selected",
     "names": {
-      "en": "Our maps",
-      "sl": "Naši zemljevidi"
+      "en": "Selected 10",
+      "sl": "Izbranih 10"
     },
     "maps": [
       "che_from_europe_20261117",
-      "si6035_gurs_20261115"
+      "nu3496",
+      "si6035_gurs_20261115",
+      "C10k.0",
+      "xrb14233",
+      "it16862",
+      "juzna_amerika_world_20261116",
+      "evropa_world_20261116",
+      "E1M.0"
     ],
     "soon": [
-      "hr23761_dgu_20261118",
       "hard25k_a3s_24857_20261118"
     ]
   },
@@ -91,6 +97,7 @@ export const collections = [
       "mu1979",
       "nu3496",
       "ca4663",
+      "si6035_gurs_20261115",
       "tz6117",
       "eg7146",
       "ym7663",
@@ -117,6 +124,9 @@ export const collections = [
       "sw24978",
       "bm33708",
       "ch71009"
+    ],
+    "soon": [
+      "hr23761_dgu_20261118"
     ]
   },
   {
@@ -126,6 +136,7 @@ export const collections = [
       "sl": "Svet · do 100.000 mest"
     },
     "maps": [
+      "che_from_europe_20261117",
       "alzirija_world_20261116",
       "avstralija_world_20261116",
       "zdruzeno_kraljestvo_world_20261116",
@@ -186,6 +197,9 @@ export const collections = [
       "C10k.0",
       "xrb14233",
       "ido21215"
+    ],
+    "soon": [
+      "hard25k_a3s_24857_20261118"
     ]
   },
   {
@@ -271,7 +285,7 @@ export const examples = [
       "boundSource": "Concorde",
       "boundAsOf": "2026-11-18 08:55"
     },
-    "label": "Slovenija · vsa naselja (6.035)",
+    "label": "Slovenija · vsa mesta in vasi (6.035)",
     "cities": 6035,
     "path": "./examples/si6035_gurs_20261115.tsp",
     "sha256": "5f8e7fffff3b51a97f21d99331205e01d46bf40ccda84127e6ce3848eb9de3b8",
@@ -282,8 +296,8 @@ export const examples = [
     "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
     "provenance": "./examples/si6035_gurs_20261115_provenance.json",
     "names": {
-      "en": "Slovenia · all settlements",
-      "sl": "Slovenija · vsa naselja"
+      "en": "Slovenia · all towns and villages",
+      "sl": "Slovenija · vsa mesta in vasi"
     },
     "group": "europe",
     "descriptions": {
@@ -333,8 +347,8 @@ export const examples = [
   {
     "id": "Tnm52",
     "names": {
-      "en": "Tnm52",
-      "sl": "Tnm52"
+      "en": "Hougardy–Zhong instance (Tnm52)",
+      "sl": "Primer Hougardy–Zhong (Tnm52)"
     },
     "group": "hard",
     "collection": "hougardy-zhong",
@@ -373,8 +387,8 @@ export const examples = [
   {
     "id": "Tnm76",
     "names": {
-      "en": "Tnm76",
-      "sl": "Tnm76"
+      "en": "Hougardy–Zhong instance (Tnm76)",
+      "sl": "Primer Hougardy–Zhong (Tnm76)"
     },
     "group": "hard",
     "collection": "hougardy-zhong",
@@ -413,8 +427,8 @@ export const examples = [
   {
     "id": "Tnm100",
     "names": {
-      "en": "Tnm100",
-      "sl": "Tnm100"
+      "en": "Hougardy–Zhong instance (Tnm100)",
+      "sl": "Primer Hougardy–Zhong (Tnm100)"
     },
     "group": "hard",
     "collection": "hougardy-zhong",
@@ -453,8 +467,8 @@ export const examples = [
   {
     "id": "Tnm151",
     "names": {
-      "en": "Tnm151",
-      "sl": "Tnm151"
+      "en": "Hougardy–Zhong instance (Tnm151)",
+      "sl": "Primer Hougardy–Zhong (Tnm151)"
     },
     "group": "hard",
     "collection": "hougardy-zhong",
@@ -512,8 +526,8 @@ export const examples = [
   {
     "id": "Tnm199",
     "names": {
-      "en": "Tnm199",
-      "sl": "Tnm199"
+      "en": "Hougardy–Zhong instance (Tnm199)",
+      "sl": "Primer Hougardy–Zhong (Tnm199)"
     },
     "group": "hard",
     "collection": "hougardy-zhong",
@@ -830,8 +844,8 @@ export const examples = [
     "id": "nu3496",
     "label": "Nicaragua · 3,496",
     "names": {
-      "en": "Nicaragua",
-      "sl": "Nikaragva"
+      "en": "Nicaragua (nu3496)",
+      "sl": "Nikaragva (nu3496)"
     },
     "group": "americas",
     "unit": null,
@@ -1106,8 +1120,8 @@ export const examples = [
   {
     "id": "C10k.0",
     "names": {
-      "en": "C10k.0",
-      "sl": "C10k.0"
+      "en": "Clusters (C10k.0)",
+      "sl": "Gruče (C10k.0)"
     },
     "group": "hard",
     "collection": "dimacs",
@@ -1149,8 +1163,8 @@ export const examples = [
   {
     "id": "usa13509",
     "names": {
-      "en": "USA (TSPLIB usa13509) · places with 500 or more inhabitants",
-      "sl": "ZDA (TSPLIB usa13509) · kraji z vsaj 500 prebivalci"
+      "en": "USA, places with 500 or more inhabitants (usa13509)",
+      "sl": "ZDA, kraji z vsaj 500 prebivalci (usa13509)"
     },
     "group": "americas",
     "collection": "tsplib",
@@ -1231,8 +1245,8 @@ export const examples = [
   {
     "id": "xrb14233",
     "names": {
-      "en": "xrb14233",
-      "sl": "xrb14233"
+      "en": "Chip (xrb14233)",
+      "sl": "Čip (xrb14233)"
     },
     "group": "hard",
     "collection": "vlsi",
@@ -1332,8 +1346,8 @@ export const examples = [
   {
     "id": "ido21215",
     "names": {
-      "en": "ido21215",
-      "sl": "ido21215"
+      "en": "Chip (ido21215)",
+      "sl": "Čip (ido21215)"
     },
     "group": "hard",
     "collection": "vlsi",
@@ -1722,16 +1736,16 @@ export const examples = [
     "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html",
     "group": "random",
     "names": {
-      "en": "DIMACS E100k.0",
-      "sl": "DIMACS E100k.0"
+      "en": "100,000 points (E100k.0)",
+      "sl": "100.000 točk (E100k.0)"
     },
     "unit": null
   },
   {
     "id": "usa115475",
     "names": {
-      "en": "USA (Waterloo usa115475)",
-      "sl": "ZDA (Waterloo usa115475)"
+      "en": "USA, all cities and towns (usa115475)",
+      "sl": "ZDA, vsa mesta in naselja (usa115475)"
     },
     "group": "americas",
     "collection": "waterloo-usa",
@@ -2015,8 +2029,8 @@ export const examples = [
     "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html",
     "group": "random",
     "names": {
-      "en": "DIMACS E1M.0",
-      "sl": "DIMACS E1M.0"
+      "en": "One million points (E1M.0)",
+      "sl": "Milijon točk (E1M.0)"
     },
     "unit": null,
     "desktopOnly": true
@@ -2033,8 +2047,8 @@ export const examples = [
     "source": "https://archive.dimacs.rutgers.edu/Challenges/TSP/download.html",
     "group": "random",
     "names": {
-      "en": "DIMACS E10M.0",
-      "sl": "DIMACS E10M.0"
+      "en": "10 million points (E10M.0)",
+      "sl": "10 milijonov točk (E10M.0)"
     },
     "unit": null,
     "desktopOnly": true

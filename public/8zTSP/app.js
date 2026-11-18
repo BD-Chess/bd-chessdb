@@ -52,12 +52,18 @@ const collectionOf = value => collections.find(c => c.maps.includes(value) || (v
 function fillMaps(collectionId) {
   const c = collections.find(x => x.id === collectionId) || collections[0], select = $('example');
   select.replaceChildren();
-  for (const id of c.maps) { const item = examples.find(e => e.id === id); const option = new Option(item.id, item.id); option.disabled = !deviceAllows(item); select.append(option); }
-  for (const id of c.soon || []) { const option = new Option(id, SOON + id); option.disabled = true; select.append(option); }
+  const entries = [...c.maps.map(id => ({id, n: examples.find(e => e.id === id).cities, later: false})), ...(c.soon || []).map(id => ({id, n: soon.find(s => s.id === id).cities, later: true}))]
+    .sort((a, b) => a.n - b.n || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));   // Addendum A: a »(soon)« entry stands in its size place
+  for (const x of entries) {
+    if (x.later) { const option = new Option(x.id, SOON + x.id); option.disabled = true; select.append(option); continue; }
+    const item = examples.find(e => e.id === x.id); const option = new Option(item.id, item.id); option.disabled = !deviceAllows(item); select.append(option);
+  }
   $('collection').value = c.id;
 }
-function showMap(value) {   // both selects on a map
-  const c = collectionOf(value); if (!c) return;
+function showMap(value) {   // both selects on a map; a map that is in Selected 10 and in its home collection stays where it was chosen
+  const holds = c => c && (c.maps.includes(value) || (value?.startsWith(SOON) && c.soon?.includes(value.slice(SOON.length))));
+  const current = collections.find(x => x.id === $('collection').value);
+  const c = holds(current) ? current : collectionOf(value); if (!c) return;
   if ($('collection').value !== c.id || ![...$('example').options].some(o => o.value === value)) fillMaps(c.id);
   $('example').value = value;
 }
@@ -569,7 +575,7 @@ async function exampleText(item) {
 let exampleRequest = 0;
 async function loadExample(id = $('example').value) {
   unlocked();
-  if (soonOf(id)) return;   // R53: a »(soon)« entry cannot be chosen and starts nothing
+  if (soonOf(id)) { if (mapMeta) showMap(mapMeta.id); return; }   // R53: a »(soon)« entry cannot be chosen and starts nothing; the loaded map stays shown
   const item = examples.find(e => e.id === id); if (!item) throw new Message('exFail', id);
   if (!deviceAllows(item)) throw new Message(item.cities === 10000000 ? 'tenM' : 'desktopRequired');
   const request = ++exampleRequest;
