@@ -1,4 +1,4 @@
-import {readerRating,ratingMarkup,ratingNumber,loadReaderRatings,requireCurrentReaderEvaluation,registerReaderRating} from './nara-reader-ratings.mjs';
+import {readerRating,ratingMarkup,ratingNumber,loadReaderRatings,requireCurrentReaderEvaluation,registerReaderRating,zborRating} from './nara-reader-ratings.mjs';
 /** Illuminara Daily R2. Offline deterministic renderer; no network, email, AI or Git writes.
  * CLI: node scripts/nara-daily.mjs init <repoRoot> <YYYY-MM>
  *      node scripts/nara-daily.mjs publish <repoRoot> <verified-public-record.json> <verified-public-log.json>
@@ -98,7 +98,7 @@ function storyContent(r,t,images=[]){
 }
 const scoreId=r=>'score-'+r.id;
 const scoreChip=(r,root=null)=>{
-  if(loadReaderRatings(root)){const v=readerRating(root,r.id);return v?'<span class="reader-score-badge">'+ratingNumber(v.combined)+' / 100</span>':'';}
+  if(loadReaderRatings(root)){const v=readerRating(root,r.id),z=zborRating(root,r.id);return (v?'<span class="reader-score-badge">'+ratingNumber(v.combined)+' / 100</span>':'')+(z?'<span class="reader-score-badge reader-score-badge--zbor">Zbor '+ratingNumber(z.mean)+'</span>':'');}
   const v=r.literary_score;
   if(!v)return '';
   return '<span class="score-set"'+aria('Reader score','Bralska ocena')+'><button type="button" class="score-chip score-trend--'+storyScoreTrend(root,r.id)+'" data-score-open="'+scoreId(r)+'"'+aria('Open combined literary score explanation','Odpri razlago skupne književne ocene')+'>'+v.display+'</button></span>';
@@ -209,7 +209,7 @@ export function renderFeaturedStoryPage(root,r,translation=null){
   const file=featuredStoryFilename(root,r),enTitle=dailyDisplayTitle(r.title,'en'),slTitle=t?.title?dailyDisplayTitle(t.title,'sl'):null;
   const title=localizedText(enTitle,slTitle);
   const images=loadIllustrations(root,r,t,{nonBlocking:true});
-  const score=ratingMarkup(readerRating(root,r.id));
+  const score=ratingMarkup(readerRating(root,r.id),{zbor:zborRating(root,r.id)});
   const header='<header class="masthead"><div class="eyebrow">'+bi('Complete published story · original text','Celotna objavljena zgodba · izvirno besedilo')+'</div><h1>'+title+'</h1><p class="meta"><time datetime="'+esc(r.date)+'">'+esc(r.date)+'</time></p><p class="lede">'+localizedText(r.deck,t?.deck)+'</p>'+lateNotice(r)+score+'</header>';
   const navigation='<nav class="end-nav"><a href="Nara-AI-daily.html">'+bi('Return to Daily','Nazaj na dnevne zgodbe')+'</a><a href="Nara-AI-'+r.date.slice(0,7)+'.html#'+r.id+'">'+bi('Monthly archive','Mesečni arhiv')+'</a></nav>';
   return shell(enTitle,file,header+tools+lightEdition(loadLightEdition(root,r),r)+storyContent(r,t,images)+scoreDialog(r,t,root)+navigation,'daily',true,slTitle);
@@ -228,7 +228,7 @@ export function featuredStoryPageOutputs(root,records,translations={}){
 }
 function dailyCard(r,t,root){
   const href=dailyStoryHref(root,r),value=r.literary_score;
-  const rating=loadReaderRatings(root)?ratingMarkup(readerRating(root,r.id),{compact:true}):(value?'<div class="daily-index-rating"><span class="score-chip score-trend--neutral" aria-label="Reader score">'+value.display+'</span><span class="daily-index-score-unit">/100</span></div>':'');
+  const rating=loadReaderRatings(root)?ratingMarkup(readerRating(root,r.id),{compact:true,zbor:zborRating(root,r.id)}):(value?'<div class="daily-index-rating"><span class="score-chip score-trend--neutral" aria-label="Reader score">'+value.display+'</span><span class="daily-index-score-unit">/100</span></div>':'');
   return '<article class="notice daily-index-item" id="'+esc(r.id)+'" data-content-sha256="'+esc(r.content_sha256)+'"><div class="daily-index-main"><p class="meta"><time datetime="'+esc(r.date)+'">'+esc(r.date)+'</time></p><h2 class="daily-index-title"><a href="'+esc(href)+'">'+localizedText(dailyDisplayTitle(r.title,'en'),t?.title?dailyDisplayTitle(t.title,'sl'):null)+'</a></h2></div>'+rating+'</article>';
 }
 function storyEntry(r,translations,daily,root=null){
