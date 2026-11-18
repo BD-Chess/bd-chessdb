@@ -101,7 +101,7 @@ const ofEn = (n, c) => n <= c ? `${n} of ${c} cores` : `${n} workers (the device
 const odSl = (n, c) => n <= c ? `${n} od ${ofCoresSl(c)}` : `${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')} (naprava javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')})`;
 // the examples' names in both languages: since R28 from examples.mjs (item.names); this list is the fallback of R22b
 const NAMES = {
-  qa194: ['Qatar', 'Katar'], si6035_gurs_20261115: ['Slovenia · all settlements', 'Slovenija · vsa naselja'], uy734: ['Uruguay', 'Urugvaj'],
+  qa194: ['Qatar', 'Katar'], si6035_gurs_20261115: ['Slovenia · all towns and villages', 'Slovenija · vsa mesta in vasi'], uy734: ['Uruguay', 'Urugvaj'],
   zi929: ['Zimbabwe', 'Zimbabve'], lu980: ['Luxembourg', 'Luksemburg'], rw1621: ['Rwanda', 'Ruanda'], mu1979: ['Oman', 'Oman'],
   nu3496: ['Nicaragua', 'Nikaragva'], ca4663: ['Canada', 'Kanada'], tz6117: ['Tanzania', 'Tanzanija'],
   'E100k.0': ['DIMACS E100k.0, generated', 'DIMACS E100k.0, ustvarjen'], 'E1M.0': ['DIMACS E1M.0, generated', 'DIMACS E1M.0, ustvarjen'],
@@ -725,7 +725,7 @@ window.tsp8zLab = { load, loadExample, showMap, start, stop, loadNu, generate, c
   get wasmMetrics() { return structuredClone(loaderState.metrics); },
   get renderStats() { return { intervalMs: Number($('refresh').value), drawCount, progressDrawCount, lastDrawnTourLength, progressDrawTimes: [...progressDrawTimes] }; },
   get record() { return runRecord; }, get coordinates() { return coords; }, get tourSummary() { return { cities: tour?.length || 0, bytes: tour?.byteLength || 0 }; },
-  get liveWorkers() { return pool.length; } };
+  get liveWorkers() { return pool.length; }, get hasResult() { return !!tour?.length; } };   // R53 D: pwa.js does not reload over a shown result
 window.tsp8zReplay = { get data() { return recorder?.data; }, get summary() { return recorder?.summary(); },
   export() { if (!recorder?.data.frames.length) throw Error('No recording yet.'); return serializeRecording(recorder.data); }, get player() { return replayPlayer; } };
 choose('nu');
