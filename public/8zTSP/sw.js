@@ -1,6 +1,6 @@
 // Packager replaces BUILD; scope is deliberately limited to this application.
 'use strict';
-const BUILD='3d31ca91e54d987bcf40';
+const BUILD='7e2c40c9ef53f9173e93';
 const BASE='/8zTSP/',PREFIX='8ztsp-pwa-',CACHE=PREFIX+BUILD;
 const absolute=path=>new URL(path,self.location.origin+BASE).href;
 let manifestPromise;
@@ -41,7 +41,7 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
   await self.clients.claim();
 })()));
 self.addEventListener('message',event=>{
-  if(event.data?.type==='SKIP_WAITING')self.skipWaiting();
+  if(event.data?.type==='SKIP_WAITING')event.waitUntil(self.skipWaiting());   // R53: WebKit may stop a worker started only for this message before it is through
   if(event.data?.type==='STATUS')event.waitUntil((async()=>{const c=await caches.open(CACHE);event.ports[0]?.postMessage({version:BUILD,assets:(await c.keys()).length});})());
 });
 self.addEventListener('fetch',event=>{
