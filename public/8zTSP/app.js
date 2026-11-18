@@ -285,6 +285,7 @@ function credits() {   // the source line under the examples and, for Slovenia, 
     if (item.licence || item.links?.length) { mapCredit.append(`${t('mapData')}: `); links.forEach((a, i) => mapCredit.append(...(i ? [' · ', a.cloneNode(true)] : [a.cloneNode(true)]))); }
     const description = item.descriptions?.[lang()] || item.description;
     if (description) credit.append(` · ${description}`);
+    if (item.attribution) credit.append(` · ${item.attribution[lang()] || item.attribution.en}`);   // R53 step 2: the licence's full statement (Croatia)
   }
   if (item.gapStatus && !item.optimum) {
     const g = gapDisplay(item.gapStatus, lang()), d = v => formatDistance(v, item.unit ?? null, lang());
