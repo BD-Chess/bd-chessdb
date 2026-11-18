@@ -15,7 +15,7 @@
 //    button and the offline state; the old boxes (above the map panel, at the bottom of the password page) are gone.
 (()=>{
  'use strict';
- const BUILT_AT='2026-11-18T23:53';   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
+ const BUILT_AT='2026-11-19T00:06';   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
  const state=window.tsp8zPwa??={prompt:null,registration:null,acceptUpdate:false,reloading:false,message:null,build:''};
  const T={
   install:['Install the app','Namesti aplikacijo'],
@@ -24,6 +24,8 @@
   offline:['Offline · saved version.','Brez povezave · shranjena različica.'],
   notReady:['Offline use is not ready yet.','Uporaba brez povezave še ni pripravljena.'],
   bar:['A new version is available. Updating stops the current run.','Na voljo je nova različica. Posodobitev ustavi tekoči tek.'],
+  barIdle:['A new version is available.','Na voljo je nova različica.'],   // R53: no run going, so no word about stopping one
+  working:['Updating …','Posodabljam …'],
   now:['Update now','Posodobi zdaj'],
   version:['Version','Različica'],
  };
@@ -58,7 +60,7 @@
  function paint(){
   install.textContent=text('install');status.textContent=state.message?text(state.message):'';
   document.getElementById('tsp8zVersion').textContent=stamp();document.getElementById('tsp8zBuild').textContent=state.build?`· ${state.build.slice(0,8)}`:'';
-  document.getElementById('tsp8zUpdateText').textContent=text('bar');document.getElementById('tsp8zUpdateNow').textContent=text('now');
+  document.getElementById('tsp8zUpdateText').textContent=text(busy()?'bar':'barIdle');const now=document.getElementById('tsp8zUpdateNow');now.textContent=text(state.working?'working':'now');now.disabled=!!state.working;
  }
  function say(key){state.message=key;paint();}
  function showBar(on){bar.hidden=!on;document.body.style.paddingTop=on?`${bar.offsetHeight}px`:'';}
@@ -70,26 +72,48 @@
   if(!state.prompt)return;const prompt=state.prompt;state.prompt=null;refresh();await prompt.prompt();await prompt.userChoice;
  };
  const ask=(worker,type)=>new Promise(done=>{try{const channel=new MessageChannel();channel.port1.onmessage=event=>done(event.data||null);worker.postMessage({type},[channel.port2]);}catch{done(null);}setTimeout(()=>done(null),3000);});
- function take(){const w=state.registration?.waiting;if(!w)return false;state.acceptUpdate=true;w.postMessage({type:'SKIP_WAITING'});return true;}
+ function take(){const w=state.registration?.waiting;if(!w)return false;state.acceptUpdate=true;w.postMessage({type:'SKIP_WAITING'});clearTimeout(state.fallback);state.fallback=setTimeout(rescue,4000);return true;}
+ // R53 (BD's iPad, 18 Nov): if the waiting worker does not take over within 4 s (WebKit), get onto the new build anyway: drop this
+ // registration and reload from the network, where the newest worker installs fresh. Only when the network answers: offline the
+ // saved version stays and the bar with it.
+ async function rescue(){
+  if(state.reloading)return;
+  const online=await fetch('/8zTSP/sw.js',{cache:'no-store',signal:AbortSignal.timeout?.(3000)}).then(r=>r.ok,()=>false);
+  if(!online || state.reloading){state.working=false;paint();return;}
+  state.reloading=true;state.working=true;paint();
+  try{sessionStorage.setItem('tsp8z-rescue','1');}catch{}
+  try{await state.registration?.unregister();}catch{}
+  location.reload();
+ }
  async function offer(){   // a new build waits in the service worker
   const w=state.registration?.waiting;if(!w || state.reloading)return;
+  const v=(await ask(w,'STATUS'))?.version||'',c=navigator.serviceWorker.controller,cur=state.build||(c?(await ask(c,'STATUS'))?.version||'':'');
+  if(v && cur && v===cur)return;   // K: the »waiting« worker is the build this page already runs: nothing to offer
+  let done='';try{done=sessionStorage.getItem('tsp8z-auto-update')||'';}catch{}
+  state.again=!!v && done===v;   // taken once in this tab and still waiting: the network way
   if(!busy() && !result()){   // BD: the engine is not running: take it and reload once by itself (one automatic reload per build)
-   const v=(await ask(w,'STATUS'))?.version||'';let done='';
-   try{done=sessionStorage.getItem('tsp8z-auto-update')||'';}catch{}
-   if(v && done!==v){try{sessionStorage.setItem('tsp8z-auto-update',v);}catch{}take();return;}
+   if(state.again){rescue();return;}
+   if(v){try{sessionStorage.setItem('tsp8z-auto-update',v);}catch{}take();return;}
   }
   paint();showBar(true);   // a run or a result: ask at the top
  }
  document.getElementById('tsp8zUpdateNow').onclick=()=>{
   if(window.tsp8zLab?.liveWorkers)window.tsp8zLab.stop();
-  if(!take()){state.reloading=true;location.reload();}
+  state.working=true;paint();
+  if(state.again || !take())rescue();   // nothing to take, or taken before in vain: the network way
  };
  window.MDLxDCCLocale?.subscribe?.(()=>paint());
  if('serviceWorker' in navigator && location.pathname.startsWith('/8zTSP/')){
   if(state.controllerHandler)navigator.serviceWorker.removeEventListener('controllerchange',state.controllerHandler);
   // the build id comes from the worker that controls the page; on a first visit that worker takes over only after the page loaded
   const stampBuild=async()=>{const c=navigator.serviceWorker.controller;if(c){state.build=(await ask(c,'STATUS'))?.version||'';paint();}};
-  state.controllerHandler=()=>{if(state.acceptUpdate && !state.reloading){state.reloading=true;location.reload();}else stampBuild();};
+  state.uncontrolledAtLoad=!navigator.serviceWorker.controller;
+  state.controllerHandler=()=>{
+   if(state.acceptUpdate && !state.reloading){state.reloading=true;location.reload();return;}
+   let r='';try{r=sessionStorage.getItem('tsp8z-rescue')||'';}catch{}
+   if(r && state.uncontrolledAtLoad && !state.reloading){try{sessionStorage.removeItem('tsp8z-rescue');}catch{}state.reloading=true;location.reload();return;}   // after the network way: run from the newest worker
+   stampBuild();
+  };
   navigator.serviceWorker.addEventListener('controllerchange',state.controllerHandler);
   navigator.serviceWorker.register('/8zTSP/sw.js',{scope:'/8zTSP/',updateViaCache:'none'}).then(async registration=>{
    state.registration=registration;
