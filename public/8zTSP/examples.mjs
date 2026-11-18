@@ -279,7 +279,7 @@ export const examples = [
       "asOf": "2026-11-18",
       "proofRunning": true,
       "tourLength": 8728190,
-      "tourSource": "LKH 3.0.14",
+      "tourSource": "8zTSP, LKH 3.0.14",
       "tourDate": "2026-11-18",
       "lowerBound": 8727732,
       "boundSource": "Concorde",
