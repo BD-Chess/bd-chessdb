@@ -1,4 +1,4 @@
-import {readerRating,ratingMarkup,loadReaderRatings} from './nara-reader-ratings.mjs';
+import {readerRating,ratingMarkup,loadReaderRatings,zborRating} from './nara-reader-ratings.mjs';
 /** Immutable historical format editions. Separate from live publication/backfill.
  * R1: 5–11 October belong to Work; 12 October may be appended by its own owner.
  * No original records, scores, logs, version colours or day manifests are written.
@@ -229,7 +229,7 @@ export function renderEditionPage(root,item){
  // Explicit format-edition presentation uses R10; the original story date and
  // original publication timestamp stay intact and are never forged as today.
  const header='<header class="masthead"><div class="eyebrow">'+bi('Dialogue format edition · R1','Izdaja v dialognem formatu · R1')+'</div><h1>'+bi(item.en.title,item.sl.title)+'</h1><p class="meta">'+item.paths.date+(item.paths.instance?' · '+item.paths.instance:'')+' · <a href="'+item.paths.original_page+'">'+bi('Read the preserved original publication','Preberi ohranjeno izvirno objavo')+'</a></p><p class="muted">'+bi('Reader appeal is assessed independently by GPT and Claude. The assessment refers to the English reading edition.','Bralsko privlačnost neodvisno ocenita GPT in Claude. Ocena velja za angleško bralno izdajo.')+'</p></header>';
- return formatShell(item.en.title,item.sl.title,item.paths.page,header+ratingMarkup(readerRating(root,item.paths.story_id))+reading(item.en,'en')+reading(item.sl,'sl'),images.some(image=>image.responsive));
+ return formatShell(item.en.title,item.sl.title,item.paths.page,header+ratingMarkup(readerRating(root,item.paths.story_id),{zbor:zborRating(root,item.paths.story_id)})+reading(item.en,'en')+reading(item.sl,'sl'),images.some(image=>image.responsive));
 }
 export function renderOriginalSnapshot(root,{paths:p,en,sl}){
  const images=(()=>{try{return loadIllustrations(root,en,sl,{nonBlocking:true})}catch{return []}})();
