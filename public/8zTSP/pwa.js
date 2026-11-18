@@ -15,7 +15,7 @@
 //    button and the offline state; the old boxes (above the map panel, at the bottom of the password page) are gone.
 (()=>{
  'use strict';
- const BUILT_AT='2026-11-19T00:06';   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
+ const BUILT_AT='2026-11-19T00:44';   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
  const state=window.tsp8zPwa??={prompt:null,registration:null,acceptUpdate:false,reloading:false,message:null,build:''};
  const T={
   install:['Install the app','Namesti aplikacijo'],
@@ -28,6 +28,8 @@
   working:['Updating …','Posodabljam …'],
   now:['Update now','Posodobi zdaj'],
   version:['Version','Različica'],
+  diagPage:['page','stran'],diagSw:['worker','delavec'],diagWait:['waiting','čaka'],diagServer:['server','strežnik'],diagApp:['app','aplikacija'],yes:['yes','da'],no:['no','ne'],
+  diagLast:['last','zadnje'],diag_auto:['auto','samodejno'],diag_press:['press','pritisk'],diag_net:['network','omrežje'],
  };
  const lang=()=>document.documentElement.dataset.lang;
  const text=key=>lang()==='sl'?T[key][1]:lang()==='en'?T[key][0]:T[key][0]+' · '+T[key][1];   // the lock page: both languages
@@ -53,14 +55,14 @@
   controls.style.cssText='box-sizing:border-box;max-width:960px;margin:14px auto 10px;padding:0 14px;font:12.5px/1.5 system-ui,sans-serif;color:inherit;opacity:.85;text-align:center';
   (document.querySelector('footer')||document.body).append(controls);
  }
- controls.innerHTML='<span id="tsp8zVersion"></span> <small id="tsp8zBuild" style="opacity:.7"></small> <button id="pwaInstall" type="button" hidden style="margin-left:8px"></button> <span id="pwaStatus" role="status"></span>';
+ controls.innerHTML='<span id="tsp8zVersion"></span> <small id="tsp8zBuild" style="opacity:.7"></small> <button id="pwaInstall" type="button" hidden style="margin-left:8px"></button> <span id="pwaStatus" role="status"></span><small id="tsp8zDiag" style="display:block;opacity:.6;font-size:11px;line-height:1.4;margin-top:3px;overflow-wrap:anywhere"></small>';
  const install=document.getElementById('pwaInstall'),status=document.getElementById('pwaStatus');
  const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
  const standalone=()=>matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
  function paint(){
   install.textContent=text('install');status.textContent=state.message?text(state.message):'';
   document.getElementById('tsp8zVersion').textContent=stamp();document.getElementById('tsp8zBuild').textContent=state.build?`· ${state.build.slice(0,8)}`:'';
-  document.getElementById('tsp8zUpdateText').textContent=text(busy()?'bar':'barIdle');const now=document.getElementById('tsp8zUpdateNow');now.textContent=text(state.working?'working':'now');now.disabled=!!state.working;
+  document.getElementById('tsp8zUpdateText').textContent=text(busy()?'bar':'barIdle');const now=document.getElementById('tsp8zUpdateNow');now.textContent=text(state.working?'working':'now');now.disabled=!!state.working;paintDiag();
  }
  function say(key){state.message=key;paint();}
  function showBar(on){bar.hidden=!on;document.body.style.paddingTop=on?`${bar.offsetHeight}px`:'';}
@@ -72,7 +74,17 @@
   if(!state.prompt)return;const prompt=state.prompt;state.prompt=null;refresh();await prompt.prompt();await prompt.userChoice;
  };
  const ask=(worker,type)=>new Promise(done=>{try{const channel=new MessageChannel();channel.port1.onmessage=event=>done(event.data||null);worker.postMessage({type},[channel.port2]);}catch{done(null);}setTimeout(()=>done(null),3000);});
- function take(){const w=state.registration?.waiting;if(!w)return false;state.acceptUpdate=true;w.postMessage({type:'SKIP_WAITING'});clearTimeout(state.fallback);state.fallback=setTimeout(rescue,4000);return true;}
+ // R53 diagnostics (K, BD's iPad): the last update step in this tab, its target, tries and time (sessionStorage); no private data
+ function rec(){try{return JSON.parse(sessionStorage.getItem('tsp8z-diag')||'null');}catch{return null;}}
+ function note(step){const v=(state.waitV||'').slice(0,8)||'?',r=rec(),n=r && r.v===v?r.n+1:1;try{sessionStorage.setItem('tsp8z-diag',JSON.stringify({s:step,v,n,t:new Date().toTimeString().slice(0,8)}));}catch{}paintDiag();}
+ function waitNow(){const w=state.registration?.waiting;if(!w){state.diagWait='–';state.waitV='';}paintDiag();}   // diagnostics: a worker that has taken over no longer waits
+ function paintDiag(){
+  const el=document.getElementById('tsp8zDiag');if(!el)return;
+  const sl=lang()==='sl',w=k=>T[k][sl?1:0],r=rec(),parts=[`${w('diagPage')} ${BUILT_AT}`,`${w('diagSw')} ${state.diagCtl||'…'}`,`${w('diagWait')} ${state.diagWait||'–'}`,`${w('diagServer')} ${state.diagServer||'…'}`,`${w('diagApp')} ${standalone()?w('yes'):w('no')}`];
+  if(r)parts.push(`${w('diagLast')} ${w('diag_'+r.s)} ×${r.n} → ${r.v} ${r.v==='?'?'?':r.v===state.diagCtl?'✓':'✗'} ${r.t}`);
+  el.textContent=parts.join(' · ');
+ }
+ function take(src){const w=state.registration?.waiting;if(!w)return false;state.acceptUpdate=true;note(src||'press');w.postMessage({type:'SKIP_WAITING'});clearTimeout(state.fallback);state.fallback=setTimeout(rescue,4000);return true;}
  // R53 (BD's iPad, 18 Nov): if the waiting worker does not take over within 4 s (WebKit), get onto the new build anyway: drop this
  // registration and reload from the network, where the newest worker installs fresh. Only when the network answers: offline the
  // saved version stays and the bar with it.
@@ -81,38 +93,44 @@
   const online=await fetch('/8zTSP/sw.js',{cache:'no-store',signal:AbortSignal.timeout?.(3000)}).then(r=>r.ok,()=>false);
   if(!online || state.reloading){state.working=false;paint();return;}
   state.reloading=true;state.working=true;paint();
-  try{sessionStorage.setItem('tsp8z-rescue','1');}catch{}
+  note('net');try{sessionStorage.setItem('tsp8z-rescue','1');}catch{}
   try{await state.registration?.unregister();}catch{}
   location.reload();
  }
+ // K (19 Nov, BD's iPad): which build is newest, asked of the server; a query string passes the worker (sw.js caches no query)
+ async function serverBuild(){try{const r=await fetch('/8zTSP/precache-manifest.json?newest='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout?.(4000)});return r.ok?((await r.json())?.version||''):'';}catch{return '';}}
  async function offer(){   // a new build waits in the service worker
   const w=state.registration?.waiting;if(!w || state.reloading)return;
-  const v=(await ask(w,'STATUS'))?.version||'',c=navigator.serviceWorker.controller,cur=state.build||(c?(await ask(c,'STATUS'))?.version||'':'');
+  const c=navigator.serviceWorker.controller,cur=state.build||(c?(await ask(c,'STATUS'))?.version||'':''),latest=await serverBuild();
+  const v=(await ask(w,'STATUS'))?.version||'';
+  state.diagServer=latest.slice(0,8)||'?';state.waitV=v;state.diagWait=v.slice(0,8)||'?';paintDiag();
+  if(!latest)return;   // K: offline, or the server does not answer: nothing to offer
+  if(cur && latest===cur){try{w.postMessage({type:'SKIP_WAITING'});}catch{}setTimeout(waitNow,1500);return;}   // K: the newest build already runs; the »waiting« worker is a copy: quietly, no bar, no reload
   if(v && cur && v===cur)return;   // K: the »waiting« worker is the build this page already runs: nothing to offer
   let done='';try{done=sessionStorage.getItem('tsp8z-auto-update')||'';}catch{}
   state.again=!!v && done===v;   // taken once in this tab and still waiting: the network way
   if(!busy() && !result()){   // BD: the engine is not running: take it and reload once by itself (one automatic reload per build)
    if(state.again){rescue();return;}
-   if(v){try{sessionStorage.setItem('tsp8z-auto-update',v);}catch{}take();return;}
+   if(v){try{sessionStorage.setItem('tsp8z-auto-update',v);}catch{}take('auto');return;}
   }
   paint();showBar(true);   // a run or a result: ask at the top
  }
  document.getElementById('tsp8zUpdateNow').onclick=()=>{
   if(window.tsp8zLab?.liveWorkers)window.tsp8zLab.stop();
   state.working=true;paint();
-  if(state.again || !take())rescue();   // nothing to take, or taken before in vain: the network way
+  if(state.again || !take('press'))rescue();   // nothing to take, or taken before in vain: the network way
  };
  window.MDLxDCCLocale?.subscribe?.(()=>paint());
  if('serviceWorker' in navigator && location.pathname.startsWith('/8zTSP/')){
   if(state.controllerHandler)navigator.serviceWorker.removeEventListener('controllerchange',state.controllerHandler);
   // the build id comes from the worker that controls the page; on a first visit that worker takes over only after the page loaded
-  const stampBuild=async()=>{const c=navigator.serviceWorker.controller;if(c){state.build=(await ask(c,'STATUS'))?.version||'';paint();}};
+  const stampBuild=async()=>{const c=navigator.serviceWorker.controller;if(c){state.build=(await ask(c,'STATUS'))?.version||'';}state.diagCtl=c?(state.build.slice(0,8)||'?'):'–';paint();};
   state.uncontrolledAtLoad=!navigator.serviceWorker.controller;
   state.controllerHandler=()=>{
    if(state.acceptUpdate && !state.reloading){state.reloading=true;location.reload();return;}
    let r='';try{r=sessionStorage.getItem('tsp8z-rescue')||'';}catch{}
    if(r && state.uncontrolledAtLoad && !state.reloading){try{sessionStorage.removeItem('tsp8z-rescue');}catch{}state.reloading=true;location.reload();return;}   // after the network way: run from the newest worker
-   stampBuild();
+   stampBuild();waitNow();
   };
   navigator.serviceWorker.addEventListener('controllerchange',state.controllerHandler);
   navigator.serviceWorker.register('/8zTSP/sw.js',{scope:'/8zTSP/',updateViaCache:'none'}).then(async registration=>{
@@ -125,6 +143,7 @@
    await navigator.serviceWorker.ready;
    say(navigator.onLine?'ready':'offline');
    await stampBuild();
+   {const w=registration.waiting;if(w && !state.waitV){state.diagWait=(((await ask(w,'STATUS'))?.version)||'').slice(0,8)||'?';paintDiag();}}   // diagnostics: a worker that already waits
    // D5: look for a new build when the page opens and whenever the tab becomes visible again
    registration.update().catch(()=>{});
    if(state.visibilityHandler)document.removeEventListener('visibilitychange',state.visibilityHandler);   // the unlocked page is a new document: listen again
