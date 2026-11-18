@@ -52,8 +52,208 @@ export const exampleGroups = [
   {
     "id": "random",
     "names": {
-      "en": "Random",
-      "sl": "Naključni"
+      "en": "Big instances",
+      "sl": "Veliki primeri"
+    }
+  }
+];
+export const defaultCollectionId = "ours";
+export const collections = [
+  {
+    "id": "ours",
+    "names": {
+      "en": "Our maps",
+      "sl": "Naši zemljevidi"
+    },
+    "maps": [
+      "che_from_europe_20261117",
+      "si6035_gurs_20261115"
+    ],
+    "soon": [
+      "hr23761_dgu_20261118",
+      "hard25k_a3s_24857_20261118"
+    ]
+  },
+  {
+    "id": "countries-to-9000",
+    "names": {
+      "en": "Countries · up to 9,000 cities",
+      "sl": "Države · do 9.000 mest"
+    },
+    "maps": [
+      "wi29",
+      "dj38",
+      "qa194",
+      "uy734",
+      "zi929",
+      "lu980",
+      "rw1621",
+      "mu1979",
+      "nu3496",
+      "ca4663",
+      "tz6117",
+      "eg7146",
+      "ym7663",
+      "pm8079",
+      "ei8246"
+    ]
+  },
+  {
+    "id": "countries-over-9000",
+    "names": {
+      "en": "Countries · over 9,000 cities",
+      "sl": "Države · nad 9.000 mest"
+    },
+    "maps": [
+      "ar9152",
+      "ja9847",
+      "gr9882",
+      "kz9976",
+      "fi10639",
+      "mo14185",
+      "ho14473",
+      "it16862",
+      "vm22775",
+      "sw24978",
+      "bm33708",
+      "ch71009"
+    ]
+  },
+  {
+    "id": "world-to-100000",
+    "names": {
+      "en": "World · up to 100,000 cities",
+      "sl": "Svet · do 100.000 mest"
+    },
+    "maps": [
+      "alzirija_world_20261116",
+      "avstralija_world_20261116",
+      "zdruzeno_kraljestvo_world_20261116",
+      "bangladesh_world_20261116",
+      "indija_world_20261116",
+      "indonezija_world_20261116",
+      "nigerija_world_20261116",
+      "brazilija_world_20261116",
+      "pakistan_world_20261116",
+      "mehika_world_20261116",
+      "francija_world_20261116",
+      "nemcija_world_20261116"
+    ]
+  },
+  {
+    "id": "world-over-100000",
+    "names": {
+      "en": "World · over 100,000 cities",
+      "sl": "Svet · nad 100.000 mest"
+    },
+    "maps": [
+      "juzna_amerika_world_20261116",
+      "rusija_world_20261116",
+      "zda_world_20261116",
+      "severna_amerika_world_20261116",
+      "eu27_world_20261116",
+      "azija_world_20261116",
+      "evropa_world_20261116"
+    ]
+  },
+  {
+    "id": "classics",
+    "names": {
+      "en": "Classics",
+      "sl": "Klasični primeri"
+    },
+    "maps": [
+      "usa13509",
+      "usa115475"
+    ]
+  },
+  {
+    "id": "hard",
+    "names": {
+      "en": "Hard instances",
+      "sl": "Težki primeri"
+    },
+    "maps": [
+      "Tnm52",
+      "Tnm76",
+      "Tnm100",
+      "Tnm151",
+      "Tnm199",
+      "evolved-1000-111",
+      "evolved-1000-137",
+      "evolved-1000-195",
+      "evolved-1000-478",
+      "C10k.0",
+      "xrb14233",
+      "ido21215"
+    ]
+  },
+  {
+    "id": "big",
+    "names": {
+      "en": "Big instances",
+      "sl": "Veliki primeri"
+    },
+    "maps": [
+      "E100k.0",
+      "E1M.0",
+      "E10M.0"
+    ],
+    "soon": [
+      "1B",
+      "2B",
+      "4B",
+      "10B"
+    ]
+  }
+];
+export const soon = [
+  {
+    "id": "hr23761_dgu_20261118",
+    "cities": 23761,
+    "names": {
+      "en": "Croatia · settlements and hamlets",
+      "sl": "Hrvaška · naselja in zaselki"
+    }
+  },
+  {
+    "id": "hard25k_a3s_24857_20261118",
+    "cities": 24857,
+    "names": {
+      "en": "Croatia HARD-25K",
+      "sl": "Hrvaška HARD-25K"
+    }
+  },
+  {
+    "id": "1B",
+    "cities": 1000000000,
+    "names": {
+      "en": "1B (computer)",
+      "sl": "1B (računalnik)"
+    }
+  },
+  {
+    "id": "2B",
+    "cities": 2000000000,
+    "names": {
+      "en": "2B (computer)",
+      "sl": "2B (računalnik)"
+    }
+  },
+  {
+    "id": "4B",
+    "cities": 4000000000,
+    "names": {
+      "en": "4B (computer)",
+      "sl": "4B (računalnik)"
+    }
+  },
+  {
+    "id": "10B",
+    "cities": 10000000000,
+    "names": {
+      "en": "10B (computer)",
+      "sl": "10B (računalnik)"
     }
   }
 ];
@@ -949,8 +1149,8 @@ export const examples = [
   {
     "id": "usa13509",
     "names": {
-      "en": "USA (TSPLIB usa13509)",
-      "sl": "ZDA (TSPLIB usa13509)"
+      "en": "USA (TSPLIB usa13509) · places with 500 or more inhabitants",
+      "sl": "ZDA (TSPLIB usa13509) · kraji z vsaj 500 prebivalci"
     },
     "group": "americas",
     "collection": "tsplib",
@@ -1847,9 +2047,8 @@ export function exampleLabel(item, language='en') {
   const lang=language.startsWith('sl')?'sl':'en';
   const count=item.cities.toLocaleString(lang==='sl'?'sl-SI':'en-US',{useGrouping:'always'});
   const middle=item.generator||item.id===defaultExampleId?'':item.collectionNames?item.collectionNames[lang]:item.kind==='continent'?(lang==='sl'?'celina':'continent'):exampleGroups.find(g=>g.id===item.group).names[lang];
-  // The flat menu has no sections; a short tag keeps the hard instances recognisable.
-  const tag=item.group==='hard'?(lang==='sl'?'težak primer':'hard instance'):'';
-  return `${item.names[lang]}${middle?' · '+middle:''}${tag?' · '+tag:''} · ${count}${item.generator?(lang==='sl'?' · ustvarjeno na napravi':' · generated on device'):''}`;
+  // R53: the menu has collections now (»Hard instances« is one of them), so the hard-instance tag is gone.
+  return `${item.names[lang]}${middle?' · '+middle:''} · ${count}${item.generator?(lang==='sl'?' · ustvarjeno na napravi':' · generated on device'):''}`;
 }
 function displayDate(iso, lang) {
   const date=new Date(iso+'T00:00:00Z');
