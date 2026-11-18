@@ -17,7 +17,7 @@
 // group, four of them fetched from the authors' repository when chosen. R1k + R1k-a (7967cee): one flat list of 64 maps
 // (Slovenia first, then by city count), metre maps shown in kilometres with the reference field in km, Slovenia's best known
 // tour 8,728,254 m and Concorde's bound of 16 Nov 21:09. Before: demo/app.before_r28.js; before R1k: demo/app.before_r1k.js.
-import { examples, exampleLabel, defaultExampleId, gapDisplay, desktopOnly } from './examples.mjs';
+import { examples, exampleLabel, defaultExampleId, gapDisplay, desktopOnly, collections, soon, defaultCollectionId } from './examples.mjs';
 import { initializeWasm, loaderState, solverModule, supportsSharedThreads } from './wasm-loader.js';
 import { createRecorder, serializeRecording } from './replay-data.mjs';
 import { mountReplay } from './replay-player.mjs';
@@ -43,12 +43,26 @@ const desktopLarge = !mobileDevice && Number(navigator.deviceMemory) >= 8;
 const deviceAllows = item => item.cities === 10000000 ? desktopLarge : desktopOnly(item) ? !mobileDevice : true;
 for (let n = 1; n <= cores; n++) $('workers').add(new Option(String(n), String(n)));
 $('workers').value = String(isIPhone ? 6 : reportedCores);
-// R1k: one flat list in the order of examples.mjs (Slovenia first, then every other map by city count); render() writes
-// the labels in the page's language
-{
-  const add = (item, parent) => { const option = new Option(item.id, item.id); option.disabled = !deviceAllows(item); parent.append(option); };
-  for (const item of examples) add(item, $('example'));
+// R53 (BD 18 Nov, K's brief R52): two selects, the collection, then its map (inside a collection from the smallest map to the
+// largest, ties by id; examples.mjs holds the order); entries that are not ready yet stand in their collection, marked »(soon)« |
+// »(kmalu)«, and cannot be chosen; render() writes the labels in the page's language
+const SOON = 'soon:';
+const soonOf = value => value?.startsWith(SOON) ? soon.find(s => s.id === value.slice(SOON.length)) : null;
+const collectionOf = value => collections.find(c => c.maps.includes(value) || (value?.startsWith(SOON) && c.soon?.includes(value.slice(SOON.length))));
+function fillMaps(collectionId) {
+  const c = collections.find(x => x.id === collectionId) || collections[0], select = $('example');
+  select.replaceChildren();
+  for (const id of c.maps) { const item = examples.find(e => e.id === id); const option = new Option(item.id, item.id); option.disabled = !deviceAllows(item); select.append(option); }
+  for (const id of c.soon || []) { const option = new Option(id, SOON + id); option.disabled = true; select.append(option); }
+  $('collection').value = c.id;
 }
+function showMap(value) {   // both selects on a map
+  const c = collectionOf(value); if (!c) return;
+  if ($('collection').value !== c.id || ![...$('example').options].some(o => o.value === value)) fillMaps(c.id);
+  $('example').value = value;
+}
+for (const c of collections) $('collection').add(new Option(c.id, c.id));
+fillMaps(defaultCollectionId);
 $('example').value = DEFAULT_EXAMPLE;
 let text = '', coords = new Float64Array(), tour = null, pool = [], loading = null, rejectLoading = null, extent = null;
 let generation = 0, best = Infinity, started = 0, timer, active = false, runRecord = null, shownElapsed = 0, rejectActive = null;
@@ -97,7 +111,7 @@ const T = {
     complete: (s, opt) => 'Complete · tour checked in Rust.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Reference'} first reached after ${dec(s, 1)} s of solver time.`),
     optimumStop: s => `Optimum reached after ${dec(s, 1)} s of solver time; the search stopped.`,
-    stopped: 'Stopped · the last tour shown is kept.', loadingStopped: 'Loading stopped.',
+    stopped: 'Stopped · the last tour shown is kept.', loadingStopped: 'Loading stopped.', soon: '(soon)',
     stoppedErr: m => `Search stopped: ${m}`, workerFail: m => `Worker failed: ${m}`,
     noSolver: m => `Unable to load the solver: ${m}`,
     unavailable: 'Unable to start the solver.',
@@ -160,7 +174,7 @@ const T = {
     complete: (s, opt) => 'Končano · pot preverjena v Rustu.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Referenca'} prvič dosežen${opt ? '' : 'a'} po ${dec(s, 1)} s časa reševalnika.`),
     optimumStop: s => `Optimum dosežen po ${dec(s, 1)} s časa reševalnika; iskanje ustavljeno.`,
-    stopped: 'Ustavljeno · zadnja prikazana pot ostane.', loadingStopped: 'Nalaganje ustavljeno.',
+    stopped: 'Ustavljeno · zadnja prikazana pot ostane.', loadingStopped: 'Nalaganje ustavljeno.', soon: '(kmalu)',
     stoppedErr: m => `Iskanje se je ustavilo: ${m}`, workerFail: m => `Delavec je odpovedal: ${m}`,
     noSolver: m => `Reševalnika ni bilo mogoče naložiti: ${m}`,
     unavailable: 'Reševalnika ni mogoče zagnati.',
@@ -291,7 +305,8 @@ function render() {
   $('reference').placeholder = t('placeholder');
   $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
   $('workerHint').textContent = isIPhone ? t('hintIPhone') : t('hintCores', reportedCores);
-  for (const option of $('example').options) { const item = examples.find(e => e.id === option.value); if (item) option.text = t('option', item); }
+  for (const option of $('collection').options) { const c = collections.find(x => x.id === option.value); if (c) option.text = c.names[lang()]; }
+  for (const option of $('example').options) { const item = examples.find(e => e.id === option.value), s = soonOf(option.value); if (item) option.text = t('option', item); else if (s) option.text = `${s.names[lang()]} ${t('soon')}`; }
   $('replayPanel').setAttribute('aria-label', REPLAY_COPY[lang()].heading);
   $('refresh').options[0].text = t('live');
   canvas.setAttribute('aria-label', t('canvas'));
@@ -342,7 +357,7 @@ function controls() {
   const ready = loaderState.status === 'ready';
   $('run').disabled = !ready || active || !!loading || !coords.length;
   $('stop').disabled = !active && !loading;
-  ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'refinement', 'reference', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
+  ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'refinement', 'reference', 'collection', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
   $('refresh').disabled = !ready;
   $('stopOptimum').disabled = active || !ready || !mapMeta?.optimum;
   $('download').disabled = !tour?.length;
@@ -554,10 +569,11 @@ async function exampleText(item) {
 let exampleRequest = 0;
 async function loadExample(id = $('example').value) {
   unlocked();
+  if (soonOf(id)) return;   // R53: a »(soon)« entry cannot be chosen and starts nothing
   const item = examples.find(e => e.id === id); if (!item) throw new Message('exFail', id);
   if (!deviceAllows(item)) throw new Message(item.cities === 10000000 ? 'tenM' : 'desktopRequired');
   const request = ++exampleRequest;
-  $('example').value = id; render();
+  showMap(id); render();
   if (item.generator) {   // R3: DIMACS portgen on the device, then the checksum of the generated file
     clearReplay(); text = ''; coords = new Float64Array(); extent = null; tour = null; runRecord = null; mapMeta = null; $('stopOptimum').checked = false; setReference(null); best = Infinity; draw();
     status('generating', item.id);
@@ -576,7 +592,7 @@ async function loadExample(id = $('example').value) {
   let value;
   try { value = await exampleText(item); }
   catch (error) {   // the map shown stays, and so does its name in the list
-    if (request === exampleRequest && mapMeta && !active && !loading) { $('example').value = mapMeta.id; render(); }
+    if (request === exampleRequest && mapMeta && !active && !loading) { showMap(mapMeta.id); render(); }
     throw error?.key ? error : new Message('exFail', exName(item));
   }
   if (request !== exampleRequest) return;
@@ -606,6 +622,11 @@ $('p-nu').onclick = () => { choose('nu'); safely(() => loadExample())(); };
 $('p-rnd').onclick = () => choose('rnd');
 $('p-file').onclick = () => choose('file');
 $('example').onchange = safely(() => loadExample($('example').value));
+$('collection').onchange = safely(() => {   // R53: a new collection lists its maps and loads the smallest one this device allows
+  fillMaps($('collection').value);
+  const first = [...$('example').options].find(o => !o.disabled);
+  return first ? loadExample(first.value) : undefined;
+});
 $('generate').onclick = safely(generate);
 $('run').onclick = safely(() => start());
 $('stop').onclick = stop;
@@ -657,7 +678,7 @@ document.addEventListener('fullscreenchange', expandedControls);
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && mapView.classList.contains('map-window')) closeMap(); });
 window.MDLxDCCLocale?.subscribe(() => render());
 // The same QA hook as in R1/R2/R3: it drives the same UI and worker path.
-window.tsp8zLab = { load, loadExample, start, stop, loadNu, generate, cores, reportedCores, limits: RUN_LIMITS, get reference() { return referenceRaw; },
+window.tsp8zLab = { load, loadExample, showMap, start, stop, loadNu, generate, cores, reportedCores, limits: RUN_LIMITS, get reference() { return referenceRaw; },
   get retentionStats() { return { history: runRecord?.history.length ?? 0, historyReceived: runRecord?.historyReceived ?? 0, historyDropped: runRecord?.historyDropped ?? 0,
     renderChanges: runRecord?.renderChanges.length ?? 0, recording: recorder?.summary() ?? null }; },
  defaultWorkers: isIPhone ? 6 : reportedCores, get canShare() { return canShare; },
