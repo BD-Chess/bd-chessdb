@@ -1,8 +1,9 @@
+// 18 Nov 2026 (BD × AI Lab): a recording's optional east-west scale (xScale) is applied when drawing; its points and lengths stay as recorded.
 import {ReplayTimeline,parseRecording,serializeRecording,validateRecording,REPLAY_LIMITS} from './replay-data.mjs';
 import {REPLAY_COPY} from './replay-copy.mjs';
 import {formatDistance} from './distance-format.mjs';
 export function mountReplay(root){
- let data=null,timeline=null,raf=0,previous=0,drawn=-1,scale=1,pan=[0,0],bounds=null,oldOverflow='',lastNotice='';
+ let data=null,aspect=1,timeline=null,raf=0,previous=0,drawn=-1,scale=1,pan=[0,0],bounds=null,oldOverflow='',lastNotice='';
  const nodes={},labels=[],pointers=new Map();
  const language=()=>((document.documentElement.dataset.lang||document.documentElement.lang||'en').startsWith('sl')?'sl':'en');
  const copy=()=>REPLAY_COPY[language()];
@@ -56,8 +57,8 @@ export function mountReplay(root){
  function paint(){
   const rect=canvas.getBoundingClientRect(),ratio=devicePixelRatio||1;if(!rect.width||!rect.height)return;
   canvas.width=Math.round(rect.width*ratio);canvas.height=Math.round(rect.height*ratio);const ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,rect.width,rect.height);if(!data)return;
-  const [x0,x1,y0,y1]=bounds,fit=Math.min((rect.width-32)/Math.max(1,x1-x0),(rect.height-32)/Math.max(1,y1-y0))*scale;
-  const point=(x,y)=>[rect.width/2+pan[0]+(x-(x0+x1)/2)*fit,rect.height/2+pan[1]-(y-(y0+y1)/2)*fit];
+  const [x0,x1,y0,y1]=bounds,fit=Math.min((rect.width-32)/Math.max(1,(x1-x0)*aspect),(rect.height-32)/Math.max(1,y1-y0))*scale;
+  const point=(x,y)=>[rect.width/2+pan[0]+(x-(x0+x1)/2)*fit*aspect,rect.height/2+pan[1]-(y-(y0+y1)/2)*fit];
   const frame=data.frames[timeline.index],route=frame.route;ctx.strokeStyle='#41d5e7';ctx.lineWidth=1.2;ctx.beginPath();
   for(let i=0;i<(data.sampled?route.length/2:route.length);i++){const p=data.sampled?point(route[i*2],route[i*2+1]):point(data.points[route[i]*2],data.points[route[i]*2+1]);i?ctx.lineTo(...p):ctx.moveTo(...p);}ctx.closePath();ctx.stroke();
   ctx.fillStyle='#d9faff';ctx.beginPath();for(let i=0;i<data.points.length;i+=2){const p=point(data.points[i],data.points[i+1]);ctx.moveTo(p[0]+1.3,p[1]);ctx.arc(...p,1.3,0,Math.PI*2);}ctx.fill();
@@ -78,7 +79,7 @@ export function mountReplay(root){
   else if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();step((event.key==='ArrowLeft'?-1:1)*(event.shiftKey?Number(jump.value):1));}
   else if(event.key==='ArrowUp'||event.key==='ArrowDown'){event.preventDefault();seek(event.key==='ArrowUp'?1:-1);}
  };
- function setRecording(record){pause();validateRecording(record);data=record;timeline=new ReplayTimeline(data);timeline.speed=Number(speed.value);scale=1;pan=[0,0];drawn=-1;bounds=[Infinity,-Infinity,Infinity,-Infinity];for(let i=0;i<data.points.length;i+=2){bounds[0]=Math.min(bounds[0],data.points[i]);bounds[1]=Math.max(bounds[1],data.points[i]);bounds[2]=Math.min(bounds[2],data.points[i+1]);bounds[3]=Math.max(bounds[3],data.points[i+1]);}heading.textContent=copy().heading+' · '+data.name;lastNotice=data.sampled?copy().sampled:'';notice.textContent=lastNotice;render();}
+ function setRecording(record){pause();validateRecording(record);data=record;aspect=Number.isFinite(record.xScale)&&record.xScale>=.05&&record.xScale<=20?record.xScale:1;timeline=new ReplayTimeline(data);timeline.speed=Number(speed.value);scale=1;pan=[0,0];drawn=-1;bounds=[Infinity,-Infinity,Infinity,-Infinity];for(let i=0;i<data.points.length;i+=2){bounds[0]=Math.min(bounds[0],data.points[i]);bounds[1]=Math.max(bounds[1],data.points[i]);bounds[2]=Math.min(bounds[2],data.points[i+1]);bounds[3]=Math.max(bounds[3],data.points[i+1]);}heading.textContent=copy().heading+' · '+data.name;lastNotice=data.sampled?copy().sampled:'';notice.textContent=lastNotice;render();}
  new ResizeObserver(paint).observe(canvas);
  document.addEventListener('fullscreenchange',()=>{render();paint();});
  new MutationObserver(()=>{for(const [node,key] of labels)node.firstChild?node.firstChild.textContent=copy()[key]:node.textContent=copy()[key];canvas.setAttribute('aria-label',copy().canvas);heading.textContent=data?copy().heading+' · '+data.name:copy().heading;notice.textContent=data?.sampled?copy().sampled:'';render();}).observe(document.documentElement,{attributes:true,attributeFilter:['lang','data-lang']});

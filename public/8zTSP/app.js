@@ -70,7 +70,7 @@ function showMap(value) {   // both selects on a map; a map that is in Selected 
 for (const c of collections) $('collection').add(new Option(c.id, c.id));
 fillMaps(defaultCollectionId);
 $('example').value = DEFAULT_EXAMPLE;
-let text = '', coords = new Float64Array(), tour = null, pool = [], loading = null, rejectLoading = null, extent = null;
+let text = '', coords = new Float64Array(), tour = null, pool = [], loading = null, rejectLoading = null, extent = null, view = null;   // B: view = north-up display coordinates or null
 let generation = 0, best = Infinity, started = 0, timer, active = false, runRecord = null, shownElapsed = 0, rejectActive = null;
 let mapName = '', inputHash = '', lastDraw = 0, preset = '', tab = 'nu', statusKey = ['wasm'], mapMeta = null;
 // R1k: the reference in the map's own units (metres for unit m); the field shows kilometres for unit m; an untouched or
@@ -133,7 +133,9 @@ const T = {
     integers: 'Cities and seed must be whole numbers', seedInt: 'The seed must be a whole number',
     workers: n => `Choose 1 to ${n} workers`, loadFirst: 'Load a map before running', fileLimit: 'File limit: 32 MB',
     gapOpt: 'ABOVE THE OPTIMUM', gapRef: 'ABOVE THE REFERENCE', gapBound: 'ABOVE THE HK BOUND', gapEstimate: 'ABOVE THE HK ESTIMATE', gapLower: 'ABOVE THE LOWER BOUND',
-    reachOpt: 'OPTIMUM FIRST REACHED', reachRef: 'REFERENCE FIRST REACHED',
+    reachOpt: 'OPTIMUM FIRST REACHED', reachRef: 'REFERENCE FIRST REACHED', gapBest: 'ABOVE THE BEST KNOWN TOUR', waterlooShort: 'University of Waterloo',
+    refOpt: v => `Optimum ${v} (proved)`, refBest: (v, src) => `Best known tour ${v}${src ? ` (${src})` : ''}`, refBound: (v, src) => `Lower bound ${v}${src ? ` (${src})` : ''}`,
+    refHK: (v, est) => `${est ? 'Held–Karp estimate' : 'Held–Karp bound'} ${v}`, refNone: 'No reference length yet',
     count: 'Random cities', seed: 'Seed', seconds: 'Seconds', reference: 'Reference length',
     placeholder: 'for the gap and the first-reach time', canvas: 'Points and the best tour',
     modeShared: (n, c) => `Mode: ${n} workers; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
@@ -196,7 +198,9 @@ const T = {
     integers: 'Število mest in seme morata biti celi števili', seedInt: 'Seme mora biti celo število',
     workers: n => `Izberite od 1 do ${n} delavcev`, loadFirst: 'Pred zagonom naložite zemljevid', fileLimit: 'Omejitev datoteke: 32 MB',
     gapOpt: 'NAD OPTIMUMOM', gapRef: 'NAD REFERENCO', gapBound: 'NAD MEJO HK', gapEstimate: 'NAD OCENO HK', gapLower: 'NAD SPODNJO MEJO',
-    reachOpt: 'OPTIMUM PRVIČ DOSEŽEN', reachRef: 'REFERENCA PRVIČ DOSEŽENA',
+    reachOpt: 'OPTIMUM PRVIČ DOSEŽEN', reachRef: 'REFERENCA PRVIČ DOSEŽENA', gapBest: 'NAD NAJBOLJŠO ZNANO POTJO', waterlooShort: 'Univerza Waterloo',
+    refOpt: v => `Optimum ${v} (dokazan)`, refBest: (v, src) => `Najboljša znana pot ${v}${src ? ` (${src})` : ''}`, refBound: (v, src) => `Spodnja meja ${v}${src ? ` (${src})` : ''}`,
+    refHK: (v, est) => `${est ? 'Ocena Held–Karp' : 'Meja Held–Karp'} ${v}`, refNone: 'Referenčne dolžine še ni',
     count: 'Naključna mesta', seed: 'Seme', seconds: 'Sekunde', reference: 'Referenčna dolžina',
     placeholder: 'za odmik in čas prvega dosega', canvas: 'Točke in najboljša pot',
     modeShared: (n, c) => `Način: ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
@@ -295,12 +299,31 @@ function credits() {   // the source line under the examples and, for Slovenia, 
   if (item.boundKind === 'estimate') credit.append(` · ${t('estimateNote')}`);
   if (item.cities >= 1000000) credit.append(` · ${t('largeNote')}`);
 }
+function refLine() {   // B (BD 18 Nov): the reference value beside its percentage, only what the manifest holds; the percentage's reference first
+  const m = mapMeta; if (!m || tab !== 'nu') return '';
+  const d = v => formatDistance(v, m.unit ?? null, lang()), sl = lang() === 'sl';
+  const day = iso => { if (!iso) return ''; const [y, mo, da] = iso.split('-').map(Number); return sl ? `${da}. ${mo}. ${y}` : new Date(Date.UTC(y, mo - 1, da)).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'}); };
+  const src = [m.credit?.includes('University of Waterloo') ? t('waterlooShort') : m.bestTourKind === 'challenge-2002' ? 'DIMACS 2002' : '', day(m.referenceDate)].filter(Boolean).join(', ');
+  if (m.optimum) return t('refOpt', d(m.optimum));
+  const parts = [];
+  if (m.gapStatus) {
+    const g = gapDisplay(m.gapStatus, lang());
+    if (m.gapStatus.lowerBound) parts.push(t('refBound', d(m.gapStatus.lowerBound), [m.gapStatus.boundSource, g.boundAsOf].filter(Boolean).join(', ')));
+    if (m.gapStatus.tourLength) parts.push(t('refBest', d(m.gapStatus.tourLength), [m.gapStatus.tourSource, g.tourDate].filter(Boolean).join(', ')));
+  } else {
+    if (m.bound) parts.push(m.boundKind === 'certified' ? t('refBound', d(m.bound), src) : t('refHK', d(Math.round(m.bound)), m.boundKind === 'estimate'));
+    if (m.bestKnownTour) parts.push(t('refBest', d(m.bestKnownTour), [m.bestKnownBy?.[lang()], src].filter(Boolean).join(', ')));
+  }
+  return parts.length ? parts.join(' · ') : t('refNone');
+}
 function render() {
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
   const reference = runRecord?.reference || referenceRaw || 0;
   $('gap').textContent = reference > 0 && Number.isFinite(best) ? pct((best / reference - 1) * 100) : '—';
   $('gapLabel').textContent = t(isOptimum() ? 'gapOpt' : mapMeta?.bound && reference === mapMeta.bound ? (mapMeta.boundKind === 'estimate' ? 'gapEstimate' : mapMeta.boundKind === 'certified' ? 'gapLower' : 'gapBound')
-    : mapMeta?.gapStatus?.lowerBound && reference === mapMeta.gapStatus.lowerBound ? 'gapLower' : 'gapRef');
+    : mapMeta?.gapStatus?.lowerBound && reference === mapMeta.gapStatus.lowerBound ? 'gapLower' : mapMeta?.bestKnownTour && reference === mapMeta.bestKnownTour ? 'gapBest' : 'gapRef');
+  $('refLine').textContent = refLine();
+  { const lt = tab === 'nu' ? mapMeta?.laptopTime?.text?.[lang()] : ''; $('laptopLine').textContent = lt || ''; $('laptopLine').hidden = !lt; }   // Addendum C: our laptop's measured time
   $('referenceUnit').textContent = mapMeta?.unit === 'm' ? ' (km)' : '';
   { const r = referenceRaw, box = $('referenceDistance'); box.hidden = mapMeta?.unit !== 'm' || !(r > 0); box.textContent = box.hidden ? '' : formatDistance(r, 'm', lang()); }
   $('seconds').setCustomValidity(validSeconds(Number($('seconds').value)) ? '' : t('secondsRange'));
@@ -330,7 +353,7 @@ function draw(reason = 'layout') {
   const [minX, maxX, minY, maxY] = extent;
   const scale = Math.min((w - 24) / Math.max(1, maxX - minX), (h - 24) / Math.max(1, maxY - minY));
   const ox = (w - (maxX - minX) * scale) / 2, oy = (h - (maxY - minY) * scale) / 2;
-  const point = id => [ox + (coords[id * 2] - minX) * scale, h - oy - (coords[id * 2 + 1] - minY) * scale];
+  const P = view || coords, point = id => [ox + (P[id * 2] - minX) * scale, h - oy - (P[id * 2 + 1] - minY) * scale];
   if (tour?.length) {   // R3: big tours are drawn sampled (at most 50,000 edges), big maps with at most 20,000 points
     ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = coords.length > 20000 ? .5 : 1;
     ctx.beginPath(); for (let i = 0; i < tour.length; i += Math.max(1, Math.ceil(tour.length / 50000))) { const p = point(tour[i]); i ? ctx.lineTo(...p) : ctx.moveTo(...p); }
@@ -396,6 +419,12 @@ function finish(...key) {
   if (runRecord) runRecord.recording = recorder?.summary() ?? { failed: recordingFailed };
   controls();
 }
+function displayView(c, d, scaled = true) {   // B (BD 18 Nov): latitude, longitude drawn north-up, east to the right, the east-west axis scaled by cos(mean latitude); display only
+  if (!d || d.axes !== 'lat-lon') return null;
+  const v = new Float64Array(c.length);
+  for (let i = 0; i < c.length; i += 2) { v[i] = d.east * c[i + 1] * (scaled ? d.xScale : 1); v[i + 1] = d.north * c[i]; }
+  return v;
+}
 async function load(value, which, metadata = null, verifiedHash = null) {
   if (active) return;
   const module = unlocked();
@@ -415,8 +444,8 @@ async function load(value, which, metadata = null, verifiedHash = null) {
   if (metadata && inputHash !== metadata.sha256) { loading = null; controls(); throw new Message('checksum'); }
   mapMeta = metadata;
   $('stopOptimum').checked = !!metadata?.optimum;
-  text = value; coords = new Float64Array(); extent = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
-  setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || null);
+  text = value; coords = new Float64Array(); extent = null; view = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
+  setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || metadata?.bestKnownTour || null);   // B: a best known tour alone is the reference
   if (metadata) $('seconds').value = metadata.cities <= 20000 ? 60 : metadata.cities <= 200000 ? 120 : 600;
   if (which === 'random') $('seconds').value = 10;
   render();
@@ -428,9 +457,9 @@ async function load(value, which, metadata = null, verifiedHash = null) {
       if (data.token !== generation) return;
       loading = null; rejectLoading = null; worker.terminate();
       if (data.type === 'error') { status('noSolver', data.message); controls(); reject(Error(data.message)); return; }
-      mapName = data.name; coords = data.coordinates;
-      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-      for (let j = 0; j < coords.length; j += 2) { x0 = Math.min(x0, coords[j]); x1 = Math.max(x1, coords[j]); y0 = Math.min(y0, coords[j + 1]); y1 = Math.max(y1, coords[j + 1]); }
+      mapName = data.name; coords = data.coordinates; view = displayView(coords, mapMeta?.display);
+      const P = view || coords; let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (let j = 0; j < P.length; j += 2) { x0 = Math.min(x0, P[j]); x1 = Math.max(x1, P[j]); y0 = Math.min(y0, P[j + 1]); y1 = Math.max(y1, P[j + 1]); }
       extent = [x0, x1, y0, y1];
       $('refresh').value = String(coords.length / 2 >= 1000000 ? 10000 : coords.length / 2 <= 20000 ? 150 : 1000);
       $('mapName').textContent = mapName;
@@ -462,8 +491,12 @@ async function start(options = {}) {
   const refinement = options.refinement ?? $('refinement').checked;
   clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
   if (options.recording !== false && coords.length >= 6) recordSafely(() => {
-    recorder = createRecorder(coords, { name: mapMeta ? exampleLabel(mapMeta, lang()) : mapName, inputSha256: inputHash, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1],
+    // B: the replay is drawn north-up like the map. The recording keeps the map only turned (scaled = false), so every recorded
+    // length stays exact and the player's own check of it passes; the east-west scale goes with it as xScale, applied when drawing.
+    const turned = view && displayView(coords, mapMeta?.display, false);
+    recorder = createRecorder(turned || coords, { name: mapMeta ? exampleLabel(mapMeta, lang()) : mapName, inputSha256: inputHash, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1],
       unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, source: mapMeta?.source || '', credit: mapMeta?.credit || '' }, { separate: recordingSeparate });
+    if (turned) recorder.data.xScale = mapMeta.display.xScale;
   });
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
   runRecord = { schema: '8ztsp-web-run-v1', name: mapName, inputSha256: inputHash, cities: coords.length / 2, seconds, seed,
@@ -581,7 +614,7 @@ async function loadExample(id = $('example').value) {
   const request = ++exampleRequest;
   showMap(id); render();
   if (item.generator) {   // R3: DIMACS portgen on the device, then the checksum of the generated file
-    clearReplay(); text = ''; coords = new Float64Array(); extent = null; tour = null; runRecord = null; mapMeta = null; $('stopOptimum').checked = false; setReference(null); best = Infinity; draw();
+    clearReplay(); text = ''; coords = new Float64Array(); extent = null; view = null; tour = null; runRecord = null; mapMeta = null; $('stopOptimum').checked = false; setReference(null); best = Infinity; draw();
     status('generating', item.id);
     const worker = loading = new Worker(new URL('./generator-worker.js', import.meta.url), { type: 'module' }); controls();
     const data = await new Promise((resolve, reject) => {

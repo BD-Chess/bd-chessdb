@@ -309,6 +309,7 @@ export const examples = [
   {
     "id": "wi29",
     "label": "Western Sahara · 29",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.907789},
     "names": {
       "en": "Western Sahara",
       "sl": "Zahodna Sahara"
@@ -328,6 +329,7 @@ export const examples = [
   {
     "id": "dj38",
     "label": "Djibouti · 38",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.979096},
     "names": {
       "en": "Djibouti",
       "sl": "Džibuti"
@@ -507,6 +509,7 @@ export const examples = [
   {
     "id": "qa194",
     "label": "Qatar · 194",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.902167},
     "names": {
       "en": "Qatar",
       "sl": "Katar"
@@ -566,6 +569,7 @@ export const examples = [
   {
     "id": "uy734",
     "label": "Uruguay · 734",
+    "display": {"axes": "lat-lon", "north": -1, "east": -1, "xScale": 0.838636},
     "names": {
       "en": "Uruguay",
       "sl": "Urugvaj"
@@ -585,6 +589,7 @@ export const examples = [
   {
     "id": "zi929",
     "label": "Zimbabwe · 929",
+    "display": {"axes": "lat-lon", "north": -1, "east": 1, "xScale": 0.944578},
     "names": {
       "en": "Zimbabwe",
       "sl": "Zimbabve"
@@ -604,6 +609,7 @@ export const examples = [
   {
     "id": "lu980",
     "label": "Luxembourg · 980",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.645668},
     "names": {
       "en": "Luxembourg",
       "sl": "Luksemburg"
@@ -763,6 +769,7 @@ export const examples = [
   {
     "id": "rw1621",
     "label": "Rwanda · 1,621",
+    "display": {"axes": "lat-lon", "north": -1, "east": 1, "xScale": 0.999426},
     "names": {
       "en": "Rwanda",
       "sl": "Ruanda"
@@ -782,6 +789,7 @@ export const examples = [
   {
     "id": "mu1979",
     "label": "Oman · 1,979",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.920748},
     "names": {
       "en": "Oman",
       "sl": "Oman"
@@ -799,6 +807,7 @@ export const examples = [
     "optimum": 86891
   },  {
     "id": "che_from_europe_20261117",
+    "laptopTime": {"seconds": 5.6, "slowest": 6.0, "runs": 10, "threads": 12, "cores": 6, "date": "2026-11-18", "source": "/tsp/8ztsp/#w-log-20261117-che", "text": {"en": "On our laptop (the program itself, not the browser): optimum in 5.6 s · median of 10 runs (slowest 6.0 s), 6 of 8 cores, 12 threads", "sl": "Na našem prenosniku (program, ne brskalnik): optimum v 5,6 s · mediana 10 tekov (najpočasnejši 6,0 s), 6 od 8 jeder, 12 niti"}},
     "names": {
       "en": "Switzerland",
       "sl": "Švica"
@@ -843,6 +852,8 @@ export const examples = [
   {
     "id": "nu3496",
     "label": "Nicaragua · 3,496",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.975783},
+    "laptopTime": {"seconds": 5.8, "slowest": 12.2, "runs": 10, "threads": 12, "cores": 6, "date": "2026-11-18", "source": "/tsp/8ztsp/#w-log-20261117-che", "text": {"en": "On our laptop (the program itself, not the browser): optimum in 5.8 s · median of 10 runs (slowest 12.2 s), 6 of 8 cores, 12 threads", "sl": "Na našem prenosniku (program, ne brskalnik): optimum v 5,8 s · mediana 10 tekov (najpočasnejši 12,2 s), 6 od 8 jeder, 12 niti"}},
     "names": {
       "en": "Nicaragua (nu3496)",
       "sl": "Nikaragva (nu3496)"
@@ -862,6 +873,7 @@ export const examples = [
   {
     "id": "ca4663",
     "label": "Canada · 4,663",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.643703},
     "names": {
       "en": "Canada",
       "sl": "Kanada"
@@ -881,6 +893,7 @@ export const examples = [
   {
     "id": "tz6117",
     "label": "Tanzania · 6,117",
+    "display": {"axes": "lat-lon", "north": -1, "east": 1, "xScale": 0.994436},
     "names": {
       "en": "Tanzania",
       "sl": "Tanzanija"
@@ -934,6 +947,7 @@ export const examples = [
   {
     "id": "eg7146",
     "label": "Egypt · 7,146",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.866151},
     "names": {
       "en": "Egypt",
       "sl": "Egipt"
@@ -953,6 +967,7 @@ export const examples = [
   {
     "id": "ym7663",
     "label": "Yemen · 7,663",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.967444},
     "names": {
       "en": "Yemen",
       "sl": "Jemen"
@@ -972,6 +987,7 @@ export const examples = [
   {
     "id": "pm8079",
     "label": "Panama · 8,079",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.989279},
     "names": {
       "en": "Panama",
       "sl": "Panama"
@@ -991,6 +1007,7 @@ export const examples = [
   {
     "id": "ei8246",
     "label": "Ireland · 8,246",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.599564},
     "names": {
       "en": "Ireland",
       "sl": "Irska"
@@ -1010,6 +1027,7 @@ export const examples = [
   {
     "id": "ar9152",
     "label": "Argentina · 9,152",
+    "display": {"axes": "lat-lon", "north": -1, "east": -1, "xScale": 0.847528},
     "names": {
       "en": "Argentina",
       "sl": "Argentina"
@@ -1063,6 +1081,7 @@ export const examples = [
   {
     "id": "ja9847",
     "label": "Japan · 9,847",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.809669},
     "names": {
       "en": "Japan",
       "sl": "Japonska"
@@ -1082,6 +1101,7 @@ export const examples = [
   {
     "id": "gr9882",
     "label": "Greece · 9,882",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.781887},
     "names": {
       "en": "Greece",
       "sl": "Grčija"
@@ -1101,6 +1121,7 @@ export const examples = [
   {
     "id": "kz9976",
     "label": "Kazakhstan · 9,976",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.653032},
     "names": {
       "en": "Kazakhstan",
       "sl": "Kazahstan"
@@ -1144,6 +1165,7 @@ export const examples = [
   {
     "id": "fi10639",
     "label": "Finland · 10,639",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.462433},
     "names": {
       "en": "Finland",
       "sl": "Finska"
@@ -1162,6 +1184,7 @@ export const examples = [
   },
   {
     "id": "usa13509",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.779849},
     "names": {
       "en": "USA, places with 500 or more inhabitants (usa13509)",
       "sl": "ZDA, kraji z vsaj 500 prebivalci (usa13509)"
@@ -1192,6 +1215,7 @@ export const examples = [
   {
     "id": "mo14185",
     "label": "Morocco · 14,185",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.844104},
     "names": {
       "en": "Morocco",
       "sl": "Maroko"
@@ -1274,6 +1298,7 @@ export const examples = [
   {
     "id": "ho14473",
     "label": "Honduras · 14,473",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.968177},
     "names": {
       "en": "Honduras",
       "sl": "Honduras"
@@ -1327,6 +1352,7 @@ export const examples = [
   {
     "id": "it16862",
     "label": "Italy · 16,862",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.726147},
     "names": {
       "en": "Italy",
       "sl": "Italija"
@@ -1443,6 +1469,7 @@ export const examples = [
   {
     "id": "vm22775",
     "label": "Vietnam · 22,775",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.954408},
     "names": {
       "en": "Vietnam",
       "sl": "Vietnam"
@@ -1462,6 +1489,7 @@ export const examples = [
   {
     "id": "sw24978",
     "label": "Sweden · 24,978",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.504087},
     "names": {
       "en": "Sweden",
       "sl": "Švedska"
@@ -1515,6 +1543,7 @@ export const examples = [
   {
     "id": "bm33708",
     "label": "Burma · 33,708",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.934997},
     "names": {
       "en": "Burma",
       "sl": "Burma"
@@ -1706,6 +1735,7 @@ export const examples = [
   {
     "id": "ch71009",
     "label": "China · 71,009",
+    "display": {"axes": "lat-lon", "north": 1, "east": 1, "xScale": 0.844619},
     "names": {
       "en": "China",
       "sl": "Kitajska"
@@ -1743,6 +1773,7 @@ export const examples = [
   },
   {
     "id": "usa115475",
+    "display": {"axes": "lat-lon", "north": 1, "east": -1, "xScale": 0.785191},
     "names": {
       "en": "USA, all cities and towns (usa115475)",
       "sl": "ZDA, vsa mesta in naselja (usa115475)"
