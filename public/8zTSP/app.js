@@ -419,10 +419,10 @@ function finish(...key) {
   if (runRecord) runRecord.recording = recorder?.summary() ?? { failed: recordingFailed };
   controls();
 }
-function displayView(c, d) {   // B (BD 18 Nov): latitude, longitude drawn north-up, east to the right, the east-west axis scaled by cos(mean latitude); display only
+function displayView(c, d, scaled = true) {   // B (BD 18 Nov): latitude, longitude drawn north-up, east to the right, the east-west axis scaled by cos(mean latitude); display only
   if (!d || d.axes !== 'lat-lon') return null;
   const v = new Float64Array(c.length);
-  for (let i = 0; i < c.length; i += 2) { v[i] = d.east * c[i + 1] * d.xScale; v[i + 1] = d.north * c[i]; }
+  for (let i = 0; i < c.length; i += 2) { v[i] = d.east * c[i + 1] * (scaled ? d.xScale : 1); v[i + 1] = d.north * c[i]; }
   return v;
 }
 async function load(value, which, metadata = null, verifiedHash = null) {
@@ -491,8 +491,12 @@ async function start(options = {}) {
   const refinement = options.refinement ?? $('refinement').checked;
   clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
   if (options.recording !== false && coords.length >= 6) recordSafely(() => {
-    recorder = createRecorder(view || coords, {   // B: the replay is drawn north-up like the map name: mapMeta ? exampleLabel(mapMeta, lang()) : mapName, inputSha256: inputHash, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1],
+    // B: the replay is drawn north-up like the map. The recording keeps the map only turned (scaled = false), so every recorded
+    // length stays exact and the player's own check of it passes; the east-west scale goes with it as xScale, applied when drawing.
+    const turned = view && displayView(coords, mapMeta?.display, false);
+    recorder = createRecorder(turned || coords, { name: mapMeta ? exampleLabel(mapMeta, lang()) : mapName, inputSha256: inputHash, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1],
       unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, source: mapMeta?.source || '', credit: mapMeta?.credit || '' }, { separate: recordingSeparate });
+    if (turned) recorder.data.xScale = mapMeta.display.xScale;
   });
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
   runRecord = { schema: '8ztsp-web-run-v1', name: mapName, inputSha256: inputHash, cities: coords.length / 2, seconds, seed,
