@@ -37,3 +37,5 @@ for(const link of document.querySelectorAll('.member-jump a[href^="#member-"]'))
 function openHash(){if(!location.hash.startsWith('#member-'))return;const card=document.querySelector(location.hash);if(!card)return;if(allButton&&!allButton.classList.contains('active'))allButton.click();setOpen(card,true)}
 window.addEventListener('hashchange',openHash);openHash();setRevision();
 })();
+/* R6 (19 Nov 2026): link from AI8 State to AI8 Pulse, at the very top of the unlocked page. */
+(()=>{if(document.getElementById('ai8-pulse-link'))return;const a=document.createElement('a');a.id='ai8-pulse-link';a.href='./AI8-pulse.html';a.textContent='AI8 Pulse →';a.style.cssText='display:block;text-align:center;padding:9px 12px;background:#0d1321;border-bottom:1px solid rgba(145,166,202,.25);color:#4be1ce;font:750 .72rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;text-decoration:none';document.body.prepend(a)})();
