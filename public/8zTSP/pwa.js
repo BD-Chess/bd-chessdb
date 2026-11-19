@@ -15,19 +15,21 @@
 //    button and the offline state; the old boxes (above the map panel, at the bottom of the password page) are gone.
 (()=>{
  'use strict';
- const BUILT_AT='2026-11-19T10:28';
- const PAGE_BUILD='23033b8dee6401efa2b5';   // demo/pwa_build.py writes this build's id here: the page knows its own build without asking the worker   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
- const state=window.tsp8zPwa??={prompt:null,registration:null,acceptUpdate:false,reloading:false,message:null,build:''};
+ const BUILT_AT='2026-11-19T15:47';
+ const PAGE_BUILD='96c3663b69ea46db140e';   // demo/pwa_build.py writes this build's id here: the page knows its own build without asking the worker   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
+ const state=window.tsp8zPwa??={prompt:null,registration:null,acceptUpdate:false,reloading:false,message:null,build:'',latestBuild:'',userPressed:false};
  const T={
   install:['Install the app','Namesti aplikacijo'],
   ios:['On iPhone and iPad: Share → Add to Home Screen.','Na iPhonu in iPadu: Deli → Dodaj na začetni zaslon.'],
   ready:['Ready for offline use too.','Pripravljeno tudi za uporabo brez povezave.'],
   offline:['Offline · saved version.','Brez povezave · shranjena različica.'],
   notReady:['Offline use is not ready yet.','Uporaba brez povezave še ni pripravljena.'],
-  bar:['A new version is available. Updating stops the current run.','Na voljo je nova različica. Posodobitev ustavi tekoči tek.'],
-  barIdle:['A new version is available.','Na voljo je nova različica.'],   // R53: no run going, so no word about stopping one
+  bar:['A new version is available. Updating stops the current run and returns to the password screen.','Na voljo je nova različica. Posodobitev ustavi tekoči tek in vrne na vnos gesla.'],
+  barUnlocked:['A new version is available. Updating returns to the password screen.','Na voljo je nova različica. Posodobitev vrne na vnos gesla.'],
+  barIdle:['A new version is available.','Na voljo je nova različica.'],
   working:['Updating …','Posodabljam …'],
   now:['Update now','Posodobi zdaj'],
+  close:['Close','Zapri'],
   version:['Version','Različica'],
   diagPage:['page','stran'],diagSw:['worker','delavec'],diagWait:['waiting','čaka'],diagServer:['server','strežnik'],diagApp:['app','aplikacija'],yes:['yes','da'],no:['no','ne'],
   diagLast:['last','zadnje'],diag_auto:['auto','samodejno'],diag_press:['press','pritisk'],diag_net:['network','omrežje'],
@@ -41,12 +43,17 @@
  };
  const busy=()=>!!window.tsp8zLab?.liveWorkers;   // the engine is running
  const result=()=>!!window.tsp8zLab?.hasResult;   // a finished tour is on the screen
- // the bar at the very top (both pages), fixed, above everything
+ const unlocked=()=>!document.getElementById('pw');   // inside the decrypted page: never auto-reload back to the password screen
+ // Strip the cache-bust parameter left by rescue() so the address bar stays clean (preserves ?lang= and #hash).
+ try{const u=new URL(location.href);if(u.searchParams.has('_u')){u.searchParams.delete('_u');history.replaceState(null,'',u.pathname+(u.search?u.search:'')+u.hash);}}catch{}
+ // Entering the unlocked document (document.write keeps window.tsp8zPwa): cancel any lock-page timer so nothing pulls back to #pw.
+ if(unlocked()){clearTimeout(state.fallback);state.fallback=null;state.acceptUpdate=false;state.working=false;state.userPressed=false;}
+ // the bar at the very top (both pages), fixed, above everything; starts display:none so inline flex never overrides [hidden]
  let bar=document.getElementById('tsp8zUpdateBar');
  if(!bar){
   bar=document.createElement('div');bar.id='tsp8zUpdateBar';bar.hidden=true;bar.setAttribute('role','alert');
-  bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483000;box-sizing:border-box;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:center;padding:10px 14px;background:#f59e0b;color:#111;font:600 15px/1.35 system-ui,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.45)';
-  bar.innerHTML='<span id="tsp8zUpdateText"></span><button id="tsp8zUpdateNow" type="button" style="font:700 16px/1 system-ui,sans-serif;padding:12px 20px;border-radius:9px;border:0;background:#111;color:#fff;cursor:pointer"></button>';
+  bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483000;box-sizing:border-box;display:none;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:center;padding:10px 14px;background:#f59e0b;color:#111;font:600 15px/1.35 system-ui,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.45)';
+  bar.innerHTML='<span id="tsp8zUpdateText"></span><button id="tsp8zUpdateNow" type="button" style="font:700 16px/1 system-ui,sans-serif;padding:12px 20px;border-radius:9px;border:0;background:#111;color:#fff;cursor:pointer"></button><button id="tsp8zUpdateClose" type="button" style="font:700 18px/1 system-ui,sans-serif;padding:8px 12px;border-radius:9px;border:1px solid rgba(0,0,0,.35);background:transparent;color:#111;cursor:pointer">×</button>';
   document.body.prepend(bar);
  }
  // the footer line (both pages): the version, the install button, the offline state (ids kept for the checks)
@@ -63,10 +70,13 @@
  function paint(){
   install.textContent=text('install');status.textContent=state.message?text(state.message):'';
   document.getElementById('tsp8zVersion').textContent=stamp();document.getElementById('tsp8zBuild').textContent=state.build?`· ${state.build.slice(0,8)}`:'';
-  document.getElementById('tsp8zUpdateText').textContent=text(busy()?'bar':'barIdle');const now=document.getElementById('tsp8zUpdateNow');now.textContent=text(state.working?'working':'now');now.disabled=!!state.working;paintDiag();
+  document.getElementById('tsp8zUpdateText').textContent=text(busy()?'bar':unlocked()?'barUnlocked':'barIdle');
+  const now=document.getElementById('tsp8zUpdateNow');now.textContent=text(state.working?'working':'now');now.disabled=!!state.working;
+  const cls=document.getElementById('tsp8zUpdateClose');if(cls){cls.setAttribute('aria-label',text('close'));cls.title=text('close');cls.hidden=!!state.working;cls.style.display=state.working?'none':'inline-block';}
+  paintDiag();
  }
  function say(key){state.message=key;paint();}
- function showBar(on){bar.hidden=!on;document.body.style.paddingTop=on?`${bar.offsetHeight}px`:'';}
+ function showBar(on){bar.hidden=!on;bar.style.display=on?'flex':'none';document.body.style.paddingTop=on?`${bar.offsetHeight}px`:'';}
  function refresh(){install.hidden=standalone() || !(ios || state.prompt);paint();}
  window.onbeforeinstallprompt=event=>{event.preventDefault();state.prompt=event;refresh();};
  window.onappinstalled=()=>{state.prompt=null;refresh();};
@@ -77,7 +87,7 @@
  const ask=(worker,type)=>new Promise(done=>{try{const channel=new MessageChannel();channel.port1.onmessage=event=>done(event.data||null);worker.postMessage({type},[channel.port2]);}catch{done(null);}setTimeout(()=>done(null),3000);});
  // R53 diagnostics (K, BD's iPad): the last update step in this tab, its target, tries and time (sessionStorage); no private data
  function rec(){try{return JSON.parse(sessionStorage.getItem('tsp8z-diag')||'null');}catch{return null;}}
- function note(step){const v=(state.waitV||'').slice(0,8)||'?',r=rec(),n=r && r.v===v?r.n+1:1;try{sessionStorage.setItem('tsp8z-diag',JSON.stringify({s:step,v,n,t:new Date().toTimeString().slice(0,8)}));}catch{}paintDiag();}
+ function note(step,ver){const v=((ver||state.waitV||state.latestBuild)||'').slice(0,8)||'?',r=rec(),n=r && r.v===v?r.n+1:1;try{sessionStorage.setItem('tsp8z-diag',JSON.stringify({s:step,v,n,t:new Date().toTimeString().slice(0,8)}));}catch{}paintDiag();}
  function waitNow(){const w=state.registration?.waiting;if(!w){state.diagWait='–';state.waitV='';}paintDiag();}   // diagnostics: a worker that has taken over no longer waits
  function paintDiag(){
   const el=document.getElementById('tsp8zDiag');if(!el)return;
@@ -85,43 +95,76 @@
   if(r)parts.push(`${w('diagLast')} ${w('diag_'+r.s)} ×${r.n} → ${r.v} ${r.v==='?'?'?':r.v===state.diagCtl?'✓':'✗'} ${r.t}`);
   el.textContent=parts.join(' · ');
  }
- function take(src){const w=state.registration?.waiting;if(!w)return false;state.acceptUpdate=true;note(src||'press');w.postMessage({type:'SKIP_WAITING'});clearTimeout(state.fallback);state.fallback=setTimeout(rescue,4000);return true;}
- // R53 (BD's iPad, 18 Nov): if the waiting worker does not take over within 4 s (WebKit), get onto the new build anyway: drop this
- // registration and reload from the network, where the newest worker installs fresh. Only when the network answers: offline the
- // saved version stays and the bar with it.
- async function rescue(){
+ function take(src,target){
+  const w=state.registration?.waiting;
+  if(!w)return false;
+  if(target && state.waitV && state.waitV!==target)return false;   // stale intermediate waiting worker: let rescue() jump straight to latest
+  state.acceptUpdate=true;note(src||'press',target||state.waitV);
+  w.postMessage({type:'SKIP_WAITING'});
+  clearTimeout(state.fallback);state.fallback=setTimeout(()=>rescue(target),4000);
+  return true;
+ }
+ // R53/Gem1 (BD's iPhone/iPad): if the waiting worker is stuck or stale, clear our caches, drop old /8zTSP/ registrations and
+ // reload once with a cache-busting query param so the browser cannot stay trapped on an old build. Never runs automatically
+ // on an unlocked page.
+ async function rescue(target){
   if(state.reloading)return;
-  const online=!!(await serverBuild());   // Gem1/K: our server answered with a build, not just any 200 (a captive portal)
-  if(!online || state.reloading){state.working=false;paint();return;}
+  if(unlocked() && !state.userPressed){clearTimeout(state.fallback);state.fallback=null;return;}
+  const latest=target || await serverBuild();   // Gem1/K: our server answered with a build, not just any 200 (a captive portal)
+  if(!latest || state.reloading){state.working=false;state.userPressed=false;paint();return;}
+  if(latest===PAGE_BUILD){state.working=false;state.userPressed=false;showBar(false);paint();return;}
   state.reloading=true;state.working=true;paint();
-  note('net');try{sessionStorage.setItem('tsp8z-rescue','1');}catch{}
+  note('net',latest);
+  try{sessionStorage.setItem('tsp8z-rescue-v',latest);sessionStorage.removeItem('tsp8z-rescue');}catch{}
+  try{if('caches' in window){for(const k of await caches.keys())if(k.startsWith('8ztsp-pwa-'))await caches.delete(k);}}catch{}
+  try{const regs=await navigator.serviceWorker?.getRegistrations?.()||[];for(const r of regs)if(r.scope.endsWith('/8zTSP/'))await r.unregister();}catch{}
   try{await state.registration?.unregister();}catch{}
-  location.reload();
+  const u=new URL(location.href);u.searchParams.set('_u',latest.slice(0,8));location.replace(u.href);
  }
  // K (19 Nov, BD's iPad): which build is newest, asked of the server; a query string passes the worker (sw.js caches no query)
  async function serverBuild(){try{const r=await fetch('/8zTSP/precache-manifest.json?newest='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout?.(4000)});return r.ok?((await r.json())?.version||''):'';}catch{return '';}}
  // Gem1/K: look for a new build only when the server has one: its build first, at most once a minute, then update()
- async function check(){if(Date.now()-(state.lastCheck||0)<60000)return;state.lastCheck=Date.now();const latest=await serverBuild();state.diagServer=latest.slice(0,8)||'?';paintDiag();if(latest && latest!==PAGE_BUILD)state.registration?.update().catch(()=>{});}
- async function offer(){   // a new build waits in the service worker
-  const w=state.registration?.waiting;if(!w || state.reloading)return;
-  const cur=PAGE_BUILD,latest=await serverBuild();   // Gem1/K: the page's own build, not the worker's answer (which may not come)
-  const v=(await ask(w,'STATUS'))?.version||'';
-  state.diagServer=latest.slice(0,8)||'?';state.waitV=v;state.diagWait=v.slice(0,8)||'?';paintDiag();
-  if(!latest)return;   // K: offline, or the server does not answer: nothing to offer
-  if(cur && latest===cur){try{w.postMessage({type:'SKIP_WAITING'});}catch{}setTimeout(waitNow,1500);return;}   // K: the newest build already runs; the »waiting« worker is a copy: quietly, no bar, no reload
-  if(v && cur && v===cur)return;   // K: the »waiting« worker is the build this page already runs: nothing to offer
-  let done='';try{done=sessionStorage.getItem('tsp8z-auto-update')||'';}catch{}
-  state.again=!!v && done===v;   // taken once in this tab and still waiting: the network way
-  if(!busy() && !result()){   // BD: the engine is not running: take it and reload once by itself (one automatic reload per build)
-   if(state.again){rescue();return;}
-   if(v){try{sessionStorage.setItem('tsp8z-auto-update',v);}catch{}take('auto');return;}
-  }
-  paint();showBar(true);   // a run or a result: ask at the top
+ async function check(){
+  if(Date.now()-(state.lastCheck||0)<60000)return;
+  state.lastCheck=Date.now();
+  const latest=await serverBuild();
+  state.latestBuild=latest;state.diagServer=latest.slice(0,8)||'?';paintDiag();
+  if(!latest)return;
+  if(latest===PAGE_BUILD){showBar(false);try{sessionStorage.removeItem('tsp8z-rescue');sessionStorage.removeItem('tsp8z-rescue-v');}catch{}return;}
+  try{await state.registration?.update();}catch{}
+  if(state.registration?.waiting || !state.registration?.installing)offer(latest);
  }
- document.getElementById('tsp8zUpdateNow').onclick=()=>{
+ async function offer(knownLatest){   // a new build waits in the service worker (or is live on the server)
+  if(state.reloading)return;
+  const w=state.registration?.waiting;
+  const cur=PAGE_BUILD,latest=knownLatest || await serverBuild();   // Gem1/K: the page's own build, not the worker's answer (which may not come)
+  const v=w?((await ask(w,'STATUS'))?.version||''):'';
+  state.latestBuild=latest;state.diagServer=latest.slice(0,8)||'?';state.waitV=v;state.diagWait=w?(v.slice(0,8)||'?'):'–';paintDiag();
+  if(!latest)return;   // K: offline, or the server does not answer: nothing to offer
+  if(cur && latest===cur){showBar(false);if(w){try{w.postMessage({type:'SKIP_WAITING'});}catch{}setTimeout(waitNow,1500);}return;}   // K: the newest build already runs; quietly, no bar, no reload
+  if(w && v && v!==latest){state.registration?.update().catch(()=>{});}   // stale waiting worker (two builds in a row): fetch latest
+  let done='',rescued='',dismissed='';
+  try{done=sessionStorage.getItem('tsp8z-auto-update')||'';rescued=sessionStorage.getItem('tsp8z-rescue-v')||'';dismissed=sessionStorage.getItem('tsp8z-dismiss')||'';}catch{}
+  state.again=done===latest;
+  if(!unlocked() && !busy() && !result()){   // auto-update ONLY on the lock page: never pull an unlocked user back to #pw
+   if(done!==latest && w && (!v || v===latest)){try{sessionStorage.setItem('tsp8z-auto-update',latest);}catch{}take('auto',latest);return;}
+   if(rescued!==latest){rescue(latest);return;}
+  }
+  if(unlocked() && dismissed===latest){showBar(false);return;}
+  paint();showBar(true);   // unlocked page (or lock-page fallback after rescue): offer at the top
+ }
+ document.getElementById('tsp8zUpdateNow').onclick=async()=>{
   if(window.tsp8zLab?.liveWorkers)window.tsp8zLab.stop();
-  state.working=true;paint();
-  if(state.again || !take('press'))rescue();   // nothing to take, or taken before in vain: the network way
+  state.userPressed=true;state.working=true;paint();
+  const latest=(await serverBuild()) || state.latestBuild;
+  if(!latest){state.working=false;state.userPressed=false;paint();return;}
+  if(latest===PAGE_BUILD){state.working=false;state.userPressed=false;showBar(false);paint();return;}
+  if(state.again || !take('press',latest))rescue(latest);   // nothing to take, stale worker, or taken before in vain: the network way
+ };
+ document.getElementById('tsp8zUpdateClose').onclick=()=>{
+  const target=state.latestBuild || state.waitV || '';
+  if(target){try{sessionStorage.setItem('tsp8z-dismiss',target);}catch{}}
+  showBar(false);
  };
  window.MDLxDCCLocale?.subscribe?.(()=>paint());
  if('serviceWorker' in navigator && location.pathname.startsWith('/8zTSP/')){
@@ -130,10 +173,12 @@
   const stampBuild=async()=>{const c=navigator.serviceWorker.controller;if(c){state.build=(await ask(c,'STATUS'))?.version||'';}state.diagCtl=c?(state.build.slice(0,8)||'?'):'–';paint();};
   state.uncontrolledAtLoad=!navigator.serviceWorker.controller;
   state.controllerHandler=()=>{
-   if(state.acceptUpdate && !state.reloading){state.reloading=true;location.reload();return;}
-   let r='';try{r=sessionStorage.getItem('tsp8z-rescue')||'';}catch{}
-   if(r && state.uncontrolledAtLoad && !state.reloading){try{sessionStorage.removeItem('tsp8z-rescue');}catch{}state.reloading=true;location.reload();return;}   // after the network way: run from the newest worker
+   if(state.acceptUpdate && !state.reloading){clearTimeout(state.fallback);state.reloading=true;location.reload();return;}
+   // Never force a second reload on clients.claim(): the page already loaded from network on the latest build, and reloading
+   // here pulled unlocked users back to the password screen.
+   try{sessionStorage.removeItem('tsp8z-rescue');}catch{}
    stampBuild();waitNow();
+   if(!state.registration?.waiting || (state.latestBuild && state.latestBuild===PAGE_BUILD))showBar(false);
   };
   navigator.serviceWorker.addEventListener('controllerchange',state.controllerHandler);
   navigator.serviceWorker.register('/8zTSP/sw.js',{scope:'/8zTSP/',updateViaCache:'none'}).then(async registration=>{

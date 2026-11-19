@@ -1,6 +1,6 @@
 // Packager replaces BUILD; scope is deliberately limited to this application.
 'use strict';
-const BUILD='23033b8dee6401efa2b5';
+const BUILD='96c3663b69ea46db140e';
 const BASE='/8zTSP/',PREFIX='8ztsp-pwa-',CACHE=PREFIX+BUILD;
 const absolute=path=>new URL(path,self.location.origin+BASE).href;
 let manifestPromise;
@@ -50,14 +50,17 @@ self.addEventListener('fetch',event=>{
   const isPage=request.mode==='navigate' && [BASE,BASE+'index.html'].includes(url.pathname);
   if(isPage){event.respondWith((async()=>{
     const cache=await caches.open(CACHE);
+    const bypass=url.searchParams.has('_u');
     try {
-      const response=await fetch(request);
+      const response=await fetch(bypass?url.href:request,bypass?{cache:'no-store',credentials:'same-origin'}:undefined);
       if(!response.ok)throw Error('Page unavailable');
       if(await protectedPage(response)){
-        // Keep the active old HTML/assets coherent until the user accepts the waiting version.
-        const info=await fetch(absolute('precache-manifest.json'),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
-        if(info && info.version!==BUILD){const old=await cache.match(absolute(''));if(old)return old;}
-        await cache.put(absolute(''),response.clone());
+        if(!bypass){
+          // Keep the active old HTML/assets coherent until the user accepts the waiting version.
+          const info=await fetch(absolute('precache-manifest.json'),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+          if(info && info.version!==BUILD){const old=await cache.match(absolute(''));if(old)return old;}
+          await cache.put(absolute(''),response.clone());
+        }
       }
       return response;
     }catch{const response=await cache.match(absolute(''));if(response)return response;return new Response('Offline page unavailable. Visit once online first.',{status:503,headers:{'Content-Type':'text/plain'}});}
