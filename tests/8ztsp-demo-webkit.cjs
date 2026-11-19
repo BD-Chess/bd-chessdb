@@ -62,7 +62,10 @@ function serve(req, res) {
 const tls = https.createServer({key: fs.readFileSync(path.join(tmp, 'key.pem')), cert: fs.readFileSync(path.join(tmp, 'cert.pem'))}, serve);
 tls.on('clientError', (_e, sock) => sock.destroy());
 tls.on('connection', s => s.on('error', () => {}));
+tls.on('secureConnection', s => s.on('error', () => {}));
 const proxy = http.createServer((req, res) => { res.writeHead(403); res.end(); });  // only CONNECT to www.mdlxdcc.org:443
+proxy.on('clientError', (_e, sock) => sock.destroy());
+proxy.on('connection', s => s.on('error', () => {}));
 proxy.on('connect', (req, sock, head) => {
   if (req.url !== 'www.mdlxdcc.org:443') { sock.end('HTTP/1.1 403 Forbidden\r\n\r\n'); return; }
   const up = net.connect(tls.address().port, '127.0.0.1', () => { sock.write('HTTP/1.1 200 Connection Established\r\n\r\n'); up.write(head); up.pipe(sock); sock.pipe(up); });
@@ -120,10 +123,11 @@ proxy.on('connect', (req, sock, head) => {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const barInfo = p => p.evaluate(() => {
     const b = document.getElementById('tsp8zUpdateBar'), cs = b ? getComputedStyle(b) : null, r = b ? b.getBoundingClientRect() : {height: 0};
+    let diagObj = null; try { diagObj = JSON.parse(sessionStorage.getItem('tsp8z-diag') || 'null'); } catch {}
     return {visible: !!b && cs.display !== 'none' && r.height > 0, display: cs?.display, h: Math.round(r.height),
       locked: !!document.getElementById('pw'), unlocked: !document.getElementById('pw') && !!document.getElementById('run'),
       build: document.getElementById('tsp8zBuild')?.textContent?.trim() || '', diag: document.getElementById('tsp8zDiag')?.textContent?.trim() || '',
-      url: location.pathname + location.search};
+      diagN: diagObj?.n || 0, mark: window.__pwaMark || null, url: location.pathname + location.search};
   });
   const ctx2 = await browser.newContext({...iphone, ignoreHTTPSErrors: true});
   const p2 = await ctx2.newPage();
@@ -135,14 +139,17 @@ proxy.on('connect', (req, sock, head) => {
   await sleep(600);
   const pa = await barInfo(p2);
   check(!pa.visible && pa.display === 'none' && pa.h === 0, `PWA A up-to-date: bar hidden (display=${pa.display}, h=${pa.h})`);
-  // Build A -> B on lock page: auto-updates once, no loop, bar stays hidden
-  let reloads = 0; const onLoad = () => { reloads++; }; p2.on('load', onLoad);
+  // Build A -> B on lock page: auto-updates once (fresh document, BUILT_AT 15:02, diag n=1), no loop, bar stays hidden
+  await p2.evaluate(() => { window.__pwaMark = 'A'; });
+  let reloads = 0; const onNav = f => { if (f === p2.mainFrame()) reloads++; }; p2.on('framenavigated', onNav);
   buildOverride = makePwaBuild('bbbb2222bbbb2222bbbb', {builtAt: '2026-11-19T15:02'});
   await p2.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
-  await p2.waitForFunction(() => (document.getElementById('tsp8zBuild')?.textContent || '').includes('bbbb2222'), null, {timeout: 30000}).catch(() => {});
-  await sleep(2000); p2.off('load', onLoad);
+  await p2.waitForFunction(() => (document.getElementById('tsp8zDiag')?.textContent || '').includes('15:02') && (document.getElementById('tsp8zBuild')?.textContent || '').includes('bbbb2222'), null, {timeout: 30000}).catch(() => {});
+  await sleep(2500); p2.off('framenavigated', onNav);
   const pb = await barInfo(p2);
-  check(pb.build.includes('bbbb2222') && reloads === 1 && !pb.visible, `PWA A->B lock: auto-updated once to bbbb2222 (reloads=${reloads}), bar hidden (visible=${pb.visible})`);
+  console.log('  [PWA A->B]', JSON.stringify(pb), 'navs=', reloads);
+  check(pb.build.includes('bbbb2222') && pb.diag.includes('15:02') && pb.mark === null && pb.diagN === 1 && reloads <= 1 && !pb.visible,
+    `PWA A->B lock: auto-updated once to bbbb2222/15:02 (mark=${pb.mark}, n=${pb.diagN}, navs=${reloads}), bar hidden (visible=${pb.visible})`);
   // Build B -> C with stuck waiting worker (ignores SKIP_WAITING & STATUS): rescue() clears caches & lands cleanly on C
   buildOverride = makePwaBuild('cccc3333cccc3333cccc', {builtAt: '2026-11-19T15:03', stuckWorker: true});
   await p2.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
@@ -184,7 +191,6 @@ proxy.on('connect', (req, sock, head) => {
   await ctx2.close();
   buildOverride = null;
   fs.writeFileSync(path.join(OUT, 'result.txt'), log.join('\n') + '\n');
-  tls.on('connection', s => s.on('error', () => {}));
   await browser.close(); tls.close(); proxy.close();
   console.log(failed ? '8zTSP DEMO WEBKIT: FAILED' : '8zTSP DEMO WEBKIT: OK');
   process.exit(failed ? 1 : 0);
