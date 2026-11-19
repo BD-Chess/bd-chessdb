@@ -15,7 +15,8 @@
 //    button and the offline state; the old boxes (above the map panel, at the bottom of the password page) are gone.
 (()=>{
  'use strict';
- const BUILT_AT='2026-11-19T01:01';   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
+ const BUILT_AT='2026-11-19T01:30';
+ const PAGE_BUILD='22995a5852615007ffc0';   // demo/pwa_build.py writes this build's id here: the page knows its own build without asking the worker   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
  const state=window.tsp8zPwa??={prompt:null,registration:null,acceptUpdate:false,reloading:false,message:null,build:''};
  const T={
   install:['Install the app','Namesti aplikacijo'],
@@ -90,7 +91,7 @@
  // saved version stays and the bar with it.
  async function rescue(){
   if(state.reloading)return;
-  const online=await fetch('/8zTSP/sw.js',{cache:'no-store',signal:AbortSignal.timeout?.(3000)}).then(r=>r.ok,()=>false);
+  const online=!!(await serverBuild());   // Gem1/K: our server answered with a build, not just any 200 (a captive portal)
   if(!online || state.reloading){state.working=false;paint();return;}
   state.reloading=true;state.working=true;paint();
   note('net');try{sessionStorage.setItem('tsp8z-rescue','1');}catch{}
@@ -99,9 +100,11 @@
  }
  // K (19 Nov, BD's iPad): which build is newest, asked of the server; a query string passes the worker (sw.js caches no query)
  async function serverBuild(){try{const r=await fetch('/8zTSP/precache-manifest.json?newest='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout?.(4000)});return r.ok?((await r.json())?.version||''):'';}catch{return '';}}
+ // Gem1/K: look for a new build only when the server has one: its build first, at most once a minute, then update()
+ async function check(){if(Date.now()-(state.lastCheck||0)<60000)return;state.lastCheck=Date.now();const latest=await serverBuild();state.diagServer=latest.slice(0,8)||'?';paintDiag();if(latest && latest!==PAGE_BUILD)state.registration?.update().catch(()=>{});}
  async function offer(){   // a new build waits in the service worker
   const w=state.registration?.waiting;if(!w || state.reloading)return;
-  const c=navigator.serviceWorker.controller,cur=state.build||(c?(await ask(c,'STATUS'))?.version||'':''),latest=await serverBuild();
+  const cur=PAGE_BUILD,latest=await serverBuild();   // Gem1/K: the page's own build, not the worker's answer (which may not come)
   const v=(await ask(w,'STATUS'))?.version||'';
   state.diagServer=latest.slice(0,8)||'?';state.waitV=v;state.diagWait=v.slice(0,8)||'?';paintDiag();
   if(!latest)return;   // K: offline, or the server does not answer: nothing to offer
@@ -145,9 +148,9 @@
    await stampBuild();
    {const w=registration.waiting;if(w && !state.waitV){state.diagWait=(((await ask(w,'STATUS'))?.version)||'').slice(0,8)||'?';paintDiag();}}   // diagnostics: a worker that already waits
    // D5: look for a new build when the page opens and whenever the tab becomes visible again
-   registration.update().catch(()=>{});
+   check();
    if(state.visibilityHandler)document.removeEventListener('visibilitychange',state.visibilityHandler);   // the unlocked page is a new document: listen again
-   state.visibilityHandler=()=>{if(document.visibilityState==='visible')state.registration?.update().catch(()=>{});};document.addEventListener('visibilitychange',state.visibilityHandler);
+   state.visibilityHandler=()=>{if(document.visibilityState==='visible')check();};document.addEventListener('visibilitychange',state.visibilityHandler);
   }).catch(()=>{say('notReady');refresh();});
  }
  refresh();
