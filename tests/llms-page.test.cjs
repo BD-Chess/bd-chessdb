@@ -59,12 +59,21 @@ test('shipped JSON matches the schema the page reads', () => {
   assert.equal(SRC.accepted.length, META.counts.sources_accepted);
   // No raw scraped pages and nothing secret-looking in the shipped data.
   for (const f of fs.readdirSync(DIR)) assert.ok(['index.html', 'chats.html', 'meta_index.json', 'sources.json', 'commentary_sl.json', 'captures.json', 'data'].includes(f), 'unexpected file ' + f);
-  // Every capture stays published (BD, 2026-11-16): captures.json lists them newest first, each has its three files,
-  // and the root files are the latest capture.
+  // Published captures are listed newest first and the root files mirror the latest capture.
   const CAPS = JSON.parse(fs.readFileSync(path.join(DIR, 'captures.json'), 'utf8'));
   assert.equal(CAPS.schema, 'ai8-llm-meta-captures-v1');
   assert.ok(CAPS.captures.length >= 2 && CAPS.captures.some(c => c.date === '2026-10-30'), 'the 30. 10. capture is kept');
   assert.equal(CAPS.latest, CAPS.captures[0].date);
+  assert.ok(!CAPS.captures.some(c => c.date === '2026-11-16'), 'R3 replaces the November 16 public capture');
+  if (CAPS.latest === '2026-11-20') {
+    assert.deepEqual(META.capture_scope, SRC.capture_scope);
+    for (const id of ['gpt-6.2-astra', 'gpt-6.2-sol', 'gemini-4-neon']) {
+      const model = META.models.find(m => m.model_id === id);
+      assert.ok(model && model.overall_rank, id + ' is ranked');
+      assert.ok(model.n_sources >= META.config.rank_min_sources);
+      assert.ok(model.category_coverage >= META.config.rank_min_coverage);
+    }
+  }
   assert.equal(META.data_fetched, CAPS.latest);
   for (const c of CAPS.captures) {
     assert.equal(c.path, 'data/' + c.date + '/');
@@ -228,9 +237,9 @@ test('older captures stay available: ?d= loads them and the list switches betwee
   // Hydrogen came out after this capture, so the note lists it without numbers.
   assert.match(doc.getElementById('newbox').textContent, /gemini-4-hydrogen — izšel 12\. 11\. 2026 · po zadnjem zajemu podatkov/);
   window.close();
-  const b = await boot('https://www.mdlxdcc.org/llms/?d=1999-01-01');
+  const b = await boot('https://www.mdlxdcc.org/llms/?d=2026-11-16');
   assert.deepEqual(b.errors, []);
-  assert.equal(b.doc.getElementById('cap-sel').value, CAPS.latest, 'an unknown date falls back to the latest capture');
+  assert.equal(b.doc.getElementById('cap-sel').value, CAPS.latest, 'the removed capture URL falls back to the latest capture');
   assert.ok(b.requested.includes('/llms/meta_index.json'));
   b.window.close();
 });
