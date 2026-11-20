@@ -229,12 +229,19 @@ let base;
                 for (const row of result) assert.equal(row.dim, byId[row.id].overall < floor);
                 const pareto = result.filter(r => r.badge).map(r => r.id).sort();
                 assert.ok(pareto.every(id => byId[id].overall >= floor));
-                if (date === captures.latest && floor === 50) {
-                  assert.deepEqual(pareto, ['claude-fable-5.2', 'gemini-4-carbon', 'gemini-4-hydrogen',
-                    'gpt-6.1-sol', 'gpt-6.1-terra', 'muse-ember'].sort());
-                  if (direction === 'descending') assert.deepEqual(result.slice(0, 10).map(r => r.id), [
-                    'muse-ember', 'deepseek-v4.1-flash', 'gpt-6.1-terra', 'qwen4-max', 'inkling-2-small',
-                    'gemini-4-hydrogen', 'gpt-6.1-sol', 'muse-spark-1.3', 'gemini-3.7-flash', 'qwen3.8-flash-next']);
+                if (floor === 50) {
+                  const priced = models.filter(m => value(m) !== null);
+                  const want = priced.filter(m => !priced.some(other => {
+                    const cheaper = other.price.blended_3to1 < m.price.blended_3to1;
+                    const sameCost = other.price.blended_3to1 === m.price.blended_3to1;
+                    return (cheaper && other.overall >= m.overall) || (sameCost && other.overall > m.overall);
+                  })).map(m => m.model_id).sort();
+                  assert.deepEqual(pareto, want, 'Pareto badges match the selected capture');
+                  if (direction === 'descending') {
+                    const top = priced.sort((a, b) => value(b) - value(a) || a.overall_rank - b.overall_rank)
+                      .slice(0, 10).map(m => m.model_id);
+                    assert.deepEqual(result.slice(0, 10).map(r => r.id), top);
+                  }
                 }
                 report.qualityFloors.push({ engine, date, floor, direction, rows: result.length,
                   pricedEligible: eligible.length, firstModel: result[0].id, pareto });

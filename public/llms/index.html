@@ -434,7 +434,7 @@
         thinNote: "Zatemnjeno z * = ocena v tej kategoriji iz največ 2 neodvisnih virov; beri previdno.",
         newTag: "NOVO", newFam: "Nova družina", released: "izšel", afterData: "po zadnjem zajemu podatkov — še brez ocene", notInData: "še ni na nobeni sprejeti lestvici — brez ocene",
         notRanked: "še ni rangiran", announce: "objava",
-        newNote: "Številke so iz zadnje gradnje. Nov model dobi oceno, ko ga pokrijejo vsaj 3 neodvisni viri; do takrat je tu naveden brez številk.",
+        newNote: "Rezultati veljajo za izbrani zajem. Skupno mesto zahteva vsaj 3 neodvisne vire in 45 % pokritosti kategorij.",
         none: "–"
       },
       en: {
@@ -463,7 +463,7 @@
         thinNote: "Dimmed with * = score in this category from at most 2 independent sources; read with care.",
         newTag: "NEW", newFam: "New family", released: "released", afterData: "after the last data collection — not scored yet", notInData: "not yet on any accepted board — no score",
         notRanked: "not ranked yet", announce: "announcement",
-        newNote: "The numbers come from the latest build. A new model gets a score once at least 3 independent sources cover it; until then it is listed here without numbers.",
+        newNote: "Results are for the selected capture. An overall rank requires at least 3 independent sources and 45% category coverage.",
         none: "–"
       }
     };
@@ -473,10 +473,13 @@
     var WATCH = [
       { id: "gemini-4-argon", family: "Gemini 4", released: "2026-09-30" },
       { id: "gemini-4-carbon", family: "Gemini 4", released: "2026-10-28" },
-      { id: "gemini-4-hydrogen", family: "Gemini 4", released: "2026-11-12", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/" }
+      { id: "gemini-4-hydrogen", family: "Gemini 4", released: "2026-11-12", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/" },
+      { id: "gemini-4-neon", family: "Gemini 4", released: "2026-11-18", url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/" },
+      { id: "gpt-6.2-astra", family: "GPT-6.2", released: "2026-11-17", url: "https://openai.com/index/introducing-gpt-6-2-astra-sol/" },
+      { id: "gpt-6.2-sol", family: "GPT-6.2", released: "2026-11-17", url: "https://openai.com/index/introducing-gpt-6-2-astra-sol/" }
     ];
     var NEW_DAYS = 60;
-    // Capture dates (BD, 2026-11-16: keep every capture and choose it from a list). captures.json lists them, newest first;
+    // Published capture dates (choose a capture from the list). captures.json lists them, newest first;
     // the latest capture stays at the root, older ones are read from data/<date>/ when ?d=<date> asks for them.
     var CAPS = null, CAPDIR = "", CAPDATE = null;
     // Value (BD, 2026-11-16: »jaz bi dal več teže kvaliteti odgovorov«; a quality-floor list, default 50).
@@ -550,7 +553,8 @@
       el("strip-warn").hidden = !(stale || CAPDIR);
       el("strip-warn").textContent = CAPDIR ? t("archived") : (stale ? t("stale") : "");
       renderCapPick();
-      el("foot-dates").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("built") + " " + builtTxt;
+      var scope = D.capture_scope && D.capture_scope.note && D.capture_scope.note[L()];
+      el("foot-dates").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("built") + " " + builtTxt + (scope ? " · " + scope : "");
       var cards = [[c.sources_accepted, t("st_sources")], [c.boards_used, t("st_boards")], [c.models_universe, t("st_models")], [c.models_ranked, t("st_ranked")], [c.sources_rejected, t("st_rejected")]];
       el("stats").innerHTML = cards.map(function (x) { return '<li class="stat"><b>' + esc(nfi(x[0])) + "</b><span>" + esc(x[1]) + "</span></li>"; }).join("");
       var lead = [];
@@ -626,6 +630,8 @@
           return '<li><span class="mid">' + esc(w.id) + "</span> — " + esc(t("released")) + " " + esc(fmtDate(rel)) + " · " + esc(txt) + (w.url ? " · " + link(w.url, t("announce")) : "") + "</li>";
         }).join("") + "</ul>";
       }).join("") + (order.length ? '<p class="small muted">' + esc(t("newNote")) + "</p>" : "");
+      var scope = D.capture_scope && D.capture_scope.note && D.capture_scope.note[L()];
+      if (scope && order.length) box.innerHTML += '<p class="small muted">' + esc(scope) + '</p>';
     }
 
     function renderCapPick() {
