@@ -105,6 +105,24 @@ footer{padding:14px 0 32px;border-top:1px solid var(--line);margin-top:28px;colo
   .tour-maps figure {display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:center;gap:12px}
   .tour-maps img {aspect-ratio:1;margin:0}
 }
+/* Edition 1 race media (20 Nov 2026). Reuses .cards/.card/.rec-tab; never sets display on .l-en/.l-sl, so the language rule above always wins. */
+.tour-maps-more {grid-template-columns:repeat(2,minmax(0,1fr))}
+.tour-maps-more .wide {grid-column:1/-1}
+.tour-maps-more img {aspect-ratio:auto;max-height:min(78vh,720px)}
+.clips {grid-template-columns:repeat(3,minmax(0,1fr))}
+.clips figure {margin:0;min-width:0;padding:12px}
+.clips video {display:block;width:100%;height:auto;aspect-ratio:16/9;background:#050c18;border-radius:8px;margin-bottom:12px}
+.clips figcaption {min-width:0;overflow-wrap:anywhere}
+.chart-h {margin:20px 0 0;font-size:calc(17px*var(--fs))}
+.race-chart {margin:0 0 8px}
+.race-chart img {width:100%;min-width:720px;height:auto;vertical-align:top;background:#04070e}
+.race-chart figcaption {color:var(--muted);font-size:calc(14px*var(--fs));line-height:1.55}
+@media(max-width:720px) {
+  .tour-maps-more {grid-template-columns:1fr}
+  .tour-maps-more figure {display:block}
+  .tour-maps-more img {aspect-ratio:auto;margin:0 0 12px}
+  .clips {grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -149,6 +167,95 @@ footer{padding:14px 0 32px;border-top:1px solid var(--line);margin-top:28px;colo
       <figcaption>
         <h3><span class="l-en" lang="en">Italy</span><span class="l-sl" lang="sl">Italija</span> <code>it16862</code></h3>
         <p><span class="l-en" lang="en">16,862 cities. Map shows a tour of 557,346. Edition 1 reached a verified <b>557,316</b>, one unit above the proved optimum of 557,315.</span><span class="l-sl" lang="sl">16.862 mest. Zemljevid prikazuje pot dolžine 557.346. Preverjena pot v 1. izdaji je merila <b>557.316</b>, kar je ena enota nad dokazanim optimumom 557.315.</span></p>
+      </figcaption>
+    </figure>
+  </div>
+  <p class="hint2"><span class="l-en" lang="en">More Edition 1 tours: each image shows the saved tour of one 12-thread 8zTSP run, independently verified for permutation and exact length. Geographic maps are drawn north up. Tour lengths use each instance’s own distance units (metres for Slovenia, Europe and Eurasia). Rival results are in the table below.</span><span class="l-sl" lang="sl">Še poti iz 1. izdaje: vsaka slika prikazuje shranjeno pot enega teka 8zTSP z 12 nitmi, neodvisno preverjeno glede permutacije in točne dolžine. Zemljevidi so narisani s severom zgoraj. Dolžine poti so v enotah razdalje posameznega primera (metri za Slovenijo, Evropo in Evrazijo). Rezultati tekmecev so v spodnji tabeli.</span></p>
+  <div class="cards tour-maps tour-maps-more">
+    <figure class="card alt">
+      <img src="./media/tour-sw24978-855610.svg" width="480" height="1039" loading="lazy" decoding="async" alt="Map of the verified 8zTSP tour through Sweden, north up" data-alt-en="Map of the verified 8zTSP tour through Sweden, north up" data-alt-sl="Zemljevid preverjene poti 8zTSP po Švedski, sever zgoraj">
+      <figcaption>
+        <h3><span class="l-en" lang="en">Sweden</span><span class="l-sl" lang="sl">Švedska</span> <code>sw24978</code></h3>
+        <p><span class="l-en" lang="en">24,978 places. Verified tour of <b>855,610</b>, +13 above the proved optimum of 855,597.</span><span class="l-sl" lang="sl">24.978 krajev. Preverjena pot dolžine <b>855.610</b>, +13 nad dokazanim optimumom 855.597.</span></p>
+        <p><a href="./media/tour-sw24978-855610.svg"><span class="l-en" lang="en">Full-size image</span><span class="l-sl" lang="sl">Slika v polni velikosti</span></a></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt">
+      <img src="./media/tour-pla85900-142474462.webp" width="1320" height="1239" loading="lazy" decoding="async" alt="Verified 8zTSP tour on the pla85900 instance, 85,900 points" data-alt-en="Verified 8zTSP tour on the pla85900 instance, 85,900 points" data-alt-sl="Preverjena pot 8zTSP na primeru pla85900, 85.900 točk">
+      <figcaption>
+        <h3><code>pla85900</code></h3>
+        <p><span class="l-en" lang="en">85,900 points, <code>CEIL_2D</code>. Verified tour of <b>142,474,462</b>, +0.0645% above the proved optimum of 142,382,641.</span><span class="l-sl" lang="sl">85.900 točk, <code>CEIL_2D</code>. Preverjena pot dolžine <b>142.474.462</b>, +0,0645 % nad dokazanim optimumom 142.382.641.</span></p>
+        <p><a href="./media/tour-pla85900-142474462.webp"><span class="l-en" lang="en">Full-size image</span><span class="l-sl" lang="sl">Slika v polni velikosti</span></a></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt">
+      <img src="./media/tour-europe598854-1582151514.webp" width="1240" height="1354" loading="lazy" decoding="async" alt="Map of the verified 8zTSP tour across Europe, 598,854 cities, north up" data-alt-en="Map of the verified 8zTSP tour across Europe, 598,854 cities, north up" data-alt-sl="Zemljevid preverjene poti 8zTSP po Evropi, 598.854 mest, sever zgoraj">
+      <figcaption>
+        <h3><span class="l-en" lang="en">Europe</span><span class="l-sl" lang="sl">Evropa</span></h3>
+        <p><span class="l-en" lang="en">598,854 cities, LAEA projection (EPSG:3035). Verified tour of <b>1,582,151,514</b> m; linkern and LKH reached shorter tours (see table).</span><span class="l-sl" lang="sl">598.854 mest, projekcija LAEA (EPSG:3035). Preverjena pot dolžine <b>1.582.151.514</b> m; linkern in LKH sta dosegla krajši poti (glej tabelo).</span></p>
+        <p><a href="./media/tour-europe598854-1582151514.webp"><span class="l-en" lang="en">Full-size image</span><span class="l-sl" lang="sl">Slika v polni velikosti</span></a></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt">
+      <img src="./media/tour-eurasia1169632-3999396820.webp" width="1320" height="1252" loading="lazy" decoding="async" alt="Map of the verified 8zTSP tour across Eurasia, 1,169,632 cities, north up" data-alt-en="Map of the verified 8zTSP tour across Eurasia, 1,169,632 cities, north up" data-alt-sl="Zemljevid preverjene poti 8zTSP po Evraziji, 1.169.632 mest, sever zgoraj">
+      <figcaption>
+        <h3><span class="l-en" lang="en">Eurasia</span><span class="l-sl" lang="sl">Evrazija</span></h3>
+        <p><span class="l-en" lang="en">1,169,632 cities, LAEA projection (own centre). Verified tour of <b>3,999,396,820</b> m; linkern’s last logged length was shorter, its saved tour longer (see table).</span><span class="l-sl" lang="sl">1.169.632 mest, projekcija LAEA (lastno središče). Preverjena pot dolžine <b>3.999.396.820</b> m; zadnja dnevniška dolžina linkern je bila krajša, njegova shranjena pot pa daljša (glej tabelo).</span></p>
+        <p><a href="./media/tour-eurasia1169632-3999396820.webp"><span class="l-en" lang="en">Full-size image</span><span class="l-sl" lang="sl">Slika v polni velikosti</span></a></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt wide">
+      <img src="./media/tour-world1904711-7574457334.webp" width="1520" height="777" loading="lazy" decoding="async" alt="World map of the verified 8zTSP tour, 1,904,711 locations, north up" data-alt-en="World map of the verified 8zTSP tour, 1,904,711 locations, north up" data-alt-sl="Zemljevid sveta s preverjeno potjo 8zTSP, 1.904.711 krajev, sever zgoraj">
+      <figcaption>
+        <h3><span class="l-en" lang="en">World</span><span class="l-sl" lang="sl">Svet</span></h3>
+        <p><span class="l-en" lang="en">1,904,711 locations, <code>GEOM</code> metric, plotted as a plain longitude–latitude map. Verified tour of <b>7,574,457,334</b>, +0.8285% above the lower bound of 7,512,218,268; LKH and linkern reached shorter tours (see table).</span><span class="l-sl" lang="sl">1.904.711 krajev, metrika <code>GEOM</code>, narisano kot navaden zemljevid dolžina–širina. Preverjena pot dolžine <b>7.574.457.334</b>, +0,8285 % nad spodnjo mejo 7.512.218.268; LKH in linkern sta dosegla krajši poti (glej tabelo).</span></p>
+        <p><a href="./media/tour-world1904711-7574457334.webp"><span class="l-en" lang="en">Full-size image</span><span class="l-sl" lang="sl">Slika v polni velikosti</span></a></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt wide">
+      <img src="./media/tour-e10m-2258513487.webp" width="1360" height="780" loading="lazy" decoding="async" alt="Verified 8zTSP tour on E10M.0: the full 10,000,000-city square beside a 25,000 × 25,000 centre detail" data-alt-en="Verified 8zTSP tour on E10M.0: the full 10,000,000-city square beside a 25,000 × 25,000 centre detail" data-alt-sl="Preverjena pot 8zTSP na E10M.0: celoten kvadrat z 10.000.000 mest ob osrednjem izseku 25.000 × 25.000">
+      <figcaption>
+        <h3><code>E10M.0</code></h3>
+        <p><span class="l-en" lang="en">10,000,000 cities, 30-minute cap. Left: the full square. Right: a 25,000 × 25,000 centre detail (about 6,250 cities). Verified tour of <b>2,258,513,487</b>, peak RAM <b>538 MB</b>.</span><span class="l-sl" lang="sl">10.000.000 mest, omejitev 30 minut. Levo: celoten kvadrat. Desno: osrednji izsek 25.000 × 25.000 (približno 6.250 mest). Preverjena pot dolžine <b>2.258.513.487</b>, največji RAM <b>538 MB</b>.</span></p>
+        <p><a href="./media/tour-e10m-2258513487.webp"><span class="l-en" lang="en">Full-size image</span><span class="l-sl" lang="sl">Slika v polni velikosti</span></a></p>
+      </figcaption>
+    </figure>
+  </div>
+  <p class="hint2"><span class="l-en" lang="en"><b>Sources.</b> Sweden and World: University of Waterloo, <a href="https://www.math.uwaterloo.ca/tsp/world/countries.html">National TSP collection</a> and <a href="https://www.math.uwaterloo.ca/tsp/world/">World TSP</a>, derived from National Imagery and Mapping Agency data. Europe and Eurasia: places of the World TSP (also USGS GNIS data), cut with Natural Earth borders (public domain) and projected by BD × AI Lab; distances are straight lines in the projection, not great-circle or road distances. <code>pla85900</code>: TSPLIB (Johnson). <code>E10M.0</code>: DIMACS Challenge instance (portgen). Slovenia: Surveying and Mapping Authority of the Republic of Slovenia (GURS), <a href="https://podatki.gov.si/dataset/register-prostorskih-enot">RPE settlements</a>, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</span><span class="l-sl" lang="sl"><b>Viri.</b> Švedska in svet: Univerza Waterloo, <a href="https://www.math.uwaterloo.ca/tsp/world/countries.html">zbirka National TSP</a> in <a href="https://www.math.uwaterloo.ca/tsp/world/">World TSP</a>, izpeljano iz podatkov National Imagery and Mapping Agency. Evropa in Evrazija: kraji iz World TSP (tudi podatki USGS GNIS), izrezani z mejami Natural Earth (javna domena) in projicirani za BD × AI Lab; razdalje so ravne črte v projekciji, ne razdalje po velikem krogu ali cestah. <code>pla85900</code>: TSPLIB (Johnson). <code>E10M.0</code>: primer iz tekmovanja DIMACS (portgen). Slovenija: Geodetska uprava Republike Slovenije (GURS), <a href="https://podatki.gov.si/dataset/register-prostorskih-enot">RPE Naselja</a>, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</span></p>
+</section>
+
+<section class="sec" aria-labelledby="clips-h">
+  <h2 id="clips-h"><span class="l-en" lang="en">Recorded-run clips</span><span class="l-sl" lang="sl">Animacije posnetih tekov</span></h2>
+  <p class="hint2"><span class="l-en" lang="en">Three 10-second clips built from tour snapshots saved during recorded 12-thread Edition 1 runs. They are not real time: a selection of snapshots is cross-faded, and the side panel shows each snapshot’s recorded length and time. The last frame is the run’s verified tour. The clips have no sound.</span><span class="l-sl" lang="sl">Tri 10-sekundne animacije iz posnetkov poti, shranjenih med posnetimi teki 1. izdaje z 12 nitmi. Niso v realnem času: izbrani posnetki se mehko prelivajo, stranska plošča pa kaže zabeleženo dolžino in čas posameznega posnetka. Zadnji kader je preverjena pot teka. Animacije nimajo zvoka.</span></p>
+  <div class="cards clips">
+    <figure class="card alt">
+      <video controls playsinline muted preload="metadata" width="1280" height="720" aria-labelledby="clip-si-h" aria-describedby="clip-si-p">
+        <source src="./media/anim-si6035-edition1.mp4" type="video/mp4">
+        <a href="./media/anim-si6035-edition1.mp4"><span class="l-en" lang="en">Download the clip (MP4)</span><span class="l-sl" lang="sl">Prenesi animacijo (MP4)</span></a>
+      </video>
+      <figcaption>
+        <h3 id="clip-si-h"><span class="l-en" lang="en">Slovenia</span><span class="l-sl" lang="sl">Slovenija</span> <code>si6035</code></h3>
+        <p id="clip-si-p"><span class="l-en" lang="en">6,035 settlements, north up. The last frame is the verified tour of <b>8,728,190 m</b>, found at 142.0 s (12 threads).</span><span class="l-sl" lang="sl">6.035 naselij, sever zgoraj. Zadnji kader je preverjena pot dolžine <b>8.728.190 m</b>, najdena v 142,0 s (12 niti).</span></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt">
+      <video controls playsinline muted preload="metadata" width="1280" height="720" aria-labelledby="clip-sw-h" aria-describedby="clip-sw-p">
+        <source src="./media/anim-sw24978-edition1.mp4" type="video/mp4">
+        <a href="./media/anim-sw24978-edition1.mp4"><span class="l-en" lang="en">Download the clip (MP4)</span><span class="l-sl" lang="sl">Prenesi animacijo (MP4)</span></a>
+      </video>
+      <figcaption>
+        <h3 id="clip-sw-h"><span class="l-en" lang="en">Sweden</span><span class="l-sl" lang="sl">Švedska</span> <code>sw24978</code></h3>
+        <p id="clip-sw-p"><span class="l-en" lang="en">24,978 places, north up. The last frame is the verified tour of <b>855,610</b>, +13 above the proved optimum of 855,597, found at 1,309.8 s (12 threads).</span><span class="l-sl" lang="sl">24.978 krajev, sever zgoraj. Zadnji kader je preverjena pot dolžine <b>855.610</b>, +13 nad dokazanim optimumom 855.597, najdena v 1.309,8 s (12 niti).</span></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt">
+      <video controls playsinline muted preload="metadata" width="1280" height="720" aria-labelledby="clip-e10m-h" aria-describedby="clip-e10m-p">
+        <source src="./media/anim-e10m-edition1.mp4" type="video/mp4">
+        <a href="./media/anim-e10m-edition1.mp4"><span class="l-en" lang="en">Download the clip (MP4)</span><span class="l-sl" lang="sl">Prenesi animacijo (MP4)</span></a>
+      </video>
+      <figcaption>
+        <h3 id="clip-e10m-h"><code>E10M.0</code></h3>
+        <p id="clip-e10m-p"><span class="l-en" lang="en">10,000,000 cities, centre region of 35,000 × 30,000. The last frame is the verified tour of <b>2,258,513,487</b>, found at 1,790.5 s (12 threads, peak RAM 538 MB).</span><span class="l-sl" lang="sl">10.000.000 mest, osrednje območje 35.000 × 30.000. Zadnji kader je preverjena pot dolžine <b>2.258.513.487</b>, najdena v 1.790,5 s (12 niti, največji RAM 538 MB).</span></p>
       </figcaption>
     </figure>
   </div>
@@ -284,6 +391,36 @@ footer{padding:14px 0 32px;border-top:1px solid var(--line);margin-top:28px;colo
 </table>
 </div>
 <p class="hint2"><span class="l-en" lang="en"><b>Concorde status, 20 Nov 2026.</b> Slovenia (<code>si6035</code>) has a lower bound of 8,727,711 and a saved tour of length 8,728,190. The optimality proofs for Slovenia and Croatia (<code>HARD-25K</code>, 24,857 cities) were still open in the latest checked report. Percentages next to tour lengths use the reference shown in the same row where available.</span><span class="l-sl" lang="sl"><b>Stanje Concorda, 20. nov. 2026.</b> Za Slovenijo (<code>si6035</code>) je spodnja meja 8.727.711, dolžina shranjene poti pa 8.728.190. Dokaza optimalnosti za Slovenijo in Hrvaško (<code>HARD-25K</code>, 24.857 mest) sta bila v zadnjem pregledanem poročilu še odprta. Odstotki ob dolžinah se nanašajo na referenco, navedeno v isti vrstici, kjer je ta na voljo.</span></p>
+</section>
+
+<section class="sec" aria-labelledby="charts-h">
+  <h2 id="charts-h"><span class="l-en" lang="en">Gap and memory charts</span><span class="l-sl" lang="sl">Grafikona odstopanja in pomnilnika</span></h2>
+
+  <h3 class="chart-h" id="gap-chart-h"><span class="l-en" lang="en">Gap above the reference, all 12 levels</span><span class="l-sl" lang="sl">Odstopanje nad referenco na vseh 12 ravneh</span></h3>
+  <figure class="race-chart">
+    <div class="rec-tab" role="region" aria-labelledby="gap-chart-h" tabindex="0">
+      <img class="l-en" src="./media/chart-edition1-gap-en.svg" width="1100" height="820" loading="lazy" decoding="async" alt="Chart of the gap above the reference at all 12 Edition 1 levels: 8zTSP against the closest rival. See the caption below and the table above.">
+      <img class="l-sl" src="./media/chart-edition1-gap-sl.svg" width="1100" height="820" loading="lazy" decoding="async" alt="Grafikon odstopanja nad referenco na vseh 12 ravneh 1. izdaje: 8zTSP proti najožjemu tekmecu. Glej opis spodaj in tabelo zgoraj.">
+    </div>
+    <figcaption>
+      <span class="l-en" lang="en">Gap (%) above the reference recorded for each of the 12 Edition 1 levels (2,850 to 100,000,000 cities). The reference differs by level and is labelled on each row: proved optimum (Concorde/NEOS), lower bound, earlier known reference tour (Europe, Eurasia) or estimate (E10M.0, E100M). A negative gap means a tour shorter than the earlier known reference tour; it is not a negative cost and not a proof. 8zTSP (12 threads) is shown against the closest rival result on each level; rivals ran with their own recorded thread or copy counts. A rival’s last logged length and the length of its saved final tour are both shown only where both are available (the two can differ; equal values appear once). Not every solver has a result at every level, and no rival value is shown for E100M.</span>
+      <span class="l-sl" lang="sl">Odstopanje (%) nad referenco, zabeleženo za vsako od 12 ravni 1. izdaje (2.850 do 100.000.000 mest). Referenca se razlikuje po ravneh in je označena pri vsaki vrstici: dokazani optimum (Concorde/NEOS), spodnja meja, prejšnja znana referenčna pot (Evropa, Evrazija) ali ocena (E10M.0, E100M). Negativno odstopanje pomeni pot, krajšo od prejšnje znane referenčne poti; ni negativen strošek in ni dokaz. 8zTSP (12 niti) je prikazan proti najožjemu izidu tekmeca na posamezni ravni; tekmeci so tekli s svojim zabeleženim številom niti ali primerkov. Zadnja dnevniška dolžina in dolžina shranjene končne poti tekmeca sta prikazani le tam, kjer sta obe na voljo (lahko se razlikujeta; enaki vrednosti se pojavita enkrat). Vsak program nima izida na vsaki ravni, za E100M pa ni prikazane nobene vrednosti tekmeca.</span>
+      <a class="l-en" lang="en" href="./media/chart-edition1-gap-en.svg">Open the chart in full size</a><a class="l-sl" lang="sl" href="./media/chart-edition1-gap-sl.svg">Odpri grafikon v polni velikosti</a>
+    </figcaption>
+  </figure>
+
+  <h3 class="chart-h" id="ram-chart-h"><span class="l-en" lang="en">Peak memory at 10 million and 100 million cities</span><span class="l-sl" lang="sl">Največja poraba pomnilnika pri 10 milijonih in 100 milijonih mest</span></h3>
+  <figure class="race-chart">
+    <div class="rec-tab" role="region" aria-labelledby="ram-chart-h" tabindex="0">
+      <img class="l-en" src="./media/chart-edition1-ram-en.svg" width="1020" height="505" loading="lazy" decoding="async" alt="Bar chart of peak memory: at E10M.0, 8zTSP 538 MB, linkern 11.5 GB, LKH 17.5 GB; at E100M, 8zTSP 4.94 GB.">
+      <img class="l-sl" src="./media/chart-edition1-ram-sl.svg" width="1020" height="505" loading="lazy" decoding="async" alt="Palični grafikon največje porabe pomnilnika: pri E10M.0 8zTSP 538 MB, linkern 11,5 GB, LKH 17,5 GB; pri E100M 8zTSP 4,94 GB.">
+    </div>
+    <figcaption>
+      <span class="l-en" lang="en">Peak sampled memory (RSS) of all processes of a run combined, on one 32 GB laptop (decimal units). E10M.0, 30-minute cap: 8zTSP 538 MB; linkern, 4 parallel copies, 11.5 GB (21.4 times as much); LKH 3.0.14, 2 copies, 17.5 GB with no saved tour within 1,800 s (32.5 times). E100M, 1-hour cap: 8zTSP 4.94 GB with a verified saved tour.</span>
+      <span class="l-sl" lang="sl">Največja vzorčena poraba pomnilnika (RSS) vseh procesov teka skupaj, na enem prenosniku z 32 GB (desetiške enote). E10M.0, omejitev 30 minut: 8zTSP 538 MB; linkern, 4 vzporedni primerki, 11,5 GB (21,4-krat toliko); LKH 3.0.14, 2 primerka, 17,5 GB brez shranjene poti v 1.800 s (32,5-krat). E100M, omejitev 1 ura: 8zTSP 4,94 GB s preverjeno shranjeno potjo.</span>
+      <a class="l-en" lang="en" href="./media/chart-edition1-ram-en.svg">Open the chart in full size</a><a class="l-sl" lang="sl" href="./media/chart-edition1-ram-sl.svg">Odpri grafikon v polni velikosti</a>
+    </figcaption>
+  </figure>
 </section>
 
 <section class="sec" aria-labelledby="aud-h">
