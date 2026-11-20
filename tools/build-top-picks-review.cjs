@@ -13,6 +13,34 @@ function input(p,expected){const b=read(p),hash=sha(b);if(expected)assert.equal(
 function output(p,value){const b=typeof value==='string'?value:JSON.stringify(value,null,2)+'\n';outputs.set(p,{bytes:Buffer.byteLength(b),sha256:sha(b)});if(check)assert.equal(read(p).toString(),b,'Stale '+p);else fs.writeFileSync(path.join(root,p),b);}
 const frozenPath='docs/chessbest-evidence/top-picks-frozen-20261020.json';
 const frozen=input(frozenPath),catalogPath='public/chess-lab/Games/ChessBest_Top_Picks.catalog.json',catalog=input(catalogPath);
+// Stockfish 19 measurements of 16 Nov 2026 (C10: nine games; C11: Dreev-Kasparov), last completed iterations.
+const sf19Path='docs/chessbest-evidence/sf19-top-picks-c10-c11-20261116.json',sf19=input(sf19Path);
+const dreevBasePath='docs/chessbest-evidence/dreev-kasparov-review-v4-base-20261012.json';
+const sameFen=(a,b)=>{const x=a.split(' '),y=b.split(' ');return [0,1,2,4,5].every(i=>x[i]===y[i]);};
+function sf19Score(s){return s.type==='mate'?{type:'mate',sign:Math.sign(s.value)||1,moves:Math.abs(s.value),pov:'mover'}:{type:'cp',cp:s.value,pov:'mover'};}
+function sf19Source(entry,stage,game){
+ const g=sf19.games[game];
+ return {provider:'sf',label:stage==='scan'?'Stockfish 19':stage==='deep'?'Stockfish 19 · deep check':'Stockfish 19 · comparison',
+  status:'ok',at:entry.at,engine:sf19.engine.name,engine_sha256:sf19.engine.sha256,depth:entry.depth,
+  settings:{threads:sf19.engine.threads,hash_mb:sf19.engine.hash_mb,multipv:entry.lines.length,nodes:entry.nodes_budget,root_moves:entry.root_moves||null},
+  method:entry.root_moves?'restricted-root-multipv':'same-depth-multipv',
+  provenance:{path:sf19Path,sha256:sha(read(sf19Path)),record_sha256:entry.record_sha256,kind:'saved-engine-receipt',
+   package:g.package,package_zip_sha256:sf19.packages[g.package].zip_sha256},
+  candidates:entry.lines.map(l=>({uci:l.uci,score:sf19Score(l.score),pv:l.pv}))};
+}
+function addSF19(positions,game,primary){
+ const g=sf19.games[game];assert(g,'SF19 evidence missing for '+game);assert.equal(g.plies+1,positions.length);
+ for(const stage of ['scan','compare','deep'])for(const [ply,entry] of Object.entries(g[stage]).sort((a,b)=>a[0]-b[0])){
+  const row=positions[Number(ply)];assert(row&&sameFen(entry.fen,row.fen),game+' '+stage+' '+ply);if(!entry.lines)continue;
+  const source=sf19Source(entry,stage,game);
+  if(stage==='scan'&&primary)row.sf=source;else (row.observations||=[]).push(source);
+ }
+}
+// The anchor claim as Stockfish 19 judged it (deepest stage holding both moves), as a dated note.
+function sf19Note(e,game){const n=sf19.games[game].anchor_note;if(n)(e.notes||=[]).push({ply:n.ply,text:n.text});}
+const sf19Meta=pkg=>({label:'Stockfish 19',date:'2026-11-16',engine:'Stockfish 19',threads:1,hash_mb:128,baseline_nodes:10000000,multipv:3,
+ zip_sha256:sf19.packages[pkg].zip_sha256,
+ method:'Baseline: unrestricted MultiPV 3 at every position, 10M nodes, last completed iteration. Candidate comparisons (60M nodes) and deep checks (200M nodes) restrict the root moves and keep their own budgets.'});
 const pgFiles=catalog.collection_files.flatMap(file=>{
  const p='public/chess-lab/'+file,b=read(p);inputs.set(p,{bytes:b.length,sha256:sha(b)});
  return b.toString().trim().split(/\n\s*\n(?=\[Event)/).map(pgn=>({pgn,file,review:Core.build({Chess,pgn})}));
@@ -99,7 +127,12 @@ for(const c of catalog.cases){
  const id=c.evidence.review_v4?'dreev-kasparov-1996':c.id;
  const file=c.evidence.review_v4?'config/dreev-kasparov-review.json':'config/review-'+c.id+'.json';
  if(c.evidence.review_v4){
-  input('public/chess-lab/'+file,c.evidence.review_v4.evidence_sha256);
+  // Review V4 stays the unchanged base; Stockfish 19 is added as a second dated SF measurement.
+  const e=input(dreevBasePath,c.evidence.review_v4.evidence_sha256);
+  addSF19(e.positions,c.id,false);sf19Note(e,c.id);
+  e.sources.sf_second={...sf19Meta('C11'),role:'second-dated-sf'};
+  Core.attachEvidence({...r,headers:{...r.headers,ChessBestReviewEvidence:id}},e,Chess);
+  output('public/chess-lab/'+file,e);
  }else{
   const frozenGame=frozen.games.find(g=>g.id===c.id);assert(frozenGame);assert.equal(frozenGame.rows.length,r.totalPly);
   const positions=r.positions.map((p,ply)=>({ply,fen:p.fen,played:r.moves[ply]||null,cdb:empty(),sf:empty(),observations:[]}));
@@ -134,11 +167,9 @@ for(const c of catalog.cases){
   for(const p of fs.readdirSync(path.join(root,'docs/chessbest-evidence')).filter(p=>p.startsWith(c.id+'-sf-lite-d')&&p.endsWith('.json')))
    docs.set('docs/chessbest-evidence/'+p,null);
   for(const [p,h]of docs){const doc=input(p,h);if(doc.requests)cdbRequests(e,doc,p);else addSF(e,doc,p,anchor);}
-  const sf=positions[anchor].observations.filter(o=>o.provider==='sf').sort((a,b)=>(b.depth||0)-(a.depth||0));
-  if(sf.length){
-   positions[anchor].sf=sf[0];
-   e.sources.sf.date=sf[0].at.slice(0,10);e.sources.sf.engine=sf[0].engine;
-  }else e.sources.sf={label:'SF',date:null,engine:null,method:'No saved SF result.'};
+  // Earlier SF Lite anchor receipts stay dated observations; Stockfish 19 is the whole-game SF source.
+  addSF19(positions,c.id,true);sf19Note(e,c.id);
+  e.sources.sf=sf19Meta('C10');
   const counts={cp:0,mate:0,special:0,unknown:r.totalPly};
   for(const row of positions.slice(0,-1)){
    const direct=row.observations.filter(o=>o.provider==='cdb'&&o.method==='queryall').at(-1);
@@ -164,4 +195,4 @@ output('public/chess-lab/js/8zc-review-registry.js',
  '(function(root){const registry='+JSON.stringify({schema:'chessbest-review-registry/1',entries},null,2)+';\n'+
  "if(typeof module==='object'&&module.exports)module.exports=registry;else root.ChessReviewRegistry=registry;\n})(typeof window==='object'?window:globalThis);\n");
 output('docs/chessbest-evidence/top-picks-review-build-20261020.json',{schema:'chessbest-top-picks-build/1',inputs:Object.fromEntries([...inputs].sort()),outputs:Object.fromEntries([...outputs].sort()),games:entries.map(x=>({id:x.id,totalPly:x.totalPly,mainline_sha256:x.mainline_sha256}))});
-console.log('Top Picks: 10 source/root/mainline/anchor mappings; 9 frozen projections + unchanged Dreev V4; '+(check?'reproduction PASS':'generated'));
+console.log('Top Picks: 10 source/root/mainline/anchor mappings; 9 frozen projections + Dreev V4 base, all with Stockfish 19 (16 Nov 2026); '+(check?'reproduction PASS':'generated'));

@@ -15,8 +15,8 @@
         "played": "f7f6"
       },
       "file": "config/review-gukesh-carlsen-norway-2025-44-f6.json",
-      "bytes": 177771,
-      "sha256": "80522b286643d387478dc9ca614a0302f3971f77aa49a6cf8593c8958f847188"
+      "bytes": 528609,
+      "sha256": "3fc5304b22c4b17320a3cab274fb55632d02ebf85f2a874ceee85f5471ae2e45"
     },
     {
       "id": "carlsen-aronian-london-2012-50-g6",
@@ -31,8 +31,8 @@
         "played": "g7g6"
       },
       "file": "config/review-carlsen-aronian-london-2012-50-g6.json",
-      "bytes": 155084,
-      "sha256": "590380e2db97c78aa4864708821d4016592801cd7384e6f25de5b1c20f1ce13f"
+      "bytes": 475551,
+      "sha256": "a1684fd727485ecb4eda81f158dc80ded3ee75297dc2f3792fb57fe6448d6588"
     },
     {
       "id": "leko-kramnik-linares-2004-32-rad7",
@@ -47,8 +47,8 @@
         "played": "a7d7"
       },
       "file": "config/review-leko-kramnik-linares-2004-32-rad7.json",
-      "bytes": 113120,
-      "sha256": "dd96dab1af7c292ee2e4fa036add1c9fb7fdb85e7378c207e7aed83c402485e4"
+      "bytes": 316291,
+      "sha256": "b102ed2a7292c69ef6f42f3b89fa7af89e413047249083f8243ba2b06dd1158c"
     },
     {
       "id": "kasparov-svidler-2004-47-kd6",
@@ -63,8 +63,8 @@
         "played": "e7d6"
       },
       "file": "config/review-kasparov-svidler-2004-47-kd6.json",
-      "bytes": 137315,
-      "sha256": "b797dfa4ee98a38bd96a7f28c1009ddd2fdae2393b860c38fe1cf14f1fc914d7"
+      "bytes": 462432,
+      "sha256": "9e4dc68568d30e68d75d43c6efd69295a603934b8f80c190980f9e939b7e76f0"
     },
     {
       "id": "carlsen-firouzja-2024-37-nf8",
@@ -79,8 +79,8 @@
         "played": "d7f8"
       },
       "file": "config/review-carlsen-firouzja-2024-37-nf8.json",
-      "bytes": 126320,
-      "sha256": "72f0d101aede799755d54553e0ca6335b70fcecbae8553290750cc10d12ad799"
+      "bytes": 405507,
+      "sha256": "6ef157ca15cf702c73a52e51a54c84de3f01714b77c69746bde4bcdc3c534f63"
     },
     {
       "id": "dreev-kasparov-moscow-1996-19-bxa4",
@@ -95,8 +95,8 @@
         "played": "d7a4"
       },
       "file": "config/dreev-kasparov-review.json",
-      "bytes": 141487,
-      "sha256": "31cf4d3f88ceb5713ec87f2d35013014ccbdb9392f6643d83779cf15df5ad1a8"
+      "bytes": 661663,
+      "sha256": "d5bbcdbdf3a9ad6ad55dae66002653e44c73aa6166360a15d1483613c64f4093"
     },
     {
       "id": "gukesh-ding-wch-2024-28-qc8",
@@ -111,8 +111,8 @@
         "played": "c7c8"
       },
       "file": "config/review-gukesh-ding-wch-2024-28-qc8.json",
-      "bytes": 62422,
-      "sha256": "2731f8521f0397dd465698777ccf9a9bb80a4023df38f9043f9c6087b64faade"
+      "bytes": 234590,
+      "sha256": "872a2b46e6d0ec933504c5fda29f66d202cfc3f303cdcf92802fb7c699f3a549"
     },
     {
       "id": "capablanca-lasker-havana-1921-45-kf8",
@@ -127,8 +127,8 @@
         "played": "e7f8"
       },
       "file": "config/review-capablanca-lasker-havana-1921-45-kf8.json",
-      "bytes": 94880,
-      "sha256": "6895bb92afe110d07a9814a1e6ed9e0add6e7793796f03de0ff9b7379b7f57ad"
+      "bytes": 363174,
+      "sha256": "f639dcde92a3b568a4b0b56d2b074e8c1d626ff6567c3ef3e625e1d63f1dd4d2"
     },
     {
       "id": "su_fi_97_49_rba1",
@@ -143,8 +143,8 @@
         "played": "b1a1"
       },
       "file": "config/review-su_fi_97_49_rba1.json",
-      "bytes": 129040,
-      "sha256": "0a2f4773f30eb91c3846f4fb000ca65de8b3336cafe4e6ddecd1d6a087e6a982"
+      "bytes": 482567,
+      "sha256": "e4797f793000e7627a85fc5f6e5ec6eb2d51a5ece09efec9d7f9a93c04747657"
     },
     {
       "id": "cup14_1_5_47_qb8",
@@ -159,8 +159,8 @@
         "played": "b3b8"
       },
       "file": "config/review-cup14_1_5_47_qb8.json",
-      "bytes": 168479,
-      "sha256": "2fb22086c5c21e8517547662a331d2467a94c93e052e388d21cb8bea6a49a264"
+      "bytes": 633739,
+      "sha256": "26091e5de405a5f6567fdbc1ab9e6dbc59415e725ffa0d21714cd0f708dd5ffd"
     }
   ]
 };
