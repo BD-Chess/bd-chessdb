@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BD × AI Lab — Top 5 TSP Approaches &amp; The Evolution of 8zTSP</title>
+<meta name="description" content="From classical TSP foundations (Concorde, LKH-3, linkern, Nagata's GA-EAX, Google OR-Tools) to Human × Multi-LLM synthesis: 8zTSP hybrid core and 8zTSP-exp research arena.">
+<link rel="canonical" href="/tsp/top5tsp.html">
+<meta property="og:title" content="BD × AI Lab — Top 5 TSP Approaches &amp; The Evolution of 8zTSP">
+<meta property="og:description" content="From classical TSP foundations to Human × Multi-LLM synthesis, MDL × DCC, and AI8.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_GB">
+<meta property="og:locale:alternate" content="sl_SI">
+<script>/* Existing MDLxDCC locale contract: manual > saved > SI country hint > English. */
+(function(){
+'use strict';
+if(window.MDLxDCCLocale)return;
+const root=document.documentElement,KEY='mdlxdcc-locale-v1',LEGACY='mdlxdcc-lang',COOKIE='mdlxdcc_locale',listeners=new Set();
+let selection=null,generation=0,controller=null;
+const valid=x=>x==='en'||x==='sl';
+const get=k=>{try{return localStorage.getItem(k);}catch(_){return null;}};
+function parse(v){try{const x=JSON.parse(v);return x&&valid(x.lang)&&['manual','geo'].includes(x.source)&&Number.isFinite(x.at)&&x.at>=0?{lang:x.lang,source:x.source,at:x.at}:null;}catch(_){return null;}}
+function cookie(){try{const x=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));return x?parse(decodeURIComponent(x.slice(COOKIE.length+1))):null;}catch(_){return null;}}
+function read(){const l=parse(get(KEY)),c=cookie();let v=!l?c:!c?l:c.at>l.at?c:l;const old=get(LEGACY);if(valid(old)&&(!v||(v.lang!==old&&(!c||(l&&l.at>=c.at)))))v={lang:old,source:'manual',at:Date.now()};return v;}
+function persist(){if(!selection)return;const data=JSON.stringify(selection);try{localStorage.setItem(LEGACY,selection.lang);localStorage.setItem('bdPortraitLang',selection.lang);localStorage.setItem(KEY,data);}catch(_){}try{if(!/^https?:$/.test(location.protocol))return;const h=location.hostname.toLowerCase(),d=h==='mdlxdcc.org'||h==='www.mdlxdcc.org'?'; Domain=mdlxdcc.org':'';document.cookie=COOKIE+'='+encodeURIComponent(data)+'; Path=/; Max-Age=31536000; SameSite=Lax'+d+(location.protocol==='https:'?'; Secure':'');}catch(_){}}
+const current=()=>selection?selection.lang:'en';
+function apply(){root.lang=current();root.dataset.lang=current();root.dataset.localeSource=selection?selection.source:'fallback';listeners.forEach(fn=>{try{fn(current());}catch(_){}});window.dispatchEvent(new CustomEvent('mdlxdcc:language',{detail:{lang:current(),source:root.dataset.localeSource}}));}
+function choose(lang){if(!valid(lang))return;generation++;if(controller)controller.abort();selection={lang,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};persist();apply();}
+function subscribe(fn){if(typeof fn!=='function')return()=>{};listeners.add(fn);fn(current());return()=>listeners.delete(fn);}
+function refresh(){const n=read();if(n&&(!selection||n.at>selection.at||n.lang!==selection.lang)){generation++;if(controller)controller.abort();selection=n;persist();apply();}}
+selection=read();try{const q=new URLSearchParams(location.search).get('lang');if(valid(q))selection={lang:q,source:'manual',at:Math.max(Date.now(),(selection?selection.at:0)+1)};}catch(_){}
+window.MDLxDCCLocale=Object.freeze({current,choose,subscribe,refresh,version:'1.0'});root.classList.add('js');if(selection)persist();apply();
+window.addEventListener('storage',e=>{if([KEY,LEGACY,null].includes(e.key))refresh();});window.addEventListener('pageshow',refresh);window.addEventListener('focus',refresh);
+if(!selection&&/^https?:$/.test(location.protocol)&&typeof fetch==='function'){
+const start=generation;controller=typeof AbortController==='function'?new AbortController():null;let expired=false;
+const timeout=setTimeout(()=>{expired=true;if(controller)controller.abort();},2200);
+fetch('/.netlify/functions/entry-locale',{cache:'no-store',credentials:'omit',headers:{Accept:'application/json'},...(controller?{signal:controller.signal}:{})}).then(r=>{if(!r.ok||!(r.headers.get('content-type')||'').includes('application/json'))throw Error('No country response');return r.json();}).then(d=>{if(expired||generation!==start||selection||!d||!valid(d.language))return;selection=read()||{lang:d.language,source:'geo',at:Date.now()};persist();apply();}).catch(()=>{}).finally(()=>clearTimeout(timeout));
+}
+})();</script>
+<script>try{const f=Number(localStorage.getItem('mdlxdcc-font'));if(f>=.8&&f<=1.5)document.documentElement.style.setProperty('--scale',f);}catch(_){}</script>
+<style>:root{color-scheme:dark;--bg:#04070e;--card:#0c1727;--card2:#0a1422;--line:rgba(148,163,184,.18);--text:#e7eef9;--muted:#9daec4;--cyan:#22d3ee;--green:#34d399;--gold:#f59e0b;--scale:1;--m:1;--fs:calc(var(--scale)*var(--m))}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:calc(100%*var(--fs))}
+html:not([data-lang=sl]) .l-sl,html[data-lang=sl] .l-en{display:none!important}
+body{margin:0;background-color:var(--bg);background-image:radial-gradient(circle at 12% 0,rgba(34,211,238,.11),transparent 30%),radial-gradient(circle at 88% 10%,rgba(52,211,153,.08),transparent 28%);color:var(--text);font-family:Inter,"Segoe UI",system-ui,sans-serif;line-height:1.6}
+a{color:var(--cyan)}a:focus-visible,summary:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.wrap{width:min(1180px,calc(100% - 32px));margin:auto}
+.top{position:sticky;top:0;z-index:30;background:rgba(4,7,14,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.top .wrap{position:relative;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 0}
+.brand{font:800 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.16em;color:var(--cyan);text-decoration:none}
+.nav{display:flex;flex-wrap:wrap;gap:7px}.nav a{font:calc(11px*var(--fs)) ui-monospace,Consolas,monospace;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:6px 9px;border-radius:999px}.nav a:hover,.nav a[aria-current=page]{color:var(--cyan);border-color:rgba(34,211,238,.5);background:rgba(34,211,238,.08)}
+.top-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ubtn{display:inline-grid;place-items:center;min-width:40px;min-height:36px;border:1px solid var(--line);border-radius:9px;background:none;color:var(--muted);font:600 calc(12px*var(--fs)) ui-monospace,Consolas,monospace;cursor:pointer;padding:4px 9px}
+.ubtn:hover{border-color:rgba(34,211,238,.5);color:var(--cyan)}.ubtn[aria-pressed=true]{background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.5);color:var(--cyan)}.ubtn:disabled{opacity:.4;cursor:default}
+.menu{border:0;padding:0;margin:0;background:none}.menu>summary{list-style:none;display:inline-grid;place-items:center;width:42px;height:36px;border:1px solid var(--line);border-radius:9px;color:var(--text);cursor:pointer}
+.menu>summary::-webkit-details-marker{display:none}.menu[open]>summary{border-color:rgba(34,211,238,.5);color:var(--cyan)}
+.menu-panel{position:absolute;z-index:40;right:0;top:calc(100% + 6px);width:min(360px,100%);max-height:min(78vh,700px);overflow:auto;overscroll-behavior:contain;padding:18px;background:#0c1727;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55)}
+.menu-h{margin:0 0 8px;color:var(--muted);font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase}
+.menu-links{display:grid;margin:0 0 16px;border-top:1px solid var(--line)}.menu-links a{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:42px;padding:8px 3px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text);font-size:calc(15px*var(--fs))}.menu-links a:hover{color:var(--cyan)}
+.menu-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:50px;color:var(--text);font-size:calc(15px*var(--fs))}.menu-row .grp{display:flex;align-items:center;gap:4px}.menu-row .ubtn{min-width:46px;min-height:42px;color:var(--text)}#font-value{min-width:62px}
+.intro{padding:30px 0 8px}
+.kicker{margin:0 0 10px;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1{margin:0 0 12px;font-size:calc(clamp(28px,4.6vw,46px)*var(--fs));line-height:1.1;letter-spacing:-.025em}
+.h1sub{margin:0 0 14px;color:var(--text);font-size:calc(17px*var(--fs));line-height:1.5;max-width:900px}
+.facts{list-style:none;margin:16px 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.facts li{border:1px solid var(--line);border-radius:12px;background:rgba(12,23,39,.72);padding:12px 14px;font-size:calc(13.5px*var(--fs));color:var(--muted)}.facts b{display:block;font:700 calc(18px*var(--fs)) ui-monospace,Consolas,monospace;color:var(--cyan);margin-bottom:3px}
+.sec{margin:28px 0}.sec h2{margin:0 0 8px;font-size:calc(22px*var(--fs))}
+.hint2{margin:0 0 12px;font-size:calc(14px*var(--fs));color:var(--muted);line-height:1.55}
+.rec-tab{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0 8px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:780px;font-size:calc(13.5px*var(--fs));line-height:1.45}
+th,td{padding:10px 11px;text-align:left;vertical-align:top;border-top:1px solid var(--line)}
+thead th{border-top:0;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);background:rgba(6,13,24,.7)}
+tbody th{position:sticky;left:0;z-index:1;background:var(--card2);min-width:155px;color:var(--text);font-weight:700}
+.num{font-variant-numeric:tabular-nums}
+.hl{color:var(--cyan);font-weight:700}
+.ok-badge{display:inline-block;padding:2px 8px;border-radius:999px;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.35)}
+.split-badge{display:inline-block;padding:2px 8px;border-radius:999px;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;background:rgba(245,158,11,.12);color:var(--gold);border:1px solid rgba(245,158,11,.35)}
+.behind-badge{display:inline-block;padding:2px 8px;border-radius:999px;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;background:rgba(148,163,184,.12);color:var(--muted);border:1px solid var(--line)}
+.cards{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{padding:16px 18px;border:1px solid rgba(34,211,238,.32);border-radius:14px;background:var(--card)}
+.card.alt{border-color:var(--line);background:rgba(12,23,39,.72)}
+.card-k{margin:0 0 5px;font:700 calc(11px*var(--fs)) ui-monospace,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.card h3{margin:0 0 8px;font-size:calc(18px*var(--fs));line-height:1.25;color:var(--text)}
+.card p{margin:0 0 8px;color:var(--muted);font-size:calc(14.5px*var(--fs))}.card p:last-child{margin:0}.card b{color:var(--text)}
+.panel{margin:20px 0;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:rgba(12,23,39,.72)}
+.panel h3{margin:0 0 8px;font-size:calc(17px*var(--fs))}
+.panel p,.panel li{color:var(--muted);font-size:calc(14.5px*var(--fs));line-height:1.55}
+.panel ul{margin:8px 0 0;padding-left:18px}.panel li{margin-bottom:6px}.panel b{color:var(--text)}
+.btns{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0 8px}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:10px 18px;border-radius:12px;background:var(--cyan);color:#03121a;font-weight:800;font-size:calc(15px*var(--fs));text-decoration:none}
+.btn::after{content:"→";font-weight:700}.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:none;color:var(--text);border:1px solid rgba(34,211,238,.5)}
+.quote-box{margin:18px 0;padding:16px 20px;border-left:3px solid var(--cyan);background:rgba(12,23,39,.82);border-radius:0 12px 12px 0;font-size:calc(15.5px*var(--fs));color:var(--text)}
+footer{padding:14px 0 32px;border-top:1px solid var(--line);margin-top:28px;color:var(--muted);font-size:calc(13px*var(--fs))}
+@media(max-width:860px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.top-right{width:100%;justify-content:space-between}.top-right .nav{flex:1}}
+@media(max-width:720px){.cards{grid-template-columns:1fr}.facts{grid-template-columns:1fr}.btn{width:100%;justify-content:center}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><a class="brand" href="/">BD × AI LAB · TSP</a><div class="top-right"><nav class="nav" aria-label="TSP sections"><a href="/tsp/">TSP</a><a href="/tsp/8ztsp/">8zTSP</a><a href="/tsp/race.html"><span class="l-en" lang="en">Race</span><span class="l-sl" lang="sl">Dirka</span></a><a href="/tsp/top5tsp.html" aria-current="page">Top 5</a><a href="/8zTSP/">Demo</a><a href="/tsp/8zrp/">8Z-RP</a></nav><div class="languages" role="group" aria-label="Language"><button class="ubtn" type="button" data-lang="en" aria-pressed="true" aria-label="English">EN</button><button class="ubtn" type="button" data-lang="sl" aria-pressed="false" aria-label="Slovenščina">SL</button></div><details class="menu" id="menu"><summary id="menu-trigger" aria-label="Menu" title="Menu"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></summary><div class="menu-panel" id="menu-panel"><p class="menu-h" id="menu-pages"><span class="l-en" lang="en">Pages</span><span class="l-sl" lang="sl">Strani</span></p><nav class="menu-links" aria-labelledby="menu-pages"><a href="/"><span>MDL×DCC</span><span aria-hidden="true">↗</span></a><a href="/tsp/"><span><span class="l-en" lang="en">TSP overview</span><span class="l-sl" lang="sl">Pregled TSP</span></span><span aria-hidden="true">↗</span></a><a href="/tsp/8ztsp/"><span><span class="l-en" lang="en">8zTSP lab log</span><span class="l-sl" lang="sl">8zTSP dnevnik</span></span><span aria-hidden="true">↗</span></a><a href="/tsp/race.html"><span><span class="l-en" lang="en">Edition 1 benchmark</span><span class="l-sl" lang="sl">1. izdaja meritev</span></span><span aria-hidden="true">↗</span></a><a href="/tsp/top5tsp.html"><span><span class="l-en" lang="en">Top 5 TSP approaches</span><span class="l-sl" lang="sl">Top 5 TSP pristopov</span></span><span aria-hidden="true">↗</span></a><a href="/tsp/replay/"><span><span class="l-en" lang="en">Recorded runs</span><span class="l-sl" lang="sl">Posnetki tekov</span></span><span aria-hidden="true">↗</span></a><a href="/index-search.html"><span><span class="l-en" lang="en">The method</span><span class="l-sl" lang="sl">Metoda</span></span><span aria-hidden="true">↗</span></a><a href="/index-atlas.html"><span>Atlas</span><span aria-hidden="true">↗</span></a><a href="/ai8-codex.html"><span>AI8 Codex</span><span aria-hidden="true">↗</span></a><a href="/knjiga/"><span><span class="l-en" lang="en">Book</span><span class="l-sl" lang="sl">Knjiga</span></span><span aria-hidden="true">↗</span></a></nav><p class="menu-h" id="menu-settings"><span class="l-en" lang="en">Settings</span><span class="l-sl" lang="sl">Nastavitve</span></p><div class="menu-row"><span><span class="l-en" lang="en">Language</span><span class="l-sl" lang="sl">Jezik</span></span><div class="grp" role="group" aria-label="Language"><button class="ubtn" type="button" data-lang="en" aria-pressed="true" aria-label="English">EN</button><button class="ubtn" type="button" data-lang="sl" aria-pressed="false" aria-label="Slovenščina">SL</button></div></div><div class="menu-row"><span><span class="l-en" lang="en">Text size</span><span class="l-sl" lang="sl">Velikost besedila</span></span><div class="grp" role="group" aria-label="Text size"><button class="ubtn" id="font-down" type="button" aria-label="Smaller text">A−</button><button class="ubtn" id="font-value" type="button" aria-label="Reset text size to 100%" title="100%">100%</button><button class="ubtn" id="font-up" type="button" aria-label="Larger text">A+</button></div></div></div></details></div></div></div>
+<main class="wrap">
+<section class="intro">
+<p class="kicker"><span class="l-en" lang="en">BD × AI Lab · Synthesis &amp; Architecture · 20 Nov 2026</span><span class="l-sl" lang="sl">BD × AI Lab · Sinteza in arhitektura · 20. nov. 2026</span></p>
+<h1><span class="l-en" lang="en">Top 5 TSP Approaches &amp; The Evolution of 8zTSP: From Classical Foundations to Human × Multi-LLM Synthesis</span><span class="l-sl" lang="sl">Top 5 TSP pristopov in evolucija 8zTSP: Od klasičnih temeljev do sinteze Človek × več LLM-jev</span></h1>
+<p class="h1sub"><span class="l-en" lang="en">Scientific progress is never a war waged from zero. Every genuine advance is an evolutionary synthesis of decades of foundational mathematics, human intuition, and new instruments—including orchestrating multiple frontier language models as disciplined research and engineering partners.</span><span class="l-sl" lang="sl">Napredek v znanosti, vesolju in življenju ni nikoli vojna iz niča. Vsak resničen korak naprej je evolucijska kombinacija desetletij temeljne matematike, človeške intuicije in novih orodij — vključno z orkestracijo več vrhunskih jezikovnih modelov kot resnih raziskovalnih in programerskih partnerjev.</span></p>
+
+<blockquote class="quote-box">
+<span class="l-en" lang="en">Without decades of pioneering work by the authors of <b>Concorde</b> (Applegate, Bixby, Chvátal, Cook), <b>LKH</b> (Keld Helsgaun), <b>GA-EAX</b> (Yuichi Nagata), and <b>Google OR-Tools</b>, modern combinatorial optimization would not have its foundations. At the same time, a solo researcher without a large institution can now collaborate with multiple AI systems to explore hard problems that few ever attempt—and test every hypothesis against exact, reproducible benchmarks.</span>
+<span class="l-sl" lang="sl">Brez desetletij pionirskega dela avtorjev programov <b>Concorde</b> (Applegate, Bixby, Chvátal, Cook), <b>LKH</b> (Keld Helsgaun), <b>GA-EAX</b> (Yuichi Nagata) in <b>Google OR-Tools</b> ne bi bilo temeljev sodobne kombinatorične optimizacije. Hkrati pa posameznik brez velikega inštituta danes zmore nekaj novega: orkestracijo več vrhunskih jezikovnih modelov kot enakovrednih raziskovalnih in programerskih partnerjev za reševanje najtežjih problemov — ob strogem preverjanju vsake hipoteze na ponovljivih meritvah.</span>
+</blockquote>
+</section>
+
+<section class="sec" aria-labelledby="five-h">
+<h2 id="five-h"><span class="l-en" lang="en">The 5 + 1 Architectural Landscape</span><span class="l-sl" lang="sl">Primerjalni pregled 5 + 1 pristopov</span></h2>
+<p class="hint2"><span class="l-en" lang="en">How five solver profiles and our experimental research line complement one another across exact certification, mid-scale local search, and 100-million-city scaling.</span><span class="l-sl" lang="sl">Kako se pet skupin reševalcev in naša eksperimentalna raziskovalna linija dopolnjujejo od eksaktnega certificiranja optimuma do merila 100 milijonov mest.</span></p>
+
+<ul class="cards">
+<li class="card alt">
+<p class="card-k">01 · <span class="l-en" lang="en">Exact Branch-and-Cut</span><span class="l-sl" lang="sl">Eksaktni Branch-and-Cut</span></p>
+<h3>Concorde</h3>
+<p><span class="l-en" lang="en"><b>Authors:</b> David Applegate, Robert Bixby, Vašek Chvátal, William Cook.<br><b>Role:</b> An exact solver that uses linear programming relaxations and cutting planes to prove global optimality. Whenever a tour length is marked <em>proved</em> in our benchmarks, the reference comes from an exact solve, sometimes run through NEOS.</span><span class="l-sl" lang="sl"><b>Avtorji:</b> David Applegate, Robert Bixby, Vašek Chvátal, William Cook.<br><b>Vloga:</b> Eksaktni reševalec, ki globalno optimalnost dokaže s sprostitvami linearnega programiranja in rezalnimi ravninami. Kadarkoli je v naših meritvah pot označena kot <em>dokazana</em>, referenca izhaja iz eksaktnega teka, včasih izvedenega prek strežnika NEOS.</span></p>
+</li>
+
+<li class="card alt">
+<p class="card-k">02 · <span class="l-en" lang="en">Chained Variable-Depth k-Opt</span><span class="l-sl" lang="sl">Verižno lokalno iskanje k-opt</span></p>
+<h3>LKH-3 &amp; <code>linkern</code></h3>
+<p><span class="l-en" lang="en"><b>Authors:</b> Keld Helsgaun (LKH-3); Applegate, Bixby, Chvátal, Cook (<code>linkern</code>).<br><b>Role:</b> Two Lin–Kernighan variants for searching for shorter tours. In Edition 1 their results are useful comparisons on Europe, Eurasia and World.</span><span class="l-sl" lang="sl"><b>Avtorja:</b> Keld Helsgaun (LKH-3); Applegate, Bixby, Chvátal, Cook (<code>linkern</code>).<br><b>Vloga:</b> Dve različici iskanja Lin–Kernighan za iskanje krajših poti. V prvi izdaji so njuni izidi uporabna primerjava na Evropi, Evraziji in Svetu.</span></p>
+</li>
+
+<li class="card alt">
+<p class="card-k">03 · <span class="l-en" lang="en">Evolutionary Edge Assembly</span><span class="l-sl" lang="sl">Populacijsko križanje robov</span></p>
+<h3>Nagata’s GA-EAX</h3>
+<p><span class="l-en" lang="en"><b>Authors:</b> Yuichi Nagata and Shigenobu Kobayashi.<br><b>Role:</b> High-precision genetic algorithm using Edge Assembly Crossover (EAX) to preserve parent subtour structure while introducing new edges. In Edition 1 it reached the known optima on the Swiss and Nicaraguan instances.</span><span class="l-sl" lang="sl"><b>Avtorja:</b> Yuichi Nagata in Shigenobu Kobayashi.<br><b>Vloga:</b> Visoko natančni genetski algoritem s križanjem sestavljanja robov (EAX), ki ohranja strukturo podtur staršev in uvaja nove povezave. V prvi izdaji je dosegel znana optimuma na švicarskem in nikaragovskem primeru.</span></p>
+</li>
+
+<li class="card alt">
+<p class="card-k">04 · <span class="l-en" lang="en">Industrial Routing Framework</span><span class="l-sl" lang="sl">Industrijski optimizacijski okvir</span></p>
+<h3>Google OR-Tools</h3>
+<p><span class="l-en" lang="en"><b>Authors:</b> Laurent Perron and the Google Optimization team.<br><b>Role:</b> Versatile open-source combinatorial solver suite combining Guided Local Search (GLS), Tabu Search, and constraint programming for practical vehicle routing and time-window logistics.</span><span class="l-sl" lang="sl"><b>Avtorji:</b> Laurent Perron in ekipa Google Optimization.<br><b>Vloga:</b> Vsestranski odprtokodni optimizacijski okvir, ki združuje vodeno lokalno iskanje (GLS), tabu iskanje in omejitveno programiranje za praktično usmerjanje vozil in logistiko s časovnimi okni.</span></p>
+</li>
+
+<li class="card">
+<p class="card-k">05 · <span class="l-en" lang="en">Hybrid 100% Pure Rust Core</span><span class="l-sl" lang="sl">Hibridno 100 % čisto jedro v Rustu</span></p>
+<h3>8zTSP</h3>
+<p><span class="l-en" lang="en"><b>Origin:</b> Bojan Dobrečevič (BD × AI Lab) × Multi-LLM Engineering.<br><b>Architecture:</b> Evolutionary synthesis of BD’s <b>multi-scale spatial decomposition</b>, <b>information-driven complexity control (MDL × DCC)</b>, and <b>memory-compact representation</b> with proven recombination principles. In Edition 1, the 12-thread configuration reached the known optimum in 5.05 s on Switzerland and 5.68 s on Nicaragua. It produced a valid tour of <b>100,000,000 cities</b> with 4.94 GB peak RAM. Two separate programs independently verified the tour.</span><span class="l-sl" lang="sl"><b>Izvor:</b> Bojan Dobrečevič (BD × AI Lab) × več-LLM inženiring.<br><b>Arhitektura:</b> Evolucijski spoj BD-jeve <b>večresolucijske prostorske dekompozicije</b>, <b>informacijskega krmiljenja kompleksnosti (MDL × DCC)</b> in <b>pomnilniško strnjene predstavitve</b> s preverjenimi rekombinacijskimi načeli. V prvi izdaji je različica z 12 nitmi dosegla znani optimum na Švici v 5,05 s in na Nikaragvi v 5,68 s. Izdelala je veljavno pot skozi <b>100.000.000 mest</b> pri vršni porabi 4,94 GB RAM. Pot sta neodvisno preverila dva ločena programa.</span></p>
+</li>
+
+<li class="card">
+<p class="card-k">06 · <span class="l-en" lang="en">Research Arena (In Development)</span><span class="l-sl" lang="sl">Raziskovalna arena (v razvoju)</span></p>
+<h3>8zTSP-exp</h3>
+<p><span class="l-en" lang="en"><b>Focus:</b> A Rust research arena for comparing BD × AI Lab ideas, published methods and hybrids. A dedicated profile isolates selected original mechanisms. Results from exploration can nominate candidates for independent confirmation.</span><span class="l-sl" lang="sl"><b>Namen:</b> Raziskovalna arena v Rustu za primerjavo idej BD × AI Lab, objavljenih metod in hibridov. Poseben profil omogoča ločeno merjenje izbranih izvirnih mehanizmov. Raziskovalni izidi lahko predlagajo kandidate za neodvisno potrditev.</span></p>
+</li>
+</ul>
+</section>
+
+<section class="sec" aria-labelledby="eco-h">
+<h2 id="eco-h"><span class="l-en" lang="en">Bridge to the Broader Ecosystem: MDL × DCC &amp; AI8</span><span class="l-sl" lang="sl">Most v širši ekosistem: MDL × DCC in AI8</span></h2>
+<div class="panel">
+<p><span class="l-en" lang="en">For BD × AI Lab, the Travelling Salesperson Problem is not an isolated puzzle—it is an open, falsifiable proving ground for a general principle: <b>Minimum Description Length × Dynamic Complexity Control (MDL × DCC)</b>, executed through the <b>AI8</b> continuous multi-agent collaboration architecture.</span><span class="l-sl" lang="sl">Za BD × AI Lab problem trgovskega potnika ni osamljena uganka, temveč odprt, preverljiv poligon za splošno načelo: <b>Minimum Description Length × Dynamic Complexity Control (MDL × DCC)</b>, ki ga izvajamo prek neprekinjene več-agentne arhitekture <b>AI8</b>.</span></p>
+<ul>
+<li><span class="l-en" lang="en"><b>Mathematical Compression &amp; Generator Discovery (8zC / 8zC-M):</b> Measuring structural compressibility and algorithmic generators across binary executables, images, lossless audio, and genomic sequences.</span><span class="l-sl" lang="sl"><b>Matematično stiskanje in odkrivanje generatorjev (8zC / 8zC-M):</b> Merjenje strukturne stisljivosti in algoritemskih generatorjev v binarnih datotekah, slikah, brezizgubnem zvoku in genomskih zaporedjih (8Z-LO).</span></li>
+<li><span class="l-en" lang="en"><b>Adaptive Complexity Governance (AI8):</b> Balancing structural coherence against exploratory openness so search engines and multi-LLM teams avoid both rigid stagnation and unstructured noise.</span><span class="l-sl" lang="sl"><b>Prilagodljivo krmiljenje kompleksnosti (AI8):</b> Uravnoteženje strukturne koherence in raziskovalne odprtosti, da se iskalni motorji in več-LLM ekipe izognejo tako togemu zastoju kot neurejenemu šumu.</span></li>
+</ul>
+</div>
+
+<div class="btns">
+<a class="btn" href="./race.html"><span class="l-en" lang="en">View the Edition 1 benchmark summary</span><span class="l-sl" lang="sl">Povzetek meritev 1. izdaje</span></a>
+<a class="btn ghost" href="./8ztsp/"><span class="l-en" lang="en">Detailed 8zTSP Lab Log</span><span class="l-sl" lang="sl">Podrobna predstavitev 8zTSP</span></a>
+<a class="btn ghost" href="/ai8/how/"><span class="l-en" lang="en">How AI8 works</span><span class="l-sl" lang="sl">Kako deluje AI8</span></a>
+</div>
+</section>
+</main>
+<footer class="wrap"><span class="l-en" lang="en">BD × AI Lab · Top 5 TSP Approaches · 20 Nov 2026 · <a href="./race.html">Edition 1 Benchmark</a> · <a href="./8ztsp/">8zTSP Lab Log</a> · <a href="/ai8/how/">How AI8 works</a></span><span class="l-sl" lang="sl">BD × AI Lab · Top 5 TSP pristopov · 20. nov. 2026 · <a href="./race.html">1. izdaja meritev</a> · <a href="./8ztsp/">8zTSP dnevnik</a> · <a href="/ai8/how/">Kako deluje AI8</a></span></footer>
+<script>
+(function(){'use strict';
+const root=document.documentElement,$=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const T={"en": {"title": 'BD × AI Lab — Top 5 TSP Approaches & The Evolution of 8zTSP', "desc": "From classical TSP foundations (Concorde, LKH-3, linkern, Nagata's GA-EAX, Google OR-Tools) to Human × Multi-LLM synthesis: 8zTSP hybrid core and 8zTSP-exp research arena."}, "sl": {"title": 'BD × AI Lab — Top 5 TSP pristopov in evolucija 8zTSP', "desc": 'Od klasičnih temeljev TSP (Concorde, LKH-3, linkern, Nagatov GA-EAX, Google OR-Tools) do sinteze Človek × več LLM-jev: hibridno jedro 8zTSP in raziskovalni laboratorij 8zTSP-exp.'}};
+const read=k=>{try{return localStorage.getItem(k);}catch(_){return null;}},save=(k,v)=>{try{localStorage.setItem(k,String(v));}catch(_){}};
+let font=Number(read('mdlxdcc-font')||'1');if(!Number.isFinite(font))font=1;
+const down=$('#font-down'),up=$('#font-up'),value=$('#font-value'),menu=$('#menu'),trigger=$('#menu-trigger');
+function fontSize(v,persist=true){font=Math.round(Math.max(.8,Math.min(1.5,v))*100)/100;root.style.setProperty('--scale',font);down.disabled=font<=.8;up.disabled=font>=1.5;value.textContent=Math.round(font*100)+'%';if(persist)save('mdlxdcc-font',font);}
+fontSize(font,false);
+down.addEventListener('click',()=>fontSize(font-.05));value.addEventListener('click',()=>fontSize(1));up.addEventListener('click',()=>fontSize(font+.05));
+$$('button[data-lang]').forEach(b=>b.addEventListener('click',()=>window.MDLxDCCLocale.choose(b.dataset.lang)));
+window.MDLxDCCLocale.subscribe(lang=>{const sl=lang==='sl',t=sl?T.sl:T.en;
+ $$('button[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));
+ document.title=t.title;const d=$('meta[name="description"]');if(d)d.content=t.desc;
+ trigger.setAttribute('aria-label',sl?'Meni':'Menu');trigger.title=sl?'Meni':'Menu';
+ down.setAttribute('aria-label',sl?'Manjše besedilo':'Smaller text');up.setAttribute('aria-label',sl?'Večje besedilo':'Larger text');
+ value.setAttribute('aria-label',sl?'Ponastavi velikost besedila na 100 %':'Reset text size to 100%');});
+window.addEventListener('storage',e=>{if(e.key==='mdlxdcc-font'&&Number.isFinite(Number(e.newValue)))fontSize(Number(e.newValue),false);});
+document.addEventListener('click',e=>{if(menu.open&&!menu.contains(e.target))menu.open=false;});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.open){menu.open=false;trigger.focus();}});
+})();
+</script>
+</body>
+</html>
