@@ -94,6 +94,17 @@ tbody th{position:sticky;left:0;z-index:1;background:var(--card2);min-width:155p
 footer{padding:14px 0 32px;border-top:1px solid var(--line);margin-top:28px;color:var(--muted);font-size:calc(13px*var(--fs))}
 @media(max-width:860px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.top-right{width:100%;justify-content:space-between}.top-right .nav{flex:1}}
 @media(max-width:720px){.cards{grid-template-columns:1fr}.facts{grid-template-columns:1fr}.btn{width:100%;justify-content:center}}
+.tour-maps-head {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 14px}
+.tour-maps-head h2 {margin:0}
+.tour-maps {grid-template-columns:repeat(3,minmax(0,1fr))}
+.tour-maps figure {margin:0;min-width:0;padding:12px}
+.tour-maps img {display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain;background:#050c18;border-radius:8px;margin-bottom:12px}
+.tour-maps figcaption {min-width:0;overflow-wrap:anywhere}
+@media(max-width:720px) {
+  .tour-maps {grid-template-columns:1fr}
+  .tour-maps figure {display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:center;gap:12px}
+  .tour-maps img {aspect-ratio:1;margin:0}
+}
 </style>
 </head>
 <body>
@@ -111,6 +122,36 @@ footer{padding:14px 0 32px;border-top:1px solid var(--line);margin-top:28px;colo
 <li><b><span class="l-en" lang="en">538 MB / 4.94 GB</span><span class="l-sl" lang="sl">538 MB / 4,94 GB</span></b><span class="l-en" lang="en">Peak RAM of 8zTSP at 10M and 100M cities using memory-compact representation</span><span class="l-sl" lang="sl">Največji RAM 8zTSP pri 10M in 100M mest s pomnilniško strnjeno predstavitvijo</span></li>
 <li><b>9 / 0</b><span class="l-en" lang="en">Log-to-file differences: 9 rival or gate recordings and 0 8zTSP recordings</span><span class="l-sl" lang="sl">Razlike med dnevnikom in datoteko: 9 posnetkov tekmecev ali kontrolnih tekov in 0 posnetkov 8zTSP</span></li>
 </ul>
+</section>
+
+<section class="sec" aria-labelledby="tour-maps-h">
+  <div class="tour-maps-head">
+    <h2 id="tour-maps-h"><span class="l-en" lang="en">Tour maps and replay</span><span class="l-sl" lang="sl">Zemljevidi poti in predvajanje</span></h2>
+    <a class="btn" href="./replay/"><span class="l-en" lang="en">Replay recorded runs step by step</span><span class="l-sl" lang="sl">Predvajaj posnete teke korak za korakom</span></a>
+  </div>
+  <div class="cards tour-maps">
+    <figure class="card alt">
+      <img src="./media/tour-che2850-7844951.svg" width="640" height="415" loading="lazy" alt="Map of the tour through Switzerland" data-alt-en="Map of the tour through Switzerland" data-alt-sl="Zemljevid poti po Švici">
+      <figcaption>
+        <h3><span class="l-en" lang="en">Switzerland</span><span class="l-sl" lang="sl">Švica</span></h3>
+        <p><span class="l-en" lang="en">2,850 cities. Edition 1 reached the proved optimum of <b>7,844,951</b> in <b>5.05 s</b> with 12 threads.</span><span class="l-sl" lang="sl">2.850 mest. V 1. izdaji je bil dokazani optimum <b>7.844.951</b> dosežen v <b>5,05 s</b> z 12 nitmi.</span></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt">
+      <img src="./media/tour-si6035-8728190.svg" width="640" height="436" loading="lazy" alt="Map of the tour through Slovenia" data-alt-en="Map of the tour through Slovenia" data-alt-sl="Zemljevid poti po Sloveniji">
+      <figcaption>
+        <h3><span class="l-en" lang="en">Slovenia</span><span class="l-sl" lang="sl">Slovenija</span></h3>
+        <p><span class="l-en" lang="en">6,035 settlements. Edition 1 found a verified tour of <b>8,728,190 m</b> in <b>142.0 s</b> with 12 threads.</span><span class="l-sl" lang="sl">6.035 naselij. V 1. izdaji je bila preverjena pot dolžine <b>8.728.190 m</b> najdena v <b>142,0 s</b> z 12 nitmi.</span></p>
+      </figcaption>
+    </figure>
+    <figure class="card alt">
+      <img src="./media/tour-it16862-557346.svg" width="640" height="766" loading="lazy" alt="Map of the 557,346-unit tour through Italy" data-alt-en="Map of the 557,346-unit tour through Italy" data-alt-sl="Zemljevid poti po Italiji z dolžino 557.346">
+      <figcaption>
+        <h3><span class="l-en" lang="en">Italy</span><span class="l-sl" lang="sl">Italija</span> <code>it16862</code></h3>
+        <p><span class="l-en" lang="en">16,862 cities. Map shows a tour of 557,346. Edition 1 reached a verified <b>557,316</b>, one unit above the proved optimum of 557,315.</span><span class="l-sl" lang="sl">16.862 mest. Zemljevid prikazuje pot dolžine 557.346. Preverjena pot v 1. izdaji je merila <b>557.316</b>, kar je ena enota nad dokazanim optimumom 557.315.</span></p>
+      </figcaption>
+    </figure>
+  </div>
 </section>
 
 <section class="sec" aria-labelledby="tbl-h">
@@ -292,6 +333,7 @@ down.addEventListener('click',()=>fontSize(font-.05));value.addEventListener('cl
 $$('button[data-lang]').forEach(b=>b.addEventListener('click',()=>window.MDLxDCCLocale.choose(b.dataset.lang)));
 window.MDLxDCCLocale.subscribe(lang=>{const sl=lang==='sl',t=sl?T.sl:T.en;
  $$('button[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===lang)));
+ $$('.tour-maps img').forEach(img=>{img.alt=sl?img.dataset.altSl:img.dataset.altEn;});
  document.title=t.title;const d=$('meta[name="description"]');if(d)d.content=t.desc;
  trigger.setAttribute('aria-label',sl?'Meni':'Menu');trigger.title=sl?'Meni':'Menu';
  down.setAttribute('aria-label',sl?'Manjše besedilo':'Smaller text');up.setAttribute('aria-label',sl?'Večje besedilo':'Larger text');
