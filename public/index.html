@@ -655,17 +655,11 @@ html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:
 </style>
 <script type="module" src="/assets/ai8-entry/text-setting.mjs"></script>
 <style id="home-tsp-entry-style">
-/* HOME_TSP_ENTRY_20261116: scoped additions; the three original studies remain. */
-.lab-intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(18px,3vw,38px);align-items:center;border-top:1px solid var(--line);padding:25px 0}
+/* HOME_TSP_COMPACT_20261120: one TSP entry; existing media and other studies retained. */
+.lab-intro{border-top:1px solid var(--line);padding:25px 0}
 .lab-intro p{font-size:.94rem;line-height:1.8;color:var(--muted);margin:0;max-width:65ch}
-.tsp-start-card{display:grid;gap:9px;min-width:0;padding:20px 23px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--muted);font-size:.85rem;line-height:1.7;text-decoration:none}
-.tsp-start-card strong{font-size:1.05rem;font-weight:500;color:var(--accent)}
-.tsp-start-card:hover{border-color:var(--accent)}
-.tsp-engine{padding:clamp(18px,3vw,28px);margin:0 0 30px;border:1px solid var(--line);border-radius:12px;overflow-wrap:anywhere}
-.tsp-engine h2{font-size:1rem;font-weight:500;color:var(--accent);margin:0 0 12px}
-.tsp-engine p{max-width:94ch;margin:0;color:var(--muted);font-size:.88rem;line-height:1.85}
-.tsp-review-link{font-size:.85rem;line-height:1.7;margin-top:14px;max-width:100%}
-.tsp-hero-link{display:block;overflow:hidden;border-radius:12px;background:#071719;text-decoration:none}
+.hero-study[data-hero-kind="tsp"]{min-height:0}
+.tsp-hero-link{display:block;aspect-ratio:1200/768;overflow:hidden;border-radius:12px;background:#071719;text-decoration:none}
 .tsp-hero-link:before{display:none}
 .tsp-hero-link img,.tsp-hero-link video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .tsp-hero-link video{opacity:0;pointer-events:none}
@@ -674,12 +668,11 @@ html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:
 .tsp-hero-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:5px 12px;margin:8px 0 12px}
 .tsp-hero-play{border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--accent);padding:9px 14px;min-height:44px;font:inherit;font-size:.75rem;line-height:1.4;cursor:pointer}
 .tsp-hero-actions .study-note{margin:0;max-width:36ch;text-align:center}
-.tsp-hero-play:focus-visible,.tsp-hero-link:focus-visible,.tsp-start-card:focus-visible,.tsp-review-link:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.tsp-hero-play:focus-visible,.tsp-hero-link:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 #study.hero-demo-mode[data-hero-kind="tsp"] .tsp-hero-actions{position:absolute;bottom:max(16px,env(safe-area-inset-bottom));left:12px;right:12px;z-index:10002;margin:0}
 #study.hero-demo-mode[data-hero-kind="tsp"] .tsp-hero-link{border-radius:0}
 #study.hero-demo-mode[data-hero-kind="tsp"] .tsp-hero-cta{bottom:76px}
 #study.hero-demo-mode[data-hero-kind="tsp"] #hero-demo-info{display:none!important}
-@media(max-width:760px){.lab-intro{grid-template-columns:minmax(0,1fr);gap:18px}.tsp-start-card{padding:18px}.tsp-engine{margin-bottom:24px}.tsp-review-link{display:block;padding-block:8px}}
 </style>
 </head>
 <body>
@@ -717,13 +710,13 @@ html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:
 <div class="study-top hero-study-top"><span><span class="small-dot"></span><span id="hero-kicker">8zTSP · nu3496</span></span><span class="hero-pager" aria-label="Hero studies"><button id="hero-prev" class="hero-nav" type="button" aria-label="Previous study">‹</button><span id="hero-count">1 / 4</span><button id="hero-next" class="hero-nav" type="button" aria-label="Next study">›</button></span></div>
 
 <div class="hero-slide is-active" data-hero-slide="tsp">
-<a class="art-wrap tsp-hero-link" id="tsp-hero-link" href="/8zTSP/" aria-label="Try 8zTSP — 3,496 cities; password; access on request">
+<a class="art-wrap tsp-hero-link" id="tsp-hero-link" href="/tsp/" aria-label="Explore TSP — recorded 8zTSP search through 3,496 cities">
 <img id="tsp-hero-poster" src="/tsp/media/8ztsp-nu3496-engine-at-work-poster-en.webp" alt="" width="1280" height="720" fetchpriority="high" decoding="async">
 <video id="tsp-hero-video" muted playsinline loop preload="none" poster="/tsp/media/8ztsp-nu3496-engine-at-work-poster-en.webp" aria-hidden="true" tabindex="-1"></video>
-<span class="tsp-hero-cta"><span class="en" lang="en">Try 8zTSP → · password; access on request</span><span class="sl" lang="sl">Preizkusi 8zTSP → · z geslom; dostop na prošnjo</span></span>
+<span class="tsp-hero-cta"><span class="en" lang="en">Explore TSP →</span><span class="sl" lang="sl">Razišči TSP →</span></span>
 </a>
 <div class="tsp-hero-actions"><button class="tsp-hero-play" id="tsp-hero-play" type="button" aria-controls="tsp-hero-video" aria-pressed="false"><span class="en" lang="en">Play animation</span><span class="sl" lang="sl">Predvajaj animacijo</span></button><span id="tsp-hero-status" class="study-note" role="status"></span></div>
-<figcaption class="study-bottom"><p class="study-rule"><span class="en" lang="en">3,496 cities in about 6 s · try it.</span><span class="sl" lang="sl">3.496 mest v okoli 6 s · poskusi.</span></p><p class="study-note">nu3496: National TSP, University of Waterloo</p><p class="study-note" id="tsp-hero-context"><span class="en" lang="en">Animation: the browser demo in real time with 4 workers (recorded 15 Nov 2026). About 6 s is the program running on the laptop with 7 cores.</span><span class="sl" lang="sl">Animacija: demo v brskalniku v realnem času s 4 delavci (posneto 15. 11. 2026). Okoli 6 s doseže program na prenosniku s 7 jedri.</span></p></figcaption>
+<figcaption class="study-bottom"><p class="study-note" id="tsp-hero-context"><span class="en" lang="en">A recorded 8zTSP search through 3,496 cities · nu3496, University of Waterloo.</span><span class="sl" lang="sl">Posnetek iskanja poti z 8zTSP skozi 3.496 mest · nu3496, Univerza Waterloo.</span></p></figcaption>
 </div>
 
 <div class="hero-slide" data-hero-slide="claustrum" hidden>
@@ -787,14 +780,9 @@ html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:
 <ellipse class="petal" cx="294" cy="240" rx="63" ry="168" style="transform:rotate(352.5deg)"/></g><circle class="core" cx="240" cy="240" r="3"/><text class="art-label" x="240" y="468" text-anchor="middle">8z / GENERATIVE STUDY (48 × 7.5°)</text></svg><span class="fine" aria-hidden="true">LESS ↔ MORE</span></div><figcaption class="study-bottom"><div class="view-switch" role="group" aria-label="Drawing representation"><button type="button" data-view="pattern" aria-pressed="true"><span class="en" lang="en">Pattern</span><span class="sl" lang="sl">Vzorec</span></button><button type="button" data-view="rule" aria-pressed="false"><span class="en" lang="en">Rule</span><span class="sl" lang="sl">Pravilo</span></button></div><p class="study-rule" id="rule-caption"><span class="en" lang="en">1 curve × 48 rotations. Nothing left out.</span><span class="sl" lang="sl">1 krivulja × 48 zasukov. Nič izpuščeno.</span></p><p class="study-note"><span class="en" lang="en">A drawing from a rule. Not a compression benchmark.</span><span class="sl" lang="sl">Risba iz pravila. Ne kompresijski benchmark.</span></p><span class="sr-only" id="art-status" aria-live="polite"></span></figcaption>
 </div>
 </figure></section>
-<!-- HOME_TSP_ENTRY_20261116: approved public copy; existing media reused. -->
+<!-- Lab introduction; TSP details are linked from the compact hero above. -->
 <section class="lab-intro" aria-label="BD × AI Lab">
 <p><span class="en" lang="en">BD × AI Lab connects BD and AI in the development of ideas, research and working tools. Explore projects, try a tool or follow how an idea becomes a result.</span><span class="sl" lang="sl">BD × AI Lab povezuje BD in AI pri razvoju idej, raziskav in delujočih orodij. Razišči projekte, preizkusi orodje ali spremljaj, kako ideja postane rezultat.</span></p>
-<a class="tsp-start-card" id="tsp-start-card" href="/8zTSP/"><strong><span class="en" lang="en">Start here: 8zTSP</span><span class="sl" lang="sl">Začni tukaj: 8zTSP</span> <span aria-hidden="true">↗</span></strong><span class="en" lang="en">3,496 cities in about 6 s · try it</span><span class="sl" lang="sl">3.496 mest v okoli 6 s · poskusi</span><small class="tsp-card-access"><span class="en" lang="en">password; access on request</span><span class="sl" lang="sl">z geslom; dostop na prošnjo</span></small></a>
-</section>
-<section class="tsp-engine" aria-labelledby="tsp-engine-title"><h2 id="tsp-engine-title"><span class="en" lang="en">Inside 8zTSP</span><span class="sl" lang="sl">V jedru 8zTSP</span></h2>
-<p id="tsp-engine-copy"><span class="en" lang="en">8zTSP: 3,496 cities in about 6 seconds (7 cores, a laptop with a 2020 processor). At its core are our own logic for viewing the map, our own concept of recursive analysis of the view, and our MDL × DCC, which decides where the computing goes, built on proven techniques (EAX, 2-opt, 3-opt). On the same laptop, one core: Concorde found the optimum after 148 min, LKH did not find it in 6 hours, 8zTSP in about 28 s.</span><span class="sl" lang="sl">8zTSP: 3.496 mest v okoli 6 sekundah (7 jeder, prenosnik s procesorjem iz leta 2020). V jedru so naša lastna logika pogleda na zemljevid, naš koncept rekurzivne analize pogleda in naš MDL × DCC, ki odloča, kam gre računanje, na temeljih preizkušenih prijemov (EAX, 2-opt, 3-opt). Na istem prenosniku, eno jedro: Concorde je optimum našel po 148 min, LKH ga v 6 urah ni našel, 8zTSP v okoli 28 s.</span></p>
-<a class="text-link tsp-review-link" href="https://www.mdlxdcc.org/tsp/review/"><span class="en" lang="en">For reviewers: the exact description and the code (password; access on request) →</span><span class="sl" lang="sl">Za recenzente: natančen opis in koda (z geslom, dostop na prošnjo) →</span></a>
 </section>
 <!-- LANDING_COMPRESSED_LINKS_20260917 -->
 <!-- LANDING_TOE_SEARCH_20260917 -->
@@ -1053,8 +1041,8 @@ function syncTspVideo(){
     if(tspVideo.hasAttribute('src')){tspVideo.removeAttribute('src');tspVideo.load();}
     tspPoster.src=base+'-poster-'+lang+'.webp';tspVideo.poster=tspPoster.src;tspLanguage=lang;
   }
-  tspLink.setAttribute('aria-label',isSl()?'Preizkusi 8zTSP — 3.496 mest; z geslom; dostop na prošnjo':'Try 8zTSP — 3,496 cities; password; access on request');
-  $('#tsp-hero-status').textContent=tspFailed?(isSl()?'Animacija ni na voljo. Odpri 8zTSP.':'Animation unavailable. Open 8zTSP.') : '';
+  tspLink.setAttribute('aria-label',isSl()?'Razišči TSP — posnetek iskanja poti z 8zTSP skozi 3.496 mest':'Explore TSP — recorded 8zTSP search through 3,496 cities');
+  $('#tsp-hero-status').textContent=tspFailed?(isSl()?'Animacija ni na voljo. Razišči TSP.':'Animation unavailable. Explore TSP.') : '';
   const dialog=$('#hero-dialog'),active=slides[index]==='tsp'&&!document.hidden&&!(dialog&&dialog.open);
   if(!active||tspUserPaused||(reduced()&&!tspManual)||(heroDemoOpen&&heroDemoPaused)){
     pauseTsp();if(reduced()&&!tspManual)tspLink.classList.remove('is-playing');return;
