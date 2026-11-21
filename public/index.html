@@ -659,19 +659,19 @@ html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:
 .lab-intro{border-top:1px solid var(--line);padding:25px 0}
 .lab-intro p{font-size:.94rem;line-height:1.8;color:var(--muted);margin:0;max-width:65ch}
 .hero-study[data-hero-kind="tsp"]{min-height:0}
-.tsp-hero-link{display:block;aspect-ratio:1200/768;overflow:hidden;border-radius:12px;background:#071719;text-decoration:none}
-.tsp-hero-link:before{display:none}
-.tsp-hero-link img,.tsp-hero-link video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.tsp-hero-link video{opacity:0;pointer-events:none}
-.tsp-hero-link.is-playing video{opacity:1}
-.tsp-hero-cta{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);padding:7px 13px;border:1px solid #618b88;border-radius:999px;background:#102b2f;color:#edf0e7;font-size:.77rem;line-height:1.5;text-align:center}
+.tsp-hero-media{display:block;aspect-ratio:1200/768;overflow:hidden;border-radius:12px;background:#071719;text-decoration:none}
+.tsp-hero-media:before{display:none}
+.tsp-hero-media img,.tsp-hero-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.tsp-hero-media video{opacity:0;pointer-events:none}
+.tsp-hero-media.is-playing video{opacity:1}
+.tsp-hero-cta{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:44px;padding:9px 14px;text-decoration:none;white-space:nowrap;border:1px solid #618b88;border-radius:999px;background:#102b2f;color:#edf0e7;font-size:.75rem;line-height:1.4;text-align:center}
 .tsp-hero-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:5px 12px;margin:8px 0 12px}
 .tsp-hero-play{border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--accent);padding:9px 14px;min-height:44px;font:inherit;font-size:.75rem;line-height:1.4;cursor:pointer}
-.tsp-hero-actions .study-note{margin:0;max-width:36ch;text-align:center}
-.tsp-hero-play:focus-visible,.tsp-hero-link:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.tsp-hero-actions .study-note{flex-basis:100%;margin:0;max-width:36ch;text-align:center}
+#tsp-hero-status:empty{display:none}
+.tsp-hero-play:focus-visible,.tsp-hero-cta:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 #study.hero-demo-mode[data-hero-kind="tsp"] .tsp-hero-actions{position:absolute;bottom:max(16px,env(safe-area-inset-bottom));left:12px;right:12px;z-index:10002;margin:0}
-#study.hero-demo-mode[data-hero-kind="tsp"] .tsp-hero-link{border-radius:0}
-#study.hero-demo-mode[data-hero-kind="tsp"] .tsp-hero-cta{bottom:76px}
+#study.hero-demo-mode[data-hero-kind="tsp"] .tsp-hero-media{border-radius:0}
 #study.hero-demo-mode[data-hero-kind="tsp"] #hero-demo-info{display:none!important}
 </style>
 </head>
@@ -710,12 +710,11 @@ html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:
 <div class="study-top hero-study-top"><span><span class="small-dot"></span><span id="hero-kicker">8zTSP · nu3496</span></span><span class="hero-pager" aria-label="Hero studies"><button id="hero-prev" class="hero-nav" type="button" aria-label="Previous study">‹</button><span id="hero-count">1 / 4</span><button id="hero-next" class="hero-nav" type="button" aria-label="Next study">›</button></span></div>
 
 <div class="hero-slide is-active" data-hero-slide="tsp">
-<a class="art-wrap tsp-hero-link" id="tsp-hero-link" href="/tsp/" aria-label="Explore TSP — recorded 8zTSP search through 3,496 cities">
+<div class="art-wrap tsp-hero-media" id="tsp-hero-media" role="img" aria-label="Recorded 8zTSP search through 3,496 cities">
 <img id="tsp-hero-poster" src="/tsp/media/8ztsp-nu3496-engine-at-work-poster-en.webp" alt="" width="1280" height="720" fetchpriority="high" decoding="async">
 <video id="tsp-hero-video" muted playsinline loop preload="none" poster="/tsp/media/8ztsp-nu3496-engine-at-work-poster-en.webp" aria-hidden="true" tabindex="-1"></video>
-<span class="tsp-hero-cta"><span class="en" lang="en">Explore TSP →</span><span class="sl" lang="sl">Razišči TSP →</span></span>
-</a>
-<div class="tsp-hero-actions"><button class="tsp-hero-play" id="tsp-hero-play" type="button" aria-controls="tsp-hero-video" aria-pressed="false"><span class="en" lang="en">Play animation</span><span class="sl" lang="sl">Predvajaj animacijo</span></button><span id="tsp-hero-status" class="study-note" role="status"></span></div>
+</div>
+<div class="tsp-hero-actions"><a class="tsp-hero-cta" id="tsp-hero-link" href="/tsp/" aria-label="Explore TSP — recorded 8zTSP search through 3,496 cities"><span class="en" lang="en">Explore TSP →</span><span class="sl" lang="sl">Razišči TSP →</span></a><button class="tsp-hero-play" id="tsp-hero-play" type="button" aria-controls="tsp-hero-video" aria-pressed="false"><span class="en" lang="en">Play animation</span><span class="sl" lang="sl">Predvajaj animacijo</span></button><span id="tsp-hero-status" class="study-note" role="status"></span></div>
 <figcaption class="study-bottom"><p class="study-note" id="tsp-hero-context"><span class="en" lang="en">A recorded 8zTSP search through 3,496 cities · nu3496, University of Waterloo.</span><span class="sl" lang="sl">Posnetek iskanja poti z 8zTSP skozi 3.496 mest · nu3496, Univerza Waterloo.</span></p></figcaption>
 </div>
 
@@ -1026,7 +1025,7 @@ const labels={
  pi:['PI BY AREA','PI PO POVRŠINI'],
  pattern:['A SMALL RULE. A RICH WORLD.','KRATKO PRAVILO. BOGAT SVET.']
 };
-const tspVideo=$('#tsp-hero-video'),tspPoster=$('#tsp-hero-poster'),tspLink=$('#tsp-hero-link'),tspPlay=$('#tsp-hero-play');
+const tspVideo=$('#tsp-hero-video'),tspPoster=$('#tsp-hero-poster'),tspLink=$('#tsp-hero-link'),tspMedia=$('#tsp-hero-media'),tspPlay=$('#tsp-hero-play');
 let tspLanguage=null,tspManual=false,tspUserPaused=false,tspFailed=false,tspAttempt=0;
 function updateTspPlay(){
   const playing=!tspVideo.paused&&!tspVideo.ended;
@@ -1037,15 +1036,16 @@ function pauseTsp(){tspAttempt++;tspVideo.pause();updateTspPlay();}
 function syncTspVideo(){
   const lang=isSl()?'sl':'en',base='/tsp/media/8ztsp-nu3496-engine-at-work';
   if(tspLanguage!==lang){
-    pauseTsp();tspLink.classList.remove('is-playing');tspFailed=false;
+    pauseTsp();tspMedia.classList.remove('is-playing');tspFailed=false;
     if(tspVideo.hasAttribute('src')){tspVideo.removeAttribute('src');tspVideo.load();}
     tspPoster.src=base+'-poster-'+lang+'.webp';tspVideo.poster=tspPoster.src;tspLanguage=lang;
   }
+  tspMedia.setAttribute('aria-label',isSl()?'Posnetek iskanja poti z 8zTSP skozi 3.496 mest':'Recorded 8zTSP search through 3,496 cities');
   tspLink.setAttribute('aria-label',isSl()?'Razišči TSP — posnetek iskanja poti z 8zTSP skozi 3.496 mest':'Explore TSP — recorded 8zTSP search through 3,496 cities');
   $('#tsp-hero-status').textContent=tspFailed?(isSl()?'Animacija ni na voljo. Razišči TSP.':'Animation unavailable. Explore TSP.') : '';
   const dialog=$('#hero-dialog'),active=slides[index]==='tsp'&&!document.hidden&&!(dialog&&dialog.open);
   if(!active||tspUserPaused||(reduced()&&!tspManual)||(heroDemoOpen&&heroDemoPaused)){
-    pauseTsp();if(reduced()&&!tspManual)tspLink.classList.remove('is-playing');return;
+    pauseTsp();if(reduced()&&!tspManual)tspMedia.classList.remove('is-playing');return;
   }
   if(tspFailed){updateTspPlay();return;}
   if(!tspVideo.paused){updateTspPlay();return;}
@@ -1054,9 +1054,9 @@ function syncTspVideo(){
   const pending=tspVideo.play();
   if(pending&&typeof pending.catch==='function')pending.catch(()=>{if(attempt===tspAttempt){tspUserPaused=true;updateTspPlay();}});
 }
-tspVideo.addEventListener('playing',()=>{tspLink.classList.add('is-playing');updateTspPlay();});
+tspVideo.addEventListener('playing',()=>{tspMedia.classList.add('is-playing');updateTspPlay();});
 tspVideo.addEventListener('pause',updateTspPlay);
-tspVideo.addEventListener('error',()=>{if(!tspVideo.hasAttribute('src'))return;tspFailed=true;tspLink.classList.remove('is-playing');syncTspVideo();});
+tspVideo.addEventListener('error',()=>{if(!tspVideo.hasAttribute('src'))return;tspFailed=true;tspMedia.classList.remove('is-playing');syncTspVideo();});
 tspPlay.addEventListener('click',()=>{
   if(!tspVideo.paused){tspUserPaused=true;pauseTsp();}
   else{tspManual=true;tspUserPaused=false;if(tspFailed){tspFailed=false;tspVideo.removeAttribute('src');tspVideo.load();}syncTspVideo();}
