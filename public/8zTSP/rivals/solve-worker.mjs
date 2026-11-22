@@ -38,7 +38,7 @@ function eaxInput(p) {
 }
 
 async function solve(data) {
-  const { engine, text, seed, started, seconds, profile, wasmBytes } = data;
+  const { engine, text, seed, started, seconds, profile, wasmBytes, reference, optimum, stopAtOptimum } = data;
   const { min: minCities, max: maxCities } = RIVALS[engine];
   const problem = parseTsplibEuc2d(text);
   if (problem.dimension < minCities || problem.dimension > maxCities) {
@@ -120,29 +120,74 @@ async function solve(data) {
     const transitMatrix = model.buildTransitMatrix();
     model.buildTransitMatrix = () => transitMatrix;
     checkDeadline();
-    const remainingMs = Math.max(1, Math.floor(deadline - now()));
+    let firstReferenceSeconds = null;
+    let firstOptimumSeconds = null;
+    const canInterrupt = stopAtOptimum && self.crossOriginIsolated &&
+      runtime.HEAPU8.buffer instanceof SharedArrayBuffer;
+    const interruptAddress = canInterrupt ? runtime.ccall('routing_interrupt_address', 'number', [], []) : null;
+    const solveOptions = {
+      executor: 'direct',
+      signal: canInterrupt ? new AbortController().signal : undefined,
+      onEventSync(event) {
+        if (event.type !== 'solution' || event.unchecked) return;
+        reportMemory(runtime.HEAPU8.byteLength);
+        const length = Number(event.objectiveValue);
+        const seenAt = elapsed();
+        if (reference > 0 && length <= reference) firstReferenceSeconds ??= seenAt;
+        if (optimum > 0 && length === optimum) {
+          firstOptimumSeconds ??= seenAt;
+          // Request a native stop while preserving its returned assignment.
+          if (interruptAddress !== null) Atomics.store(runtime.HEAPU8, interruptAddress, 1);
+        }
+      },
+    };
+    const timeLimit = (cap = Infinity) => {
+      const ms = Math.max(1, Math.floor(Math.min(cap, deadline - now())));
+      return { seconds: BigInt(Math.floor(ms / 1000)), nanos: ms % 1000 * 1000000 };
+    };
     meta.parameters = { firstSolution: 'PATH_CHEAPEST_ARC', improvement: 'GUIDED_LOCAL_SEARCH' };
-    const assignment = await model.solveWithParameters({
-      firstSolutionStrategy: FirstSolutionStrategy.PATH_CHEAPEST_ARC,
-      localSearchMetaheuristic: LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH,
-      timeLimit: { seconds: BigInt(Math.floor(remainingMs / 1000)), nanos: remainingMs % 1000 * 1000000 },
-    }, { executor: 'direct' });
-    reportMemory(runtime.HEAPU8?.byteLength);
-    if (assignment) {
+    function publishAssignment(assignment) {
+      if (!assignment) return;
       const route = [];
       for (let index = model.start(0); !model.isEnd(index); index = assignment.value(model.nextVar(index))) {
         if (route.length >= n) throw Error('Invalid OR-Tools route');
         route.push(manager.indexToNode(index));
       }
-      // Final assignment is returned at the deadline plus serialization overhead.
-      // Record when it became available; this run has no complete intermediate tours.
+      // Read a complete tour from the returned assignment. The callback only carries its objective.
       const verified = verifyTourIndependent(problem, route);
       const length = Number(assignment.objectiveValue());
       if (verified.euc2dRoundedNumber !== length) throw Error('OR-Tools objective differs from verified length');
+      if (length >= bestLength) return;
+      bestLength = length;
       latest = { verified };
-      finish({ ...meta, solverReportedLength: length,
-        wallSecondsIncludingPrep: elapsed(), lengthMatchesVerifier: true }, verified);
+      finish({ ...meta, solverReportedLength: length, wallSecondsIncludingPrep: elapsed(),
+        firstReferenceSeconds, firstOptimumSeconds, lengthMatchesVerifier: true }, verified);
     }
+    const initialStrategy = FirstSolutionStrategy.PATH_CHEAPEST_ARC;
+    let initial = null;
+    // A short descent lets small maps draw a verified route before the longer search.
+    // Large maps reuse a single native solve and only return the full route at the end.
+    if (n <= 256 && deadline - now() > 400) {
+      meta.parameters.preview = 'GREEDY_DESCENT (up to 300 ms)';
+      initial = await model.solveWithParameters({
+        firstSolutionStrategy: initialStrategy,
+        localSearchMetaheuristic: LocalSearchMetaheuristic.GREEDY_DESCENT,
+        timeLimit: timeLimit(300),
+      }, solveOptions);
+      publishAssignment(initial);
+    }
+    if (!expired() && !(stopAtOptimum && optimum > 0 && bestLength === optimum)) {
+      const parameters = {
+        firstSolutionStrategy: initialStrategy,
+        localSearchMetaheuristic: LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH,
+        timeLimit: timeLimit(),
+      };
+      const bestAssignment = await (initial
+        ? model.solveFromAssignmentWithParameters(initial, parameters, solveOptions)
+        : model.solveWithParameters(parameters, solveOptions));
+      publishAssignment(bestAssignment);
+    }
+    reportMemory(runtime.HEAPU8?.byteLength);
   }
   if (!latest) throw Error('No complete tour within the time budget');
 }

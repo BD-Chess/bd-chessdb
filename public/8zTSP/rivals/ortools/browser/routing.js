@@ -12083,7 +12083,7 @@ var RoutingResourceGroup = _RoutingResourceGroup, RoutingModel = class _RoutingM
       readAssignmentOnly,
       ...this.resourceGroups.length ? { resourceGroups: this.resourceGroups.map((group) => resourceGroupSnapshots.get(group)()) } : {},
       searchEntryEvents: !!options.onEvent || this.enterSearchCallbacks.length > 0,
-      solutionEvents: !!options.onEvent || this.atSolutionCallbacks.length > 0,
+      solutionEvents: !!options.onEventSync || !!options.onEvent || this.atSolutionCallbacks.length > 0,
       trackUncheckedNeighbors: options.trackUncheckedNeighbors === !0 || this.atSolutionCallbacks.some((entry) => entry.trackUncheckedNeighbors),
       numLocations: this.manager.numLocations,
       numVehicles: this.manager.numVehicles,
@@ -12153,6 +12153,8 @@ var RoutingResourceGroup = _RoutingResourceGroup, RoutingModel = class _RoutingM
       {
         showCloudNotice: !(executor instanceof SolverServerExecutor),
         onCallback: callbacks.length ? routingRouteCallback(callbacks) : void 0,
+        // 8zTSP: observe native solutions at the callback, before direct Wasm releases the event loop.
+        onEventSync: options.onEventSync,
         onEvent: async (event) => {
           if (event.type === "searchEntered")
             for (let callback of entryCallbacks) await callback();

@@ -156,6 +156,9 @@ const T = {
     budgetNoTour: 'Time budget ended before a tour was available.',
     complete: (s, opt) => 'Complete · tour checked in Rust.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Reference'} first reached after ${dec(s, 1)} s of solver time.`),
+    rivalComplete: 'Complete · tour independently checked.',
+    rivalOptimum: s => s === null ? 'Complete · the tour matches the known optimum.' :
+      `Known optimum reached after ${dec(s, 1)} s.`,
     optimumStop: s => `Optimum reached after ${dec(s, 1)} s of solver time; the search stopped.`,
     stopped: 'Stopped · the last tour shown is kept.', loadingStopped: 'Loading stopped.', soon: '(soon)',
     stoppedErr: m => `Search stopped: ${m}`, workerFail: m => `Worker failed: ${m}`,
@@ -230,6 +233,9 @@ const T = {
     budgetNoTour: 'Čas je potekel, preden je bila pot na voljo.',
     complete: (s, opt) => 'Končano · pot preverjena v Rustu.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Referenca'} prvič dosežen${opt ? '' : 'a'} po ${dec(s, 1)} s časa reševalnika.`),
+    rivalComplete: 'Končano · pot neodvisno preverjena.',
+    rivalOptimum: s => s === null ? 'Končano · pot se ujema z znanim optimumom.' :
+      `Znani optimum dosežen po ${dec(s, 1)} s.`,
     optimumStop: s => `Optimum dosežen po ${dec(s, 1)} s časa reševalnika; iskanje ustavljeno.`,
     stopped: 'Ustavljeno · zadnja prikazana pot ostane.', loadingStopped: 'Nalaganje ustavljeno.', soon: '(kmalu)',
     stoppedErr: m => `Iskanje se je ustavilo: ${m}`, workerFail: m => `Delavec je odpovedal: ${m}`,
@@ -552,8 +558,9 @@ function controls() {
 function acceptBest(data, worker) {
   runRecord.historyReceived++;
   runRecord.historyDropped += retainRecent(runRecord.history, { worker, length: data.length, seconds: data.elapsed, steps: data.steps }, RUN_LIMITS.history);
-  if (runRecord.reference && data.length <= runRecord.reference && runRecord.firstReach === null) {
-    runRecord.firstReach = { worker, solverSeconds: data.elapsed, pageSeconds: (performance.now() - started) / 1000 };
+  const reachElapsed = data.reachElapsed === undefined ? data.elapsed : data.reachElapsed;
+  if (reachElapsed !== null && runRecord.reference && data.length <= runRecord.reference && runRecord.firstReach === null) {
+    runRecord.firstReach = { worker, solverSeconds: reachElapsed, pageSeconds: (performance.now() - started) / 1000 };
   }
   if (data.length <= best) {
     const improved = data.length < best;
@@ -795,6 +802,7 @@ async function startRival({ seconds, seed, options }) {
     schema: '8ztsp-rival-run.v1', solverId: rival.label, executionLocation: 'browser-wasm-local',
     seed, seconds, workers: 1, copies: 1, workersTerminated: 0, inputSha256: inputHash,
     reference: options.reference ?? (referenceRaw || null), optimum: mapMeta?.optimum ?? null,
+    stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     unit: mapMeta?.unit ?? null, example: mapMeta?.id ?? null, dimension: coords.length / 2,
     history: [], historyReceived: 0, historyDropped: 0, renderChanges: [], renderChangesDropped: 0,
     firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/',
@@ -802,7 +810,11 @@ async function startRival({ seconds, seed, options }) {
   const deadlineStart = performance.timeOrigin + started;
   function complete() {
     runRecord.length = tour?.length ? runRecord.tourLength : null;
-    finish(tour?.length ? 'complete' : 'budgetNoTour', runRecord.firstReach?.solverSeconds ?? null, isOptimum());
+    if (!tour?.length) finish('budgetNoTour');
+    else if (runRecord.optimum && runRecord.length === runRecord.optimum) {
+      finish('rivalOptimum', runRecord.firstOptimumSeconds === undefined
+        ? runRecord.optimumReached?.solverSeconds ?? null : runRecord.firstOptimumSeconds);
+    } else finish('rivalComplete');
   }
   controls(); status('searching', 1, false); render();
   return new Promise((resolve, reject) => {
@@ -834,13 +846,16 @@ async function startRival({ seconds, seed, options }) {
         if (data.type !== 'result' || data.tour.length !== coords.length / 2) return;
         Object.assign(runRecord, data.record);
         const { solverReportedLength: length, wallSecondsIncludingPrep: elapsed } = data.record;
-        acceptBest({ length, elapsed, steps: null, tour: data.tour }, 0);
-        if (runRecord.optimum && length === runRecord.optimum && $('stopOptimum').checked) {
-          runRecord.length = length; finish('optimumStop', elapsed); resolve(runRecord);
+        acceptBest({ length, elapsed, reachElapsed: data.record.firstReferenceSeconds, steps: null, tour: data.tour }, 0);
+        if (runRecord.optimum && length === runRecord.optimum) {
+          const secondsFound = data.record.firstOptimumSeconds === undefined ? elapsed : data.record.firstOptimumSeconds;
+          if (secondsFound !== null) runRecord.optimumReached ??= { solverSeconds: secondsFound, pageSeconds: (performance.now() - started) / 1000 };
+          if (runRecord.stopAtOptimum) { complete(); resolve(runRecord); }
         }
       };
       worker.onerror = event => fail(Error(event.message || 'Browser worker failed'));
-      worker.postMessage({ engine, text, seconds, seed, profile, started: deadlineStart, wasmBytes },
+      worker.postMessage({ engine, text, seconds, seed, profile, started: deadlineStart, wasmBytes,
+        reference: runRecord.reference, optimum: runRecord.optimum, stopAtOptimum: runRecord.stopAtOptimum },
         wasmBytes ? [wasmBytes.buffer] : []);
     })().catch(fail);
   });
