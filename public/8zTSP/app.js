@@ -44,7 +44,7 @@ function rivalCompatible(rival) {
     /^EDGE_WEIGHT_TYPE\s*:\s*EUC_2D\s*$/im.test(text.slice(0, 2048));
 }
 let shareNotice = null, shareFallbackFile = null, sharePending = false;
-const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
+const DEFAULT_EXAMPLE = defaultExampleId;
 // Safari may hide cores: use the existing menu maximum by default, subject to map memory safety.
 const reportedCores = Math.max(1, Math.floor(Number(navigator.hardwareConcurrency) || 1));
 const isIPhone = /iPhone/i.test(navigator.userAgent);
@@ -410,7 +410,33 @@ function renderResultActions() {
   $('share').disabled = !tour?.length || sharePending;
   $('downloadSame').disabled = !shareFallbackFile;
 }
+const wasmMemoryLine = document.createElement('p');
+wasmMemoryLine.id = 'wasmMemory';
+wasmMemoryLine.className = $('refLine').className;
+wasmMemoryLine.hidden = true;
+$('refLine').after(wasmMemoryLine);
+
+function renderWasmMemory() {
+  const bytes = runRecord?.wasmMemoryPeakBytes;
+  wasmMemoryLine.hidden = !bytes;
+  if (!bytes) return;
+  const amount = dec(bytes / (1024 * 1024), 1) + ' MiB';
+  wasmMemoryLine.textContent = lang() === 'sl'
+    ? 'Pomnilnik WASM (vrh): ' + amount
+    : 'WASM memory (peak): ' + amount;
+}
+
+function recordWasmMemory(worker, bytes) {
+  if (!Number.isSafeInteger(bytes) || bytes <= 0) return;
+  const banks = runRecord.wasmMemoryByWorkerBytes ??= [];
+  if (bytes <= (banks[worker] || 0)) return;
+  banks[worker] = bytes;
+  runRecord.wasmMemoryPeakBytes = banks.reduce((sum, size) => sum + size, 0);
+  renderWasmMemory();
+}
+
 function render() {
+  renderWasmMemory();
   const rival = selectedRival();
   const finland = tab === 'nu' && mapMeta?.id === FINLAND && $('example').value === FINLAND;
   engineChoice?.sync({ language: lang(), active: active || !!loading,
@@ -582,7 +608,6 @@ async function load(value, which, metadata = null, verifiedHash = null, resetFin
   if (metadata && inputHash !== metadata.sha256) { loading = null; controls(); throw new Message('checksum'); }
   mapMeta = metadata;
   $('stopOptimum').checked = !!metadata?.optimum;
-  $('twoPass').checked = true;
   text = value; coords = new Float64Array(); extent = null; view = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
   setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || metadata?.referenceTour || metadata?.bestKnownTour || null);   // B: a best known tour alone is the reference
   shareNotice = null; shareFallbackFile = null;
@@ -601,12 +626,16 @@ async function load(value, which, metadata = null, verifiedHash = null, resetFin
       loading = null; rejectLoading = null; worker.terminate();
       if (data.type === 'error') { status('noSolver', data.message); controls(); reject(Error(data.message)); return; }
       mapName = data.name; coords = data.coordinates; view = displayView(coords, mapMeta?.display);
-      applyWorkerChoice(coords.length / 2);
+      const cities = coords.length / 2;
+      const large = cities > 12000;
+      $('twoPass').checked = large;
+      passChoice.value = large ? 'restart' : 'one';
+      applyWorkerChoice(cities);
       const P = view || coords; let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
       for (let j = 0; j < P.length; j += 2) { x0 = Math.min(x0, P[j]); x1 = Math.max(x1, P[j]); y0 = Math.min(y0, P[j + 1]); y1 = Math.max(y1, P[j + 1]); }
       extent = [x0, x1, y0, y1];
       $('refresh').value = String(coords.length / 2 >= 1000000 ? 10000 : coords.length / 2 <= 20000 ? 150 : 1000);
-      status(coords.length / 2 > 12000 ? 'readyWin' : 'readyPop');
+      status(large ? 'readyWin' : 'readyPop');
       render(); draw(); controls(); resolve();
     };
     worker.onerror = event => { loading = null; rejectLoading = null; worker.terminate(); status('noSolver', event.message); controls(); reject(Error(event.message)); };
@@ -670,6 +699,7 @@ async function start(options = {}) {
   return new Promise((resolve, reject) => {
     rejectActive = reject;
     timer = setInterval(() => {
+      if (memory) recordWasmMemory(0, memory.buffer.byteLength);
       shownElapsed = (performance.now() - started) / 1000; $('elapsed').textContent = `${dec(shownElapsed, 1)} s`;
       if (shownElapsed >= seconds && token === generation && active) {
         generation++; runRecord.budgetExpired = true; runRecord.length = tour?.length ? runRecord.tourLength : null;
@@ -705,6 +735,8 @@ async function start(options = {}) {
           return;
         }
         if (data.type === 'pool-terminate') { children.get(data.id)?.terminate(); return; }
+        recordWasmMemory(i, data.wasmMemoryBytes);
+        if (data.type === 'memory') return;
         if (data.type === 'error') { fail(data.message); return; }
         if (data.type === 'budget') { runRecord.passBudgets[i] = { worker: i, ...data.plan }; return; }
         if (data.type === 'handoff') {
@@ -794,6 +826,8 @@ async function startRival({ seconds, seed, options }) {
       pool.push(worker);
       worker.onmessage = ({ data }) => {
         if (token !== generation || !active) return;
+        recordWasmMemory(0, data.wasmMemoryBytes ?? data.details?.wasmMemoryBytes);
+        if (data.type === 'memory') return;
         if (data.type === 'error') { fail(Error(data.message)); return; }
         if (data.type === 'details') { Object.assign(runRecord, data.details); return; }
         if (data.type === 'done') { complete(); resolve(runRecord); return; }

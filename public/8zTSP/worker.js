@@ -33,11 +33,11 @@ self.tsp8zProgress = (length, elapsed, steps, tour) => {
   if (!draw) return;
   if (draw) lastSent = performance.now();
   const path = draw ? tour.slice() : null;
-  self.postMessage({type:'best',token,length,elapsed,steps,tour:path}, path ? [path.buffer] : []);
+  self.postMessage({type:'best',token,length,elapsed,steps,tour:path,wasmMemoryBytes:wasm.memory.buffer.byteLength}, path ? [path.buffer] : []);
 };
 self.tsp8zPhase = (pass, length, elapsed, steps, tour) => {
   const path = tour.length ? tour.slice() : null;
-  self.postMessage({type:'phase',token,pass,length,elapsed,steps,tour:path}, path ? [path.buffer] : []);
+  self.postMessage({type:'phase',token,pass,length,elapsed,steps,tour:path,wasmMemoryBytes:wasm.memory.buffer.byteLength}, path ? [path.buffer] : []);
 };
 self.tsp8zHandoff = summary => {
   self.postMessage({type:'handoff',token,summary:JSON.parse(summary)});
@@ -60,6 +60,7 @@ self.onmessage = async ({data}) => {
       const coordinates = problem.coordinates();cities=coordinates.length/2;
       self.postMessage({type:'ready',token,name:problem.name(),coordinates},[coordinates.buffer]);
     } else if (data.type === 'run') {
+      self.postMessage({type:'memory',token,wasmMemoryBytes:wasm.memory.buffer.byteLength});
       let probe = null;
       if (threaded) {
         routePoolWorkersThroughPage();
@@ -85,7 +86,7 @@ self.onmessage = async ({data}) => {
         throw Error('Unsupported experimental profile');
       }
       const phaseEnabled = profiled ? profiles[data.phaseProfile] !== 0 : !!data.twoPass;
-      self.postMessage({type:'budget',token,plan:{remainingSeconds:remaining,firstSeconds:phaseEnabled ? first : 0,totalDeadlineEpoch:data.totalDeadlineEpoch}});
+      self.postMessage({type:'budget',token,wasmMemoryBytes:wasm.memory.buffer.byteLength,plan:{remainingSeconds:remaining,firstSeconds:phaseEnabled ? first : 0,totalDeadlineEpoch:data.totalDeadlineEpoch}});
       const result = profiled
         ? problem.solve_phase_profile(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first,profiles[data.phaseProfile])
         : data.twoPass

@@ -57,6 +57,13 @@ async function solve(data) {
     startedAtIso: new Date(started).toISOString(),
     inputSha256: await sha256HexBytes(new TextEncoder().encode(text)),
   };
+  let reportedMemory = 0;
+  const reportMemory = bytes => {
+    if (bytes > reportedMemory) {
+      reportedMemory = bytes;
+      postMessage({ type: 'memory', wasmMemoryBytes: bytes });
+    }
+  };
   let bestLength = Infinity;
   let latest = null;
   function publish(order, length) {
@@ -79,6 +86,7 @@ async function solve(data) {
       wasmBytes, tspText: text, profile, seed, deadlineSeconds: seconds,
       runStartMs: started - performance.timeOrigin, traceLevel: 1,
       onBest: ({ tour0, cost }) => publish(tour0, cost),
+      onMemory: reportMemory,
     });
     if (!result.ok && !latest) throw Error(result.logs?.trim().split('\n').at(-1) || 'LKH returned no tour within the time budget');
     if (latest && result.ok) {
@@ -97,7 +105,8 @@ async function solve(data) {
     const { RoutingIndexManager, RoutingModel, FirstSolutionStrategy, LocalSearchMetaheuristic } =
       await import('./ortools/browser/routing.js');
     const { loadRoutingRuntime } = await import('./ortools/browser/runtime/routing.js');
-    await loadRoutingRuntime();
+    const runtime = await loadRoutingRuntime();
+    reportMemory(runtime.HEAPU8?.byteLength);
     const n = problem.dimension;
     const manager = new RoutingIndexManager(n, 1, 0);
     const model = new RoutingModel(manager);
@@ -118,6 +127,7 @@ async function solve(data) {
       localSearchMetaheuristic: LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH,
       timeLimit: { seconds: BigInt(Math.floor(remainingMs / 1000)), nanos: remainingMs % 1000 * 1000000 },
     }, { executor: 'direct' });
+    reportMemory(runtime.HEAPU8?.byteLength);
     if (assignment) {
       const route = [];
       for (let index = model.start(0); !model.isEnd(index); index = assignment.value(model.nextVar(index))) {

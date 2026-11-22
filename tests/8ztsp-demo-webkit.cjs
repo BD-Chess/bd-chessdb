@@ -66,7 +66,10 @@ function demoUiFixture(language) {
   window.Worker=class {
     postMessage(m){
       const send=d=>{if(!this.stopped)this.onmessage?.({data:{token:m.token,...d}});};
-      if(m.type==='load'){queueMicrotask(()=>send({type:'ready',name:'UI fixture',coordinates:new Float64Array([0,0,10,0,10,10,0,10,5,5])}));return;}
+      if(m.type==='load'){
+        const coordinates=m.text.includes('UI Finland fixture') ? new Float64Array(24002) : new Float64Array([0,0,10,0,10,10,0,10,5,5]);
+        queueMicrotask(()=>send({type:'ready', name:'UI fixture', coordinates}));return;
+      }
       if(m.type!=='run')return; window.fixtureRuns=(window.fixtureRuns||0)+1;
       queueMicrotask(()=>{send({type:'budget',plan:{remainingSeconds:m.seconds,firstSeconds:m.firstBudgetSeconds,totalDeadlineEpoch:m.totalDeadlineEpoch}});if(m.twoPass)send({type:'phase',pass:1,length:0,elapsed:0,steps:0,tour:null});});
       const tour=new Uint32Array([0,1,2,3,4]);
@@ -146,8 +149,9 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.addInitScript(()=>{Object.defineProperty(navigator,'userAgent',{value:'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});Object.defineProperty(navigator,'maxTouchPoints',{value:5});});
     await fixture.goto('https://www.mdlxdcc.org/__demo_ui/index.html?lang='+language, {waitUntil:'load'});
     await fixture.waitForFunction(() => window.tsp8zLab?.ready && tsp8zLab.coordinates.length>0);
+    check(await fixture.inputValue('#example')==='nu3496','default map '+language+': Nicaragua');
     await fixture.evaluate(() => tsp8zLab.load(['NAME : ui','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file'));
-    check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': checked by default');
+    check(!await fixture.isChecked('#twoPass') && await fixture.inputValue('#passMode')==='one', 'two-pass UI '+language+': small map defaults to one pass');
     check(await fixture.locator('#passMode option').count()===3,'stateful choice '+language+': all three modes');
     check(await fixture.locator('#tsp-engine option[value=8ztsp]').textContent()==='8zTSP Web 0.2' &&
       await fixture.locator('#tsp-engine option[value=ortools]').textContent()==='Google OR-Tools Routing 9.15',
@@ -217,13 +221,14 @@ proxy.on('connect', (req, sock, head) => {
       check(state.enabled===enabled && state.phases.join(',')===(enabled?'1,2':''), 'two-pass UI '+language+': '+(enabled?'enabled transitions':'off baseline'));
     }
     await fixture.evaluate(() => tsp8zLab.load('NAME : ui\nTYPE : TSP\nDIMENSION : 5\nEDGE_WEIGHT_TYPE : EUC_2D\nNODE_COORD_SECTION\n1 0 0\n2 10 0\n3 10 10\n4 0 10\n5 5 5\nEOF','file'));
-    check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': reload restores checked default');
+    check(!await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': small map reload restores one-pass default');
     check(await fixture.evaluate(() => document.documentElement.scrollWidth<=innerWidth+1), 'two-pass UI '+language+': no horizontal overflow');
     // The exact visible result controls from the protected page; only the solver is synthetic.
     check(await fixture.isDisabled('#download') && await fixture.isDisabled('#share'), 'result controls '+language+': both disabled without a tour');
     const runsBefore=await fixture.evaluate(()=>window.fixtureRuns||0);
     await fixture.selectOption('#collection','selected');
     await fixture.waitForFunction(()=>!document.getElementById('run').disabled);
+    await fixture.setChecked('#twoPass',true);
     await fixture.fill('#seconds','4500'); await fixture.fill('#secondSeconds','3600'); await fixture.setChecked('#twoPass',false);
     await fixture.selectOption('#collection','country-benchmarks');
     await fixture.waitForFunction(()=>document.getElementById('example').value==='santa1437195_uef_2cm' && !document.getElementById('run').disabled);
@@ -231,6 +236,7 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.fill('#seconds','4500');await fixture.fill('#firstSeconds','900');await fixture.fill('#seconds','5000');
     check(await fixture.inputValue('#firstSeconds')==='900' && await fixture.inputValue('#secondSeconds')==='4100', 'Finland collection '+language+': ordinary manual override remains available');
     await fixture.selectOption('#collection','selected');await fixture.waitForFunction(()=>!document.getElementById('run').disabled);
+    await fixture.setChecked('#twoPass',true);
     await fixture.fill('#firstSeconds','1.2345');
     await fixture.selectOption('#collection','country-benchmarks');await fixture.waitForFunction(()=>document.getElementById('example').value==='santa1437195_uef_2cm' && !document.getElementById('run').disabled && document.getElementById('seconds').value==='3600' && document.getElementById('firstSeconds').value==='300' && document.getElementById('secondSeconds').value==='3300');
     check(await fixture.inputValue('#seconds')==='3600' && await fixture.inputValue('#firstSeconds')==='300' && await fixture.inputValue('#secondSeconds')==='3300', 'Finland collection '+language+': every new collection choice resets the manual anchor');

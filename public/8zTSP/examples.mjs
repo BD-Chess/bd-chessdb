@@ -1,4 +1,4 @@
-export const defaultExampleId = "si6035_gurs_20261115";
+export const defaultExampleId = "nu3496";
 export const exampleGroups = [
   {
     "id": "europe",

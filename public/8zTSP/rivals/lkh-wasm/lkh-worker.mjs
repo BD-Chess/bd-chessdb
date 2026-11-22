@@ -27,6 +27,7 @@ export async function runLkhWasmInstance({
   stopSignalI32 = null, // Optional Int32Array(SharedArrayBuffer(4)) where Atomics.load(arr, 0) !== 0 requests Stop
   shouldStopFn = null,
   onBest = null,
+  onMemory = null,
   onLog = null,
 }) {
   const prepStartMs = runStartMs;
@@ -44,6 +45,14 @@ export async function runLkhWasmInstance({
   const compiled = wasmModule ?? (await WebAssembly.compile(wasmBytes));
 
   let wasmMemory = null;
+  let reportedMemory = 0;
+  function reportMemory() {
+    const bytes = wasmMemory.buffer.byteLength;
+    if (bytes !== reportedMemory) {
+      reportedMemory = bytes;
+      onMemory(bytes);
+    }
+  }
   let stoppedByUser = false;
   let stoppedAtDeadline = false;
   const milestones = [];
@@ -104,6 +113,7 @@ export async function runLkhWasmInstance({
           wallSecondsIncludingPrep: wallSec,
         };
         milestones.push(m);
+        if (onMemory) reportMemory();
         if (onBest) {
           onBest({ ...m, tour0: copy });
         }
@@ -120,6 +130,7 @@ export async function runLkhWasmInstance({
   const instance = await WebAssembly.instantiate(compiled, imports);
   const exports = instance.exports;
   wasmMemory = exports.memory;
+  if (onMemory) reportMemory();
 
   function writeVirtualFile(path, bytes) {
     const pathBytes = encoder.encode(path);
@@ -158,6 +169,7 @@ export async function runLkhWasmInstance({
   const parPathPtr = exports.lkh_wasm_alloc(parPathBytes.length);
   new Uint8Array(wasmMemory.buffer, parPathPtr, parPathBytes.length).set(parPathBytes);
 
+  if (onMemory) reportMemory();
   let exitCode = 0;
   let trapMessage = null;
   try {
@@ -179,6 +191,7 @@ export async function runLkhWasmInstance({
     latestReportedCost = Number(exports.lkh_wasm_best_cost());
   }
 
+  if (onMemory) reportMemory();
   const totalWallSeconds = checkElapsedSec();
   const wasmMemoryBytes = wasmMemory.buffer.byteLength;
 
