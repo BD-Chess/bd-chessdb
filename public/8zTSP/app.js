@@ -25,6 +25,7 @@ import { REPLAY_COPY } from './replay-copy.mjs';
 import { formatDistance, referenceFieldValue, referenceFromField } from './distance-format.mjs';
 import { RUN_LIMITS, validSeconds, retainRecent } from './run-limits.mjs';
 import { suggestSplit, alignSplit, fromFirst, fromSecond, validSplit, minimumPart, runPlan } from './time-split.mjs';
+import { createRunFile, downloadRunFile } from './run-export.mjs';
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const canvas = $('map'), ctx = canvas.getContext('2d');
@@ -32,6 +33,7 @@ const mapView = $('mapView'), mapTitle = $('mapName');
 const isMapExpanded = () => mapView.classList.contains('map-window') || document.fullscreenElement === mapView;
 $('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds); $('seconds').step = 'any';   // R1d: up to one day
 let manualTimePart = null, manualTimeValue = null;
+let shareNotice = null, shareFallbackFile = null, sharePending = false;
 const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
 // Safari may hide cores: use the existing menu maximum by default, subject to map memory safety.
 const reportedCores = Math.max(1, Math.floor(Number(navigator.hardwareConcurrency) || 1));
@@ -138,6 +140,9 @@ const T = {
     passHint: (total, first, second) => `Total ${timeText(total)} s: first ${timeText(first)} s + second ${timeText(second)} s.`,
     passTimesRange: min => `Each pass needs at least ${timeText(min)} s, and both must add up to the total time.`,
     onePassHint: total => `One pass · total ${timeText(total)} s.`,
+    downloadResult: 'Download result', shareResult: 'Share result', downloadSameFile: 'Download the same file',
+    shareFallback: 'Download 8ztsp-run.json below. Then open Downloads in Files, select the file and choose Share.',
+    shareCancelled: 'Sharing cancelled.', shareDone: 'The file was handed to the system share sheet.',
     budgetNoTour: 'Time budget ended before a tour was available.',
     complete: (s, opt) => 'Complete · tour checked in Rust.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Reference'} first reached after ${dec(s, 1)} s of solver time.`),
@@ -209,6 +214,9 @@ const T = {
     passHint: (total, first, second) => `Skupaj ${timeText(total)} s: prvi ${timeText(first)} s + drugi ${timeText(second)} s.`,
     passTimesRange: min => `Vsak prehod potrebuje vsaj ${timeText(min)} s, njuna vsota pa mora biti enaka skupnemu času.`,
     onePassHint: total => `En prehod · skupaj ${timeText(total)} s.`,
+    downloadResult: 'Prenesi rezultat', shareResult: 'Deli rezultat', downloadSameFile: 'Prenesi isto datoteko',
+    shareFallback: 'Spodaj prenesi 8ztsp-run.json. Nato v Datotekah odpri Prenosi, izberi datoteko in tapni Deli.',
+    shareCancelled: 'Deljenje je preklicano.', shareDone: 'Datoteka je predana sistemskemu listu za deljenje.',
     budgetNoTour: 'Čas je potekel, preden je bila pot na voljo.',
     complete: (s, opt) => 'Končano · pot preverjena v Rustu.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Referenca'} prvič dosežen${opt ? '' : 'a'} po ${dec(s, 1)} s časa reševalnika.`),
@@ -383,7 +391,17 @@ function selectedTimePlan(seconds, enabled, options) {
   if (!split) throw new Message('passTimesRange', minimumPart(total));
   return runPlan(split, enabled);
 }
+function renderResultActions() {
+  $('download').textContent = t('downloadResult'); $('share').textContent = t('shareResult');
+  $('downloadSame').textContent = t('downloadSameFile'); $('downloadSame').hidden = !shareFallbackFile;
+  $('resultShareNotice').hidden = !shareNotice;
+  $('resultShareNotice').textContent = shareNotice ? t(shareNotice) : '';
+  $('download').disabled = !tour?.length;
+  $('share').disabled = !tour?.length || sharePending;
+  $('downloadSame').disabled = !shareFallbackFile;
+}
 function render() {
+  renderResultActions();
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
   const reference = runRecord?.reference || referenceRaw || 0;
   $('gap').textContent = reference > 0 && Number.isFinite(best) ? pct((best / reference - 1) * 100) : '—';
@@ -470,7 +488,7 @@ function controls() {
   for (const id of ['firstSeconds', 'secondSeconds']) $(id).disabled = active || !ready || !$('twoPass').checked;
   $('refresh').disabled = !ready;
   $('stopOptimum').disabled = active || !ready || !mapMeta?.optimum;
-  $('download').disabled = !tour?.length;
+  renderResultActions();
   $('replayOpen').disabled = active || !!loading || !recorder?.data.frames.length;
 }
 function acceptBest(data, worker) {
@@ -506,7 +524,7 @@ function displayView(c, d, scaled = true) {   // B (BD 18 Nov): latitude, longit
   for (let i = 0; i < c.length; i += 2) { v[i] = d.east * c[i + 1] * (scaled ? d.xScale : 1); v[i + 1] = d.north * c[i]; }
   return v;
 }
-async function load(value, which, metadata = null, verifiedHash = null) {
+async function load(value, which, metadata = null, verifiedHash = null, resetFinlandDefaults = false) {
   if (active) return;
   const module = unlocked();
   clearReplay();
@@ -528,7 +546,10 @@ async function load(value, which, metadata = null, verifiedHash = null) {
   $('twoPass').checked = true;
   text = value; coords = new Float64Array(); extent = null; view = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
   setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || metadata?.referenceTour || metadata?.bestKnownTour || null);   // B: a best known tour alone is the reference
-  if (metadata) $('seconds').value = metadata.cities <= 20000 ? 60 : metadata.cities <= 200000 ? 120 : 600;
+  shareNotice = null; shareFallbackFile = null;
+  if (resetFinlandDefaults) {
+    manualTimePart = null; manualTimeValue = null; $('seconds').value = '3600';
+  } else if (metadata) $('seconds').value = metadata.cities <= 20000 ? 60 : metadata.cities <= 200000 ? 120 : 600;
   if (which === 'random') $('seconds').value = 10;
   syncTimeFields('preset');
   render();
@@ -582,6 +603,7 @@ async function start(options = {}) {
       unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, source: mapMeta?.source || '', credit: mapMeta?.credit || '' }, { separate: recordingSeparate });
     if (turned) recorder.data.xScale = mapMeta.display.xScale;
   });
+  shareNotice = null; shareFallbackFile = null;
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
   runRecord = { schema: '8ztsp-web-run-v1', name: mapName, inputSha256: inputHash, cities: coords.length / 2, seconds, seed,
     renderIntervalMs: Number($('refresh').value), renderChanges: [], renderChangesDropped: 0,
@@ -709,7 +731,7 @@ async function exampleText(item) {
   return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
 }
 let exampleRequest = 0;
-async function loadExample(id = $('example').value) {
+async function loadExample(id = $('example').value, options = {}) {
   unlocked();
   if (soonOf(id)) { if (mapMeta) showMap(mapMeta.id); return; }   // R53: a »(soon)« entry cannot be chosen and starts nothing; the loaded map stays shown
   const item = examples.find(e => e.id === id); if (!item) throw new Message('exFail', id);
@@ -738,7 +760,7 @@ async function loadExample(id = $('example').value) {
     throw error?.key ? error : new Message('exFail', exName(item));
   }
   if (request !== exampleRequest) return;
-  await load(value, item.id, item, item.compression === 'gzip' || item.remote ? item.sha256 : null);
+  await load(value, item.id, item, item.compression === 'gzip' || item.remote ? item.sha256 : null, !!options.resetFinlandDefaults && item.id === 'santa1437195_uef_2cm');
 }
 const loadNu = () => loadExample(DEFAULT_EXAMPLE);
 const safely = fn => async () => {
@@ -764,8 +786,10 @@ $('p-nu').onclick = () => { choose('nu'); safely(() => loadExample())(); };
 $('p-rnd').onclick = () => choose('rnd');
 $('p-file').onclick = () => choose('file');
 $('example').onchange = safely(() => loadExample($('example').value));
-$('collection').onchange = safely(() => {   // R53: a new collection lists its maps and loads the smallest one this device allows
-  fillMaps($('collection').value);
+$('collection').onchange = safely(() => {
+  const collection = $('collection').value;
+  fillMaps(collection);
+  if (collection === 'country-benchmarks') return loadExample('santa1437195_uef_2cm', {resetFinlandDefaults:true});
   const first = [...$('example').options].find(o => !o.disabled);
   return first ? loadExample(first.value) : undefined;
 });
@@ -790,12 +814,28 @@ $('workers').onchange = () => {
   if (coords.length / 2 < 1000000 || canShare) preferredWorkers = Number($('workers').value);
   applyWorkerChoice(coords.length / 2); render();
 };
-$('download').onclick = () => {   // R3: streamed, so a tour of millions of cities fits
-  const parts = [JSON.stringify({ ...runRecord, tour: undefined }).slice(0, -1) + ',"tour":['];
-  for (let i = 0; i < tour.length; i += 65536) parts.push((i ? ',' : '') + Array.from(tour.subarray(i, i + 65536), x => x + 1).join(','));
-  parts.push(']}');
-  const url = URL.createObjectURL(new Blob(parts, { type: 'application/json' }));
-  const a = document.createElement('a'); a.href = url; a.download = '8ztsp-run.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+$('download').onclick = () => downloadRunFile(createRunFile(runRecord, tour));
+$('downloadSame').onclick = () => { if (shareFallbackFile) downloadRunFile(shareFallbackFile); };
+$('share').onclick = () => {
+  if (!tour?.length || sharePending) return;
+  const record = runRecord, file = createRunFile(record, tour), data = {files:[file]};
+  shareNotice = null; shareFallbackFile = null;
+  const fallback = () => { if (runRecord === record) { shareFallbackFile = file; shareNotice = 'shareFallback'; } };
+  const failed = error => {
+    if (runRecord !== record) return;
+    if (error?.name === 'AbortError') shareNotice = 'shareCancelled';
+    else fallback();
+  };
+  try {
+    if (typeof navigator.canShare !== 'function' || typeof navigator.share !== 'function' || !navigator.canShare(data)) {
+      fallback(); controls(); render(); return;
+    }
+    // No await or deferred work before share: preserve this click's transient activation.
+    const operation = navigator.share(data);
+    sharePending = true; controls(); render();
+    Promise.resolve(operation).then(() => { if (runRecord === record) shareNotice = 'shareDone'; }, failed)
+      .finally(() => { sharePending = false; controls(); render(); });
+  } catch (error) { failed(error); controls(); render(); }
 };
 $('replayOpen').onclick = () => {   // R28: play the last run's recording slowly, in its own panel below
   if (!recorder?.data.frames.length || active) return;

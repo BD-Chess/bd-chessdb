@@ -43,11 +43,15 @@ execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days
 const requests = [];
 // UI-only contract fixture: real app.js, synthetic worker messages, no protected HTML,
 // credentials, compiled solver or constructor instrumentation. Never served by production.
+const RESULT_ACTIONS_HTML = "<div class=\"row actions result-actions\"><button id=\"download\" type=\"button\" disabled><span class=\"l-en\" lang=\"en\">Download result</span><span class=\"l-sl\" lang=\"sl\">Prenesi rezultat</span></button><button id=\"share\" type=\"button\" disabled><span class=\"l-en\" lang=\"en\">Share result</span><span class=\"l-sl\" lang=\"sl\">Deli rezultat</span></button></div><p class=\"hint\" id=\"resultShareNotice\" role=\"status\" aria-live=\"polite\" hidden></p><button id=\"downloadSame\" type=\"button\" class=\"secondary result-share-fallback\" hidden disabled><span class=\"l-en\" lang=\"en\">Download the same file</span><span class=\"l-sl\" lang=\"sl\">Prenesi isto datoteko</span></button>";
+const RESULT_ACTIONS_CSS = ".result-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.result-actions button{min-width:0;min-height:48px;font-size:16px;line-height:1.3;white-space:normal}.result-share-fallback{width:100%;min-height:48px;margin:8px 0}.result-share-fallback[hidden],#resultShareNotice[hidden]{display:none!important}";
+const FINLAND_UI_TEXT = "NAME : UI Finland fixture\nTYPE : TSP\nDIMENSION : 5\nEDGE_WEIGHT_TYPE : EUC_2D\nNODE_COORD_SECTION\n1 0 0\n2 10 0\n3 10 10\n4 0 10\n5 5 5\nEOF";
 function demoUiFixture(language) {
   const source = fs.readFileSync(path.join(pub, '8zTSP/app.js'), 'utf8');
   const ids = new Set([...source.matchAll(/\$\('([^']+)'\)/g)].map(m => m[1]));
   for (const id of ['count', 'seed', 'seconds', 'reference', 'panel-nu', 'panel-rnd', 'panel-file']) ids.add(id);
   ids.delete('replayPlay'); ids.delete('firstSeconds'); ids.delete('secondSeconds');
+  for(const id of ['run','stop','download','share','downloadSame','resultShareNotice']) ids.delete(id);
   const tags = [...ids].map(id => {
     if (id === 'map') return '<canvas id="map"></canvas>';
     if (['workers', 'example', 'collection', 'refresh'].includes(id)) return `<select id="${id}">${id === 'refresh' ? '<option value="150">Live</option>' : ''}</select>`;
@@ -58,17 +62,17 @@ function demoUiFixture(language) {
     if (['run', 'stop', 'download', 'replayOpen', 'mapExpand', 'mapClose', 'generate'].includes(id)) return `<button id="${id}">${id}</button>`;
     return `<div id="${id}"></div>`;
   }).join('\n');
-  return `<!doctype html><html data-lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:16px sans-serif;max-width:100%;margin:12px}canvas{width:100%;height:160px}input,select{max-width:100%;box-sizing:border-box}html[data-lang=en] .l-sl,html[data-lang=sl] .l-en{display:none}</style></head><body>${tags}<script>
+  return `<!doctype html><html data-lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:16px sans-serif;max-width:100%;margin:12px}canvas{width:100%;height:160px}input,select{max-width:100%;box-sizing:border-box}html[data-lang=en] .l-sl,html[data-lang=sl] .l-en{display:none}.result-test{width:360px;max-width:100%}${RESULT_ACTIONS_CSS}</style></head><body>${tags}<section class="result-test"><div class="row actions"><button id="run">Run</button><button id="stop">Stop</button></div>${RESULT_ACTIONS_HTML}</section><script>
   window.Worker=class {
     postMessage(m){
       const send=d=>{if(!this.stopped)this.onmessage?.({data:{token:m.token,...d}});};
       if(m.type==='load'){queueMicrotask(()=>send({type:'ready',name:'UI fixture',coordinates:new Float64Array([0,0,10,0,10,10,0,10,5,5])}));return;}
-      if(m.type!=='run')return;
+      if(m.type!=='run')return; window.fixtureRuns=(window.fixtureRuns||0)+1;
       queueMicrotask(()=>{send({type:'budget',plan:{remainingSeconds:m.seconds,firstSeconds:m.firstBudgetSeconds,totalDeadlineEpoch:m.totalDeadlineEpoch}});if(m.twoPass)send({type:'phase',pass:1,length:0,elapsed:0,steps:0,tour:null});});
       const tour=new Uint32Array([0,1,2,3,4]);
       setTimeout(()=>send({type:'best',length:44,elapsed:0.02,steps:1,tour}),20);
       if(m.twoPass)setTimeout(()=>send({type:'phase',pass:2,length:44,elapsed:0.05,steps:1,tour}),50);
-      setTimeout(()=>send({type:'done',length:44,elapsed:0.1,steps:1,tour}),100);
+      if(!window.fixtureHoldFinish)setTimeout(()=>send({type:'done',length:44,elapsed:0.1,steps:1,tour}),100);
     }
     terminate(){this.stopped=true;}
   };
@@ -83,6 +87,13 @@ function serve(req, res) {
   if (p.startsWith('/__demo_ui/')) {
     const h = {'Cache-Control':'no-store','Cross-Origin-Opener-Policy':'same-origin','Cross-Origin-Embedder-Policy':'require-corp','Cross-Origin-Resource-Policy':'same-origin'};
     if (p === '/__demo_ui/index.html') { res.writeHead(200, {...h,'Content-Type':TYPES['.html']}); res.end(demoUiFixture(url.searchParams.get('lang') === 'sl' ? 'sl' : 'en')); return; }
+    if (p === '/__demo_ui/examples.mjs') {
+      const source=fs.readFileSync(path.join(pub,'8zTSP/examples.mjs'),'utf8').replace('b7ec61035b10949411bf30207b840d5abb28d6d6f3bcfd764aea312919b47e6c',sha256(Buffer.from(FINLAND_UI_TEXT)));
+      res.writeHead(200,{...h,'Content-Type':TYPES['.mjs']});res.end(source);return;
+    }
+    if (p === '/__demo_ui/examples/santa1437195_uef_2cm.tsp.gz') {
+      res.writeHead(200,{...h,'Content-Type':TYPES['.tsp']});res.end(FINLAND_UI_TEXT);return;
+    }
     if (p === '/__demo_ui/wasm-loader.js') { res.writeHead(200, {...h,'Content-Type':TYPES['.js']}); res.end(demoUiLoader); return; }
     p = p.replace('/__demo_ui/', '/8zTSP/');
   }
@@ -114,7 +125,7 @@ proxy.on('connect', (req, sock, head) => {
 });
 
 (async () => {
-  execFileSync(process.execPath, ['--test', path.join(__dirname,'8ztsp-time-split.test.mjs')], {stdio:'inherit'});
+  execFileSync(process.execPath, ['--test', path.join(__dirname,'8ztsp-time-split.test.mjs'),path.join(__dirname,'8ztsp-run-export.test.mjs')], {stdio:'inherit'});
   await new Promise(r => tls.listen(0, '127.0.0.1', r)); await new Promise(r => proxy.listen(0, '127.0.0.1', r));
   const type = pw[ENGINE];
   const browser = await type.launch({proxy: {server: `http://127.0.0.1:${proxy.address().port}`},
@@ -131,6 +142,7 @@ proxy.on('connect', (req, sock, head) => {
   // Solver correctness is a separate serial/shared WASM gate; this fixture checks UI protocol only.
   for (const language of ['en','sl']) {
     const fixture = await context.newPage();
+    await fixture.addInitScript(()=>{Object.defineProperty(navigator,'userAgent',{value:'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});Object.defineProperty(navigator,'maxTouchPoints',{value:5});});
     await fixture.goto('https://www.mdlxdcc.org/__demo_ui/index.html?lang='+language, {waitUntil:'load'});
     await fixture.waitForFunction(() => window.tsp8zLab?.ready && tsp8zLab.coordinates.length>0);
     await fixture.evaluate(() => tsp8zLab.load(['NAME : ui','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file'));
@@ -177,6 +189,71 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.evaluate(() => tsp8zLab.load('NAME : ui\nTYPE : TSP\nDIMENSION : 5\nEDGE_WEIGHT_TYPE : EUC_2D\nNODE_COORD_SECTION\n1 0 0\n2 10 0\n3 10 10\n4 0 10\n5 5 5\nEOF','file'));
     check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': reload restores checked default');
     check(await fixture.evaluate(() => document.documentElement.scrollWidth<=innerWidth+1), 'two-pass UI '+language+': no horizontal overflow');
+    // The exact visible result controls from the protected page; only the solver is synthetic.
+    check(await fixture.isDisabled('#download') && await fixture.isDisabled('#share'), 'result controls '+language+': both disabled without a tour');
+    const runsBefore=await fixture.evaluate(()=>window.fixtureRuns||0);
+    await fixture.selectOption('#collection','selected');
+    await fixture.waitForFunction(()=>!document.getElementById('run').disabled);
+    await fixture.fill('#seconds','4500'); await fixture.fill('#secondSeconds','3600'); await fixture.setChecked('#twoPass',false);
+    await fixture.selectOption('#collection','country-benchmarks');
+    await fixture.waitForFunction(()=>document.getElementById('example').value==='santa1437195_uef_2cm' && !document.getElementById('run').disabled);
+    check(await fixture.inputValue('#seconds')==='3600' && await fixture.inputValue('#firstSeconds')==='300' && await fixture.inputValue('#secondSeconds')==='3300' && await fixture.isChecked('#twoPass'), 'Finland collection '+language+': Finland and 3600 / on / 300 + 3300 after manual second/off');
+    await fixture.fill('#seconds','4500');await fixture.fill('#firstSeconds','900');await fixture.fill('#seconds','5000');
+    check(await fixture.inputValue('#firstSeconds')==='900' && await fixture.inputValue('#secondSeconds')==='4100', 'Finland collection '+language+': ordinary manual override remains available');
+    await fixture.selectOption('#collection','selected');await fixture.waitForFunction(()=>!document.getElementById('run').disabled);
+    await fixture.fill('#firstSeconds','1.2345');
+    await fixture.selectOption('#collection','country-benchmarks');await fixture.waitForFunction(()=>document.getElementById('example').value==='santa1437195_uef_2cm' && !document.getElementById('run').disabled);
+    check(await fixture.inputValue('#seconds')==='3600' && await fixture.inputValue('#firstSeconds')==='300' && await fixture.inputValue('#secondSeconds')==='3300', 'Finland collection '+language+': every new collection choice resets the manual anchor');
+    check(await fixture.evaluate(()=>window.fixtureRuns||0)===runsBefore, 'Finland collection '+language+': never auto-starts');
+    await fixture.evaluate(async()=>{await tsp8zLab.load(['NAME : export fixture','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file');window.fixtureHoldFinish=true;window.exportTestRun=tsp8zLab.start({seconds:30,workers:1,recording:false}).catch(()=>null);});
+    await fixture.waitForFunction(()=>tsp8zLab.hasResult && tsp8zLab.liveWorkers>0);
+    check(await fixture.isEnabled('#download') && await fixture.isEnabled('#share'), 'result controls '+language+': both enabled on first best tour while search is still running');
+    await fixture.evaluate(()=>tsp8zLab.stop());
+    let downloads=0;fixture.on('download',()=>downloads++);
+    const downloaded=async(selector,label)=>{
+      const [d]=await Promise.all([fixture.waitForEvent('download'),fixture.click(selector)]);
+      const file=path.join(OUT,'export-'+language+'-'+label+'.json');await d.saveAs(file);
+      check(d.suggestedFilename()==='8ztsp-run.json','result export '+language+': filename '+label);
+      const body=fs.readFileSync(file,'utf8'),r=JSON.parse(body);
+      check(r.tour.join(',')==='1,2,3,4,5' && r.tourLength===44 && !!r.passPlan && !!r.inputSha256,'result export '+language+': full JSON and route '+label);
+      return body;
+    };
+    const downloadBody=await downloaded('#download','download');
+    await fixture.evaluate(()=>{
+      window.shareMode='success';window.shareCalls=[];window.shareChecks=[];
+      document.getElementById('share').addEventListener('click',e=>{window.shareTrusted=e.isTrusted;},true);
+      Object.defineProperty(navigator,'canShare',{configurable:true,value(data){window.canShareFile=data.files?.[0];window.shareChecks.push(Object.keys(data));return window.shareMode!=='unsupported';}});
+      Object.defineProperty(navigator,'share',{configurable:true,value(data){
+        const file=data.files?.[0];window.shareCalls.push({keys:Object.keys(data),name:file?.name,type:file?.type,size:file?.size,realFile:file instanceof File,sameFile:file===window.canShareFile,trusted:window.shareTrusted,activation:navigator.userActivation?.isActive??null});
+        window.shareText=file.text();
+        if(window.shareMode==='cancel')return Promise.reject(new DOMException('cancelled','AbortError'));
+        if(window.shareMode==='rejected')return Promise.reject(new DOMException('blocked','NotAllowedError'));
+        return Promise.resolve();
+      }});
+    });
+    await fixture.click('#share');await fixture.waitForFunction(()=>!document.getElementById('share').disabled);
+    const success=await fixture.evaluate(async()=>({call:window.shareCalls.at(-1),text:await window.shareText}));
+    check(success.call.keys.join(',')==='files' && success.call.realFile && success.call.sameFile && success.call.trusted && success.call.activation!==false, 'Web Share '+language+': trusted direct click passes only the same real File');
+    check(success.call.name==='8ztsp-run.json' && success.call.type==='application/json' && success.text===downloadBody,'Web Share '+language+': identical full download/share JSON bytes');
+    check(downloads===1 && !await fixture.isVisible('#downloadSame'),'Web Share '+language+': success does not auto-download');
+    for(const mode of ['unsupported','rejected']){
+      await fixture.evaluate(m=>window.shareMode=m,mode);const beforeCalls=await fixture.evaluate(()=>window.shareCalls.length);
+      await fixture.click('#share');await fixture.waitForFunction(()=>!document.getElementById('downloadSame').hidden);
+      const sameBody=await downloaded('#downloadSame',mode);
+      const attempted=await fixture.evaluate(async()=>await window.canShareFile.text());
+      check(sameBody===attempted && sameBody===downloadBody,'Web Share '+language+': '+mode+' fallback downloads the same complete File');
+      check((await fixture.textContent('#resultShareNotice')).includes(language==='sl'?'Datotekah':'Files'),'Web Share '+language+': '+mode+' shows Files/Downloads guidance');
+      if(mode==='unsupported')check(await fixture.evaluate(()=>window.shareCalls.length)===beforeCalls,'Web Share '+language+': unsupported files never invoke share');
+    }
+    await fixture.evaluate(()=>window.shareMode='cancel');const beforeCancel=downloads;
+    await fixture.click('#share');await fixture.waitForFunction(()=>!document.getElementById('share').disabled);
+    check(!await fixture.isVisible('#downloadSame') && downloads===beforeCancel && (await fixture.textContent('#resultShareNotice')).includes(language==='sl'?'preklicano':'cancelled'),'Web Share '+language+': cancellation respected with no fallback or auto-download');
+    for(const width of [390,1024]){
+      await fixture.setViewportSize({width,height:900});await fixture.locator('#download').scrollIntoViewIfNeeded();
+      const dimensions=await fixture.evaluate(()=>{const d=document.getElementById('download'),s=document.getElementById('share'),stop=document.getElementById('stop');return {d:d.getBoundingClientRect().toJSON(),s:s.getBoundingClientRect().toJSON(),stop:stop.getBoundingClientRect().toJSON(),buttons:d.tagName==='BUTTON'&&s.tagName==='BUTTON',overflow:document.documentElement.scrollWidth>innerWidth+1};});
+      check(dimensions.buttons && dimensions.d.height>=48 && dimensions.s.height>=48 && dimensions.d.top>=dimensions.stop.bottom && dimensions.d.right<=width && dimensions.s.right<=width && !dimensions.overflow,'result controls '+language+': visible real buttons below Run/Stop at '+width+'px');
+      await fixture.screenshot({path:path.join(OUT,'result-actions-'+language+'-'+width+'.png'),fullPage:true});
+    }
     await fixture.screenshot({path:path.join(OUT,'two-pass-ui-'+language+'.png'),fullPage:true});
     await fixture.close();
   }
