@@ -320,7 +320,7 @@ proxy.on('connect', (req, sock, head) => {
     await page.evaluate(text => window.tsp8zLab.load(text, 'file'), sample);
     for (const engine of ['lkh', 'eax', 'ortools']) {
       await page.selectOption('#tsp-engine', engine);
-      check(await page.isEnabled('#run') && !await page.isEnabled('#workers'), 'rival ' + engine + ': shared Run button in single worker mode');
+      check(await page.isEnabled('#run') && !await page.isEnabled('#workers') && await page.inputValue('#workers') === '1', 'rival ' + engine + ': shared Run button in single worker mode');
       const result = await page.evaluate(() => window.tsp8zLab.start({seconds: 8, seed: 1}));
       assert.equal(result.executionLocation, 'browser-wasm-local');
       assert.equal(result.tour.length, 64);

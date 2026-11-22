@@ -64,7 +64,7 @@ $('workers').value = String(preferredWorkers);
 function applyWorkerChoice(cities) {
   const oneOnly = cities >= 1000000 && !canShare;
   for (const option of $('workers').options) option.disabled = oneOnly && Number(option.value) > 1;
-  $('workers').value = String(oneOnly ? 1 : preferredWorkers);
+  $('workers').value = String(oneOnly || selectedRival() ? 1 : preferredWorkers);
 }
 // R53 (BD 18 Nov, K's brief R52): two selects, the collection, then its map (inside a collection from the smallest map to the
 // largest, ties by id; examples.mjs holds the order); entries that are not ready yet stand in their collection, marked »(soon)« |
@@ -446,6 +446,7 @@ function render() {
     : t(validSeconds(Number(total)) ? 'passTimesRange' : 'secondsRange', min);
   $('mode').textContent = rival ? rival.label + ' · ' + (lang() === 'sl' ? '1 delavec' : '1 worker')
     : t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
+  $('workerHint').hidden = !!rival;
   $('workerHint').textContent = isIPhone ? t('hintIPhone') : t('hintCores', reportedCores);
   for (const option of $('collection').options) { const c = collections.find(x => x.id === option.value); if (c) option.text = c.names[lang()]; }
   for (const option of $('example').options) { const item = examples.find(e => e.id === option.value), s = soonOf(option.value); if (item) option.text = t('option', item); else if (s) option.text = `${s.names[lang()]} ${t('soon')}`; }
@@ -1009,7 +1010,7 @@ syncTimeFields('preset');
 controls(); render();
 try {
   await initializeWasm();
-  engineChoice = mountEngineChoice($('twoPassHint'), () => { controls(); render(); });
+  engineChoice = mountEngineChoice($('twoPassHint'), () => { applyWorkerChoice(coords.length / 2); controls(); render(); });
   controls(); render();
   await safely(loadNu)();
   const linkedPreset = presetFromHash(location.hash);

@@ -42,12 +42,11 @@ export function mountEngineChoice(anchor, change) {
       select.disabled = active || !available;
       profile.hidden = select.value !== 'lkh' || !finland;
       check.disabled = select.disabled;
-      hint.hidden = !rival;
+      hint.hidden = !rival || compatible;
       if (rival) {
         const size = rival.min + '–' + rival.max.toLocaleString(language);
-        hint.textContent = compatible
-          ? (sl ? 'Lokalni WASM · 1 delavec' : 'Local WASM · 1 worker')
-          : (sl ? 'Izberi zemljevid EUC_2D z ' + size + ' mesti.' : 'Choose an EUC_2D map with ' + size + ' cities.');
+        hint.textContent = sl ? 'Izberi zemljevid EUC_2D z ' + size + ' mesti.'
+          : 'Choose an EUC_2D map with ' + size + ' cities.';
       }
     },
   };
