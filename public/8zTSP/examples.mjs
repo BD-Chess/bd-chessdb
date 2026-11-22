@@ -59,6 +59,7 @@ export const exampleGroups = [
 ];
 export const defaultCollectionId = "selected";
 export const collections = [
+  {"id": "country-benchmarks", "names": {"en": "Finland and Slovenia benchmarks", "sl": "Finska in Slovenija · testi"}, "maps": ["si6035_gurs_20261115", "si580522_gurs_hisne_stevilke_20261122", "si1103575_gurs_vsi_naslovi_20261122", "santa1437195_uef_2cm"]},
   {
     "id": "selected",
     "names": {
@@ -250,6 +251,82 @@ export const soon = [
   }
 ];
 export const examples = [
+  {
+    "id": "si580522_gurs_hisne_stevilke_20261122",
+    "label": "Slovenija · hišne številke",
+    "names": {
+      "en": "Slovenia · house numbers",
+      "sl": "Slovenija · hišne številke"
+    },
+    "group": "europe",
+    "cities": 580522,
+    "unit": "m",
+    "path": "./examples/si580522_gurs_hisne_stevilke_20261122.tsp.gz",
+    "compression": "gzip",
+    "bytes": 11952678,
+    "sha256": "a0a1a32eeb78706883e318e7f56d74a420465dc8c1ade2ae82922166eb6b2140",
+    "gzipBytes": 5011221,
+    "gzipSha256": "7f34d16f1a3f1758e924bdce13ff49c5748c7ef97cd30d135172c35b1cce3b5f",
+    "source": "https://podatki.gov.si/dataset/kataster-nepremicnin",
+    "credit": "Geodetska uprava Republike Slovenije · Naslovi hišnih številk",
+    "licence": "CC BY 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "ipadTrial": true
+  },
+  {
+    "id": "si1103575_gurs_vsi_naslovi_20261122",
+    "label": "Slovenija · vsi naslovi",
+    "names": {
+      "en": "Slovenia · all addresses",
+      "sl": "Slovenija · vsi naslovi"
+    },
+    "group": "europe",
+    "cities": 1103575,
+    "unit": "m",
+    "path": "./examples/si1103575_gurs_vsi_naslovi_20261122.tsp.gz",
+    "compression": "gzip",
+    "bytes": 22974046,
+    "sha256": "bc7b903fc285366b3022bfc3831c7789be99f50f7bf4e0ca1d631c7abeff8a87",
+    "gzipBytes": 8001625,
+    "gzipSha256": "383538a9ae76a79690fa2950ddadeda4882d981707ca043b20128b839c0803a7",
+    "source": "https://podatki.gov.si/dataset/register-naslovov",
+    "credit": "Geodetska uprava Republike Slovenije · Register naslovov",
+    "licence": "CC BY 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "ipadTrial": true,
+    "descriptions": {
+      "en": "The full address register includes addresses at shared locations.",
+      "sl": "V celotnem registru je lahko več naslovov na isti lokaciji."
+    }
+  },
+  {
+    "id": "santa1437195_uef_2cm",
+    "label": "Finska · Santa Claus Challenge",
+    "names": {
+      "en": "Finland · Santa Claus Challenge",
+      "sl": "Finska · Santa Claus Challenge"
+    },
+    "group": "europe",
+    "cities": 1437195,
+    "unit": "2cm",
+    "path": "./examples/santa1437195_uef_2cm.tsp.gz",
+    "compression": "gzip",
+    "bytes": 35152838,
+    "sha256": "b7ec61035b10949411bf30207b840d5abb28d6d6f3bcfd764aea312919b47e6c",
+    "gzipBytes": 15241902,
+    "gzipSha256": "8b972a365a65e012e386eda755e94287dd6170d1b12d1828fe760091f9b575b5",
+    "source": "https://cs.uef.fi/sipu/santa/data.html",
+    "credit": "University of Eastern Finland · Santa Claus Challenge 2020 · © OpenStreetMap contributors",
+    "licence": "ODbL 1.0",
+    "licenceUrl": "https://www.openstreetmap.org/copyright",
+    "ipadTrial": true,
+    "referenceTour": 5464200000,
+    "referenceTourBy": "LKH · Santa Claus Challenge 2020",
+    "descriptions": {
+      "en": "Original Finland locations. The solver rounds each edge to the nearest two centimetres.",
+      "sl": "Izvirne finske lokacije. Reševalnik zaokroži vsak rob na najbližja dva centimetra."
+    }
+  },
   {
     "id": "si6035_gurs_20261115",
     "gapStatus": {

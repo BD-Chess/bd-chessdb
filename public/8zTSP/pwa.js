@@ -16,7 +16,7 @@
 (()=>{
  'use strict';
  const BUILT_AT='2026-11-22T03:53';
- const PAGE_BUILD='73fd4517ad849c32ea17';   // demo/pwa_build.py writes this build's id here: the page knows its own build without asking the worker   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
+ const PAGE_BUILD='d024847915f823d16020';   // demo/pwa_build.py writes this build's id here: the page knows its own build without asking the worker   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
  const state=window.tsp8zPwa??={prompt:null,registration:null,acceptUpdate:false,reloading:false,message:null,build:'',latestBuild:'',userPressed:false};
  const T={
   install:['Install the app','Namesti aplikacijo'],

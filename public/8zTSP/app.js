@@ -39,10 +39,13 @@ const cores = Math.max(reportedCores, 8);
 const canShare = supportsSharedThreads();
 // R3: the 10M example only on a desktop that reports at least 8 GB of memory
 const desktopLarge0 = !/iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) && Number(navigator.deviceMemory) >= 8;   // R3's rule, kept for the record
-// R1f-i: phones and tablets (also an iPad that reports a desktop browser) never load maps above 300,000 cities
-const mobileDevice = /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+// Detect iPad in both Safari website modes. Only the marked benchmark maps opt into the iPad preview.
+const isIPad = /iPad/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+const mobileDevice = isIPad || /iPhone|Android|Mobile/i.test(navigator.userAgent);
+const ipadTrial = item => isIPad && item?.ipadTrial === true;
 const desktopLarge = !mobileDevice && Number(navigator.deviceMemory) >= 8;
-const deviceAllows = item => item.cities === 10000000 ? desktopLarge : desktopOnly(item) ? !mobileDevice : true;
+const deviceAllows = item => ipadTrial(item) || (item.cities === 10000000 ? desktopLarge : !desktopOnly(item) || !mobileDevice);
+let workersBeforeTrial = null;
 for (let n = 1; n <= cores; n++) $('workers').add(new Option(String(n), String(n)));
 $('workers').value = String(isIPhone ? 6 : reportedCores);
 // R53 (BD 18 Nov, K's brief R52): two selects, the collection, then its map (inside a collection from the smallest map to the
@@ -144,6 +147,7 @@ const T = {
     workers: n => `Choose 1 to ${n} workers`, loadFirst: 'Load a map before running', fileLimit: 'File limit: 32 MB',
     gapOpt: 'ABOVE THE OPTIMUM', gapRef: 'ABOVE THE REFERENCE', gapBound: 'ABOVE THE HK BOUND', gapEstimate: 'ABOVE THE HK ESTIMATE', gapLower: 'ABOVE THE LOWER BOUND',
     reachOpt: 'OPTIMUM FIRST REACHED', reachRef: 'REFERENCE FIRST REACHED', gapBest: 'ABOVE THE BEST KNOWN TOUR', waterlooShort: 'University of Waterloo',
+    raceReference: (v, source) => `Published benchmark ${v} (${source})`,
     refOpt: v => `Optimum ${v} (proved)`, refBest: (v, src) => `Best known tour ${v}${src ? ` (${src})` : ''}`, refBound: (v, src) => `Lower bound ${v}${src ? ` (${src})` : ''}`,
     refHK: (v, est) => `${est ? 'Held–Karp estimate' : 'Held–Karp bound'} ${v}`, refNone: 'No reference length yet',
     count: 'Random cities', seed: 'Seed', seconds: 'Seconds', reference: 'Reference length',
@@ -155,7 +159,7 @@ const T = {
     modeOneNoShare: (n, c) => `Mode: 1 worker; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
     hintIPhone: 'iPhone: 6 workers by default; Safari may hide the number of cores. More workers than cores do not help.',
     hintCores: c => `Your browser reports ${c} ${c === 1 ? 'core' : 'cores'}. More workers than cores do not help.`,
-    option: item => exampleLabel(item, 'en') + (item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device')
+    option: item => exampleLabel(item, 'en') + (ipadTrial(item) ? ' · iPad trial' : item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device')
       : desktopOnly(item) ? (mobileDevice ? ' · desktop only, not on this device' : ' · desktop only') : ''),
     live: 'Live · 0.15 s',
     known: (n, opt) => `${group(n)} cities, known optimal tour ${opt}`,   // R46: opt comes formatted (with m for maps in metres)
@@ -209,6 +213,7 @@ const T = {
     workers: n => `Izberite od 1 do ${n} delavcev`, loadFirst: 'Pred zagonom naložite zemljevid', fileLimit: 'Omejitev datoteke: 32 MB',
     gapOpt: 'NAD OPTIMUMOM', gapRef: 'NAD REFERENCO', gapBound: 'NAD MEJO HK', gapEstimate: 'NAD OCENO HK', gapLower: 'NAD SPODNJO MEJO',
     reachOpt: 'OPTIMUM PRVIČ DOSEŽEN', reachRef: 'REFERENCA PRVIČ DOSEŽENA', gapBest: 'NAD NAJBOLJŠO ZNANO POTJO', waterlooShort: 'Univerza Waterloo',
+    raceReference: (v, source) => `Objavljena primerjalna pot ${v} (${source})`,
     refOpt: v => `Optimum ${v} (dokazan)`, refBest: (v, src) => `Najboljša znana pot ${v}${src ? ` (${src})` : ''}`, refBound: (v, src) => `Spodnja meja ${v}${src ? ` (${src})` : ''}`,
     refHK: (v, est) => `${est ? 'Ocena Held–Karp' : 'Meja Held–Karp'} ${v}`, refNone: 'Referenčne dolžine še ni',
     count: 'Naključna mesta', seed: 'Seme', seconds: 'Sekunde', reference: 'Referenčna dolžina',
@@ -220,7 +225,7 @@ const T = {
     modeOneNoShare: (n, c) => `Način: 1 delavec; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
     hintIPhone: 'iPhone: privzeto 6 delavcev; Safari lahko skrije število jeder. Več delavcev kot jeder ne pomaga.',
     hintCores: c => `Vaš brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Več delavcev kot jeder ne pomaga.`,
-    option: item => exampleLabel(item, 'sl') + (item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi')
+    option: item => exampleLabel(item, 'sl') + (ipadTrial(item) ? ' · poskus na iPadu' : item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi')
       : desktopOnly(item) ? (mobileDevice ? ' · samo za namizni računalnik, ne na tej napravi' : ' · samo za namizni računalnik') : ''),
     live: 'V živo · 0,15 s',
     known: (n, opt) => `${group(n)} ${slPlural(n, 'mesto', 'mesti', 'mesta', 'mest')}, znana optimalna pot ${opt}`,
@@ -308,7 +313,8 @@ function credits() {   // the source line under the examples and, for Slovenia, 
   if (item.optimumStatus === 'being-proved') credit.append(` · ${t('beingProved')}`);
   if (item.remote) credit.append(` · ${t('remoteSource')}`);
   if (item.boundKind === 'estimate') credit.append(` · ${t('estimateNote')}`);
-  if (item.cities >= 1000000) credit.append(` · ${t('largeNote')}`);
+  if (item.referenceTour) credit.append(` · ${t('raceReference', formatDistance(item.referenceTour, item.unit, lang()), item.referenceTourBy)}`);
+  if (item.cities >= 1000000 && !ipadTrial(item)) credit.append(` · ${t('largeNote')}`);
 }
 function refLine() {   // B (BD 18 Nov): the reference value beside its percentage, only what the manifest holds; the percentage's reference first
   const m = mapMeta; if (!m || tab !== 'nu') return '';
@@ -323,6 +329,7 @@ function refLine() {   // B (BD 18 Nov): the reference value beside its percenta
     if (m.gapStatus.tourLength) parts.push(t('refBest', d(m.gapStatus.tourLength), [m.gapStatus.tourSource, g.tourDate].filter(Boolean).join(', ')));
   } else {
     if (m.bound) parts.push(m.boundKind === 'certified' ? t('refBound', d(m.bound), src) : t('refHK', d(Math.round(m.bound)), m.boundKind === 'estimate'));
+    if (m.referenceTour) parts.push(t('raceReference', d(m.referenceTour), m.referenceTourBy));
     if (m.bestKnownTour) parts.push(t('refBest', d(m.bestKnownTour), [m.bestKnownBy?.[lang()], src].filter(Boolean).join(', ')));
   }
   return parts.length ? parts.join(' · ') : t('refNone');
@@ -335,8 +342,8 @@ function render() {
     : mapMeta?.gapStatus?.lowerBound && reference === mapMeta.gapStatus.lowerBound ? 'gapLower' : mapMeta?.bestKnownTour && reference === mapMeta.bestKnownTour ? 'gapBest' : 'gapRef');
   $('refLine').textContent = refLine();
   { const lt = tab === 'nu' ? mapMeta?.laptopTime?.text?.[lang()] : ''; $('laptopLine').textContent = lt || ''; $('laptopLine').hidden = !lt; }   // Addendum C: our laptop's measured time
-  $('referenceUnit').textContent = mapMeta?.unit === 'm' ? ' (km)' : '';
-  { const r = referenceRaw, box = $('referenceDistance'); box.hidden = mapMeta?.unit !== 'm' || !(r > 0); box.textContent = box.hidden ? '' : formatDistance(r, 'm', lang()); }
+  $('referenceUnit').textContent = mapMeta?.unit ? ' (km)' : '';
+  { const r = referenceRaw, box = $('referenceDistance'); box.hidden = !mapMeta?.unit || !(r > 0); box.textContent = box.hidden ? '' : formatDistance(r, mapMeta.unit, lang()); }
   $('seconds').setCustomValidity(validSeconds(Number($('seconds').value)) ? '' : t('secondsRange'));
   $('reachLabel').textContent = t(isOptimum() ? 'reachOpt' : 'reachRef');
   $('reach').textContent = runRecord?.firstReach ? `${dec(runRecord.firstReach.solverSeconds, 1)} s` : '—';
@@ -455,9 +462,16 @@ async function load(value, which, metadata = null, verifiedHash = null) {
   }
   if (metadata && inputHash !== metadata.sha256) { loading = null; controls(); throw new Message('checksum'); }
   mapMeta = metadata;
+  if (ipadTrial(metadata)) {
+    workersBeforeTrial ??= $('workers').value;
+    $('workers').value = '1';
+  } else if (workersBeforeTrial !== null) {
+    $('workers').value = workersBeforeTrial;
+    workersBeforeTrial = null;
+  }
   $('stopOptimum').checked = !!metadata?.optimum;
   text = value; coords = new Float64Array(); extent = null; view = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
-  setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || metadata?.bestKnownTour || null);   // B: a best known tour alone is the reference
+  setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || metadata?.referenceTour || metadata?.bestKnownTour || null);   // B: a best known tour alone is the reference
   if (metadata) $('seconds').value = metadata.cities <= 20000 ? 60 : metadata.cities <= 200000 ? 120 : 600;
   if (which === 'random') $('seconds').value = 10;
   render();
@@ -501,7 +515,7 @@ async function start(options = {}) {
   const reference = options.reference ?? (referenceRaw || null);
   const refinement = options.refinement ?? $('refinement').checked;
   clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
-  if (options.recording !== false && coords.length >= 6) recordSafely(() => {
+  if (options.recording !== false && !mapMeta?.ipadTrial && coords.length >= 6) recordSafely(() => {
     // B: the replay is drawn north-up like the map. The recording keeps the map only turned (scaled = false), so every recorded
     // length stays exact and the player's own check of it passes; the east-west scale goes with it as xScale, applied when drawing.
     const turned = view && displayView(coords, mapMeta?.display, false);
