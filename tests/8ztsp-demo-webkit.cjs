@@ -114,7 +114,7 @@ proxy.on('connect', (req, sock, head) => {
     await page.fill('#pw', process.env.DEMO_PASSWORD); await page.click('#unlock');
     await page.waitForFunction(() => window.tsp8zLab?.ready && window.tsp8zLab.coordinates.length === 6992, null, {timeout: 120000});
     const d = await page.evaluate(() => ({workers: document.getElementById('workers').value, iso: self.crossOriginIsolated}));
-    check(d.workers === '6', `iPhone: 6 workers by default (${d.workers})`);
+    check(d.workers === '8', `iPhone: maximum 8 workers by default (${d.workers})`);
     const r = await page.evaluate(() => window.tsp8zLab.start({seconds: 240}).then(r => ({length: r.length, reached: r.optimumReached, topology: r.topology})));
     check(r.length === 96132 && !!r.reached, `nu3496 stopped at the known optimum (${r.reached ? r.reached.solverSeconds.toFixed(1) + ' s, ' + r.topology : r.length})`);
     await page.screenshot({path: path.join(OUT, 'demo_iphone15.png')});

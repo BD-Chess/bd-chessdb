@@ -4,8 +4,8 @@
 // the mode line). From R3: the examples (the national instances of the University of Waterloo's collection, Slovenia's
 // 6,035 settlements with the GURS credit, the DIMACS maps generated on the device: 100k and 1M, 10M only on a desktop
 // with at least 8 GB), the image-refresh menu with sampled drawing for big maps, stopping a load, the streamed export,
-// the memory limits for million-city maps. From BD's wishes (R20): all reported cores by default (an iPhone 6, up to 8
-// anywhere since R22b part 1), the expanded map, the stop at a known optimum (now every example with one).
+// the memory limits for million-city maps. The default is the maximum compatible worker count (at least 8 in the menu),
+// the expanded map, the stop at a known optimum (now every example with one).
 // worker.js, pool-worker.js, generator-worker.js, portgen.mjs, wasm-loader.js, wasm-crypto.mjs, examples.mjs, examples/,
 // pkg/ and pkg-shared/ are the package's, unchanged. The part-1 version is demo/app.r22b1.js.
 // R28 (8zTSP-K, 16 Nov 2026): from 8zTSP-web R5 A1 (0ce785e) the recording of a run and its slow replay (replay-data.mjs,
@@ -31,8 +31,7 @@ const mapView = $('mapView'), mapTitle = $('mapName');
 const isMapExpanded = () => mapView.classList.contains('map-window') || document.fullscreenElement === mapView;
 $('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds);   // R1d: up to one day
 const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
-// R22b (8zTSP-web R3, for BD's iPhone): Safari may hide the number of cores, so up to 8 workers can be chosen anywhere and
-// an iPhone starts with 6; elsewhere the page starts with every core the device reports.
+// Safari may hide cores: use the existing menu maximum by default, subject to map memory safety.
 const reportedCores = Math.max(1, Math.floor(Number(navigator.hardwareConcurrency) || 1));
 const isIPhone = /iPhone/i.test(navigator.userAgent);
 const cores = Math.max(reportedCores, 8);
@@ -45,9 +44,14 @@ const mobileDevice = isIPad || /iPhone|Android|Mobile/i.test(navigator.userAgent
 const ipadTrial = item => isIPad && item?.ipadTrial === true;
 const desktopLarge = !mobileDevice && Number(navigator.deviceMemory) >= 8;
 const deviceAllows = item => ipadTrial(item) || (item.cities === 10000000 ? desktopLarge : !desktopOnly(item) || !mobileDevice);
-let workersBeforeTrial = null;
+let preferredWorkers = cores;
 for (let n = 1; n <= cores; n++) $('workers').add(new Option(String(n), String(n)));
-$('workers').value = String(isIPhone ? 6 : reportedCores);
+$('workers').value = String(preferredWorkers);
+function applyWorkerChoice(cities) {
+  const oneOnly = cities >= 1000000 && !canShare;
+  for (const option of $('workers').options) option.disabled = oneOnly && Number(option.value) > 1;
+  $('workers').value = String(oneOnly ? 1 : preferredWorkers);
+}
 // R53 (BD 18 Nov, K's brief R52): two selects, the collection, then its map (inside a collection from the smallest map to the
 // largest, ties by id; examples.mjs holds the order); entries that are not ready yet stand in their collection, marked »(soon)« |
 // »(kmalu)«, and cannot be chosen; render() writes the labels in the page's language
@@ -157,8 +161,8 @@ const T = {
     modeSeparate: (n, c) => `Mode: compatibility mode · ${n} workers; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
     modeChosen: (n, c) => `Mode: compatibility mode · ${n} workers; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
     modeOneNoShare: (n, c) => `Mode: 1 worker; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
-    hintIPhone: 'iPhone: 6 workers by default; Safari may hide the number of cores. More workers than cores do not help.',
-    hintCores: c => `Your browser reports ${c} ${c === 1 ? 'core' : 'cores'}. More workers than cores do not help.`,
+    hintIPhone: 'Safari may hide the number of cores. The maximum compatible worker count is selected by default.',
+    hintCores: c => `Your browser reports ${c} ${c === 1 ? 'core' : 'cores'}. The maximum compatible worker count is selected by default.`,
     option: item => exampleLabel(item, 'en') + (ipadTrial(item) ? ' · iPad trial' : item.cities === 10000000 ? (desktopLarge ? ' · experimental, desktop' : ' · not on this device')
       : desktopOnly(item) ? (mobileDevice ? ' · desktop only, not on this device' : ' · desktop only') : ''),
     live: 'Live · 0.15 s',
@@ -223,8 +227,8 @@ const T = {
     modeSeparate: (n, c) => `Način: združljivostni način · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
     modeChosen: (n, c) => `Način: združljivostni način · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
     modeOneNoShare: (n, c) => `Način: 1 delavec; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
-    hintIPhone: 'iPhone: privzeto 6 delavcev; Safari lahko skrije število jeder. Več delavcev kot jeder ne pomaga.',
-    hintCores: c => `Vaš brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Več delavcev kot jeder ne pomaga.`,
+    hintIPhone: 'Safari lahko skrije število jeder. Privzeto je izbrano največje združljivo število delavcev.',
+    hintCores: c => `Vaš brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}. Privzeto je izbrano največje združljivo število delavcev.`,
     option: item => exampleLabel(item, 'sl') + (ipadTrial(item) ? ' · poskus na iPadu' : item.cities === 10000000 ? (desktopLarge ? ' · poskusno, namizje' : ' · ne na tej napravi')
       : desktopOnly(item) ? (mobileDevice ? ' · samo za namizni računalnik, ne na tej napravi' : ' · samo za namizni računalnik') : ''),
     live: 'V živo · 0,15 s',
@@ -462,13 +466,6 @@ async function load(value, which, metadata = null, verifiedHash = null) {
   }
   if (metadata && inputHash !== metadata.sha256) { loading = null; controls(); throw new Message('checksum'); }
   mapMeta = metadata;
-  if (ipadTrial(metadata)) {
-    workersBeforeTrial ??= $('workers').value;
-    $('workers').value = '1';
-  } else if (workersBeforeTrial !== null) {
-    $('workers').value = workersBeforeTrial;
-    workersBeforeTrial = null;
-  }
   $('stopOptimum').checked = !!metadata?.optimum;
   text = value; coords = new Float64Array(); extent = null; view = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
   setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || metadata?.referenceTour || metadata?.bestKnownTour || null);   // B: a best known tour alone is the reference
@@ -484,6 +481,7 @@ async function load(value, which, metadata = null, verifiedHash = null) {
       loading = null; rejectLoading = null; worker.terminate();
       if (data.type === 'error') { status('noSolver', data.message); controls(); reject(Error(data.message)); return; }
       mapName = data.name; coords = data.coordinates; view = displayView(coords, mapMeta?.display);
+      applyWorkerChoice(coords.length / 2);
       const P = view || coords; let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
       for (let j = 0; j < P.length; j += 2) { x0 = Math.min(x0, P[j]); x1 = Math.max(x1, P[j]); y0 = Math.min(y0, P[j + 1]); y1 = Math.max(y1, P[j + 1]); }
       extent = [x0, x1, y0, y1];
@@ -705,7 +703,10 @@ $('reference').oninput = () => {   // R1k: an edit in km becomes whole metres; t
   render();
 };
 $('seconds').oninput = render;
-$('workers').onchange = render;
+$('workers').onchange = () => {
+  if (coords.length / 2 < 1000000 || canShare) preferredWorkers = Number($('workers').value);
+  applyWorkerChoice(coords.length / 2); render();
+};
 $('download').onclick = () => {   // R3: streamed, so a tour of millions of cities fits
   const parts = [JSON.stringify({ ...runRecord, tour: undefined }).slice(0, -1) + ',"tour":['];
   for (let i = 0; i < tour.length; i += 65536) parts.push((i ? ',' : '') + Array.from(tour.subarray(i, i + 65536), x => x + 1).join(','));
@@ -746,7 +747,7 @@ window.MDLxDCCLocale?.subscribe(() => render());
 window.tsp8zLab = { load, loadExample, showMap, start, stop, loadNu, generate, cores, reportedCores, limits: RUN_LIMITS, get reference() { return referenceRaw; },
   get retentionStats() { return { history: runRecord?.history.length ?? 0, historyReceived: runRecord?.historyReceived ?? 0, historyDropped: runRecord?.historyDropped ?? 0,
     renderChanges: runRecord?.renderChanges.length ?? 0, recording: recorder?.summary() ?? null }; },
- defaultWorkers: isIPhone ? 6 : reportedCores, get canShare() { return canShare; },
+ defaultWorkers: cores, get canShare() { return canShare; },
   get ready() { return loaderState.status === 'ready'; }, get loaderStatus() { return loaderState.status; },
   get wasmMetrics() { return structuredClone(loaderState.metrics); },
   get renderStats() { return { intervalMs: Number($('refresh').value), drawCount, progressDrawCount, lastDrawnTourLength, progressDrawTimes: [...progressDrawTimes] }; },
