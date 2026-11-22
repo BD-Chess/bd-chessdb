@@ -45,7 +45,6 @@ function getArrayU32FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
 }
-
 let cachedFloat64ArrayMemory0 = null;
 
 function getFloat64ArrayMemory0() {
@@ -58,6 +57,12 @@ function getFloat64ArrayMemory0() {
 function getArrayF64FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getFloat64ArrayMemory0().subarray(ptr / 8, ptr / 8 + len);
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_externrefs.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
 }
 
 let WASM_VECTOR_LEN = 0;
@@ -114,12 +119,6 @@ function passStringToWasm0(arg, malloc, realloc) {
     return ptr;
 }
 
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_externrefs.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
-
 const ProblemFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_problem_free(ptr >>> 0, 1));
@@ -145,6 +144,23 @@ export class Problem {
         var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v1;
+    }
+    /**
+     * A warm continuation from the first phase's best valid tour; one clock and candidate set.
+     * @param {number} seconds
+     * @param {number} seed
+     * @param {number} max_steps
+     * @param {number} passes
+     * @param {boolean} refinement
+     * @param {number} first_seconds
+     * @returns {Solution}
+     */
+    solve_two_pass(seconds, seed, max_steps, passes, refinement, first_seconds) {
+        const ret = wasm.problem_solve_two_pass(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, first_seconds);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Solution.__wrap(ret[0]);
     }
     /**
      * @param {string} text
@@ -292,6 +308,9 @@ function __wbg_get_imports() {
     imports.wbg = {};
     imports.wbg.__wbg___wbindgen_throw_b855445ff6a94295 = function(arg0, arg1) {
         throw new Error(getStringFromWasm0(arg0, arg1));
+    };
+    imports.wbg.__wbg_tsp8zPhase_950932b6ea23da89 = function(arg0, arg1, arg2, arg3, arg4, arg5) {
+        self.tsp8zPhase(arg0 >>> 0, arg1, arg2, arg3, getArrayU32FromWasm0(arg4, arg5));
     };
     imports.wbg.__wbg_tsp8zProgress_8700e8430fd22195 = function(arg0, arg1, arg2, arg3, arg4) {
         self.tsp8zProgress(arg0, arg1, arg2, getArrayU32FromWasm0(arg3, arg4));

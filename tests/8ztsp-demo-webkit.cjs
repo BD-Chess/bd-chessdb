@@ -6,7 +6,7 @@
 // Checked: the lock page (EN + SL access line, the request form, no horizontal scroll), cross-origin isolation, the install
 // box (Safari: »Share → Add to Home Screen«), a wrong password (the lock stays; no worker; no solver file requested by the
 // page). With DEMO_PASSWORD in the environment (never in the repository) also: unlock, nu3496 with the iPhone default of
-// 6 workers, the stop at the known optimum. ENGINE=chromium runs the same steps on a local Chromium (CHROMIUM_PATH).
+// 8 workers, the stop at the known optimum. ENGINE=chromium runs the same steps on a local Chromium (CHROMIUM_PATH).
 // usage: node tests/8ztsp-demo-webkit.cjs     (needs playwright@1.58.2 on NODE_PATH, as in start-app.yml)
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http'), https = require('node:https'), net = require('node:net'), crypto = require('node:crypto');
 const {execFileSync} = require('node:child_process');
@@ -41,10 +41,50 @@ const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'demo-tls-'));
 execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1', '-subj', '/CN=www.mdlxdcc.org',
   '-addext', 'subjectAltName=DNS:www.mdlxdcc.org', '-keyout', path.join(tmp, 'key.pem'), '-out', path.join(tmp, 'cert.pem')], {stdio: 'ignore'});
 const requests = [];
+// UI-only contract fixture: real app.js, synthetic worker messages, no protected HTML,
+// credentials, compiled solver or constructor instrumentation. Never served by production.
+function demoUiFixture(language) {
+  const source = fs.readFileSync(path.join(pub, '8zTSP/app.js'), 'utf8');
+  const ids = new Set([...source.matchAll(/\$\('([^']+)'\)/g)].map(m => m[1]));
+  for (const id of ['count', 'seed', 'seconds', 'reference', 'panel-nu', 'panel-rnd', 'panel-file']) ids.add(id);
+  ids.delete('replayPlay');
+  const tags = [...ids].map(id => {
+    if (id === 'map') return '<canvas id="map"></canvas>';
+    if (['workers', 'example', 'collection', 'refresh'].includes(id)) return `<select id="${id}">${id === 'refresh' ? '<option value="150">Live</option>' : ''}</select>`;
+    if (id === 'twoPass') return '<label><input id="twoPass" type="checkbox" checked><span class="l-en">Two passes</span><span class="l-sl">Dva prehoda</span></label>';
+    if (['stopOptimum', 'refinement'].includes(id)) return `<input id="${id}" type="checkbox" checked>`;
+    if (['count', 'seed', 'seconds', 'reference'].includes(id)) return `<input id="${id}" type="number" value="${id === 'count' ? 5 : id === 'seconds' ? 60 : id === 'seed' ? 1 : ''}">`;
+    if (['run', 'stop', 'download', 'replayOpen', 'mapExpand', 'mapClose', 'generate'].includes(id)) return `<button id="${id}">${id}</button>`;
+    return `<div id="${id}"></div>`;
+  }).join('\n');
+  return `<!doctype html><html data-lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:16px sans-serif;max-width:100%;margin:12px}canvas{width:100%;height:160px}input,select{max-width:100%;box-sizing:border-box}html[data-lang=en] .l-sl,html[data-lang=sl] .l-en{display:none}</style></head><body>${tags}<script>
+  window.Worker=class {
+    postMessage(m){
+      const send=d=>{if(!this.stopped)this.onmessage?.({data:{token:m.token,...d}});};
+      if(m.type==='load'){queueMicrotask(()=>send({type:'ready',name:'UI fixture',coordinates:new Float64Array([0,0,10,0,10,10,0,10,5,5])}));return;}
+      if(m.type!=='run')return;
+      queueMicrotask(()=>{send({type:'budget',plan:{remainingSeconds:m.seconds,firstSeconds:m.firstBudgetSeconds,totalDeadlineEpoch:m.totalDeadlineEpoch}});if(m.twoPass)send({type:'phase',pass:1,length:0,elapsed:0,steps:0,tour:null});});
+      const tour=new Uint32Array([0,1,2,3,4]);
+      setTimeout(()=>send({type:'best',length:44,elapsed:0.02,steps:1,tour}),20);
+      if(m.twoPass)setTimeout(()=>send({type:'phase',pass:2,length:44,elapsed:0.05,steps:1,tour}),50);
+      setTimeout(()=>send({type:'done',length:44,elapsed:0.1,steps:1,tour}),100);
+    }
+    terminate(){this.stopped=true;}
+  };
+  </script><script type="module" src="/__demo_ui/app.js"></script></body></html>`;
+}
+const demoUiLoader = `export const loaderState={status:'ready',metrics:{serial:{sha256:'f'.repeat(64)}}};export const supportsSharedThreads=()=>false;export const solverModule=()=>({});export async function initializeWasm(){}`;
+
 function serve(req, res) {
   const url = new URL(req.url, 'https://www.mdlxdcc.org'); let p = decodeURIComponent(url.pathname);
   requests.push({method: req.method, path: p, t: Date.now()});
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(202, {'Content-Type': 'application/json'}); res.end('{"ok":true,"test":true}'); return; }
+  if (p.startsWith('/__demo_ui/')) {
+    const h = {'Cache-Control':'no-store','Cross-Origin-Opener-Policy':'same-origin','Cross-Origin-Embedder-Policy':'require-corp','Cross-Origin-Resource-Policy':'same-origin'};
+    if (p === '/__demo_ui/index.html') { res.writeHead(200, {...h,'Content-Type':TYPES['.html']}); res.end(demoUiFixture(url.searchParams.get('lang') === 'sl' ? 'sl' : 'en')); return; }
+    if (p === '/__demo_ui/wasm-loader.js') { res.writeHead(200, {...h,'Content-Type':TYPES['.js']}); res.end(demoUiLoader); return; }
+    p = p.replace('/__demo_ui/', '/8zTSP/');
+  }
   if (/^\/8ztsp\/?$/i.test(p)) p = '/8zTSP/index.html';                       // the forced rule keeps /8zTSP/
   if (buildOverride && (p === '/8zTSP/pwa.js' || p === '/8zTSP/sw.js' || p === '/8zTSP/precache-manifest.json')) {
     const h = {'Cache-Control': 'no-cache', 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp', 'Cross-Origin-Resource-Policy': 'same-origin'};
@@ -85,6 +125,35 @@ proxy.on('connect', (req, sock, head) => {
   const ok = (cond, label) => { log.push(`${cond ? 'ok' : 'FAIL'}: ${label}`); console.log(`  ${cond ? 'ok' : 'FAIL'}: ${label}`); return cond; };
   let failed = false; const check = (c, l) => { if (!ok(c, l)) failed = true; };
 
+  // Actual app.js UI on WebKit without moving any demo secret into CI.
+  // Solver correctness is a separate serial/shared WASM gate; this fixture checks UI protocol only.
+  for (const language of ['en','sl']) {
+    const fixture = await context.newPage();
+    await fixture.goto('https://www.mdlxdcc.org/__demo_ui/index.html?lang='+language, {waitUntil:'load'});
+    await fixture.waitForFunction(() => window.tsp8zLab?.ready && tsp8zLab.coordinates.length>0);
+    await fixture.evaluate(() => tsp8zLab.load(['NAME : ui','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file'));
+    check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': checked by default');
+    const maximum=await fixture.evaluate(() => {const s=document.getElementById('workers');return s.options[s.options.length-1].value;});
+    check(await fixture.inputValue('#workers')===maximum, 'two-pass UI '+language+': maximum worker default');
+    await fixture.fill('#seconds','3600'); await fixture.dispatchEvent('#seconds','input');
+    check((await fixture.textContent('#twoPassHint')).includes(language==='sl'?'300,0':'300.0'), 'two-pass UI '+language+': one-hour first budget is 300 s');
+    for (const enabled of [false,true]) {
+      await fixture.setChecked('#twoPass',enabled);
+      await fixture.evaluate(() => { window.uiRun=tsp8zLab.start({seconds:2,workers:1,recording:false}); });
+      const state=await fixture.evaluate(async () => {const r=await window.uiRun;return {enabled:r.twoPass,phases:r.passEvents.map(x=>x.pass)};});
+      check(state.enabled===enabled && state.phases.join(',')===(enabled?'1,2':''), 'two-pass UI '+language+': '+(enabled?'enabled transitions':'off baseline'));
+    }
+    await fixture.evaluate(() => tsp8zLab.load('NAME : ui\nTYPE : TSP\nDIMENSION : 5\nEDGE_WEIGHT_TYPE : EUC_2D\nNODE_COORD_SECTION\n1 0 0\n2 10 0\n3 10 10\n4 0 10\n5 5 5\nEOF','file'));
+    check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': reload restores checked default');
+    check(await fixture.evaluate(() => document.documentElement.scrollWidth<=innerWidth+1), 'two-pass UI '+language+': no horizontal overflow');
+    await fixture.screenshot({path:path.join(OUT,'two-pass-ui-'+language+'.png'),fullPage:true});
+    await fixture.close();
+  }
+  if (process.env.DEMO_UI_ONLY==='1') {
+    await browser.close(); tls.closeAllConnections();tls.close();proxy.closeAllConnections();proxy.close();
+    fs.writeFileSync(path.join(OUT,'result.txt'),log.join('\n')+'\n');process.exit(failed?1:0);
+  }
+
   await page.goto('https://www.mdlxdcc.org/8zTSP/?lang=en', {waitUntil: 'load'});
   await page.waitForSelector('#pw', {timeout: 20000});
   const lock = await page.evaluate(() => ({ua: navigator.userAgent, iso: self.crossOriginIsolated, access: document.getElementById('req-h')?.textContent || '',
@@ -113,8 +182,8 @@ proxy.on('connect', (req, sock, head) => {
   if (process.env.DEMO_PASSWORD) {
     await page.fill('#pw', process.env.DEMO_PASSWORD); await page.click('#unlock');
     await page.waitForFunction(() => window.tsp8zLab?.ready && window.tsp8zLab.coordinates.length === 6992, null, {timeout: 120000});
-    const d = await page.evaluate(() => ({workers: document.getElementById('workers').value, iso: self.crossOriginIsolated}));
-    check(d.workers === '8', `iPhone: maximum 8 workers by default (${d.workers})`);
+    const d = await page.evaluate(() => ({workers: document.getElementById('workers').value, maximum: document.getElementById('workers').options[document.getElementById('workers').options.length-1].value, iso: self.crossOriginIsolated}));
+    check(d.workers === d.maximum, `iPhone: maximum ${d.maximum} workers by default (${d.workers})`);
     const r = await page.evaluate(() => window.tsp8zLab.start({seconds: 240}).then(r => ({length: r.length, reached: r.optimumReached, topology: r.topology})));
     check(r.length === 96132 && !!r.reached, `nu3496 stopped at the known optimum (${r.reached ? r.reached.solverSeconds.toFixed(1) + ' s, ' + r.topology : r.length})`);
     await page.screenshot({path: path.join(OUT, 'demo_iphone15.png')});

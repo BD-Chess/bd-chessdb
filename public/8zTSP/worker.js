@@ -1,5 +1,5 @@
 let api, problem, shared, token, wasm, cities=0;
-let lastSent = -Infinity;
+let lastSent = -Infinity, knownOptimum = 0;
 const proxies = new Map();
 let nextProxy = 0;
 
@@ -28,10 +28,16 @@ self.tsp8zProgress = (length, elapsed, steps, tour) => {
   }
   // Small maps keep every checked best tour, so an external benchmark can stop
   // at a reference without losing its path. Large-map copies stay throttled.
-  const draw = tour.length <= 12000 || performance.now() - lastSent >= 200;
+  const draw = tour.length <= 12000 || performance.now() - lastSent >= 200 || (knownOptimum > 0 && length <= knownOptimum);
+  // Announce only records with a matching valid tour, including at Stop.
+  if (!draw) return;
   if (draw) lastSent = performance.now();
   const path = draw ? tour.slice() : null;
   self.postMessage({type:'best',token,length,elapsed,steps,tour:path}, path ? [path.buffer] : []);
+};
+self.tsp8zPhase = (pass, length, elapsed, steps, tour) => {
+  const path = tour.length ? tour.slice() : null;
+  self.postMessage({type:'phase',token,pass,length,elapsed,steps,tour:path}, path ? [path.buffer] : []);
 };
 self.onmessage = async ({data}) => {
   if (data.type === 'pool-event') {
@@ -61,9 +67,19 @@ self.onmessage = async ({data}) => {
         self.postMessage({type:'pool-status',token,stage:data.probe ? 'probe-complete' : 'configured'});
       }
       shared = data.shared ? new BigInt64Array(data.shared) : null;
+      knownOptimum = data.optimum || 0;
       if (!problem) {problem = new api.Problem(data.text);cities=(data.text.match(/DIMENSION\s*:\s*(\d+)/i)?.[1]||0)*1;}
       const started = performance.now();
-      const result = problem.solve(data.seconds,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement);
+      const now = performance.timeOrigin + performance.now();
+      const deadline = Number.isFinite(data.totalDeadlineEpoch) ? data.totalDeadlineEpoch : now + data.seconds * 1000;
+      const remaining = Math.max(0, (deadline - now) / 1000);
+      if (remaining <= 0) return; // Page owns the common deadline and finalizes the saved incumbent.
+      const first = data.shortBudget ? Math.min(data.firstBudgetSeconds, remaining / 4)
+        : Math.max(0, Math.min(remaining / 2, (data.firstDeadlineEpoch - now) / 1000));
+      self.postMessage({type:'budget',token,plan:{remainingSeconds:remaining,firstSeconds:data.twoPass ? first : 0,totalDeadlineEpoch:data.totalDeadlineEpoch}});
+      const result = data.twoPass
+        ? problem.solve_two_pass(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first)
+        : problem.solve(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement);
       const tour = result.tour();
       const poolStats = threaded ? Array.from(api.pool_stats()) : null;
       self.postMessage({type:'done',token,length:result.length,elapsed:result.elapsed,

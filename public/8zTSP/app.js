@@ -131,6 +131,10 @@ const T = {
     readyWin: 'Ready · large map (over 12,000 cities).',
     readyPop: 'Ready · small map (up to 12,000 cities).',
     searching: (n, sharing) => n === 1 ? 'Searching · 1 worker…' : `Searching · ${n} workers…`,
+    searchingPass: (p, n) => `Searching · ${n} ${n === 1 ? 'worker' : 'workers'} · pass ${p}/2…`,
+    passHint: (total, first) => `Total ${dec(total, 1)} s: up to ${dec(first, 1)} s in the first pass; the rest continues from its best tour.`,
+    onePassHint: total => `One pass · total ${dec(total, 1)} s.`,
+    budgetNoTour: 'Time budget ended before a tour was available.',
     complete: (s, opt) => 'Complete · tour checked in Rust.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Reference'} first reached after ${dec(s, 1)} s of solver time.`),
     optimumStop: s => `Optimum reached after ${dec(s, 1)} s of solver time; the search stopped.`,
@@ -197,6 +201,10 @@ const T = {
     readyPop: 'Pripravljeno · manjši zemljevid (do 12.000 mest).',
     searching: (n, sharing) => n === 1 ? 'Iskanje · 1 delavec…' :
       `Iskanje · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}…`,
+    searchingPass: (p, n) => `Iskanje · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')} · prehod ${p}/2…`,
+    passHint: (total, first) => `Skupaj ${dec(total, 1)} s: do ${dec(first, 1)} s v prvem prehodu; preostanek nadaljuje njegovo najboljšo pot.`,
+    onePassHint: total => `En prehod · skupaj ${dec(total, 1)} s.`,
+    budgetNoTour: 'Čas je potekel, preden je bila pot na voljo.',
     complete: (s, opt) => 'Končano · pot preverjena v Rustu.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Referenca'} prvič dosežen${opt ? '' : 'a'} po ${dec(s, 1)} s časa reševalnika.`),
     optimumStop: s => `Optimum dosežen po ${dec(s, 1)} s časa reševalnika; iskanje ustavljeno.`,
@@ -338,6 +346,10 @@ function refLine() {   // B (BD 18 Nov): the reference value beside its percenta
   }
   return parts.length ? parts.join(' · ') : t('refNone');
 }
+function passPlan(seconds, enabled) {
+  const first = enabled ? Math.min(300, seconds / (seconds <= 12 ? 4 : 12)) : 0;
+  return { enabled, totalSeconds: seconds, firstBudgetSeconds: first, secondBudgetSeconds: seconds - first, shortBudget: seconds <= 12 };
+}
 function render() {
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
   const reference = runRecord?.reference || referenceRaw || 0;
@@ -355,6 +367,8 @@ function render() {
   renderMapName();
   $('cityCount').textContent = coords.length ? t('cities', coords.length / 2) + (coords.length > 40000 ? t('sampled') : '') : '';
   $('reference').placeholder = t('placeholder');
+  const plan = runRecord && active ? runRecord.passPlan : passPlan(Number($('seconds').value), $('twoPass').checked);
+  $('twoPassHint').textContent = plan.enabled ? t('passHint', plan.totalSeconds, plan.firstBudgetSeconds) : t('onePassHint', plan.totalSeconds);
   $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
   $('workerHint').textContent = isIPhone ? t('hintIPhone') : t('hintCores', reportedCores);
   for (const option of $('collection').options) { const c = collections.find(x => x.id === option.value); if (c) option.text = c.names[lang()]; }
@@ -409,7 +423,7 @@ function controls() {
   const ready = loaderState.status === 'ready';
   $('run').disabled = !ready || active || !!loading || !coords.length;
   $('stop').disabled = !active && !loading;
-  ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'refinement', 'reference', 'collection', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
+  ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'refinement', 'twoPass', 'reference', 'collection', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
   $('refresh').disabled = !ready;
   $('stopOptimum').disabled = active || !ready || !mapMeta?.optimum;
   $('download').disabled = !tour?.length;
@@ -467,6 +481,7 @@ async function load(value, which, metadata = null, verifiedHash = null) {
   if (metadata && inputHash !== metadata.sha256) { loading = null; controls(); throw new Message('checksum'); }
   mapMeta = metadata;
   $('stopOptimum').checked = !!metadata?.optimum;
+  $('twoPass').checked = true;
   text = value; coords = new Float64Array(); extent = null; view = null; tour = null; best = Infinity; runRecord = null; shownElapsed = 0; preset = which;
   setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || metadata?.referenceTour || metadata?.bestKnownTour || null);   // B: a best known tour alone is the reference
   if (metadata) $('seconds').value = metadata.cities <= 20000 ? 60 : metadata.cities <= 200000 ? 120 : 600;
@@ -512,6 +527,7 @@ async function start(options = {}) {
   const topology = workers === 1 ? 'single worker' : sharedThreads ? 'shared workers' : 'separate workers';
   const reference = options.reference ?? (referenceRaw || null);
   const refinement = options.refinement ?? $('refinement').checked;
+  const plan = passPlan(seconds, options.twoPass ?? $('twoPass').checked);
   clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
   if (options.recording !== false && !mapMeta?.ipadTrial && coords.length >= 6) recordSafely(() => {
     // B: the replay is drawn north-up like the map. The recording keeps the map only turned (scaled = false), so every recorded
@@ -524,8 +540,9 @@ async function start(options = {}) {
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
   runRecord = { schema: '8ztsp-web-run-v1', name: mapName, inputSha256: inputHash, cities: coords.length / 2, seconds, seed,
     renderIntervalMs: Number($('refresh').value), renderChanges: [], renderChangesDropped: 0,
+    wasmSha256: loaderState.metrics?.[sharedThreads ? 'shared' : 'serial']?.sha256 ?? null,
     workers, deviceCores: reportedCores, workerLimit: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
-    refinement, reference, unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
+    refinement, twoPass: plan.enabled, passPlan: plan, passEvents: [], passBudgets: [], currentPass: plan.enabled ? 1 : null, reference, unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
     history: [], historyReceived: 0, historyDropped: 0, results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
   render();
@@ -534,10 +551,19 @@ async function start(options = {}) {
     shared = new SharedArrayBuffer(8);
     Atomics.store(new BigInt64Array(shared), 0, 9223372036854775807n);
   }
-  const token = ++generation; controls(); status('searching', workers, sharedThreads);
-  timer = setInterval(() => { shownElapsed = (performance.now() - started) / 1000; $('elapsed').textContent = `${dec(shownElapsed, 1)} s`; }, 100);
+  const totalDeadlineEpoch = performance.timeOrigin + started + seconds * 1000;
+  const token = ++generation; controls();
+  if (plan.enabled) status('searchingPass', 1, workers); else status('searching', workers, sharedThreads);
   return new Promise((resolve, reject) => {
     rejectActive = reject;
+    timer = setInterval(() => {
+      shownElapsed = (performance.now() - started) / 1000; $('elapsed').textContent = `${dec(shownElapsed, 1)} s`;
+      if (shownElapsed >= seconds && token === generation && active) {
+        generation++; runRecord.budgetExpired = true; runRecord.length = tour?.length ? runRecord.tourLength : null;
+        finish(tour?.length ? 'complete' : 'budgetNoTour', runRecord.firstReach?.solverSeconds ?? null, isOptimum());
+        resolve(structuredClone(runRecord));
+      }
+    }, 100);
     let done = 0;
     const coordinators = sharedThreads ? 1 : workers;
     for (let i = 0; i < coordinators; i++) {
@@ -567,6 +593,13 @@ async function start(options = {}) {
         }
         if (data.type === 'pool-terminate') { children.get(data.id)?.terminate(); return; }
         if (data.type === 'error') { fail(data.message); return; }
+        if (data.type === 'budget') { runRecord.passBudgets[i] = { worker: i, ...data.plan }; return; }
+        if (data.type === 'phase') {
+          runRecord.passEvents.push({ worker: i, pass: data.pass, solverSeconds: data.elapsed, pageSeconds: (performance.now() - started) / 1000, length: data.tour?.length ? data.length : null });
+          runRecord.currentPass = Math.max(runRecord.currentPass || 1, data.pass);
+          status('searchingPass', runRecord.currentPass, workers);
+          if (!data.tour?.length) return;
+        }
         lastSolverSeconds = Math.max(lastSolverSeconds, data.elapsed || 0);
         acceptBest(data, i);
         // BD's wish 3: a map with a known optimum (checksum-checked catalogue) stops when a full tour reaches it.
@@ -591,7 +624,9 @@ async function start(options = {}) {
       };
       worker.onerror = event => { if (token !== generation || !active) return; finish('workerFail', event.message); reject(Error(event.message)); };
       worker.postMessage({ type: 'run', token, module, memory, text, seconds, seed: (seed + i) >>> 0, refinement, shared, sharedThreads: sharedThreads ? workers : 0,
-        probe: !!options.probe, maxSteps: options.maxSteps, passes: options.passes });
+        probe: !!options.probe, maxSteps: options.maxSteps, passes: options.passes, twoPass: plan.enabled,
+        firstBudgetSeconds: plan.firstBudgetSeconds, shortBudget: plan.shortBudget, totalDeadlineEpoch,
+        firstDeadlineEpoch: totalDeadlineEpoch - seconds * 1000 + plan.firstBudgetSeconds * 1000, optimum: runRecord.optimum });
     }
   });
 }
@@ -703,6 +738,7 @@ $('reference').oninput = () => {   // R1k: an edit in km becomes whole metres; t
   render();
 };
 $('seconds').oninput = render;
+$('twoPass').onchange = render;
 $('workers').onchange = () => {
   if (coords.length / 2 < 1000000 || canShare) preferredWorkers = Number($('workers').value);
   applyWorkerChoice(coords.length / 2); render();

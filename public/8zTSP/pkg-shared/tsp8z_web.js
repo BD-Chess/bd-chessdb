@@ -210,6 +210,23 @@ export class Problem {
         return v1;
     }
     /**
+     * A warm continuation from the first phase's best valid tour; one clock and candidate set.
+     * @param {number} seconds
+     * @param {number} seed
+     * @param {number} max_steps
+     * @param {number} passes
+     * @param {boolean} refinement
+     * @param {number} first_seconds
+     * @returns {Solution}
+     */
+    solve_two_pass(seconds, seed, max_steps, passes, refinement, first_seconds) {
+        const ret = wasm.problem_solve_two_pass(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, first_seconds);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Solution.__wrap(ret[0]);
+    }
+    /**
      * @param {string} text
      */
     constructor(text) {
@@ -461,6 +478,9 @@ function __wbg_get_imports(memory) {
     imports.wbg.__wbg_static_accessor_WINDOW_b45bfc5a37f6cfa2 = function() {
         const ret = typeof window === 'undefined' ? null : window;
         return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+    };
+    imports.wbg.__wbg_tsp8zPhase_950932b6ea23da89 = function(arg0, arg1, arg2, arg3, arg4, arg5) {
+        self.tsp8zPhase(arg0 >>> 0, arg1, arg2, arg3, getArrayU32FromWasm0(arg4, arg5));
     };
     imports.wbg.__wbg_tsp8zProgress_8700e8430fd22195 = function(arg0, arg1, arg2, arg3, arg4) {
         self.tsp8zProgress(arg0, arg1, arg2, getArrayU32FromWasm0(arg3, arg4));
