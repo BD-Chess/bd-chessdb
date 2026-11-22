@@ -1,4 +1,5 @@
 import { parseTsplibEuc2d, verifyTourIndependent, sha256HexBytes } from './common/rival-worker-contract.mjs';
+import { RIVALS } from './choice.mjs';
 
 const now = () => performance.timeOrigin + performance.now();
 const distance = (p, a, b) => Math.floor(Math.hypot(p.xs[a] - p.xs[b], p.ys[a] - p.ys[b]) + 0.5);
@@ -7,7 +8,6 @@ const releases = {
   eax: ['GA-EAX', '1.0 Normal (015dfbe9f)'],
   ortools: ['Google OR-Tools Routing', 'or-tools-wasm 2.2.0'],
 };
-const limits = { lkh: [3, 1500000], eax: [51, 3500], ortools: [3, 1000] };
 
 function finish(record, verified) {
   const tour = verified.tour0;
@@ -25,16 +25,21 @@ function eaxInput(p) {
     maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
     rows.push(`${i + 1} ${x} ${y}`);
   }
-  // This upstream variant counts both directions of every edge with signed ints.
-  if ((Math.hypot(maxX - minX, maxY - minY) + 1) * p.dimension * 2 >= 2147483647) {
-    throw Error('Coordinate range exceeds GA-EAX integer limits');
+  // Upstream sums both incident edges per city with a signed 32-bit accumulator.
+  // A city's farthest bounding-box corner bounds both of its incident edges.
+  let upperBound = 0;
+  for (let i = 0; i < p.dimension; i++) {
+    const dx = Math.max(p.xs[i] - minX, maxX - p.xs[i]);
+    const dy = Math.max(p.ys[i] - minY, maxY - p.ys[i]);
+    upperBound += 2 * Math.ceil(Math.hypot(dx, dy));
   }
+  if (upperBound >= 2147483647) throw Error('Coordinate range exceeds GA-EAX integer limits');
   return rows.concat('EOF', '').join('\n');
 }
 
 async function solve(data) {
   const { engine, text, seed, started, seconds, profile, wasmBytes } = data;
-  const [minCities, maxCities] = limits[engine];
+  const { min: minCities, max: maxCities } = RIVALS[engine];
   const problem = parseTsplibEuc2d(text);
   if (problem.dimension < minCities || problem.dimension > maxCities) {
     throw Error(`${releases[engine][0]}: ${minCities}–${maxCities} cities`);
@@ -96,8 +101,10 @@ async function solve(data) {
     const n = problem.dimension;
     const manager = new RoutingIndexManager(n, 1, 0);
     const model = new RoutingModel(manager);
-    model.setArcCostEvaluatorOfAllVehicles(model.registerTransitMatrix(
-      Array.from({ length: n }, (_, a) => Array.from({ length: n }, (_, b) => distance(problem, a, b))),
+    // The WASM binding already materializes this cost matrix. Avoid retaining
+    // a second JS matrix and the binding's array-of-BigInts snapshot.
+    model.setArcCostEvaluatorOfAllVehicles(model.registerTransitCallback(
+      (a, b) => distance(problem, manager.indexToNode(a), manager.indexToNode(b)),
     ));
     checkDeadline();
     const remainingMs = Math.max(1, Math.floor(deadline - now()));
