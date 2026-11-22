@@ -94,6 +94,7 @@ function serve(req, res) {
     if (p === '/__demo_ui/examples/santa1437195_uef_2cm.tsp.gz') {
       res.writeHead(200,{...h,'Content-Type':TYPES['.tsp']});res.end(FINLAND_UI_TEXT);return;
     }
+    if (p === '/__demo_ui/engine-build.mjs') { res.writeHead(200,{...h,'Content-Type':TYPES['.mjs']}); res.end("export const ENGINE_BUILD={engineRevision:'f'.repeat(40),wasmSha256:{serial:'f'.repeat(64),shared:'f'.repeat(64)}};"); return; }
     if (p === '/__demo_ui/wasm-loader.js') { res.writeHead(200, {...h,'Content-Type':TYPES['.js']}); res.end(demoUiLoader); return; }
     p = p.replace('/__demo_ui/', '/8zTSP/');
   }
@@ -147,6 +148,17 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.waitForFunction(() => window.tsp8zLab?.ready && tsp8zLab.coordinates.length>0);
     await fixture.evaluate(() => tsp8zLab.load(['NAME : ui','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file'));
     check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': checked by default');
+    check(await fixture.locator('#passMode option').count()===3,'stateful choice '+language+': all three modes');
+    check(await fixture.locator('#passMode option[value=stateful]').textContent()===(language==='sl'?'Dva prehoda z nadaljevanjem':'Two passes with continuation'),'stateful choice '+language+': translated');
+    check(await fixture.locator('#passMode option[value=stateful]').isDisabled(),'stateful choice '+language+': small map refused');
+    for(const width of [390,1024]){
+      await fixture.setViewportSize({width,height:900});
+      const box=await fixture.locator('#passMode').boundingBox();
+      check(box.height>=48,'stateful choice '+language+' '+width+': touch target');
+      check(await fixture.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'stateful choice '+language+' '+width+': no horizontal overflow');
+      await fixture.screenshot({path:path.join(OUT,'stateful-choice-'+language+'-'+width+'.png'),fullPage:true});
+    }
+
     const maximum=await fixture.evaluate(() => {const s=document.getElementById('workers');return s.options[s.options.length-1].value;});
     check(await fixture.inputValue('#workers')===maximum, 'two-pass UI '+language+': maximum worker default');
     await fixture.fill('#seconds','3600');

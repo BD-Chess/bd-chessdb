@@ -39,6 +39,9 @@ self.tsp8zPhase = (pass, length, elapsed, steps, tour) => {
   const path = tour.length ? tour.slice() : null;
   self.postMessage({type:'phase',token,pass,length,elapsed,steps,tour:path}, path ? [path.buffer] : []);
 };
+self.tsp8zHandoff = summary => {
+  self.postMessage({type:'handoff',token,summary:JSON.parse(summary)});
+};
 self.onmessage = async ({data}) => {
   if (data.type === 'pool-event') {
     proxies.get(data.id)?.dispatchEvent(new MessageEvent('message',{data:data.message}));
@@ -75,14 +78,26 @@ self.onmessage = async ({data}) => {
       const remaining = Math.max(0, (deadline - now) / 1000);
       if (remaining <= 0) return; // Page owns the common deadline and finalizes the saved incumbent.
       const first = Math.max(0, Math.min(remaining, (data.firstDeadlineEpoch - now) / 1000));
-      self.postMessage({type:'budget',token,plan:{remainingSeconds:remaining,firstSeconds:data.twoPass ? first : 0,totalDeadlineEpoch:data.totalDeadlineEpoch}});
-      const result = data.twoPass
+      // Explicit candidate harness opt-in only. No public UI or default change.
+      const profiles = {'observe-one':0,'observe-restart':1,'preserve':2};
+      const profiled = data.phaseProfile !== undefined;
+      if (profiled && (!Object.hasOwn(profiles,data.phaseProfile) || cities <= 12000 || typeof problem.solve_phase_profile !== 'function')) {
+        throw Error('Unsupported experimental profile');
+      }
+      const phaseEnabled = profiled ? profiles[data.phaseProfile] !== 0 : !!data.twoPass;
+      self.postMessage({type:'budget',token,plan:{remainingSeconds:remaining,firstSeconds:phaseEnabled ? first : 0,totalDeadlineEpoch:data.totalDeadlineEpoch}});
+      const result = profiled
+        ? problem.solve_phase_profile(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first,profiles[data.phaseProfile])
+        : data.twoPass
         ? problem.solve_two_pass(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first)
         : problem.solve(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement);
       const tour = result.tour();
       const poolStats = threaded ? Array.from(api.pool_stats()) : null;
+      const handoffSummary = profiled ? JSON.parse(result.handoff_summary()) : null;
+      const transfers = [tour.buffer];
       self.postMessage({type:'done',token,length:result.length,elapsed:result.elapsed,
-        wall:(performance.now()-started)/1000,steps:result.steps,tour,poolStats,probe,wasmMemoryBytes:wasm.memory.buffer.byteLength},[tour.buffer]);
+        wall:(performance.now()-started)/1000,steps:result.steps,tour,poolStats,probe,wasmMemoryBytes:wasm.memory.buffer.byteLength,
+        ...(profiled ? {handoffSummary} : {})},transfers);
       result.free();
     }
   } catch (error) {const message=cities>=1000000 ? 'Large-map search stopped. Browser memory may be insufficient; choose a smaller example or fewer workers.' : String(error);self.postMessage({type:'error',token,message});}
