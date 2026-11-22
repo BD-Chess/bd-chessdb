@@ -27,6 +27,8 @@ import { RUN_LIMITS, validSeconds, retainRecent } from './run-limits.mjs';
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const canvas = $('map'), ctx = canvas.getContext('2d');
+const mapView = $('mapView'), mapTitle = $('mapName');
+const isMapExpanded = () => mapView.classList.contains('map-window') || document.fullscreenElement === mapView;
 $('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds);   // R1d: up to one day
 const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
 // R22b (8zTSP-web R3, for BD's iPhone): Safari may hide the number of cores, so up to 8 workers can be chosen anywhere and
@@ -108,6 +110,14 @@ const NAMES = {
   'E10M.0': ['DIMACS E10M.0, generated', 'DIMACS E10M.0, ustvarjen'],
 };
 const exName = item => item.names?.[lang()] || (NAMES[item.id] || [item.label, item.label])[lang() === 'sl' ? 1 : 0];
+function renderMapName() {
+  let title = mapName;
+  if (isMapExpanded()) {
+    title = mapMeta ? exName(mapMeta) : coords.length ? mapName : '';
+    if (title) title = title[0].toLocaleUpperCase(lang()) + title.slice(1);
+  }
+  if (mapTitle.textContent !== title) mapTitle.textContent = title;
+}
 const T = {
   en: {
     wasm: 'Loading WebAssembly…', exLoading: name => `Loading ${name}…`, reading: 'Reading the map…',
@@ -331,6 +341,7 @@ function render() {
   $('reachLabel').textContent = t(isOptimum() ? 'reachOpt' : 'reachRef');
   $('reach').textContent = runRecord?.firstReach ? `${dec(runRecord.firstReach.solverSeconds, 1)} s` : '—';
   $('elapsed').textContent = `${dec(shownElapsed, 1)} s`;
+  renderMapName();
   $('cityCount').textContent = coords.length ? t('cities', coords.length / 2) + (coords.length > 40000 ? t('sampled') : '') : '';
   $('reference').placeholder = t('placeholder');
   $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
@@ -463,7 +474,6 @@ async function load(value, which, metadata = null, verifiedHash = null) {
       for (let j = 0; j < P.length; j += 2) { x0 = Math.min(x0, P[j]); x1 = Math.max(x1, P[j]); y0 = Math.min(y0, P[j + 1]); y1 = Math.max(y1, P[j + 1]); }
       extent = [x0, x1, y0, y1];
       $('refresh').value = String(coords.length / 2 >= 1000000 ? 10000 : coords.length / 2 <= 20000 ? 150 : 1000);
-      $('mapName').textContent = mapName;
       status(coords.length / 2 > 12000 ? 'readyWin' : 'readyPop');
       render(); draw(); controls(); resolve();
     };
@@ -698,10 +708,11 @@ $('replayOpen').onclick = () => {   // R28: play the last run's recording slowly
 };
 // BD's wish 2: the map in full screen where the browser allows it (Fullscreen API), otherwise over the whole window;
 // the search and the drawing go on; Close or Escape returns.
-const mapView = $('mapView'); let oldOverflow = '';
+let oldOverflow = '';
 function expandedControls() {
-  const expanded = mapView.classList.contains('map-window') || document.fullscreenElement === mapView;
+  const expanded = isMapExpanded();
   $('mapExpand').hidden = expanded; $('mapClose').hidden = !expanded; $('mapExpand').setAttribute('aria-pressed', String(expanded));
+  renderMapName();
   requestAnimationFrame(() => draw('layout'));
 }
 async function closeMap() {
