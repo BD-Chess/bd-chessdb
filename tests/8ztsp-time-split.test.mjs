@@ -20,11 +20,16 @@ test('decimal precision is retained without 0.1/0.2 artefacts', () => {
   assert.equal(fromFirst('60','1.234567890123456').second, '58.765432109876544');
   assert.equal(fromFirst('4.5e3','9e2').second, '3600');
 });
-test('total edits retain the first part, clamping only when required', () => {
+test('total edits retain the manually chosen part, clamping only when required', () => {
   assert.equal(alignSplit('3600','5').first, '5');
   assert.equal(alignSplit('3600','5').second, '3595');
   assert.equal(alignSplit('0.1','900').first, '0.05');
   assert.equal(alignSplit('0.1','900').second, '0.05');
+  assert.deepEqual(alignSplit('5000','3600','second'), validSplit('5000','1400','3600'));
+  assert.deepEqual(alignSplit('4','2.3456','second'), validSplit('4','1.6544','2.3456'));
+  assert.deepEqual(alignSplit('5.1','2.3456','second'), validSplit('5.1','2.7544','2.3456'));
+  assert.deepEqual(alignSplit('0.1','3600','second'), validSplit('0.1','0.05','0.05'));
+  assert.deepEqual(alignSplit('86400','0.001','second'), validSplit('86400','86399.9','0.1'));
 });
 test('invalid and incomplete typing is rejected instead of silently replacing the split', () => {
   for (const value of ['', '-', '1e', 'NaN', 'Infinity', '-1', '0', '4', '5', '0.001']) assert.equal(fromFirst('4',value), null, value);

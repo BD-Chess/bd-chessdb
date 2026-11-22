@@ -47,13 +47,13 @@ export function fromSecond(total, second) {
   if (!t || !b || compare(b, t) >= 0) return null;
   return validSplit(t.text, difference(t, b), b.text);
 }
-export function alignSplit(total, first) {
+export function alignSplit(total, duration, part = 'first') {
   const t = totalValue(total); if (!t) return null;
   const min = minimum(t), max = decimal(difference(t, min));
-  let a = decimal(first) || min;
+  let a = decimal(duration) || min;
   if (compare(a, min) < 0) a = min;
   if (compare(a, max) > 0) a = max;
-  return fromFirst(t.text, a.text || format(a.n, a.scale));
+  return (part === 'second' ? fromSecond : fromFirst)(t.text, a.text || format(a.n, a.scale));
 }
 export function suggestSplit(total) {
   const t = totalValue(total); if (!t) return null;

@@ -31,7 +31,7 @@ const canvas = $('map'), ctx = canvas.getContext('2d');
 const mapView = $('mapView'), mapTitle = $('mapName');
 const isMapExpanded = () => mapView.classList.contains('map-window') || document.fullscreenElement === mapView;
 $('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds); $('seconds').step = 'any';   // R1d: up to one day
-let lastTimeSplit = suggestSplit($('seconds').value), customTimeSplit = false;
+let manualTimePart = null, manualTimeValue = null;
 const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
 // Safari may hide cores: use the existing menu maximum by default, subject to map memory safety.
 const reportedCores = Math.max(1, Math.floor(Number(navigator.hardwareConcurrency) || 1));
@@ -351,30 +351,35 @@ function refLine() {   // B (BD 18 Nov): the reference value beside its percenta
   }
   return parts.length ? parts.join(' · ') : t('refNone');
 }
+function adjustedTimeSplit(total) {
+  // Keep the manual value separately: short prefixes while typing a total must not erase it.
+  return manualTimePart ? alignSplit(total, manualTimeValue, manualTimePart) : suggestSplit(total);
+}
 function syncTimeFields(edited) {
   const total = $('seconds').value;
   let split;
   if (edited === 'first') split = fromFirst(total, $('firstSeconds').value);
   else if (edited === 'second') split = fromSecond(total, $('secondSeconds').value);
-  else if (edited === 'preset' && !customTimeSplit) split = suggestSplit(total);
-  else split = alignSplit(total, lastTimeSplit?.first);
+  else split = adjustedTimeSplit(total);
   if (!split) return;
-  if (edited === 'first' || edited === 'second') customTimeSplit = true;
-  lastTimeSplit = split;
+  if (edited === 'first' || edited === 'second') {
+    manualTimePart = edited;
+    manualTimeValue = split[edited];
+  }
   if (edited !== 'first') $('firstSeconds').value = split.first;
   if (edited !== 'second') $('secondSeconds').value = split.second;
 }
 function selectedTimePlan(seconds, enabled, options) {
   const total = seconds === Number($('seconds').value) ? $('seconds').value : String(seconds);
   let split;
-  if (!enabled) split = alignSplit(total, lastTimeSplit?.first);
+  if (!enabled) split = adjustedTimeSplit(total);
   else if (options.firstPassSeconds !== undefined && options.secondPassSeconds !== undefined)
     split = validSplit(total, options.firstPassSeconds, options.secondPassSeconds);
   else if (options.firstPassSeconds !== undefined) split = fromFirst(total, options.firstPassSeconds);
   else if (options.secondPassSeconds !== undefined) split = fromSecond(total, options.secondPassSeconds);
   else if (seconds === Number($('seconds').value))
     split = validSplit(total, $('firstSeconds').value, $('secondSeconds').value);
-  else split = alignSplit(total, lastTimeSplit?.first);
+  else split = adjustedTimeSplit(total);
   if (!split) throw new Message('passTimesRange', minimumPart(total));
   return runPlan(split, enabled);
 }
