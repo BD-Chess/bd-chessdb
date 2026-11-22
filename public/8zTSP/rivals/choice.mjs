@@ -1,7 +1,9 @@
+import { ENGINE_BUILD } from '../engine-build.mjs';
+
 export const RIVALS = {
   lkh: { label: 'LKH 3.0.14', min: 3, max: 1500000 },
   eax: { label: 'GA-EAX 1.0', min: 51, max: 3500 },
-  ortools: { label: 'Google OR-Tools Routing', min: 3, max: 3000 },
+  ortools: { label: 'Google OR-Tools Routing 9.15', min: 3, max: 3500 },
 };
 
 export function mountEngineChoice(anchor, change) {
@@ -11,7 +13,7 @@ export function mountEngineChoice(anchor, change) {
   const caption = document.createElement('span');
   const select = document.createElement('select');
   select.id = 'tsp-engine';
-  for (const [id, text] of [['8ztsp', '8zTSP'], ...Object.entries(RIVALS).map(([id, engine]) => [id, engine.label])]) {
+  for (const [id, text] of [['8ztsp', '8zTSP Web ' + ENGINE_BUILD.webVersion], ...Object.entries(RIVALS).map(([id, engine]) => [id, engine.label])]) {
     select.add(new Option(text, id));
   }
   label.append(caption, select);

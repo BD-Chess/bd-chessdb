@@ -6,7 +6,7 @@ const distance = (p, a, b) => Math.floor(Math.hypot(p.xs[a] - p.xs[b], p.ys[a] -
 const releases = {
   lkh: ['LKH', '3.0.14'],
   eax: ['GA-EAX', '1.0 Normal (015dfbe9f)'],
-  ortools: ['Google OR-Tools Routing', 'or-tools-wasm 2.2.0'],
+  ortools: ['Google OR-Tools Routing', '9.15 (or-tools-wasm 2.2.0)'],
 };
 
 function finish(record, verified) {

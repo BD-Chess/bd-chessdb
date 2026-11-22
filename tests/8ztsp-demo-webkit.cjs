@@ -94,7 +94,7 @@ function serve(req, res) {
     if (p === '/__demo_ui/examples/santa1437195_uef_2cm.tsp.gz') {
       res.writeHead(200,{...h,'Content-Type':TYPES['.tsp']});res.end(FINLAND_UI_TEXT);return;
     }
-    if (p === '/__demo_ui/engine-build.mjs') { res.writeHead(200,{...h,'Content-Type':TYPES['.mjs']}); res.end("export const ENGINE_BUILD={engineRevision:'f'.repeat(40),wasmSha256:{serial:'f'.repeat(64),shared:'f'.repeat(64)}};"); return; }
+    if (p === '/__demo_ui/engine-build.mjs') { res.writeHead(200,{...h,'Content-Type':TYPES['.mjs']}); res.end("export const ENGINE_BUILD={webVersion:'0.2',engineRevision:'f'.repeat(40),wasmSha256:{serial:'f'.repeat(64),shared:'f'.repeat(64)}};"); return; }
     if (p === '/__demo_ui/wasm-loader.js') { res.writeHead(200, {...h,'Content-Type':TYPES['.js']}); res.end(demoUiLoader); return; }
     p = p.replace('/__demo_ui/', '/8zTSP/');
   }
@@ -149,6 +149,9 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.evaluate(() => tsp8zLab.load(['NAME : ui','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file'));
     check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': checked by default');
     check(await fixture.locator('#passMode option').count()===3,'stateful choice '+language+': all three modes');
+    check(await fixture.locator('#tsp-engine option[value=8ztsp]').textContent()==='8zTSP Web 0.2' &&
+      await fixture.locator('#tsp-engine option[value=ortools]').textContent()==='Google OR-Tools Routing 9.15',
+      'engine choices '+language+': web and OR-Tools versions');
     const splits = await fixture.locator('#finlandPreset option').allTextContents();
     check(splits.join('|') === [language === 'sl' ? 'Izberi razdelitev časa' : 'Choose a time split',
       '2 + 58 min', '5 + 55 min', '10 + 50 min'].join('|'), 'Finland presets '+language+': one dropdown with split labels in minutes');

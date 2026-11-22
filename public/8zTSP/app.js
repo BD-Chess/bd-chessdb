@@ -654,7 +654,7 @@ async function start(options = {}) {
     renderIntervalMs: Number($('refresh').value), renderChanges: [], renderChangesDropped: 0,
     wasmSha256: loaderState.metrics?.[sharedThreads ? 'shared' : 'serial']?.sha256 ?? null,
     workers, deviceCores: reportedCores, workerLimit: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
-    engineRevision: ENGINE_BUILD.engineRevision, passMode, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1] || null, handoffs: [],
+    engineRevision: ENGINE_BUILD.engineRevision, webVersion: ENGINE_BUILD.webVersion, passMode, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1] || null, handoffs: [],
     refinement, twoPass: plan.enabled, passPlan: plan, passEvents: [], passBudgets: [], currentPass: plan.enabled ? 1 : null, reference, unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
     history: [], historyReceived: 0, historyDropped: 0, results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
