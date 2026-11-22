@@ -73,7 +73,7 @@ function demoUiFixture(language) {
       if(m.type!=='run')return; window.fixtureRuns=(window.fixtureRuns||0)+1;
       queueMicrotask(()=>{send({type:'budget',plan:{remainingSeconds:m.seconds,firstSeconds:m.firstBudgetSeconds,totalDeadlineEpoch:m.totalDeadlineEpoch}});if(m.twoPass)send({type:'phase',pass:1,length:0,elapsed:0,steps:0,tour:null});});
       const tour=new Uint32Array([0,1,2,3,4]);
-      setTimeout(()=>send({type:'best',length:44,elapsed:0.02,steps:1,tour}),20);
+      setTimeout(()=>send({type:'best',length:44,elapsed:0.02,steps:1,tour,wasmMemoryBytes:2*1024*1024}),20);
       if(m.twoPass)setTimeout(()=>send({type:'phase',pass:2,length:44,elapsed:0.05,steps:1,tour}),50);
       if(!window.fixtureHoldFinish)setTimeout(()=>send({type:'done',length:44,elapsed:0.1,steps:1,tour}),100);
     }
@@ -203,6 +203,7 @@ proxy.on('connect', (req, sock, head) => {
     check(await fixture.inputValue('#firstSeconds')==='2200' && await fixture.inputValue('#secondSeconds')==='4800', 'time fields '+language+': off/restore retains manually chosen second part');
     await fixture.evaluate(() => tsp8zLab.load('NAME : ui\nTYPE : TSP\nDIMENSION : 5\nEDGE_WEIGHT_TYPE : EUC_2D\nNODE_COORD_SECTION\n1 0 0\n2 10 0\n3 10 10\n4 0 10\n5 5 5\nEOF','random'));
     check(await fixture.inputValue('#firstSeconds')==='0.1' && await fixture.inputValue('#secondSeconds')==='9.9', 'time fields '+language+': preset clamps the manual second part to the available budget');
+    await fixture.setChecked('#twoPass',true);
     await fixture.fill('#seconds','7000');
     check(await fixture.inputValue('#firstSeconds')==='2200' && await fixture.inputValue('#secondSeconds')==='4800', 'time fields '+language+': original manual value returns when the budget permits');
     await fixture.fill('#seconds','4'); await fixture.fill('#firstSeconds','1.2345');
@@ -246,6 +247,7 @@ proxy.on('connect', (req, sock, head) => {
     check(!await fixture.isVisible('#finlandPreset'), 'Finland presets '+language+': hidden on the file tab');
     await fixture.evaluate(async()=>{await tsp8zLab.load(['NAME : export fixture','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file');window.fixtureHoldFinish=true;window.exportTestRun=tsp8zLab.start({seconds:30,workers:1,recording:false}).catch(()=>null);});
     await fixture.waitForFunction(()=>tsp8zLab.hasResult && tsp8zLab.liveWorkers>0);
+    check(await fixture.locator('#wasmMemory').textContent()===(language==='sl'?'Pomnilnik WASM (vrh): 2,0 MiB':'WASM memory (peak): 2.0 MiB'), 'solver memory '+language+': visible and localized during the run');
     check(await fixture.isEnabled('#download') && await fixture.isEnabled('#share'), 'result controls '+language+': both enabled on first best tour while search is still running');
     await fixture.evaluate(()=>tsp8zLab.stop());
     let downloads=0;fixture.on('download',()=>downloads++);
