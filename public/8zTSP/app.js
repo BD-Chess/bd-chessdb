@@ -415,7 +415,11 @@ function render() {
   engineChoice?.sync({ language: lang(), active: active || !!loading,
     available: loaderState.status === 'ready', finland: mapMeta?.id === FINLAND,
     compatible: !rival || rivalCompatible(rival) });
-  passChoice?.sync({language:lang(),active,ready:loaderState.status==='ready',large:coords.length/2>12000,enabled:$('twoPass').checked});
+  const firstSeconds = Number($('firstSeconds').value);
+  const finlandFirst = mapMeta?.id === FINLAND && Number($('seconds').value) === 3600 &&
+    Number($('secondSeconds').value) === 3600 - firstSeconds ? firstSeconds : null;
+  passChoice?.sync({language:lang(),active:active || !!loading,ready:loaderState.status==='ready',
+    large:coords.length/2>12000,enabled:$('twoPass').checked,finlandFirst});
   renderResultActions();
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
   const reference = runRecord?.reference || referenceRaw || 0;
@@ -997,7 +1001,7 @@ async function applyStatefulPreset(first) {
   if (active || loading) return false;
   if (!canShare || cores < 8) throw Error(PASS_COPY[lang()].unsupported);
   if (engineChoice) engineChoice.value = '8ztsp';
-  await loadExample(FINLAND);
+  if (mapMeta?.id !== FINLAND || coords.length/2 !== 1437195) await loadExample(FINLAND);
   if (active || loading || mapMeta?.id !== FINLAND || coords.length/2 !== 1437195) return false;
   manualTimePart = null; manualTimeValue = null;
   $('seconds').value = '3600'; $('firstSeconds').value = String(first); $('secondSeconds').value = String(3600-first);

@@ -149,6 +149,14 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.evaluate(() => tsp8zLab.load(['NAME : ui','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file'));
     check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': checked by default');
     check(await fixture.locator('#passMode option').count()===3,'stateful choice '+language+': all three modes');
+    const splits = await fixture.locator('#finlandPreset option').allTextContents();
+    check(splits.join('|') === [language === 'sl' ? 'Izberi razdelitev časa' : 'Choose a time split',
+      '2 + 58 min', '5 + 55 min', '10 + 50 min'].join('|'), 'Finland presets '+language+': one dropdown with split labels in minutes');
+    const hashes = await fixture.evaluate(async () => {
+      const { presetFromHash } = await import('/__demo_ui/pass-mode.mjs');
+      return ['120', '300', '600', '240'].map(first => presetFromHash('#finland-stateful-' + first));
+    });
+    check(hashes.join(',') === '120,300,600,', 'Finland presets '+language+': three deep links and unknown split ignored');
     check(await fixture.locator('#passMode option[value=stateful]').textContent()===(language==='sl'?'Dva prehoda z nadaljevanjem':'Two passes with continuation'),'stateful choice '+language+': translated');
     check(await fixture.locator('#passMode option[value=stateful]').evaluate(o=>o.disabled),'stateful choice '+language+': small map refused');
     for(const width of [390,1024]){
