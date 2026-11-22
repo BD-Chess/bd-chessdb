@@ -37,7 +37,7 @@ export function mountPassChoice({ onChange, onPreset }) {
     select.id = id;
     label.append(title, select);
     box.append(label);
-    return { title, select };
+    return { label, title, select };
   }
   const mode = field('passMode');
   for (const id of MODES) mode.select.add(new Option('', id));
@@ -51,7 +51,7 @@ export function mountPassChoice({ onChange, onPreset }) {
   const hint = document.createElement('p');
   hint.className = 'hint';
   hint.hidden = true;
-  box.append(hint);
+  (document.getElementById('searchNotes') ?? box).append(hint);
   const style = document.createElement('style');
   style.textContent = '#passChoice{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:10px;margin:12px 0}#passChoice[hidden],#passChoice [hidden]{display:none!important}#passChoice label{display:grid;gap:6px;min-width:0}#passChoice select{width:100%;min-width:0;min-height:48px;font-size:16px}#passChoice .hint{grid-column:1/-1}';
   box.append(style);
@@ -78,7 +78,7 @@ export function mountPassChoice({ onChange, onPreset }) {
       if (!MODES.includes(value)) throw Error('Unknown mode');
       mode.select.value = value;
     },
-    sync({ language, active, ready, large, enabled, finlandFirst }) {
+    sync({ language, active, ready, large, enabled, finland, finlandFirst }) {
       const c = COPY[language] || COPY.en;
       mode.select.value = modeForCheckbox(mode.select.value, enabled);
       blocked = active || !ready;
@@ -88,9 +88,10 @@ export function mountPassChoice({ onChange, onPreset }) {
         option.textContent = c[option.value];
         option.disabled = option.value === 'stateful' && !large;
       }
+      preset.label.hidden = !finland;
       preset.title.textContent = c.presets;
       preset.select.options[0].textContent = c.choose;
-      currentPreset = mode.select.value === 'stateful' && FINLAND_PRESETS.includes(finlandFirst) ? String(finlandFirst) : '';
+      currentPreset = finland && mode.select.value === 'stateful' && FINLAND_PRESETS.includes(finlandFirst) ? String(finlandFirst) : '';
       if (!applying) preset.select.value = currentPreset;
       preset.select.disabled = blocked || applying;
       hint.hidden = mode.select.value !== 'stateful' || large;

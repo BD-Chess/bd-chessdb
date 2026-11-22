@@ -157,6 +157,7 @@ proxy.on('connect', (req, sock, head) => {
       return ['120', '300', '600', '240'].map(first => presetFromHash('#finland-stateful-' + first));
     });
     check(hashes.join(',') === '120,300,600,', 'Finland presets '+language+': three deep links and unknown split ignored');
+    check(!await fixture.isVisible('#finlandPreset'), 'Finland presets '+language+': hidden with a different map');
     check(await fixture.locator('#passMode option[value=stateful]').textContent()===(language==='sl'?'Dva prehoda z nadaljevanjem':'Two passes with continuation'),'stateful choice '+language+': translated');
     check(await fixture.locator('#passMode option[value=stateful]').evaluate(o=>o.disabled),'stateful choice '+language+': small map refused');
     for(const width of [390,1024]){
@@ -231,6 +232,9 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.selectOption('#collection','country-benchmarks');await fixture.waitForFunction(()=>document.getElementById('example').value==='santa1437195_uef_2cm' && !document.getElementById('run').disabled && document.getElementById('seconds').value==='3600' && document.getElementById('firstSeconds').value==='300' && document.getElementById('secondSeconds').value==='3300');
     check(await fixture.inputValue('#seconds')==='3600' && await fixture.inputValue('#firstSeconds')==='300' && await fixture.inputValue('#secondSeconds')==='3300', 'Finland collection '+language+': every new collection choice resets the manual anchor');
     check(await fixture.evaluate(()=>window.fixtureRuns||0)===runsBefore, 'Finland collection '+language+': never auto-starts');
+    check(await fixture.isVisible('#finlandPreset'), 'Finland presets '+language+': visible on the competition map');
+    await fixture.evaluate(() => document.getElementById('p-file').click());
+    check(!await fixture.isVisible('#finlandPreset'), 'Finland presets '+language+': hidden on the file tab');
     await fixture.evaluate(async()=>{await tsp8zLab.load(['NAME : export fixture','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file');window.fixtureHoldFinish=true;window.exportTestRun=tsp8zLab.start({seconds:30,workers:1,recording:false}).catch(()=>null);});
     await fixture.waitForFunction(()=>tsp8zLab.hasResult && tsp8zLab.liveWorkers>0);
     check(await fixture.isEnabled('#download') && await fixture.isEnabled('#share'), 'result controls '+language+': both enabled on first best tour while search is still running');

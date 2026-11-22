@@ -412,14 +412,14 @@ function renderResultActions() {
 }
 function render() {
   const rival = selectedRival();
+  const finland = tab === 'nu' && mapMeta?.id === FINLAND && $('example').value === FINLAND;
   engineChoice?.sync({ language: lang(), active: active || !!loading,
-    available: loaderState.status === 'ready', finland: mapMeta?.id === FINLAND,
-    compatible: !rival || rivalCompatible(rival) });
+    available: loaderState.status === 'ready', finland, compatible: !rival || rivalCompatible(rival) });
   const firstSeconds = Number($('firstSeconds').value);
   const finlandFirst = mapMeta?.id === FINLAND && Number($('seconds').value) === 3600 &&
     Number($('secondSeconds').value) === 3600 - firstSeconds ? firstSeconds : null;
   passChoice?.sync({language:lang(),active:active || !!loading,ready:loaderState.status==='ready',
-    large:coords.length/2>12000,enabled:$('twoPass').checked,finlandFirst});
+    large:coords.length/2>12000,enabled:$('twoPass').checked,finland,finlandFirst});
   renderResultActions();
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
   const reference = runRecord?.reference || referenceRaw || 0;
@@ -895,7 +895,7 @@ function choose(which) {
   tab = which;
   ['panel-nu', 'panel-rnd', 'panel-file'].forEach(id => { $(id).hidden = id !== `panel-${which}`; });
   [['p-nu', 'nu'], ['p-rnd', 'rnd'], ['p-file', 'file']].forEach(([id, v]) => $(id).setAttribute('aria-pressed', String(v === tab)));
-  credits();
+  render();
 }
 $('p-nu').onclick = () => { choose('nu'); safely(() => loadExample())(); };
 $('p-rnd').onclick = () => choose('rnd');
