@@ -47,10 +47,11 @@ function demoUiFixture(language) {
   const source = fs.readFileSync(path.join(pub, '8zTSP/app.js'), 'utf8');
   const ids = new Set([...source.matchAll(/\$\('([^']+)'\)/g)].map(m => m[1]));
   for (const id of ['count', 'seed', 'seconds', 'reference', 'panel-nu', 'panel-rnd', 'panel-file']) ids.add(id);
-  ids.delete('replayPlay');
+  ids.delete('replayPlay'); ids.delete('firstSeconds'); ids.delete('secondSeconds');
   const tags = [...ids].map(id => {
     if (id === 'map') return '<canvas id="map"></canvas>';
     if (['workers', 'example', 'collection', 'refresh'].includes(id)) return `<select id="${id}">${id === 'refresh' ? '<option value="150">Live</option>' : ''}</select>`;
+    if (id === 'passTimes') return '<div id="passTimes"><label>First pass / Prvi prehod<input id="firstSeconds" type="number" step="any" value="5"></label><label>Second pass / Drugi prehod<input id="secondSeconds" type="number" step="any" value="55"></label></div>';
     if (id === 'twoPass') return '<label><input id="twoPass" type="checkbox" checked><span class="l-en">Two passes</span><span class="l-sl">Dva prehoda</span></label>';
     if (['stopOptimum', 'refinement'].includes(id)) return `<input id="${id}" type="checkbox" checked>`;
     if (['count', 'seed', 'seconds', 'reference'].includes(id)) return `<input id="${id}" type="number" value="${id === 'count' ? 5 : id === 'seconds' ? 60 : id === 'seed' ? 1 : ''}">`;
@@ -113,6 +114,7 @@ proxy.on('connect', (req, sock, head) => {
 });
 
 (async () => {
+  execFileSync(process.execPath, ['--test', path.join(__dirname,'8ztsp-time-split.test.mjs')], {stdio:'inherit'});
   await new Promise(r => tls.listen(0, '127.0.0.1', r)); await new Promise(r => proxy.listen(0, '127.0.0.1', r));
   const type = pw[ENGINE];
   const browser = await type.launch({proxy: {server: `http://127.0.0.1:${proxy.address().port}`},
@@ -135,11 +137,24 @@ proxy.on('connect', (req, sock, head) => {
     check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': checked by default');
     const maximum=await fixture.evaluate(() => {const s=document.getElementById('workers');return s.options[s.options.length-1].value;});
     check(await fixture.inputValue('#workers')===maximum, 'two-pass UI '+language+': maximum worker default');
-    await fixture.fill('#seconds','3600'); await fixture.dispatchEvent('#seconds','input');
-    check((await fixture.textContent('#twoPassHint')).includes(language==='sl'?'300,0':'300.0'), 'two-pass UI '+language+': one-hour first budget is 300 s');
+    await fixture.fill('#seconds','3600');
+    check(await fixture.inputValue('#firstSeconds')==='5' && await fixture.inputValue('#secondSeconds')==='3595', 'time fields '+language+': total edit retains first');
+    await fixture.fill('#firstSeconds','300');
+    check(await fixture.inputValue('#secondSeconds')==='3300', 'time fields '+language+': 300 + 3300 = 3600');
+    await fixture.fill('#seconds','4500'); await fixture.fill('#secondSeconds','3600');
+    check(await fixture.inputValue('#firstSeconds')==='900', 'time fields '+language+': 900 + 3600 = 4500');
+    await fixture.fill('#seconds','4'); await fixture.fill('#firstSeconds','1.2345');
+    check(await fixture.inputValue('#secondSeconds')==='2.7655', 'time fields '+language+': decimal precision');
+    await fixture.setChecked('#twoPass',false);
+    check(!await fixture.isVisible('#passTimes'), 'time fields '+language+': hidden when off');
+    await fixture.fill('#seconds','5'); await fixture.setChecked('#twoPass',true);
+    check(await fixture.inputValue('#firstSeconds')==='1.2345' && await fixture.inputValue('#secondSeconds')==='3.7655', 'time fields '+language+': restored after off and total edit');
+    await fixture.fill('#seconds','0.1');
+    check(await fixture.inputValue('#firstSeconds')==='0.05' && await fixture.inputValue('#secondSeconds')==='0.05', 'time fields '+language+': short budget');
+    await fixture.fill('#seconds','2'); await fixture.fill('#firstSeconds','0.5');
     for (const enabled of [false,true]) {
       await fixture.setChecked('#twoPass',enabled);
-      await fixture.evaluate(() => { window.uiRun=tsp8zLab.start({seconds:2,workers:1,recording:false}); });
+      await fixture.evaluate(() => { window.uiRun=tsp8zLab.start({workers:1,recording:false}); });
       const state=await fixture.evaluate(async () => {const r=await window.uiRun;return {enabled:r.twoPass,phases:r.passEvents.map(x=>x.pass)};});
       check(state.enabled===enabled && state.phases.join(',')===(enabled?'1,2':''), 'two-pass UI '+language+': '+(enabled?'enabled transitions':'off baseline'));
     }

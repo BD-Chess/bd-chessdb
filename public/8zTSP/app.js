@@ -24,12 +24,14 @@ import { mountReplay } from './replay-player.mjs';
 import { REPLAY_COPY } from './replay-copy.mjs';
 import { formatDistance, referenceFieldValue, referenceFromField } from './distance-format.mjs';
 import { RUN_LIMITS, validSeconds, retainRecent } from './run-limits.mjs';
+import { suggestSplit, alignSplit, fromFirst, fromSecond, validSplit, minimumPart, runPlan } from './time-split.mjs';
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const canvas = $('map'), ctx = canvas.getContext('2d');
 const mapView = $('mapView'), mapTitle = $('mapName');
 const isMapExpanded = () => mapView.classList.contains('map-window') || document.fullscreenElement === mapView;
-$('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds);   // R1d: up to one day
+$('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds); $('seconds').step = 'any';   // R1d: up to one day
+let lastTimeSplit = suggestSplit($('seconds').value), customTimeSplit = false;
 const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
 // Safari may hide cores: use the existing menu maximum by default, subject to map memory safety.
 const reportedCores = Math.max(1, Math.floor(Number(navigator.hardwareConcurrency) || 1));
@@ -102,6 +104,7 @@ function recordSafely(fn) { try { fn(); } catch { recorder = null; recordingFail
 const lang = () => root.dataset.lang === 'sl' ? 'sl' : 'en';
 const group = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, lang() === 'sl' ? '.' : ',');
 const dec = (x, d) => { const s = x.toFixed(d); return lang() === 'sl' ? s.replace('.', ',') : s; };
+const timeText = value => lang() === 'sl' ? String(value).replace('.', ',') : String(value);
 const pct = x => `${dec(x, 3)}${lang() === 'sl' ? ' %' : '%'}`;
 const slPlural = (n, one, two, few, many) => { const m = n % 100; return m === 1 ? one : m === 2 ? two : m === 3 || m === 4 ? few : many; };
 const ofCoresSl = c => `${c} ${c === 1 ? 'jedra' : 'jeder'}`;
@@ -132,8 +135,9 @@ const T = {
     readyPop: 'Ready · small map (up to 12,000 cities).',
     searching: (n, sharing) => n === 1 ? 'Searching · 1 worker…' : `Searching · ${n} workers…`,
     searchingPass: (p, n) => `Searching · ${n} ${n === 1 ? 'worker' : 'workers'} · pass ${p}/2…`,
-    passHint: (total, first) => `Total ${dec(total, 1)} s: up to ${dec(first, 1)} s in the first pass; the rest continues from its best tour.`,
-    onePassHint: total => `One pass · total ${dec(total, 1)} s.`,
+    passHint: (total, first, second) => `Total ${timeText(total)} s: first ${timeText(first)} s + second ${timeText(second)} s.`,
+    passTimesRange: min => `Each pass needs at least ${timeText(min)} s, and both must add up to the total time.`,
+    onePassHint: total => `One pass · total ${timeText(total)} s.`,
     budgetNoTour: 'Time budget ended before a tour was available.',
     complete: (s, opt) => 'Complete · tour checked in Rust.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Reference'} first reached after ${dec(s, 1)} s of solver time.`),
@@ -158,7 +162,7 @@ const T = {
     raceReference: (v, source) => `Published benchmark ${v} (${source})`,
     refOpt: v => `Optimum ${v} (proved)`, refBest: (v, src) => `Best known tour ${v}${src ? ` (${src})` : ''}`, refBound: (v, src) => `Lower bound ${v}${src ? ` (${src})` : ''}`,
     refHK: (v, est) => `${est ? 'Held–Karp estimate' : 'Held–Karp bound'} ${v}`, refNone: 'No reference length yet',
-    count: 'Random cities', seed: 'Seed', seconds: 'Seconds', reference: 'Reference length',
+    count: 'Random cities', seed: 'Seed', seconds: 'Total time (s)', reference: 'Reference length',
     placeholder: 'for the gap and the first-reach time', canvas: 'Points and the best tour',
     modeShared: (n, c) => `Mode: ${n} workers; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
     modeOne: (n, c) => `Mode: 1 worker; browser reports ${c} ${c === 1 ? 'core' : 'cores'}.`,
@@ -202,8 +206,9 @@ const T = {
     searching: (n, sharing) => n === 1 ? 'Iskanje · 1 delavec…' :
       `Iskanje · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}…`,
     searchingPass: (p, n) => `Iskanje · ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')} · prehod ${p}/2…`,
-    passHint: (total, first) => `Skupaj ${dec(total, 1)} s: do ${dec(first, 1)} s v prvem prehodu; preostanek nadaljuje njegovo najboljšo pot.`,
-    onePassHint: total => `En prehod · skupaj ${dec(total, 1)} s.`,
+    passHint: (total, first, second) => `Skupaj ${timeText(total)} s: prvi ${timeText(first)} s + drugi ${timeText(second)} s.`,
+    passTimesRange: min => `Vsak prehod potrebuje vsaj ${timeText(min)} s, njuna vsota pa mora biti enaka skupnemu času.`,
+    onePassHint: total => `En prehod · skupaj ${timeText(total)} s.`,
     budgetNoTour: 'Čas je potekel, preden je bila pot na voljo.',
     complete: (s, opt) => 'Končano · pot preverjena v Rustu.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Referenca'} prvič dosežen${opt ? '' : 'a'} po ${dec(s, 1)} s časa reševalnika.`),
@@ -228,7 +233,7 @@ const T = {
     raceReference: (v, source) => `Objavljena primerjalna pot ${v} (${source})`,
     refOpt: v => `Optimum ${v} (dokazan)`, refBest: (v, src) => `Najboljša znana pot ${v}${src ? ` (${src})` : ''}`, refBound: (v, src) => `Spodnja meja ${v}${src ? ` (${src})` : ''}`,
     refHK: (v, est) => `${est ? 'Ocena Held–Karp' : 'Meja Held–Karp'} ${v}`, refNone: 'Referenčne dolžine še ni',
-    count: 'Naključna mesta', seed: 'Seme', seconds: 'Sekunde', reference: 'Referenčna dolžina',
+    count: 'Naključna mesta', seed: 'Seme', seconds: 'Skupni čas (s)', reference: 'Referenčna dolžina',
     placeholder: 'za odmik in čas prvega dosega', canvas: 'Točke in najboljša pot',
     modeShared: (n, c) => `Način: ${n} ${slPlural(n, 'delavec', 'delavca', 'delavci', 'delavcev')}; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
     modeOne: (n, c) => `Način: 1 delavec; brskalnik javlja ${c} ${slPlural(c, 'jedro', 'jedri', 'jedra', 'jeder')}.`,
@@ -346,9 +351,32 @@ function refLine() {   // B (BD 18 Nov): the reference value beside its percenta
   }
   return parts.length ? parts.join(' · ') : t('refNone');
 }
-function passPlan(seconds, enabled) {
-  const first = enabled ? Math.min(300, seconds / (seconds <= 12 ? 4 : 12)) : 0;
-  return { enabled, totalSeconds: seconds, firstBudgetSeconds: first, secondBudgetSeconds: seconds - first, shortBudget: seconds <= 12 };
+function syncTimeFields(edited) {
+  const total = $('seconds').value;
+  let split;
+  if (edited === 'first') split = fromFirst(total, $('firstSeconds').value);
+  else if (edited === 'second') split = fromSecond(total, $('secondSeconds').value);
+  else if (edited === 'preset' && !customTimeSplit) split = suggestSplit(total);
+  else split = alignSplit(total, lastTimeSplit?.first);
+  if (!split) return;
+  if (edited === 'first' || edited === 'second') customTimeSplit = true;
+  lastTimeSplit = split;
+  if (edited !== 'first') $('firstSeconds').value = split.first;
+  if (edited !== 'second') $('secondSeconds').value = split.second;
+}
+function selectedTimePlan(seconds, enabled, options) {
+  const total = seconds === Number($('seconds').value) ? $('seconds').value : String(seconds);
+  let split;
+  if (!enabled) split = alignSplit(total, lastTimeSplit?.first);
+  else if (options.firstPassSeconds !== undefined && options.secondPassSeconds !== undefined)
+    split = validSplit(total, options.firstPassSeconds, options.secondPassSeconds);
+  else if (options.firstPassSeconds !== undefined) split = fromFirst(total, options.firstPassSeconds);
+  else if (options.secondPassSeconds !== undefined) split = fromSecond(total, options.secondPassSeconds);
+  else if (seconds === Number($('seconds').value))
+    split = validSplit(total, $('firstSeconds').value, $('secondSeconds').value);
+  else split = alignSplit(total, lastTimeSplit?.first);
+  if (!split) throw new Message('passTimesRange', minimumPart(total));
+  return runPlan(split, enabled);
 }
 function render() {
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
@@ -367,8 +395,17 @@ function render() {
   renderMapName();
   $('cityCount').textContent = coords.length ? t('cities', coords.length / 2) + (coords.length > 40000 ? t('sampled') : '') : '';
   $('reference').placeholder = t('placeholder');
-  const plan = runRecord && active ? runRecord.passPlan : passPlan(Number($('seconds').value), $('twoPass').checked);
-  $('twoPassHint').textContent = plan.enabled ? t('passHint', plan.totalSeconds, plan.firstBudgetSeconds) : t('onePassHint', plan.totalSeconds);
+  const enabled = $('twoPass').checked, total = $('seconds').value;
+  const split = validSplit(total, $('firstSeconds').value, $('secondSeconds').value), min = minimumPart(total);
+  const max = fromFirst(total, min)?.second || '86400';
+  for (const id of ['firstSeconds', 'secondSeconds']) {
+    $(id).min = min; $(id).max = max;
+    $(id).setCustomValidity(enabled && !split ? t('passTimesRange', min) : '');
+  }
+  const plan = runRecord && active ? runRecord.passPlan : split ? runPlan(split, enabled) : null;
+  $('twoPassHint').textContent = !validSeconds(Number(total)) ? t('secondsRange') : !enabled ? t('onePassHint', total) : plan
+    ? t('passHint', plan.configured.total, plan.configured.first, plan.configured.second)
+    : t(validSeconds(Number(total)) ? 'passTimesRange' : 'secondsRange', min);
   $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
   $('workerHint').textContent = isIPhone ? t('hintIPhone') : t('hintCores', reportedCores);
   for (const option of $('collection').options) { const c = collections.find(x => x.id === option.value); if (c) option.text = c.names[lang()]; }
@@ -424,6 +461,8 @@ function controls() {
   $('run').disabled = !ready || active || !!loading || !coords.length;
   $('stop').disabled = !active && !loading;
   ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'refinement', 'twoPass', 'reference', 'collection', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
+  $('passTimes').hidden = !$('twoPass').checked;
+  for (const id of ['firstSeconds', 'secondSeconds']) $(id).disabled = active || !ready || !$('twoPass').checked;
   $('refresh').disabled = !ready;
   $('stopOptimum').disabled = active || !ready || !mapMeta?.optimum;
   $('download').disabled = !tour?.length;
@@ -486,6 +525,7 @@ async function load(value, which, metadata = null, verifiedHash = null) {
   setReference(metadata?.optimum || metadata?.bound || metadata?.gapStatus?.lowerBound || metadata?.referenceTour || metadata?.bestKnownTour || null);   // B: a best known tour alone is the reference
   if (metadata) $('seconds').value = metadata.cities <= 20000 ? 60 : metadata.cities <= 200000 ? 120 : 600;
   if (which === 'random') $('seconds').value = 10;
+  syncTimeFields('preset');
   render();
   const worker = loading = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
   controls(); status('reading');
@@ -527,7 +567,7 @@ async function start(options = {}) {
   const topology = workers === 1 ? 'single worker' : sharedThreads ? 'shared workers' : 'separate workers';
   const reference = options.reference ?? (referenceRaw || null);
   const refinement = options.refinement ?? $('refinement').checked;
-  const plan = passPlan(seconds, options.twoPass ?? $('twoPass').checked);
+  const plan = selectedTimePlan(seconds, options.twoPass ?? $('twoPass').checked, options);
   clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
   if (options.recording !== false && !mapMeta?.ipadTrial && coords.length >= 6) recordSafely(() => {
     // B: the replay is drawn north-up like the map. The recording keeps the map only turned (scaled = false), so every recorded
@@ -625,7 +665,7 @@ async function start(options = {}) {
       worker.onerror = event => { if (token !== generation || !active) return; finish('workerFail', event.message); reject(Error(event.message)); };
       worker.postMessage({ type: 'run', token, module, memory, text, seconds, seed: (seed + i) >>> 0, refinement, shared, sharedThreads: sharedThreads ? workers : 0,
         probe: !!options.probe, maxSteps: options.maxSteps, passes: options.passes, twoPass: plan.enabled,
-        firstBudgetSeconds: plan.firstBudgetSeconds, shortBudget: plan.shortBudget, totalDeadlineEpoch,
+        firstBudgetSeconds: plan.firstBudgetSeconds, totalDeadlineEpoch,
         firstDeadlineEpoch: totalDeadlineEpoch - seconds * 1000 + plan.firstBudgetSeconds * 1000, optimum: runRecord.optimum });
     }
   });
@@ -737,8 +777,10 @@ $('reference').oninput = () => {   // R1k: an edit in km becomes whole metres; t
   referenceRaw = value === referenceDefault.text ? referenceDefault.raw : referenceFromField(value, mapMeta?.unit ?? null);
   render();
 };
-$('seconds').oninput = render;
-$('twoPass').onchange = render;
+$('seconds').oninput = () => { syncTimeFields('total'); render(); };
+$('firstSeconds').oninput = () => { syncTimeFields('first'); render(); };
+$('secondSeconds').oninput = () => { syncTimeFields('second'); render(); };
+$('twoPass').onchange = () => { syncTimeFields('toggle'); controls(); render(); };
 $('workers').onchange = () => {
   if (coords.length / 2 < 1000000 || canShare) preferredWorkers = Number($('workers').value);
   applyWorkerChoice(coords.length / 2); render();
@@ -792,6 +834,7 @@ window.tsp8zLab = { load, loadExample, showMap, start, stop, loadNu, generate, c
 window.tsp8zReplay = { get data() { return recorder?.data; }, get summary() { return recorder?.summary(); },
   export() { if (!recorder?.data.frames.length) throw Error('No recording yet.'); return serializeRecording(recorder.data); }, get player() { return replayPlayer; } };
 choose('nu');
+syncTimeFields('preset');
 controls(); render();
 try {
   await initializeWasm();

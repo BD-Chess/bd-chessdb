@@ -74,8 +74,7 @@ self.onmessage = async ({data}) => {
       const deadline = Number.isFinite(data.totalDeadlineEpoch) ? data.totalDeadlineEpoch : now + data.seconds * 1000;
       const remaining = Math.max(0, (deadline - now) / 1000);
       if (remaining <= 0) return; // Page owns the common deadline and finalizes the saved incumbent.
-      const first = data.shortBudget ? Math.min(data.firstBudgetSeconds, remaining / 4)
-        : Math.max(0, Math.min(remaining / 2, (data.firstDeadlineEpoch - now) / 1000));
+      const first = Math.max(0, Math.min(remaining, (data.firstDeadlineEpoch - now) / 1000));
       self.postMessage({type:'budget',token,plan:{remainingSeconds:remaining,firstSeconds:data.twoPass ? first : 0,totalDeadlineEpoch:data.totalDeadlineEpoch}});
       const result = data.twoPass
         ? problem.solve_two_pass(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first)
