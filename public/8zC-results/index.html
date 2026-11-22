@@ -56,9 +56,32 @@
       </div>
       <details>
         <summary><span lang="sl">Kako je nastal prihranek</span><span lang="en">Where the savings came from</span></summary>
-        <p lang="sl">R1 shrani en skupni zapis povezav. R2 iz koordinat natančno obnovi 776.323 shranjenih dolžin. R3 spremeni zapis zaporedja povezav in prihrani dodatnih 24.723 B. Paketi 8zC vsebujejo dekoder in podatke za obnovo. Primerjava uporablja enonitni solidni 7‑Zip 26.05, LZMA2 Ultra. Na drugem neodvisnem zgodovinskem posnetku potrditev še čaka.</p>
-        <p lang="en">R1 stores one copy of the shared adjacency data. R2 reconstructs 776,323 stored distances exactly from coordinates. R3 changes the representation of the adjacency order and saves another 24,723 B. The 8zC packages include the decoder and restoration data. The comparison uses single-threaded solid 7-Zip 26.05 with LZMA2 Ultra. A second independent historical checkpoint remains to be tested.</p>
+        <p lang="sl">R1 shrani en skupni zapis povezav. R2 iz koordinat natančno obnovi 776.323 shranjenih dolžin. R3 spremeni zapis zaporedja povezav in prihrani dodatnih 24.723 B. Paketi 8zC vsebujejo dekoder in podatke za obnovo. Primerjava uporablja enonitni solidni 7‑Zip 26.05, LZMA2 Ultra.</p>
+        <p lang="en">R1 stores one copy of the shared adjacency data. R2 reconstructs 776,323 stored distances exactly from coordinates. R3 changes the representation of the adjacency order and saves another 24,723 B. The 8zC packages include the decoder and restoration data. The comparison uses single-threaded solid 7-Zip 26.05 with LZMA2 Ultra.</p>
       </details>
+    </section>
+
+    <section class="section" aria-labelledby="concorde-samples-title">
+      <div class="section-heading">
+        <h2 id="concorde-samples-title"><span lang="sl">Vzorca Tnm151 in CHE950</span><span lang="en">Tnm151 and CHE950 samples</span></h2>
+        <p lang="sl">Zgodovinski vzorec Tnm151 vključuje 12 vozlišč in pet spremljevalnih datotek (.mas, .tsp, .sav, .res in .sol). Razvojni vzorec CHE950 vsebuje tri vozlišča in štiri spremljevalne datoteke. Vsi trije arhivi so bitno točno ohranili tudi datoteko .rng iz ločenega zajema korena.</p>
+        <p lang="en">The historical Tnm151 sample includes 12 node files and five companion files (.mas, .tsp, .sav, .res and .sol). The CHE950 development sample contains three node files and four companion files. All three archives preserved the .rng file from a separate root capture byte for byte.</p>
+      </div>
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="concorde-samples-title">
+        <table>
+          <caption><span lang="sl">Velikosti arhivov v bajtih. Vsi uporabljajo enonitni solidni 7‑Zip 26.05 z LZMA2 Ultra. Velikosti paketov 8zC vključujejo dekoder in kazalo.</span><span lang="en">Archive sizes in bytes. All use single-threaded solid 7‑Zip 26.05 with LZMA2 Ultra. The 8zC package sizes include the decoder and index.</span></caption>
+          <thead><tr><th scope="col"><span lang="sl">Meritev</span><span lang="en">Measurement</span></th><th scope="col">Tnm151</th><th scope="col">CHE950</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">7‑Zip Ultra</th><td>300 157 B</td><td>125 003 B</td></tr>
+            <tr><th scope="row">8zC R1</th><td>300 926 B</td><td>126 853 B</td></tr>
+            <tr class="best"><th scope="row"><span lang="sl">Samodejna izbira 8zC</span><span lang="en">8zC automatic selection</span></th><td>R2 · 296 791 B</td><td>R3 · 123 678 B</td></tr>
+            <tr><th scope="row"><span lang="sl">Prihranek proti Ultra</span><span lang="en">Saving versus Ultra</span></th><td>3 366 B (1<span lang="sl">,</span><span lang="en">.</span>12 %)</td><td>1 325 B (1<span lang="sl">,</span><span lang="en">.</span>06 %)</td></tr>
+            <tr><th scope="row"><span lang="sl">Bitno točne obnove pri vsakem arhivu</span><span lang="en">Byte-exact restores per archive</span></th><td>17/17</td><td>7/7</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" lang="sl">Tnm151 potrjuje R2 na drugem zgodovinskem vzorcu. Rezultat R3 na CHE950 velja za teh sedem datotek. Neodvisna preverba R3 na celotnem zgodovinskem posnetku še čaka.</p>
+      <p class="note" lang="en">Tnm151 confirms R2 on a second historical sample. The CHE950 result for R3 applies to these seven files. Independent validation of R3 on a full historical checkpoint is still pending.</p>
     </section>
 
     <section id="flac" class="section" aria-labelledby="flac-title">
