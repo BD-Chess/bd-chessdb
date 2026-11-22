@@ -26,6 +26,8 @@ import { formatDistance, referenceFieldValue, referenceFromField } from './dista
 import { RUN_LIMITS, validSeconds, retainRecent } from './run-limits.mjs';
 import { suggestSplit, alignSplit, fromFirst, fromSecond, validSplit, minimumPart, runPlan } from './time-split.mjs';
 import { createRunFile, downloadRunFile } from './run-export.mjs';
+import { mountPassChoice, presetFromHash, FINLAND, COPY as PASS_COPY } from './pass-mode.mjs';
+import { ENGINE_BUILD } from './engine-build.mjs';
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const canvas = $('map'), ctx = canvas.getContext('2d');
@@ -33,6 +35,7 @@ const mapView = $('mapView'), mapTitle = $('mapName');
 const isMapExpanded = () => mapView.classList.contains('map-window') || document.fullscreenElement === mapView;
 $('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds); $('seconds').step = 'any';   // R1d: up to one day
 let manualTimePart = null, manualTimeValue = null;
+let passChoice = null;
 let shareNotice = null, shareFallbackFile = null, sharePending = false;
 const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
 // Safari may hide cores: use the existing menu maximum by default, subject to map memory safety.
@@ -401,6 +404,7 @@ function renderResultActions() {
   $('downloadSame').disabled = !shareFallbackFile;
 }
 function render() {
+  passChoice?.sync({language:lang(),active,ready:loaderState.status==='ready',large:coords.length/2>12000,enabled:$('twoPass').checked});
   renderResultActions();
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
   const reference = runRecord?.reference || referenceRaw || 0;
@@ -511,6 +515,13 @@ function acceptBest(data, worker) {
   }
 }
 function finish(...key) {
+  if (runRecord?.passMode === 'stateful') {
+    const count = runRecord.topology === 'shared workers' ? 1 : runRecord.workers;
+    for (let i=0;i<count;i++) runRecord.handoffs[i] ??= {worker:i,mode:'stateful',
+      status:runRecord.budgetExpired?'deadline_without_reported_handoff':'ended_without_reported_handoff',
+      plannedSeconds:runRecord.passBudgets[i]?.firstSeconds ?? runRecord.passPlan.firstBudgetSeconds,
+      actualSeconds:null,bestLength:null,validated:false};
+  }
   clearInterval(timer); active = false;
   if (runRecord) { runRecord.pageSeconds = (performance.now() - started) / 1000; runRecord.status = english(...key); shownElapsed = runRecord.pageSeconds; }
   killPool(); rejectActive = null; controls(); status(...key); render(); draw('final');
@@ -593,7 +604,12 @@ async function start(options = {}) {
   const topology = workers === 1 ? 'single worker' : sharedThreads ? 'shared workers' : 'separate workers';
   const reference = options.reference ?? (referenceRaw || null);
   const refinement = options.refinement ?? $('refinement').checked;
-  const plan = selectedTimePlan(seconds, options.twoPass ?? $('twoPass').checked, options);
+  const passMode = options.passMode ?? (options.twoPass === undefined ? passChoice.value : options.twoPass ? passChoice.value === 'stateful' ? 'stateful' : 'restart' : 'one');
+  if (!['one','restart','stateful'].includes(passMode) || (passMode === 'stateful' && coords.length/2 <= 12000)) throw Error(PASS_COPY[lang()].large);
+  const plan = selectedTimePlan(seconds, options.twoPass ?? (passMode !== 'one'), options);
+  if ((passMode === 'one') === plan.enabled) throw Error('Inconsistent pass mode');
+  const variant = sharedThreads ? 'shared' : 'serial';
+  if (loaderState.metrics?.[variant]?.sha256 !== ENGINE_BUILD.wasmSha256[variant]) throw Error(PASS_COPY[lang()].mismatch);
   clearReplay(); recordingSeparate = workers > 1 && !sharedThreads;
   if (options.recording !== false && !mapMeta?.ipadTrial && coords.length >= 6) recordSafely(() => {
     // B: the replay is drawn north-up like the map. The recording keeps the map only turned (scaled = false), so every recorded
@@ -609,6 +625,7 @@ async function start(options = {}) {
     renderIntervalMs: Number($('refresh').value), renderChanges: [], renderChangesDropped: 0,
     wasmSha256: loaderState.metrics?.[sharedThreads ? 'shared' : 'serial']?.sha256 ?? null,
     workers, deviceCores: reportedCores, workerLimit: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
+    engineRevision: ENGINE_BUILD.engineRevision, passMode, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1] || null, handoffs: [],
     refinement, twoPass: plan.enabled, passPlan: plan, passEvents: [], passBudgets: [], currentPass: plan.enabled ? 1 : null, reference, unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
     history: [], historyReceived: 0, historyDropped: 0, results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
@@ -661,6 +678,10 @@ async function start(options = {}) {
         if (data.type === 'pool-terminate') { children.get(data.id)?.terminate(); return; }
         if (data.type === 'error') { fail(data.message); return; }
         if (data.type === 'budget') { runRecord.passBudgets[i] = { worker: i, ...data.plan }; return; }
+        if (data.type === 'handoff') {
+          runRecord.handoffs[i] = {worker:i,...data.summary,pageSeconds:(performance.now()-started)/1000};
+          return;
+        }
         if (data.type === 'phase') {
           runRecord.passEvents.push({ worker: i, pass: data.pass, solverSeconds: data.elapsed, pageSeconds: (performance.now() - started) / 1000, length: data.tour?.length ? data.length : null });
           runRecord.currentPass = Math.max(runRecord.currentPass || 1, data.pass);
@@ -680,6 +701,7 @@ async function start(options = {}) {
           }
         }
         if (data.type === 'done') {
+          if (data.handoffSummary) runRecord.handoffs[i] = {...runRecord.handoffs[i],worker:i,...data.handoffSummary};
           runRecord.results.push({ worker: i, seed: (seed + i) >>> 0, length: data.length, elapsed: data.elapsed, steps: data.steps, poolStats: data.poolStats, probe: data.probe, wasmMemoryBytes: data.wasmMemoryBytes });
           done++;
           if (done === coordinators) {
@@ -692,6 +714,7 @@ async function start(options = {}) {
       worker.onerror = event => { if (token !== generation || !active) return; finish('workerFail', event.message); reject(Error(event.message)); };
       worker.postMessage({ type: 'run', token, module, memory, text, seconds, seed: (seed + i) >>> 0, refinement, shared, sharedThreads: sharedThreads ? workers : 0,
         probe: !!options.probe, maxSteps: options.maxSteps, passes: options.passes, twoPass: plan.enabled,
+        phaseProfile: passMode === 'stateful' ? 'preserve' : undefined,
         firstBudgetSeconds: plan.firstBudgetSeconds, totalDeadlineEpoch,
         firstDeadlineEpoch: totalDeadlineEpoch - seconds * 1000 + plan.firstBudgetSeconds * 1000, optimum: runRecord.optimum });
     }
@@ -809,7 +832,7 @@ $('reference').oninput = () => {   // R1k: an edit in km becomes whole metres; t
 $('seconds').oninput = () => { syncTimeFields('total'); render(); };
 $('firstSeconds').oninput = () => { syncTimeFields('first'); render(); };
 $('secondSeconds').oninput = () => { syncTimeFields('second'); render(); };
-$('twoPass').onchange = () => { syncTimeFields('toggle'); controls(); render(); };
+$('twoPass').onchange = () => { passChoice.value = !$('twoPass').checked ? 'one' : passChoice.value === 'stateful' ? 'stateful' : 'restart'; syncTimeFields('toggle'); controls(); render(); };
 $('workers').onchange = () => {
   if (coords.length / 2 < 1000000 || canShare) preferredWorkers = Number($('workers').value);
   applyWorkerChoice(coords.length / 2); render();
@@ -878,6 +901,21 @@ window.tsp8zLab = { load, loadExample, showMap, start, stop, loadNu, generate, c
   get liveWorkers() { return pool.length; }, get hasResult() { return !!tour?.length; } };   // R53 D: pwa.js does not reload over a shown result
 window.tsp8zReplay = { get data() { return recorder?.data; }, get summary() { return recorder?.summary(); },
   export() { if (!recorder?.data.frames.length) throw Error('No recording yet.'); return serializeRecording(recorder.data); }, get player() { return replayPlayer; } };
+passChoice = mountPassChoice({
+  onChange(mode) { $('twoPass').checked = mode !== 'one'; syncTimeFields('toggle'); controls(); render(); },
+  async onPreset(first) { let applied=false; await safely(async()=>{ applied=await applyStatefulPreset(first); })(); return applied; },
+});
+async function applyStatefulPreset(first) {
+  if (active || loading) return false;
+  if (!canShare || cores < 8) throw Error(PASS_COPY[lang()].unsupported);
+  await loadExample(FINLAND);
+  if (active || loading || mapMeta?.id !== FINLAND || coords.length/2 !== 1437195) return false;
+  manualTimePart = null; manualTimeValue = null;
+  $('seconds').value = '3600'; $('firstSeconds').value = String(first); $('secondSeconds').value = String(3600-first);
+  $('seed').value = '1'; preferredWorkers = 8; applyWorkerChoice(coords.length/2);
+  $('refinement').checked = true; $('twoPass').checked = true; passChoice.value = 'stateful';
+  controls(); render(); return true;
+}
 choose('nu');
 syncTimeFields('preset');
 controls(); render();
@@ -885,6 +923,8 @@ try {
   await initializeWasm();
   controls();
   await safely(loadNu)();
+  const linkedPreset = presetFromHash(location.hash);
+  if (linkedPreset !== null) await safely(() => applyStatefulPreset(linkedPreset))();
 } catch {
   $('status').dataset.i18n = 'solver.unavailable';
   status('unavailable'); controls();
