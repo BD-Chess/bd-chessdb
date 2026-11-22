@@ -18,7 +18,7 @@
 // (Slovenia first, then by city count), metre maps shown in kilometres with the reference field in km, Slovenia's best known
 // tour 8,728,254 m and Concorde's bound of 16 Nov 21:09. Before: demo/app.before_r28.js; before R1k: demo/app.before_r1k.js.
 import { examples, exampleLabel, defaultExampleId, gapDisplay, desktopOnly, collections, soon, defaultCollectionId } from './examples.mjs';
-import { initializeWasm, loaderState, solverModule, supportsSharedThreads, loadLkhWasm } from './wasm-loader.js';
+import { initializeWasm, loaderState, solverModule, supportsSharedThreads, loadRivalWasm } from './wasm-loader.js';
 import { createRecorder, serializeRecording } from './replay-data.mjs';
 import { mountReplay } from './replay-player.mjs';
 import { REPLAY_COPY } from './replay-copy.mjs';
@@ -156,6 +156,8 @@ const T = {
     budgetNoTour: 'Time budget ended before a tour was available.',
     complete: (s, opt) => 'Complete · tour checked in Rust.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Reference'} first reached after ${dec(s, 1)} s of solver time.`),
+    proofComplete: 'Concorde proved optimality.',
+    proofIncomplete: 'Concorde returned a verified tour. The optimality proof is incomplete.',
     rivalComplete: 'Complete · tour independently checked.',
     rivalOptimum: s => s === null ? 'Complete · the tour matches the known optimum.' :
       `Known optimum reached after ${dec(s, 1)} s.`,
@@ -233,6 +235,8 @@ const T = {
     budgetNoTour: 'Čas je potekel, preden je bila pot na voljo.',
     complete: (s, opt) => 'Končano · pot preverjena v Rustu.' + (s === null ? '' :
       ` ${opt ? 'Optimum' : 'Referenca'} prvič dosežen${opt ? '' : 'a'} po ${dec(s, 1)} s časa reševalnika.`),
+    proofComplete: 'Concorde je dokazal optimum.',
+    proofIncomplete: 'Concorde je vrnil preverjeno pot. Dokaz optimuma je nedokončan.',
     rivalComplete: 'Končano · pot neodvisno preverjena.',
     rivalOptimum: s => s === null ? 'Končano · pot se ujema z znanim optimumom.' :
       `Znani optimum dosežen po ${dec(s, 1)} s.`,
@@ -551,7 +555,7 @@ function controls() {
   $('passTimes').hidden = !!rival || !$('twoPass').checked;
   for (const id of ['firstSeconds', 'secondSeconds']) $(id).disabled = active || !ready || !!rival || !$('twoPass').checked;
   $('refresh').disabled = !ready;
-  $('stopOptimum').disabled = active || !ready || !mapMeta?.optimum;
+  $('stopOptimum').disabled = active || !ready || !mapMeta?.optimum || engineChoice?.value === 'concorde';
   renderResultActions();
   $('replayOpen').disabled = active || !!loading || !recorder?.data.frames.length;
 }
@@ -802,7 +806,8 @@ async function startRival({ seconds, seed, options }) {
     schema: '8ztsp-rival-run.v1', solverId: rival.label, executionLocation: 'browser-wasm-local',
     seed, seconds, workers: 1, copies: 1, workersTerminated: 0, inputSha256: inputHash,
     reference: options.reference ?? (referenceRaw || null), optimum: mapMeta?.optimum ?? null,
-    stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
+    stopAtOptimum: engine !== 'concorde' && !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
+    ...(engine === 'concorde' ? { proofStatus: 'incomplete' } : {}),
     unit: mapMeta?.unit ?? null, example: mapMeta?.id ?? null, dimension: coords.length / 2,
     history: [], historyReceived: 0, historyDropped: 0, renderChanges: [], renderChangesDropped: 0,
     firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/',
@@ -811,6 +816,7 @@ async function startRival({ seconds, seed, options }) {
   function complete() {
     runRecord.length = tour?.length ? runRecord.tourLength : null;
     if (!tour?.length) finish('budgetNoTour');
+    else if (engine === 'concorde') finish(runRecord.proofStatus === 'proved' ? 'proofComplete' : 'proofIncomplete');
     else if (runRecord.optimum && runRecord.length === runRecord.optimum) {
       finish('rivalOptimum', runRecord.firstOptimumSeconds === undefined
         ? runRecord.optimumReached?.solverSeconds ?? null : runRecord.firstOptimumSeconds);
@@ -832,7 +838,7 @@ async function startRival({ seconds, seed, options }) {
       }
     }, 100);
     (async () => {
-      const wasmBytes = engine === 'lkh' ? await loadLkhWasm() : null;
+      const wasmBytes = await loadRivalWasm(engine);
       if (token !== generation || !active) { wasmBytes?.fill(0); return; }
       const worker = new Worker(new URL('./rivals/solve-worker.mjs', import.meta.url), { type: 'module' });
       pool.push(worker);

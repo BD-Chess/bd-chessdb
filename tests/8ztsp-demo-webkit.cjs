@@ -81,7 +81,7 @@ function demoUiFixture(language) {
   };
   </script><script type="module" src="/__demo_ui/app.js"></script></body></html>`;
 }
-const demoUiLoader = `export const loaderState={status:'ready',metrics:{serial:{sha256:'f'.repeat(64)}}};export const supportsSharedThreads=()=>false;export const solverModule=()=>({});export async function initializeWasm(){}export async function loadLkhWasm(){throw Error("Fixture excludes real solvers");}`;
+const demoUiLoader = `export const loaderState={status:'ready',metrics:{serial:{sha256:'f'.repeat(64)}}};export const supportsSharedThreads=()=>false;export const solverModule=()=>({});export async function initializeWasm(){}export async function loadRivalWasm(){throw Error("Fixture excludes real solvers");}`;
 
 function serve(req, res) {
   const url = new URL(req.url, 'https://www.mdlxdcc.org'); let p = decodeURIComponent(url.pathname);
@@ -153,7 +153,7 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.evaluate(() => tsp8zLab.load(['NAME : ui','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file'));
     check(!await fixture.isChecked('#twoPass') && await fixture.inputValue('#passMode')==='one', 'two-pass UI '+language+': small map defaults to one pass');
     check(await fixture.locator('#passMode option').count()===3,'stateful choice '+language+': all three modes');
-    check(await fixture.locator('#tsp-engine option[value=8ztsp]').textContent()==='8zTSP Web 0.2' &&
+    check(await fixture.locator('#tsp-engine option[value="8ztsp"]').textContent()==='8zTSP Web 0.2' &&
       await fixture.locator('#tsp-engine option[value=ortools]').textContent()==='Google OR-Tools Routing 9.15',
       'engine choices '+language+': web and OR-Tools versions');
     const splits = await fixture.locator('#finlandPreset option').allTextContents();

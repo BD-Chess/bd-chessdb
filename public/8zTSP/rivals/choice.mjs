@@ -4,6 +4,7 @@ export const RIVALS = {
   lkh: { label: 'LKH 3.0.14', min: 3, max: 1500000 },
   eax: { label: 'GA-EAX 1.0', min: 51, max: 3500 },
   ortools: { label: 'Google OR-Tools Routing 9.15', min: 3, max: 3500 },
+  concorde: { label: 'Concorde 03.12.19', min: 5, max: 3500 },
 };
 
 export function mountEngineChoice(anchor, change) {

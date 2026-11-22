@@ -7,6 +7,7 @@ const releases = {
   lkh: ['LKH', '3.0.14'],
   eax: ['GA-EAX', '1.0 Normal (015dfbe9f)'],
   ortools: ['Google OR-Tools Routing', '9.15 (or-tools-wasm 2.2.0)'],
+  concorde: ['Concorde', '03.12.19 (QSopt_ex, April 2009)'],
 };
 
 function finish(record, verified) {
@@ -101,6 +102,47 @@ async function solve(data) {
     eax.FS.writeFile('/problem.tsp', eaxInput(problem));
     meta.parameters = { population: 100, offspring: 30, rngSeed: seed };
     eax._solve(seed);
+  } else if (engine === 'concorde') {
+    const { default: createConcorde } = await import('./concorde/concorde.mjs');
+    meta.wasmSha256 = await sha256HexBytes(wasmBytes);
+    meta.proofStatus = 'incomplete';
+    meta.parameters = { initialTour: problem.dimension > 256 ? 'Quick-Boruvka' : 'Concorde Linkern' };
+    const concorde = await createConcorde({ wasmBinary: wasmBytes, onIncumbent(tour, length) {
+      reportMemory(concorde.HEAP32.buffer.byteLength);
+      publish(tour, length);
+    }, print() {}, printErr() {} });
+    const n = problem.dimension;
+    const maxEdge = Math.ceil(Math.hypot(
+      Math.max(...problem.xs) - Math.min(...problem.xs),
+      Math.max(...problem.ys) - Math.min(...problem.ys),
+    ));
+    if (n * maxEdge >= 2147483647) throw Error('Coordinate range exceeds Concorde integer limits');
+    const locations = [8 * n, 8 * n, 4 * n, 8].map(size => concorde._malloc(size));
+    const [x, y, order, value] = locations;
+    try {
+      if (locations.includes(0)) throw Error('Unable to allocate Concorde input buffers');
+      concorde.HEAPF64.set(problem.xs, x / 8);
+      concorde.HEAPF64.set(problem.ys, y / 8);
+      reportMemory(concorde.HEAP32.buffer.byteLength);
+      checkDeadline();
+      const flags = concorde._solve_euclidean(n, x, y, order, seed, (deadline - now()) / 1000, value);
+      reportMemory(concorde.HEAP32.buffer.byteLength);
+      if (flags < 0) throw Error('Concorde could not complete the exact solve');
+      if (flags & 1) {
+        const tour = concorde.HEAP32.slice(order / 4, order / 4 + n);
+        const { euc2dRoundedNumber: length } = verifyTourIndependent(problem, tour);
+        const proved = Boolean(flags & 2);
+        if (proved && (concorde.HEAPF64[value / 8] !== length || (optimum > 0 && length !== optimum))) {
+          throw Error('Concorde proof objective disagrees with the verified tour or known optimum');
+        }
+        publish(tour, length);
+        if (latest && proved && latest.length === length) {
+          postMessage({ type: 'details', details: { proofStatus: 'proved', provedOptimalLength: length } });
+        }
+      }
+    } finally {
+      for (const address of locations) concorde._free(address);
+    }
   } else {
     const { RoutingIndexManager, RoutingModel, FirstSolutionStrategy, LocalSearchMetaheuristic } =
       await import('./ortools/browser/routing.js');

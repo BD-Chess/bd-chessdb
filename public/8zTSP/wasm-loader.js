@@ -2,10 +2,16 @@ import {decryptWasm,importWasmKey} from './wasm-crypto.mjs';
 const modules = new Map();
 let contentKey;
 
-export async function loadLkhWasm() {
-  if (!contentKey) throw Error('Unlock the app before loading LKH');
-  const response = await fetch(new URL('./rivals/lkh-wasm/lkh_3_0_14.wasm.enc', import.meta.url));
-  if (!response.ok) throw Error('LKH module unavailable');
+const protectedRivals = {
+  lkh: './rivals/lkh-wasm/lkh_3_0_14.wasm.enc',
+  concorde: './rivals/concorde/concorde.wasm.enc',
+};
+export async function loadRivalWasm(engine) {
+  const path = protectedRivals[engine];
+  if (!path) return null;
+  if (!contentKey) throw Error('Unlock the app before loading this solver');
+  const response = await fetch(new URL(path, import.meta.url));
+  if (!response.ok) throw Error('Encrypted solver module unavailable');
   return decryptWasm(await response.arrayBuffer(), contentKey);
 }
 export const loaderState = {status:'loading',metrics:null};
