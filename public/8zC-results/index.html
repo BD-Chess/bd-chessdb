@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="sl" data-language="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Izmerjeni rezultati brezizgubne kompresije 8zC na datotekah Concorde, zvoku FLAC in ELF.">
+  <title>8zC · Rezultati kompresije | MDL×DCC</title>
+  <link rel="stylesheet" href="results.css">
+  <script src="language.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#results"><span lang="sl">Preskoči na rezultate</span><span lang="en">Skip to results</span></a>
+  <header class="wrap masthead">
+    <a class="brand" href="https://www.mdlxdcc.org/">MDL<span>×</span>DCC</a>
+    <a class="hub" href="https://www.mdlxdcc.org/8z/"><span lang="sl">8Z središče</span><span lang="en">8Z hub</span></a>
+    <div class="languages" role="group" aria-label="Jezik / Language" hidden>
+      <button type="button" data-select-language="sl" lang="sl" aria-pressed="true">SL</button>
+      <button type="button" data-select-language="en" lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main class="wrap" id="results">
+    <section class="hero" aria-labelledby="title">
+      <div>
+        <p class="eyebrow"><time datetime="2026-11-22"><span lang="sl">22. november 2026</span><span lang="en">22 November 2026</span></time></p>
+        <h1 id="title">8zC<span lang="sl"> Rezultati kompresije</span><span lang="en"> Compression Results</span></h1>
+        <p class="intro"><span lang="sl">Brezizgubni preizkusi na datotekah Concorde, zvoku FLAC in datotekah ELF. Velikosti vključujejo podatke, ki jih potrebuje obnova.</span><span lang="en">Lossless trials on Concorde files, FLAC audio and ELF binaries. Measured sizes include the data required for restoration.</span></p>
+        <nav class="section-links" aria-label="Razdelki / Sections">
+          <a href="#concorde">Concorde</a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
+        </nav>
+      </div>
+      <aside class="highlight">
+        <p class="highlight-label"><span lang="sl">Italijanski posnetek Concorde</span><span lang="en">Italian Concorde checkpoint</span></p>
+        <p class="highlight-value">−8<span lang="sl">,</span><span lang="en">.</span>29<span class="percent">%</span></p>
+        <p><span lang="sl">velikosti proti 7‑Zip Ultra</span><span lang="en">in size versus 7‑Zip Ultra</span></p>
+        <p class="highlight-proof"><strong>74/74</strong> <span lang="sl">bitno točnih obnov</span><span lang="en">byte-exact restores</span></p>
+      </aside>
+    </section>
+
+    <section id="concorde" class="section" aria-labelledby="concorde-title">
+      <div class="section-heading">
+        <h2 id="concorde-title"><span lang="sl">Datoteke Concorde</span><span lang="en">Concorde files</span></h2>
+        <p><span lang="sl">74 posnetkov vozlišč italijanskega problema TSP, skupaj 444.894.850 B pred stiskanjem.</span><span lang="en">74 node files from the Italian TSP instance, totalling 444,894,850 B before compression.</span></p>
+      </div>
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="concorde-title">
+        <table>
+          <caption><span lang="sl">Iste datoteke v vseh štirih arhivih</span><span lang="en">The same files in all four archives</span></caption>
+          <thead><tr><th scope="col"><span lang="sl">Paket</span><span lang="en">Package</span></th><th scope="col"><span lang="sl">Arhiv v B</span><span lang="en">Archive in B</span></th><th scope="col"><span lang="sl">Manj od Ultra</span><span lang="en">Smaller than Ultra</span></th><th scope="col">SHA‑256</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">7‑Zip Ultra</th><td>21<wbr> 721<wbr> 385</td><td>—</td><td>74/74</td></tr>
+            <tr><th scope="row">8zC R1</th><td>21<wbr> 312<wbr> 344</td><td>1<span lang="sl">,</span><span lang="en">.</span>88 %</td><td>74/74</td></tr>
+            <tr><th scope="row">8zC R2</th><td>19<wbr> 945<wbr> 574</td><td>8<span lang="sl">,</span><span lang="en">.</span>18 %</td><td>74/74</td></tr>
+            <tr class="best"><th scope="row">8zC R3</th><td>19<wbr> 920<wbr> 851</td><td>8<span lang="sl">,</span><span lang="en">.</span>29 %</td><td>74/74</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <details>
+        <summary><span lang="sl">Kako je nastal prihranek</span><span lang="en">Where the savings came from</span></summary>
+        <p lang="sl">R1 shrani en skupni zapis povezav. R2 iz koordinat natančno obnovi 776.323 shranjenih dolžin. R3 spremeni zapis zaporedja povezav in prihrani dodatnih 24.723 B. Paketi 8zC vsebujejo dekoder in podatke za obnovo. Primerjava uporablja enonitni solidni 7‑Zip 26.05, LZMA2 Ultra. Na drugem neodvisnem zgodovinskem posnetku potrditev še čaka.</p>
+        <p lang="en">R1 stores one copy of the shared adjacency data. R2 reconstructs 776,323 stored distances exactly from coordinates. R3 changes the representation of the adjacency order and saves another 24,723 B. The 8zC packages include the decoder and restoration data. The comparison uses single-threaded solid 7-Zip 26.05 with LZMA2 Ultra. A second independent historical checkpoint remains to be tested.</p>
+      </details>
+    </section>
+
+    <section id="flac" class="section" aria-labelledby="flac-title">
+      <div class="section-heading">
+        <h2 id="flac-title"><span lang="sl">Govor v FLAC</span><span lang="en">FLAC speech</span></h2>
+        <p><span lang="sl">12 polsekundnih mono izsekov, 24 bitno točnih obnov. Primerjava uporablja PAQ v217 −8.</span><span lang="en">12 half-second mono clips, 24 byte-exact restores. Both paths use PAQ v217 −8.</span></p>
+      </div>
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="flac-title">
+        <table>
+          <caption><span lang="sl">Neposredni FLAC proti izbirniku poti FLAC ali WAV z receptom</span><span lang="en">Direct FLAC versus a selector for FLAC or WAV with a recipe</span></caption>
+          <thead><tr><th scope="col"><span lang="sl">Zbirka</span><span lang="en">Dataset</span></th><th scope="col"><span lang="sl">Neposredno v B</span><span lang="en">Direct in B</span></th><th scope="col"><span lang="sl">Z izbirnikom v B</span><span lang="en">Selected in B</span></th><th scope="col"><span lang="sl">Prihranek</span><span lang="en">Saving</span></th></tr></thead>
+          <tbody>
+            <tr><th scope="row">AudioMNIST</th><td>78 149</td><td>73 170</td><td>6<span lang="sl">,</span><span lang="en">.</span>37 %</td></tr>
+            <tr><th scope="row">AISHELL‑3</th><td>114 452</td><td>109 378</td><td>4<span lang="sl">,</span><span lang="en">.</span>43 %</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" lang="sl">Pri enem posnetku AISHELL‑3 bi izbrani WAV prihranil 9,65 %. Izbirnik je ta primer odložil, zato privzeto pravilo ostaja v uporabi.</p>
+      <p class="note" lang="en">WAV would have saved 9.65% on one AISHELL‑3 clip. The selector deferred on that clip, so the current default remains in use.</p>
+    </section>
+
+    <section id="regeneration" class="section" aria-labelledby="regeneration-title">
+      <div class="section-heading">
+        <h2 id="regeneration-title">Super‑8zC</h2>
+        <p><span lang="sl">Pri pilotu s 570 mesti smo primerjali dobesedno hrambo, obnovo iz korena in ponovni izračun iz vhoda.</span><span lang="en">The 570-city pilot compares storing the outputs, resuming from a root checkpoint, and regenerating from the input.</span></p>
+      </div>
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="regeneration-title">
+        <table>
+          <caption><span lang="sl">Obnova istih štirih datotek, za računska načina s pripetim okoljem</span><span lang="en">Restoration of the same four files, with pinned environments for regeneration</span></caption>
+          <thead><tr><th scope="col"><span lang="sl">Način</span><span lang="en">Method</span></th><th scope="col"><span lang="sl">Paket v B</span><span lang="en">Package in B</span></th><th scope="col"><span lang="sl">Čas obnove</span><span lang="en">Restore time</span></th><th scope="col">SHA‑256</th></tr></thead>
+          <tbody>
+            <tr class="best"><th scope="row"><span lang="sl">Običajni zstd</span><span lang="en">Ordinary zstd</span></th><td>2 325</td><td>0<span lang="sl">,</span><span lang="en">.</span>07 s</td><td>4/4</td></tr>
+            <tr><th scope="row"><span lang="sl">Iz korenskega stanja</span><span lang="en">From the root checkpoint</span></th><td>90 794</td><td>1<span lang="sl">,</span><span lang="en">.</span>13–1<span lang="sl">,</span><span lang="en">.</span>16 s</td><td>4/4</td></tr>
+            <tr><th scope="row"><span lang="sl">Ponovni izračun iz vhoda</span><span lang="en">Regeneration from input</span></th><td>16 439</td><td>13<span lang="sl">,</span><span lang="en">.</span>50 s</td><td>4/4</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" lang="sl">Na tem naboru je zstd najmanjši in najhitrejši. Pri ponovnem izračunu je v paketu tudi brezizgubni preostanek za natančno obnovo časovnih polj.</p>
+      <p class="note" lang="en">For these files, zstd is the smallest and fastest. Regeneration packages include a lossless residual that restores the original timing fields.</p>
+    </section>
+
+    <section id="elf" class="section elf" aria-labelledby="elf-title">
+      <div class="section-heading">
+        <h2 id="elf-title">A1p ELF</h2>
+        <p><span lang="sl">Na treh primerljivih datotekah je neposredni PAQ arhiv meril 64.760 B, slovarski A 66.682 B in B 65.375 B. Panel ima 12/14 potrjenih obnov. Dva poskusa sta se ustavila pri časovni oziroma temperaturni meji.</span><span lang="en">Across three comparable files, direct PAQ used 64,760 B, dictionary path A 66,682 B and path B 65,375 B. The panel has 12/14 verified restores. Two trials reached the time or temperature limit.</span></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <span>BD × AI Lab</span>
+    <a href="https://www.mdlxdcc.org/8z/8zip"><span lang="sl">8zip, ReZIP in 8zipLab</span><span lang="en">8zip, ReZIP and 8zipLab</span></a>
+  </footer>
+</body>
+</html>
