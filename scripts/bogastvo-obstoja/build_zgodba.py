@@ -11,7 +11,8 @@ sources are not touched by this script.
 The story uses no abbreviations and has no glossary, so the figure caption is written
 here instead of the essay's caption, which carries a glossary token and a popup.
 
-Usage:  python3 -I build_zgodba.py [--out=DIR]
+Pass --zbor to build the fourth edition from zbor.src.html and zbor.src.en.html.
+Usage:  python3 -I build_zgodba.py [--zbor] [--out=DIR]
 Writes: DIR/index.html (sl) and DIR/en/index.html (en); DIR defaults to ../zgodba.
 In the site repository:
         python3 -I scripts/bogastvo-obstoja/build_zgodba.py --out=public/bogastvo-obstoja/zgodba
@@ -45,17 +46,19 @@ def hero(lang, caption):
 
 
 def main():
-    out_dir = pathlib.Path(next((x.split('=', 1)[1] for x in sys.argv[1:] if x.startswith('--out=')), HERE.parent / 'zgodba'))
+    edition = 'zbor' if '--zbor' in sys.argv else 'zgodba'
+    out_dir = pathlib.Path(next((x.split('=', 1)[1] for x in sys.argv[1:] if x.startswith('--out=')), HERE.parent / edition))
     essay = (HERE / 'src.html').read_text(encoding='utf-8')
     css = re.search(r'<style>(.*?)</style>', essay, flags=re.S).group(1)
     js = re.search(r'<script>(.*?)</script>', essay, flags=re.S).group(1)
     for lang, cfg in LANGS.items():
-        src = (HERE / cfg['src']).read_text(encoding='utf-8')
+        source_name = cfg['src'].replace('zgodba', edition)
+        src = (HERE / source_name).read_text(encoding='utf-8')
         for marker, shared in (('/*SHARED-CSS*/', css), ('/*SHARED-JS*/', js), ('<!--HERO-->', hero(lang, cfg['caption']))):
             assert src.count(marker) == 1, marker
             src = src.replace(marker, shared)
         for leftover in ('[[', 'data-unfold', 'SHARED-', '<!--HERO'):
-            assert leftover not in src, 'leftover %r in %s' % (leftover, cfg['src'])
+            assert leftover not in src, 'leftover %r in %s' % (leftover, source_name)
         target = out_dir / cfg['out']
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(src, encoding='utf-8')
