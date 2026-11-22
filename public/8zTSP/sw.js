@@ -1,6 +1,6 @@
 // Packager replaces BUILD; scope is deliberately limited to this application.
 'use strict';
-const BUILD='b41495493ca1a4fbad5f';
+const BUILD='d672f9161ad269aac36a';
 const BASE='/8zTSP/',PREFIX='8ztsp-pwa-',CACHE=PREFIX+BUILD;
 const absolute=path=>new URL(path,self.location.origin+BASE).href;
 let manifestPromise;
