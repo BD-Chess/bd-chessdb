@@ -94,6 +94,7 @@ function serve(req, res) {
     if (p === '/__demo_ui/examples/santa1437195_uef_2cm.tsp.gz') {
       res.writeHead(200,{...h,'Content-Type':TYPES['.tsp']});res.end(FINLAND_UI_TEXT);return;
     }
+    if (p === '/__demo_ui/engine-build.mjs') { res.writeHead(200,{...h,'Content-Type':TYPES['.mjs']}); res.end("export const ENGINE_BUILD={engineRevision:'f'.repeat(40),wasmSha256:{serial:'f'.repeat(64),shared:'f'.repeat(64)}};"); return; }
     if (p === '/__demo_ui/wasm-loader.js') { res.writeHead(200, {...h,'Content-Type':TYPES['.js']}); res.end(demoUiLoader); return; }
     p = p.replace('/__demo_ui/', '/8zTSP/');
   }
@@ -147,8 +148,25 @@ proxy.on('connect', (req, sock, head) => {
     await fixture.waitForFunction(() => window.tsp8zLab?.ready && tsp8zLab.coordinates.length>0);
     await fixture.evaluate(() => tsp8zLab.load(['NAME : ui','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file'));
     check(await fixture.isChecked('#twoPass'), 'two-pass UI '+language+': checked by default');
+    check(await fixture.locator('#passMode option').count()===3,'stateful choice '+language+': all three modes');
+    check(await fixture.locator('#passMode option[value=stateful]').textContent()===(language==='sl'?'Dva prehoda z nadaljevanjem':'Two passes with continuation'),'stateful choice '+language+': translated');
+    check(await fixture.locator('#passMode option[value=stateful]').evaluate(o=>o.disabled),'stateful choice '+language+': small map refused');
+    for(const width of [390,1024]){
+      await fixture.setViewportSize({width,height:900});
+      const box=await fixture.locator('#passMode').boundingBox();
+      check(box.height>=48,'stateful choice '+language+' '+width+': touch target');
+      check(await fixture.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'stateful choice '+language+' '+width+': no horizontal overflow');
+      await fixture.screenshot({path:path.join(OUT,'stateful-choice-'+language+'-'+width+'.png'),fullPage:true});
+    }
+
     const maximum=await fixture.evaluate(() => {const s=document.getElementById('workers');return s.options[s.options.length-1].value;});
     check(await fixture.inputValue('#workers')===maximum, 'two-pass UI '+language+': maximum worker default');
+    await fixture.evaluate(()=>{document.getElementById('seconds').value='3600';document.getElementById('firstSeconds').value='600';document.getElementById('secondSeconds').value='3000';});
+    for(const choice of ['one','restart']){
+      await fixture.selectOption('#passMode',choice);
+      check(await fixture.inputValue('#firstSeconds')==='600' && await fixture.inputValue('#secondSeconds')==='3000','stateful setup '+language+': mode '+choice+' retains 600+3000');
+    }
+    await fixture.fill('#seconds','60');
     await fixture.fill('#seconds','3600');
     check(await fixture.inputValue('#firstSeconds')==='300' && await fixture.inputValue('#secondSeconds')==='3300', 'time fields '+language+': total edit refreshes system suggestion before manual choice');
     await fixture.fill('#seconds','120');
@@ -202,7 +220,7 @@ proxy.on('connect', (req, sock, head) => {
     check(await fixture.inputValue('#firstSeconds')==='900' && await fixture.inputValue('#secondSeconds')==='4100', 'Finland collection '+language+': ordinary manual override remains available');
     await fixture.selectOption('#collection','selected');await fixture.waitForFunction(()=>!document.getElementById('run').disabled);
     await fixture.fill('#firstSeconds','1.2345');
-    await fixture.selectOption('#collection','country-benchmarks');await fixture.waitForFunction(()=>document.getElementById('example').value==='santa1437195_uef_2cm' && !document.getElementById('run').disabled);
+    await fixture.selectOption('#collection','country-benchmarks');await fixture.waitForFunction(()=>document.getElementById('example').value==='santa1437195_uef_2cm' && !document.getElementById('run').disabled && document.getElementById('seconds').value==='3600' && document.getElementById('firstSeconds').value==='300' && document.getElementById('secondSeconds').value==='3300');
     check(await fixture.inputValue('#seconds')==='3600' && await fixture.inputValue('#firstSeconds')==='300' && await fixture.inputValue('#secondSeconds')==='3300', 'Finland collection '+language+': every new collection choice resets the manual anchor');
     check(await fixture.evaluate(()=>window.fixtureRuns||0)===runsBefore, 'Finland collection '+language+': never auto-starts');
     await fixture.evaluate(async()=>{await tsp8zLab.load(['NAME : export fixture','TYPE : TSP','DIMENSION : 5','EDGE_WEIGHT_TYPE : EUC_2D','NODE_COORD_SECTION','1 0 0','2 10 0','3 10 10','4 0 10','5 5 5','EOF'].join('\n'),'file');window.fixtureHoldFinish=true;window.exportTestRun=tsp8zLab.start({seconds:30,workers:1,recording:false}).catch(()=>null);});
