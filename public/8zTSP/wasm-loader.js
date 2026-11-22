@@ -1,5 +1,13 @@
 import {decryptWasm,importWasmKey} from './wasm-crypto.mjs';
 const modules = new Map();
+let contentKey;
+
+export async function loadLkhWasm() {
+  if (!contentKey) throw Error('Unlock the app before loading LKH');
+  const response = await fetch(new URL('./rivals/lkh-wasm/lkh_3_0_14.wasm.enc', import.meta.url));
+  if (!response.ok) throw Error('LKH module unavailable');
+  return decryptWasm(await response.arrayBuffer(), contentKey);
+}
 export const loaderState = {status:'loading',metrics:null};
 export function supportsSharedThreads() {
   if (!crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') return false;
@@ -34,6 +42,7 @@ export async function initializeWasm() {
           sha256:Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('')};
       } finally {plaintext.fill(0);}
     }
+    contentKey = key;
     for (const [variant,module] of prepared) modules.set(variant,module);
     loaderState.metrics = metrics; loaderState.status = 'ready';
   } catch (error) {loaderState.status = 'failed';throw error;}

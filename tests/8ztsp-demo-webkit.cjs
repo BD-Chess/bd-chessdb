@@ -78,7 +78,7 @@ function demoUiFixture(language) {
   };
   </script><script type="module" src="/__demo_ui/app.js"></script></body></html>`;
 }
-const demoUiLoader = `export const loaderState={status:'ready',metrics:{serial:{sha256:'f'.repeat(64)}}};export const supportsSharedThreads=()=>false;export const solverModule=()=>({});export async function initializeWasm(){}`;
+const demoUiLoader = `export const loaderState={status:'ready',metrics:{serial:{sha256:'f'.repeat(64)}}};export const supportsSharedThreads=()=>false;export const solverModule=()=>({});export async function initializeWasm(){}export async function loadLkhWasm(){throw Error("Fixture excludes real solvers");}`;
 
 function serve(req, res) {
   const url = new URL(req.url, 'https://www.mdlxdcc.org'); let p = decodeURIComponent(url.pathname);
@@ -313,6 +313,26 @@ proxy.on('connect', (req, sock, head) => {
     const r = await page.evaluate(() => window.tsp8zLab.start({seconds: 240}).then(r => ({length: r.length, reached: r.optimumReached, topology: r.topology})));
     check(r.length === 96132 && !!r.reached, `nu3496 stopped at the known optimum (${r.reached ? r.reached.solverSeconds.toFixed(1) + ' s, ' + r.topology : r.length})`);
     await page.screenshot({path: path.join(OUT, 'demo_iphone15.png')});
+    check(await page.inputValue('#tsp-engine') === '8ztsp', '8zTSP is the default motor');
+    const sample = fs.readFileSync(path.join(__dirname, 'fixtures/tsp-rivals/syn_hier_64.tsp'), 'utf8');
+    const coordinates = sample.split('NODE_COORD_SECTION')[1].trim().split(/\r?\n/)
+      .filter(line => /^\d/.test(line)).map(line => line.trim().split(/\s+/).slice(1, 3).map(Number));
+    await page.evaluate(text => window.tsp8zLab.load(text, 'file'), sample);
+    for (const engine of ['lkh', 'eax', 'ortools']) {
+      await page.selectOption('#tsp-engine', engine);
+      check(await page.isEnabled('#run') && !await page.isEnabled('#workers'), 'rival ' + engine + ': shared Run button in single worker mode');
+      const result = await page.evaluate(() => window.tsp8zLab.start({seconds: 8, seed: 1}));
+      assert.equal(result.executionLocation, 'browser-wasm-local');
+      assert.equal(result.tour.length, 64);
+      assert.deepEqual([...result.tour].sort((a,b) => a-b), coordinates.map((_,i)=>i+1));
+      const length = result.tour.reduce((total, id, i) => {
+        const a = coordinates[id-1], b = coordinates[result.tour[(i+1)%result.tour.length]-1];
+        return total + Math.round(Math.hypot(a[0]-b[0], a[1]-b[1]));
+      }, 0);
+      check(result.tourLength === length && result.lengthMatchesVerifier, 'rival ' + engine + ': independent closed tour ' + length);
+    }
+    check(requests.some(r => r.path.endsWith('/lkh_3_0_14.wasm.enc')) &&
+      !requests.some(r => r.path.endsWith('/lkh_3_0_14.wasm')), 'LKH runtime is loaded from an encrypted envelope');
   } else console.log('  (no DEMO_PASSWORD: the unlocked demo is not tested here)');
   // ======== PWA update & orange-banner checks (A->B, stuck worker rescue, unlocked non-pullback, dismiss, 2 consecutive builds)
   const sleep = ms => new Promise(r => setTimeout(r, ms));

@@ -18,7 +18,7 @@
 // (Slovenia first, then by city count), metre maps shown in kilometres with the reference field in km, Slovenia's best known
 // tour 8,728,254 m and Concorde's bound of 16 Nov 21:09. Before: demo/app.before_r28.js; before R1k: demo/app.before_r1k.js.
 import { examples, exampleLabel, defaultExampleId, gapDisplay, desktopOnly, collections, soon, defaultCollectionId } from './examples.mjs';
-import { initializeWasm, loaderState, solverModule, supportsSharedThreads } from './wasm-loader.js';
+import { initializeWasm, loaderState, solverModule, supportsSharedThreads, loadLkhWasm } from './wasm-loader.js';
 import { createRecorder, serializeRecording } from './replay-data.mjs';
 import { mountReplay } from './replay-player.mjs';
 import { REPLAY_COPY } from './replay-copy.mjs';
@@ -28,6 +28,7 @@ import { suggestSplit, alignSplit, fromFirst, fromSecond, validSplit, minimumPar
 import { createRunFile, downloadRunFile } from './run-export.mjs';
 import { mountPassChoice, presetFromHash, FINLAND, COPY as PASS_COPY } from './pass-mode.mjs';
 import { ENGINE_BUILD } from './engine-build.mjs';
+import { mountEngineChoice, RIVALS } from './rivals/choice.mjs';
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const canvas = $('map'), ctx = canvas.getContext('2d');
@@ -35,7 +36,13 @@ const mapView = $('mapView'), mapTitle = $('mapName');
 const isMapExpanded = () => mapView.classList.contains('map-window') || document.fullscreenElement === mapView;
 $('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_LIMITS.maxSeconds); $('seconds').step = 'any';   // R1d: up to one day
 let manualTimePart = null, manualTimeValue = null;
-let passChoice = null;
+let passChoice = null, engineChoice = null;
+const selectedRival = () => RIVALS[engineChoice?.value];
+function rivalCompatible(rival) {
+  const cities = coords.length / 2;
+  return cities >= rival.min && cities <= rival.max &&
+    /^EDGE_WEIGHT_TYPE\s*:\s*EUC_2D\s*$/im.test(text.slice(0, 2048));
+}
 let shareNotice = null, shareFallbackFile = null, sharePending = false;
 const DEFAULT_EXAMPLE = defaultExampleId;   // R28 (R1b): Slovenia
 // Safari may hide cores: use the existing menu maximum by default, subject to map memory safety.
@@ -404,6 +411,10 @@ function renderResultActions() {
   $('downloadSame').disabled = !shareFallbackFile;
 }
 function render() {
+  const rival = selectedRival();
+  engineChoice?.sync({ language: lang(), active: active || !!loading,
+    available: loaderState.status === 'ready', finland: mapMeta?.id === FINLAND,
+    compatible: !rival || rivalCompatible(rival) });
   passChoice?.sync({language:lang(),active,ready:loaderState.status==='ready',large:coords.length/2>12000,enabled:$('twoPass').checked});
   renderResultActions();
   $('length').textContent = Number.isFinite(best) ? formatDistance(best, mapMeta?.unit ?? null, lang()) : '—';
@@ -433,7 +444,8 @@ function render() {
   $('twoPassHint').textContent = !validSeconds(Number(total)) ? t('secondsRange') : !enabled ? t('onePassHint', total) : plan
     ? t('passHint', plan.configured.total, plan.configured.first, plan.configured.second)
     : t(validSeconds(Number(total)) ? 'passTimesRange' : 'secondsRange', min);
-  $('mode').textContent = t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
+  $('mode').textContent = rival ? rival.label + ' · ' + (lang() === 'sl' ? '1 delavec' : '1 worker')
+    : t(modeKey(), active && runRecord ? runRecord.workers : Number($('workers').value), reportedCores);
   $('workerHint').textContent = isIPhone ? t('hintIPhone') : t('hintCores', reportedCores);
   for (const option of $('collection').options) { const c = collections.find(x => x.id === option.value); if (c) option.text = c.names[lang()]; }
   for (const option of $('example').options) { const item = examples.find(e => e.id === option.value), s = soonOf(option.value); if (item) option.text = t('option', item); else if (s) option.text = `${s.names[lang()]} ${t('soon')}`; }
@@ -485,11 +497,22 @@ function killPool() {
 }
 function controls() {
   const ready = loaderState.status === 'ready';
-  $('run').disabled = !ready || active || !!loading || !coords.length;
+  const rival = selectedRival();
+  $('run').disabled = !ready || active || !!loading || !coords.length || (!!rival && !rivalCompatible(rival));
   $('stop').disabled = !active && !loading;
   ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'refinement', 'twoPass', 'reference', 'collection', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
-  $('passTimes').hidden = !$('twoPass').checked;
-  for (const id of ['firstSeconds', 'secondSeconds']) $(id).disabled = active || !ready || !$('twoPass').checked;
+  if (engineChoice) {
+    $('passChoice').hidden = !!rival;
+    for (const id of ['workers', 'refinement', 'twoPass']) $(id).disabled ||= !!rival;
+    $('seed').disabled ||= engineChoice.value === 'ortools';
+    $('twoPassHint').hidden = !!rival;
+    for (const id of ['twoPass', 'refinement']) {
+      const label = $(id).closest('label');
+      if (label) label.hidden = !!rival;
+    }
+  }
+  $('passTimes').hidden = !!rival || !$('twoPass').checked;
+  for (const id of ['firstSeconds', 'secondSeconds']) $(id).disabled = active || !ready || !!rival || !$('twoPass').checked;
   $('refresh').disabled = !ready;
   $('stopOptimum').disabled = active || !ready || !mapMeta?.optimum;
   renderResultActions();
@@ -592,6 +615,7 @@ async function start(options = {}) {
   if (!validSeconds(seconds)) throw new Message('secondsRange');
   const seed = options.seed ?? number('seed', 0, 4294967295);
   if (!Number.isInteger(seed)) throw new Message('seedInt');
+  if (selectedRival()) return startRival({ seconds, seed, options });
   const workers = options.workers ?? Number($('workers').value);
   if (!Number.isInteger(workers) || workers < 1 || workers > cores) throw new Message('workers', cores);
   const execution = options.topology ?? 'auto';
@@ -720,6 +744,69 @@ async function start(options = {}) {
     }
   });
 }
+async function startRival({ seconds, seed, options }) {
+  const engine = engineChoice.value, rival = RIVALS[engine];
+  if (!rivalCompatible(rival)) throw Error('Unsupported map for ' + rival.label);
+  if (engine !== 'ortools' && (seed < 1 || seed > 2147483647)) throw Error('Seed must be between 1 and 2147483647');
+  const profile = engineChoice.competition ? 'competition' : 'default';
+  clearReplay();
+  tour = null; best = Infinity; shownElapsed = 0; started = performance.now();
+  active = true;
+  shareNotice = null; shareFallbackFile = null;
+  const token = ++generation;
+  runRecord = {
+    schema: '8ztsp-rival-run.v1', solverId: rival.label, executionLocation: 'browser-wasm-local',
+    seed, seconds, workers: 1, copies: 1, workersTerminated: 0, inputSha256: inputHash,
+    reference: options.reference ?? (referenceRaw || null), optimum: mapMeta?.optimum ?? null,
+    unit: mapMeta?.unit ?? null, example: mapMeta?.id ?? null, dimension: coords.length / 2,
+    history: [], historyReceived: 0, historyDropped: 0, renderChanges: [], renderChangesDropped: 0,
+    firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/',
+  };
+  const deadlineStart = performance.timeOrigin + started;
+  function complete() {
+    runRecord.length = tour?.length ? runRecord.tourLength : null;
+    finish(tour?.length ? 'complete' : 'budgetNoTour', runRecord.firstReach?.solverSeconds ?? null, isOptimum());
+  }
+  controls(); status('searching', 1, false); render();
+  return new Promise((resolve, reject) => {
+    rejectActive = reject;
+    const fail = error => {
+      if (token !== generation || !active) return;
+      finish('stoppedErr', String(error?.message || error)); reject(error);
+    };
+    timer = setInterval(() => {
+      shownElapsed = (performance.now() - started) / 1000;
+      $('elapsed').textContent = dec(shownElapsed, 1) + ' s';
+      // Routing returns its final assignment after serializing it.
+      if (shownElapsed >= seconds + (engine === 'ortools' ? 2 : 0) && active && token === generation) {
+        runRecord.budgetExpired = true; complete(); resolve(runRecord);
+      }
+    }, 100);
+    (async () => {
+      const wasmBytes = engine === 'lkh' ? await loadLkhWasm() : null;
+      if (token !== generation || !active) { wasmBytes?.fill(0); return; }
+      const worker = new Worker(new URL('./rivals/solve-worker.mjs', import.meta.url), { type: 'module' });
+      pool.push(worker);
+      worker.onmessage = ({ data }) => {
+        if (token !== generation || !active) return;
+        if (data.type === 'error') { fail(Error(data.message)); return; }
+        if (data.type === 'details') { Object.assign(runRecord, data.details); return; }
+        if (data.type === 'done') { complete(); resolve(runRecord); return; }
+        if (data.type !== 'result' || data.tour.length !== coords.length / 2) return;
+        Object.assign(runRecord, data.record);
+        const { solverReportedLength: length, wallSecondsIncludingPrep: elapsed } = data.record;
+        acceptBest({ length, elapsed, steps: null, tour: data.tour }, 0);
+        if (runRecord.optimum && length === runRecord.optimum && $('stopOptimum').checked) {
+          runRecord.length = length; finish('optimumStop', elapsed); resolve(runRecord);
+        }
+      };
+      worker.onerror = event => fail(Error(event.message || 'Browser worker failed'));
+      worker.postMessage({ engine, text, seconds, seed, profile, started: deadlineStart, wasmBytes },
+        wasmBytes ? [wasmBytes.buffer] : []);
+    })().catch(fail);
+  });
+}
+
 function generate() {
   const n = number('count', 5, 200000), seed = number('seed', 0, 4294967295);
   if (!Number.isInteger(n) || !Number.isInteger(seed)) throw new Message('integers');
@@ -908,6 +995,7 @@ passChoice = mountPassChoice({
 async function applyStatefulPreset(first) {
   if (active || loading) return false;
   if (!canShare || cores < 8) throw Error(PASS_COPY[lang()].unsupported);
+  if (engineChoice) engineChoice.value = '8ztsp';
   await loadExample(FINLAND);
   if (active || loading || mapMeta?.id !== FINLAND || coords.length/2 !== 1437195) return false;
   manualTimePart = null; manualTimeValue = null;
@@ -921,7 +1009,8 @@ syncTimeFields('preset');
 controls(); render();
 try {
   await initializeWasm();
-  controls();
+  engineChoice = mountEngineChoice($('twoPassHint'), () => { controls(); render(); });
+  controls(); render();
   await safely(loadNu)();
   const linkedPreset = presetFromHash(location.hash);
   if (linkedPreset !== null) await safely(() => applyStatefulPreset(linkedPreset))();
