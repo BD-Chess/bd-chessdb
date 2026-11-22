@@ -106,6 +106,10 @@ async function solve(data) {
     model.setArcCostEvaluatorOfAllVehicles(model.registerTransitCallback(
       (a, b) => distance(problem, manager.indexToNode(a), manager.indexToNode(b)),
     ));
+    // Materialize the pinned Routing adapter's matrix once. Set the search
+    // budget after that preparation so the final route can arrive on time.
+    const transitMatrix = model.buildTransitMatrix();
+    model.buildTransitMatrix = () => transitMatrix;
     checkDeadline();
     const remainingMs = Math.max(1, Math.floor(deadline - now()));
     meta.parameters = { firstSolution: 'PATH_CHEAPEST_ARC', improvement: 'GUIDED_LOCAL_SEARCH' };

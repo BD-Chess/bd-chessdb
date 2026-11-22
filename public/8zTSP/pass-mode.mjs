@@ -80,8 +80,10 @@ export function mountPassChoice({ onChange, onPreset }) {
     },
     sync({ language, active, ready, large, enabled, finland, finlandFirst }) {
       const c = COPY[language] || COPY.en;
-      mode.select.value = modeForCheckbox(mode.select.value, enabled);
       blocked = active || !ready;
+      const previous = mode.select.value;
+      const supported = !blocked && !large && previous === 'stateful' ? 'restart' : previous;
+      mode.select.value = modeForCheckbox(supported, enabled);
       mode.select.disabled = blocked;
       mode.title.textContent = c.label;
       for (const option of mode.select.options) {
