@@ -86,5 +86,84 @@ jobs:
       - name: Run Daily tests and image integrity checks
         run: node --test tests/nara-rating-dialog.test.mjs tests/nara-reader-ratings.test.mjs tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs tests/nara-main-pages-sl.test.mjs
 
-
-
+  repair:
+    # BD, 14 November 2026 (question 23, "A: popravek in preverba"): the nightly publisher renders the Nara pages in its own
+    # checkout, which has twice lacked the artwork or the standalone story pages (11 and 12 November), so a publication
+    # commit can fail the checks above although its data is right. Then the repository regenerates the generated pages
+    # with its own refresh, runs exactly the same checks on the result, and only if they pass pushes the repair to main.
+    # Nothing else changes: stories, scores and records are never written.
+    #
+    # Switched off until two things exist, because a push made with the workflow's own GITHUB_TOKEN starts no other
+    # workflow (so secret-boundary, Pages and the Netlify same-commit gate would never run for the repair commit):
+    #   1. the repository variable NARA_AUTO_REPAIR = true
+    #   2. the repository secret NARA_REPAIR_TOKEN: a fine-grained token for this repository only, Contents: read and write
+    # The push then behaves like any other push to main and every existing gate applies to it unchanged.
+    needs: verify
+    if: ${{ always() && needs.verify.result == 'failure' && github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'BD-Chess/bd-chessdb' && vars.NARA_AUTO_REPAIR == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: nara-daily-repair
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    env:
+      NARA_TESTS: tests/nara-rating-dialog.test.mjs tests/nara-reader-ratings.test.mjs tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs tests/nara-main-pages-sl.test.mjs
+      PUSH_TOKEN: ${{ secrets.NARA_REPAIR_TOKEN }}
+    steps:
+      - name: Require the push token
+        run: |
+          if [ -z "$PUSH_TOKEN" ]; then
+            echo "NARA_REPAIR_TOKEN is not set: a push with the workflow token would start no gates. Nothing was repaired." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.NARA_REPAIR_TOKEN }}
+      - name: Detect a publication commit
+        id: detect
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q '^public/Nara/daily/days/'; then
+            echo "publication=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publication=false" >> "$GITHUB_OUTPUT"
+            echo "The failing commit published no day; nothing to repair." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.detect.outputs.publication == 'true'
+        with:
+          node-version: '22'
+      - name: Regenerate the generated pages of the newest month
+        if: steps.detect.outputs.publication == 'true'
+        run: |
+          month="$(ls public/Nara/daily/days | sort | tail -n 1 | cut -c1-7)"
+          node scripts/nara-daily-batch.mjs refresh-images "$GITHUB_WORKSPACE" "$month"
+      - name: Run the same checks on the regenerated tree
+        if: steps.detect.outputs.publication == 'true'
+        run: node --test $NARA_TESTS
+      - name: Commit and push the repair
+        if: steps.detect.outputs.publication == 'true'
+        run: |
+          if git diff --quiet; then
+            echo "The checks failed but regenerating changed nothing: not a page problem, left red." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A public/Nara
+          git commit -q -m "Nara Daily: regenerate pages after the nightly publication (automatic repair)" -m "The publication commit failed the Nara checks; the repository's own refresh regenerated the pages and the same checks passed. No story, score or record was written."
+          # The repair is pushed only on top of the main it was tested on. If main moved meanwhile, rebase and test the exact
+          # tree that will be pushed before pushing it; a failed push (another commit in between) starts over, three times at most.
+          pushed=0
+          for attempt in 1 2 3; do
+            git fetch -q origin main
+            if [ "$(git rev-parse origin/main)" != "$(git rev-parse HEAD~1)" ]; then
+              git rebase -q origin/main || { git rebase --abort; echo "main moved and the repair no longer applies cleanly" >> "$GITHUB_STEP_SUMMARY"; exit 1; }
+              node --test $NARA_TESTS || { echo "main moved and the rebased tree fails the Nara checks; nothing pushed" >> "$GITHUB_STEP_SUMMARY"; exit 1; }
+            fi
+            if git push -q origin HEAD:main; then pushed=1; break; fi
+            sleep 5
+          done
+          test "$pushed" = 1
+          echo "Repair pushed as $(git rev-parse HEAD); the usual workflows run for it." >> "$GITHUB_STEP_SUMMARY"

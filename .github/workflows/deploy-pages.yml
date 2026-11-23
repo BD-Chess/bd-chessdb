@@ -34,6 +34,13 @@ jobs:
           python3 scripts/check_site_search_freshness.py --base "$SEARCH_BASELINE" --head "$SEARCH_HEAD"
       - name: Verify AI8 DNA themes, shortcuts and frozen archive
         run: node --test tests/ai8-dna-v4.test.mjs tests/dna-lab.test.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify Nara integrity for every Pages snapshot
+        # The same complete Nara suite that gates the Netlify snapshot (BD, 14 November 2026, question 23): a nightly
+        # publication whose generated pages are degraded must not reach GitHub Pages either, as it did on 11 November.
+        run: node --test tests/nara-rating-dialog.test.mjs tests/nara-reader-ratings.test.mjs tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs tests/nara-main-pages-sl.test.mjs
       - name: Verify AI8 News gateway and local bridge without provider calls
         run: |
           npm ci --prefix functions --ignore-scripts --no-audit --no-fund
