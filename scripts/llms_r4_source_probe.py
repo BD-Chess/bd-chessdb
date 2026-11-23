@@ -35,23 +35,25 @@ def select_urls(src):
   data=[u for u in choices if re.search(r"(\.json|\.csv|\.yaml|\.yml)(?:\?|$)|raw\.githubusercontent\.com|datasets-server\.huggingface\.co",u,re.I)]
   result=list(dict.fromkeys(data[:1]+choices[:1]))
   target=src.get("source_id","")
-  if target=="arc_prize":
-    result.extend([u for u in choices if "/media/data/leaderboard/" in u])
+  if target=="lmarena":
+    result=[
+      "https://datasets-server.huggingface.co/rows?dataset=lmarena-ai/leaderboard-dataset&config="+config+"&split=latest&offset="+str(offset)+"&length=100"
+      for config,total in (("agent",100),("text_style_control",11400),("webdev",700))
+      for offset in range(0,total,100)
+    ]
   elif target=="vals_ai":
-    result.extend([u for u in choices if "_astro/" in u and ".json" in u][:13])
-    result.extend([u for u in choices if "/benchmarks/" in u][:4])
-  elif target=="terminal_bench":
-    result.extend([u for u in choices if "harborframework.com" in u])
-  elif target=="snorkel_ai":
-    result.extend([u for u in choices if ".json" in u][:12])
-  elif target=="slobench":
-    result.extend([u for u in choices if "/leaderboardSubmissions/" in u][:9])
-  elif target=="lmarena":
-    result.extend([
-      "https://datasets-server.huggingface.co/rows?dataset=lmarena-ai/leaderboard-dataset&config="+config+"&split=latest&offset=0&length=100"
-      for config in ("agent","text_style_control","webdev")
-    ])
-  return list(dict.fromkeys(result))[:18]
+    pages=[u for u in choices if "/benchmarks/" in u]
+    result=[]
+    for page in pages:
+      try:
+        with urllib.request.urlopen(urllib.request.Request(page,headers=HEADERS),timeout=16) as res:
+          body=res.read(2_000_000).decode("utf-8","replace")
+        matches=re.findall(r'/_astro/benchmark_view_[A-Za-z0-9_.-]+\.json',body)
+        result.extend(urllib.parse.urljoin("https://www.vals.ai",v) for v in matches)
+      except Exception as exc:
+        print("VALS_PAGE_ERROR",page,str(exc)[:100],flush=True)
+    result=list(dict.fromkeys(result))
+  return list(dict.fromkeys(result))
 def probe(job):
   sid,u=job
   try:
@@ -68,9 +70,9 @@ def probe(job):
               "sample":short if not len(content)>MAX_BODY and (any(t in ctype.lower() for t in ["json","csv","yaml","text/plain","application/zip"]) or sid in {"artificial_analysis","vals_ai","terminal_bench","lmarena"}) else b""}
   except Exception as e:
     return {"source_id":sid,"url":u,"status":"ERROR","error":str(e)[:400],"checked_at_utc":FSTAMP,"sample":b""}
-jobs=[(s["source_id"],u) for s in SOURCE.get("accepted",[]) for u in select_urls(s)]
+jobs=[(s["source_id"],u) for s in SOURCE.get("accepted",[]) if s["source_id"] in {"lmarena","vals_ai"} for u in select_urls(s)]
 print("READ_ONLY_SOURCE_PROBES",len(jobs),"SOURCES",len(SOURCE.get("accepted",[])),flush=True)
-with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:
   rows=list(pool.map(probe,jobs))
 saved=[]
 for i,row in enumerate(rows):
