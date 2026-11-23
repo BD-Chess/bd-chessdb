@@ -103,6 +103,14 @@
             L('No complete SF scan. All positions outside the counted saved searches remain unknown.', 'Ni celotnega pregleda s SF. Vsi položaji zunaj preštetih shranjenih iskanj ostajajo neznani.')));
         }
       }
+      // A later SF measurement of the same game stays a separate dated source, shown per position.
+      for (const [key, meta] of Object.entries(review.evidence.sources)) {
+        if (key === 'cdb' || key === 'sf' || !meta || typeof meta.label !== 'string') continue;
+        sources.append(el('p', 'game-review-chart-note', meta.label + ' · ' + date(meta.date) + (meta.engine ? ' · ' + meta.engine : '') +
+          L(' · second dated SF measurement; its results appear per position under dated observations', ' · druga datirana meritev SF; rezultati so pri vsakem položaju med datiranimi zapisi')));
+        if (meta.baseline_nodes) sources.append(el('p', 'game-review-chart-note',
+          L('Baseline budget: ', 'Proračun osnovne analize: ') + meta.baseline_nodes + L(' nodes · threads ', ' vozlišč · niti ') + meta.threads + ' · Hash ' + meta.hash_mb + ' MB'));
+      }
       body.append(sources);
     }
     const rows = review.evidence?.positions || review.pgnEvaluations;
@@ -188,6 +196,13 @@
     if (review.evidence) section.append(el('p', 'game-review-chart-note',
       review.evidence.sources.cdb.snapshot === 'refreshed_02' ?
       L('CDB: first returned scored candidate. SF: unrestricted 2M-node baseline. Candidate comparisons have separate budgets.', 'CDB: prvi vrnjeni ocenjeni kandidat. SF: osnovna analiza z 2 milijonoma vozlišč brez omejitve začetnih potez. Primerjave kandidatov imajo ločene proračune.') :
+      review.evidence.sources.sf.baseline_nodes ?
+      L('CDB graph: parsed archive position estimates. SF graph: ' + review.evidence.sources.sf.engine + ', ' + date(review.evidence.sources.sf.date) +
+        ', unrestricted MultiPV ' + (review.evidence.sources.sf.multipv || 3) + ' baseline at every position (' + review.evidence.sources.sf.baseline_nodes / 1e6 +
+        'M nodes, 1 thread). Candidate comparisons have separate budgets. Dated root observations below stay separate; cross-node change is not move regret.',
+        'Graf CDB: razčlenjene arhivske ocene položajev. Graf SF: ' + review.evidence.sources.sf.engine + ', ' + date(review.evidence.sources.sf.date) +
+        ', osnovna analiza MultiPV ' + (review.evidence.sources.sf.multipv || 3) + ' brez omejitve začetnih potez pri vsakem položaju (' + review.evidence.sources.sf.baseline_nodes / 1e6 +
+        ' milijonov vozlišč, 1 nit). Primerjave kandidatov imajo ločene proračune. Datirani zapisi spodaj ostajajo ločeni; sprememba med položajema ni neposredna izguba poteze.') :
       L('CDB graph: parsed archive position estimates. SF covers only saved anchor searches. Dated root observations below stay separate; cross-node change is not move regret.', 'Graf CDB: razčlenjene arhivske ocene položajev. SF pokriva le shranjene analize izbranega položaja. Datirani zapisi spodaj ostajajo ločeni; sprememba med položajema ni neposredna izguba poteze.')));
     body.append(section);
     savedPosition(ctx);
@@ -348,11 +363,11 @@
   function decisionCard(ctx, row, moment) {
     const { review } = ctx;
     const decision = review.evidence?.decisions.find(d => d.ply === moment.ply);
+    const notes = review.evidence?.notes?.filter(n => n.ply === moment.ply) || [];
     if (!decision) {
-      const note = review.evidence?.notes?.find(n => n.ply === moment.ply);
-      if (!note) return false;
+      if (!notes.length) return false;
       row.append(el('strong', '', L('Saved critical position', 'Shranjeni ključni položaj')),
-        el('p', 'game-review-detail', note.text));
+        ...notes.map(note => el('p', 'game-review-detail', note.text)));
       observations(ctx, row, review.evidence.positions[moment.ply]);
       return true;
     }
@@ -363,6 +378,7 @@
       (human.choice_san ? ' · chose ' + human.choice_san : '') +
       (human.candidates_san.length ? ' · candidates: ' + human.candidates_san.join(', ') : '')));
     row.append(el('p', 'game-review-detail', decision.lesson));
+    for (const note of notes) row.append(el('p', 'game-review-detail', note.text));
     row.append(el('p', 'game-review-chart-note', (data.fen.split(' ')[1] === 'b' ? L('Black', 'Črni') : L('White', 'Beli')) +
       ' POV · ' + label(review, 'cdb') + ' ' + date(data.cdb.at) + ' · SF ' + date(sf.at) + ' UTC' +
       L(' depth ', ' globina ') + sf.depth + (data.comparison ? L(' · matched candidate search', ' · usklajeno iskanje kandidatov') : L(' · baseline', ' · osnovna analiza'))));

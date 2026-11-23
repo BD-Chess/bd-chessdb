@@ -35,6 +35,29 @@ records, 248 are non-book game entries; 244 are unique valid games, three
 parse as malformed, and one is a duplicate. Explore a run's denominator and
 raw receipts before making any aggregate claim.
 
+## Stockfish 19 measurements, 16 November 2026
+
+`sf19-top-picks-c10-c11-20261116.json` holds the Stockfish 19 results of the C10 run (nine Top
+Picks games) and the C11 run (Dreev–Kasparov). Settings: one thread, Hash 128 MB, node limits only,
+so a rerun gives the same numbers.
+- **Baseline:** an unrestricted MultiPV 3 search of 10 million nodes at every position (1,066).
+- **Comparisons:** 76 critical positions have restricted candidate comparisons of 60 million nodes.
+- **Deep checks:** 25 deep checks of 200 million nodes.
+- **What is kept:** only the last completed iteration (k lines, one depth, no bound). Each entry
+  carries the SHA-256 of its source record in the C10/C11 evidence zips; Drive IDs and zip hashes are
+  in `packages`. PVs are cut to 16 plies here.
+
+`tools/build-top-picks-review.cjs` makes this the whole-game SF source of the nine Top Picks
+reviews. Earlier SF Lite anchor receipts stay dated observations. Review V4 of Dreev–Kasparov is kept
+unchanged as `dreev-kasparov-review-v4-base-20261012.json`; Stockfish 19 is added to it as a second
+dated SF measurement at every position. Each anchor gets a note with the deepest Stockfish 19 stage
+that scored both the played move and the catalog alternative.
+
+Results:
+- At 8 of the 9 anchors the catalog alternative is better, by 1.58–8.91 pawns.
+- Cup14 47...Qb8 and c3 are equal: both −4.04 at depth 49.
+- Dreev–Kasparov 19...Bxa4, Rad8 and Nxe2+ are practically equal: −0.12, −0.08 and 0.00 at depth 42.
+
 Run focused verification from the repository root:
 
 ```bash
