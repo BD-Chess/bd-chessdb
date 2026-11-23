@@ -22,13 +22,13 @@
   <main class="wrap" id="results">
     <section class="hero" aria-labelledby="title">
       <div>
-        <p class="eyebrow"><time datetime="2026-11-23"><span lang="sl">23. november 2026</span><span lang="en">23 November 2026</span></time></p>
+        <p class="eyebrow"><time datetime="2026-11-24"><span lang="sl">24. november 2026</span><span lang="en">24 November 2026</span></time></p>
         <h1 id="title">8zC<span lang="sl"> Rezultati kompresije</span><span lang="en"> Compression Results</span></h1>
         <p class="eyebrow"><span lang="sl">Izvorna zamisel 8Z · Bojan Dobrečevič (BD). Razvoj 8zC · BD × AI Lab.</span><span lang="en">Original 8Z concept · Bojan Dobrečevič (BD). 8zC development · BD × AI Lab.</span> <a href="#origins"><span lang="sl">Od zamisli do preizkusa</span><span lang="en">From idea to test</span></a></p>
         <p class="intro"><span lang="sl">Brezizgubni preizkusi na datotekah Concorde, zvoku FLAC in datotekah ELF. Matrika kodekov prikazuje tudi velikosti stisnjenih tokov pred prištetjem podatkov za obnovo.</span><span lang="en">Lossless trials on Concorde files, FLAC audio and ELF binaries. The codec matrix also shows compressed sizes before restoration data is added.</span></p>
         <nav class="section-links" aria-label="Razdelki / Sections">
           <a href="https://www.mdlxdcc.org/8zC/"><span lang="sl">Odpri kodek 8zC</span><span lang="en">Open the 8zC codec</span></a>
-          <a href="#concorde">Concorde</a><a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a><a href="#elf-preprocessing"><span lang="sl">Predobdelava ELF</span><span lang="en">ELF preprocessing</span></a><a href="#technical-matrix"><span lang="sl">Tehnične rešitve</span><span lang="en">Technical features</span></a><a href="#architecture-layers"><span lang="sl">Deset plasti 8zC</span><span lang="en">Ten layers of 8zC</span></a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
+          <a href="#concorde">Concorde</a><a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a><a href="#elf-preprocessing"><span lang="sl">Cycle 12 ELF &amp; cmix</span><span lang="en">Cycle 12 ELF &amp; cmix</span></a><a href="#technical-matrix"><span lang="sl">Tehnične rešitve</span><span lang="en">Technical features</span></a><a href="#architecture-layers"><span lang="sl">Deset plasti 8zC</span><span lang="en">Ten layers of 8zC</span></a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
         </nav>
       </div>
       <aside class="highlight">
@@ -123,24 +123,179 @@
 
     <section id="elf-preprocessing" class="section" aria-labelledby="elf-preprocessing-title">
       <div class="section-heading">
-        <h2 id="elf-preprocessing-title"><span lang="sl">8zC-exp · Predobdelava ELF</span><span lang="en">8zC-exp · ELF preprocessing</span></h2>
-        <p lang="sl">BD × AI Lab je 23. novembra 2026 v šestih razvojnih iteracijah preizkusil generatorje GEN19–22 in predobdelavo T4a. Na štirih razvojnih datotekah ELF (skupaj 5 461 960 B) so izmerili kombinacijo GEN19A, transpozicije tabel in filtra BCJ24.</p>
-        <p lang="en">On 23 November 2026, BD × AI Lab tested generators GEN19–22 and T4a preprocessing in six development iterations. The four-file trial (5 461 960 B of ELF input) measured GEN19A combined with table transposition and the BCJ24 filter.</p>
+        <h2 id="elf-preprocessing-title"><span lang="sl">8zC Cycle 12 (R2 in R3) · Samostojni fizični arhivi ELF in cmix v21</span><span lang="en">8zC Cycle 12 (R2 and R3) · Standalone physical ELF archives and cmix v21</span></h2>
+        <p lang="sl">BD × AI Lab je 23. in 24. novembra 2026 razširil P2-C v samostojna fizična kodeka <strong>Cycle 12 R2</strong> (<code>TRANSFORM_VERSION = 2</code>) in <strong>Cycle 12 R3</strong> (<code>TRANSFORM_VERSION = 3</code>). Vsak arhiv vsebuje vgrajene bijektivne recepte (9-bajtni zaključni zapis <code>8ZC2</code>/<code>8ZC3</code>) in je bil neodvisno obnovljen do zadnjega bita (<code>SHA‑256</code>) na Windows 11 in Linux Omarchy ter preveden v nativno jedro Rust <code>z8c_core</code>.</p>
+        <p lang="en">On 23–24 November 2026, BD × AI Lab extended P2-C into the standalone physical codecs <strong>Cycle 12 R2</strong> (<code>TRANSFORM_VERSION = 2</code>) and <strong>Cycle 12 R3</strong> (<code>TRANSFORM_VERSION = 3</code>). Every archive embeds its bijective recipes (9-byte <code>8ZC2</code>/<code>8ZC3</code> trailer) and was independently restored byte for byte (<code>SHA‑256</code>) on Windows 11 and Linux Omarchy, with an identical native Rust <code>z8c_core</code> port.</p>
       </div>
+
       <div class="comparison" role="region" tabindex="0" aria-labelledby="elf-preprocessing-title">
         <table>
-          <caption><span lang="sl">Stiskanje ostankov P2-C na štirih razvojnih datotekah ELF</span><span lang="en">Compression of P2-C residuals from four development ELF files</span></caption>
-          <thead><tr><th scope="col"><span lang="sl">Kodek</span><span lang="en">Codec</span></th><th scope="col"><span lang="sl">Osnovni P2-C (B)</span><span lang="en">P2-C baseline (B)</span></th><th scope="col"><span lang="sl">S predobdelavo in ocenjenim receptom (B)</span><span lang="en">With preprocessing and estimated recipe (B)</span></th><th scope="col"><span lang="sl">Dodatni prihranek</span><span lang="en">Additional saving</span></th></tr></thead>
+          <caption><span lang="sl">1. Razvojna peterica <code>dev5</code> (9 383 992 B surovo) — fizične velikosti arhivov (B) in 10/10 izoliranih obnov SHA‑256</span><span lang="en">1. Development five <code>dev5</code> (9 383 992 B raw) — physical archive sizes (B) and 10/10 isolated SHA‑256 restores</span></caption>
+          <thead>
+            <tr>
+              <th scope="col"><span lang="sl">Datoteka ELF (surovo)</span><span lang="en">ELF binary (raw)</span></th>
+              <th scope="col"><span lang="sl">ZIP neposredno → P2-C → R2 → <strong>R3</strong></span><span lang="en">ZIP direct → P2-C → R2 → <strong>R3</strong></span></th>
+              <th scope="col"><span lang="sl">ZIP R3 proti neposrednemu</span><span lang="en">ZIP R3 vs. direct</span></th>
+              <th scope="col"><span lang="sl">7z neposredno → P2-C → R2 → <strong>R3</strong></span><span lang="en">7z direct → P2-C → R2 → <strong>R3</strong></span></th>
+              <th scope="col"><span lang="sl">7z R3 proti neposrednemu</span><span lang="en">7z R3 vs. direct</span></th>
+            </tr>
+          </thead>
           <tbody>
-            <tr><th scope="row">ZIP <code>-mx=9</code></th><td>1 649 387</td><td>1 551 469</td><td>97 918 B (5<span lang="sl">,</span><span lang="en">.</span>94 %)</td></tr>
-            <tr><th scope="row">7z (LZMA) <code>-mx=9</code></th><td>1 278 311</td><td>1 226 522</td><td>51 789 B (4<span lang="sl">,</span><span lang="en">.</span>05 %)</td></tr>
+            <tr>
+              <th scope="row"><code>00_data_endian</code> (80 264 B, Haskell)</th>
+              <td>15 976 → 14 344 → 10 901 → <strong>10 484</strong></td>
+              <td>−5 492 B (−34<span lang="sl">,</span><span lang="en">.</span>38 %)</td>
+              <td>13 555 → 12 047 → 9 794 → <strong>9 525</strong></td>
+              <td>−4 030 B (−29<span lang="sl">,</span><span lang="en">.</span>73 %)</td>
+            </tr>
+            <tr>
+              <th scope="row"><code>02_calf_so</code> (1 182 672 B, C++)</th>
+              <td>297 204 → 267 308 → 228 425 → <strong>207 569</strong></td>
+              <td>−89 635 B (−30<span lang="sl">,</span><span lang="en">.</span>16 %)</td>
+              <td>239 015 → 213 097 → 187 981 → <strong>174 354</strong></td>
+              <td>−64 661 B (−27<span lang="sl">,</span><span lang="en">.</span>05 %)</td>
+            </tr>
+            <tr>
+              <th scope="row"><code>03_yesod_form_so</code> (1 472 320 B, Haskell)</th>
+              <td>283 835 → 265 419 → 200 279 → <strong>186 015</strong></td>
+              <td>−97 820 B (−34<span lang="sl">,</span><span lang="en">.</span>46 %)</td>
+              <td>210 821 → 193 555 → 150 858 → <strong>140 758</strong></td>
+              <td>−70 063 B (−33<span lang="sl">,</span><span lang="en">.</span>23 %)</td>
+            </tr>
+            <tr>
+              <th scope="row"><code>01_jwtui</code> (2 726 704 B, Rust)</th>
+              <td>1 290 629 → 1 102 356 → 1 060 339 → <strong>1 000 231</strong></td>
+              <td>−290 398 B (−22<span lang="sl">,</span><span lang="en">.</span>50 %)</td>
+              <td>1 047 223 → 859 660 → 825 356 → <strong>779 900</strong></td>
+              <td>−267 323 B (−25<span lang="sl">,</span><span lang="en">.</span>53 %)</td>
+            </tr>
+            <tr>
+              <th scope="row"><code>04_geany</code> (3 922 032 B, C/C++)</th>
+              <td>1 733 761 → 1 707 820 → 1 643 050 → <strong>1 495 837</strong></td>
+              <td>−237 924 B (−13<span lang="sl">,</span><span lang="en">.</span>72 %)</td>
+              <td>1 412 165 → 1 394 883 → 1 345 937 → <strong>1 230 998</strong></td>
+              <td>−181 167 B (−12<span lang="sl">,</span><span lang="en">.</span>83 %)</td>
+            </tr>
+            <tr class="best">
+              <th scope="row"><span lang="sl">Skupaj <code>dev5</code> (9 383 992 B)</span><span lang="en">Total <code>dev5</code> (9 383 992 B)</span></th>
+              <td>3 621 405 → 3 357 247 → 3 142 994 → <strong>2 900 136</strong></td>
+              <td><strong>−721 269 B (−19<span lang="sl">,</span><span lang="en">.</span>92 %)</strong></td>
+              <td>2 922 779 → 2 673 242 → 2 519 926 → <strong>2 335 535</strong></td>
+              <td><strong>−587 244 B (−20<span lang="sl">,</span><span lang="en">.</span>09 %)</strong></td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <p class="note" lang="sl">GEN19A odstrani podvojene vrednosti na ciljnih mestih relokacij in jih obnovi iz tabele ELF. V ločeni meritvi na eni od štirih datotek, knjižnici Haskell (80 264 B), je profil GEN19A + GEN20 + GEN22 zmanjšal PAQ <code>-3</code> s 7 636 B na 6 480 B, vključno s 64 B ocenjenega dodatka.</p>
-      <p class="note" lang="en">GEN19A removes duplicate values at relocation targets and reconstructs them from the ELF table. In a separate measurement on one of the four files, an 80 264 B Haskell library, the GEN19A + GEN20 + GEN22 profile reduced PAQ <code>-3</code> output from 7 636 B to 6 480 B, including 64 B of estimated overhead.</p>
-      <p class="note" lang="sl">Štiri kontrole SHA-256 potrjujejo obrat predobdelave do ostanka P2-C v pomnilniku. Tabela vključuje oceno 452 B za dodatne recepte. Naslednji preizkus mora potrditi obnovo izvirnikov iz samostojnih arhivov in izmeriti vse potrebne bajte. Dodatni preizkus na drugi knjižnici je odkril napako pri obnovi s specializirano različico BCJ24.</p>
-      <p class="note" lang="en">Four SHA-256 checks confirm that reversing preprocessing in memory recovered the P2-C residuals. The table includes an estimated 452 B for the extra recipes. The next trial will verify recovery of the original files from standalone archives and measure all required bytes. A follow-up on another library found a restore error in the specialised BCJ24 implementation.</p>
+
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="elf-preprocessing-title">
+        <table>
+          <caption><span lang="sl">2. Ločeni nabor 12 paketov <code>Holdout-12</code> (8 574 264 B surovo, 24/24 izoliranih obnov SHA‑256, 0 B poslabšanj)</span><span lang="en">2. Separate 12-package set <code>Holdout-12</code> (8 574 264 B raw, 24/24 isolated SHA‑256 restores, 0 B regressions)</span></caption>
+          <thead>
+            <tr>
+              <th scope="col"><span lang="sl">Obračun in kodek (12 paketov)</span><span lang="en">Accounting and codec (12 packages)</span></th>
+              <th scope="col"><span lang="sl">Neposredno (B)</span><span lang="en">Direct (B)</span></th>
+              <th scope="col">P2-C (B)</th>
+              <th scope="col">Cycle 12 R2 (B)</th>
+              <th scope="col"><strong>Cycle 12 R3 (B)</strong></th>
+              <th scope="col"><span lang="sl">Neto prihranek R3 proti neposrednemu</span><span lang="en">R3 net saving vs. direct</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><span lang="sl">ZIP <code>-mx=9</code> (fizični arhivi, dekoder že prisoten)</span><span lang="en">ZIP <code>-mx=9</code> (physical archives, decoder preinstalled)</span></th>
+              <td>3 204 669</td>
+              <td>3 144 431</td>
+              <td>2 920 777</td>
+              <td><strong>2 657 784</strong></td>
+              <td>−546 885 B (−17<span lang="sl">,</span><span lang="en">.</span>07 % · 12/12)</td>
+            </tr>
+            <tr class="best">
+              <th scope="row"><span lang="sl">ZIP <code>-mx=9</code> (<strong>prva dostava z vštetim <code>L_once</code></strong>)</span><span lang="en">ZIP <code>-mx=9</code> (<strong>first delivery including full <code>L_once</code></strong>)</span></th>
+              <td>3 204 669</td>
+              <td>3 170 679</td>
+              <td>2 951 253</td>
+              <td><strong>2 689 040</strong></td>
+              <td><strong>−515 629 B (−16<span lang="sl">,</span><span lang="en">.</span>09 % · 15,2× P2-C)</strong></td>
+            </tr>
+            <tr>
+              <th scope="row"><span lang="sl">7z (LZMA) <code>-mx=9</code> (fizični arhivi, dekoder že prisoten)</span><span lang="en">7z (LZMA) <code>-mx=9</code> (physical archives, decoder preinstalled)</span></th>
+              <td>2 610 108</td>
+              <td>2 562 518</td>
+              <td>2 387 387</td>
+              <td><strong>2 196 361</strong></td>
+              <td>−413 747 B (−15<span lang="sl">,</span><span lang="en">.</span>85 % · 12/12)</td>
+            </tr>
+            <tr class="best">
+              <th scope="row"><span lang="sl">7z (LZMA) <code>-mx=9</code> (<strong>prva dostava z vštetim <code>L_once</code></strong>)</span><span lang="en">7z (LZMA) <code>-mx=9</code> (<strong>first delivery including full <code>L_once</code></strong>)</span></th>
+              <td>2 610 108</td>
+              <td>2 588 766</td>
+              <td>2 417 863</td>
+              <td><strong>2 227 617</strong></td>
+              <td><strong>−382 491 B (−14<span lang="sl">,</span><span lang="en">.</span>65 % · 17,9× P2-C)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="elf-preprocessing-title">
+        <table>
+          <caption><span lang="sl">3. Primerjava z najmočnejšima kontekstnima mešalnikoma <code>cmix v21</code> in <code>PAQ8PX v217 -10LE</code> na 3 datotekah ELF (5 381 696 B surovo)</span><span lang="en">3. Comparison against top context mixers <code>cmix v21</code> and <code>PAQ8PX v217 -10LE</code> on 3 ELF binaries (5 381 696 B raw)</span></caption>
+          <thead>
+            <tr>
+              <th scope="col"><span lang="sl">Vhod in kodek</span><span lang="en">Input and codec</span></th>
+              <th scope="col"><span lang="sl">Neposredno (B)</span><span lang="en">Direct (B)</span></th>
+              <th scope="col"><span lang="sl">8zC predobdelava + kodek (B)</span><span lang="en">8zC preprocessing + codec (B)</span></th>
+              <th scope="col"><span lang="sl">Prihranek nad čistim kodekom</span><span lang="en">Saving over raw codec</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><code>02_calf_so</code> (1 182 672 B, C++) · <code>cmix v21 -c</code></th>
+              <td>145 654</td>
+              <td><strong>123 918</strong></td>
+              <td>−21 736 B (−14<span lang="sl">,</span><span lang="en">.</span>92 %)</td>
+            </tr>
+            <tr>
+              <th scope="row"><code>03_yesod_form_so</code> (1 472 320 B, Haskell) · <code>cmix v21 -c</code></th>
+              <td>114 899</td>
+              <td><strong>98 691</strong></td>
+              <td>−16 208 B (−14<span lang="sl">,</span><span lang="en">.</span>11 %)</td>
+            </tr>
+            <tr>
+              <th scope="row"><code>01_jwtui</code> (2 726 704 B, Rust) · <code>cmix v21 -c</code></th>
+              <td>683 352</td>
+              <td><strong>501 302</strong></td>
+              <td>−182 050 B (−26<span lang="sl">,</span><span lang="en">.</span>64 %)</td>
+            </tr>
+            <tr class="best">
+              <th scope="row"><span lang="sl">Skupaj 3 datoteke posamično · <code>cmix v21 -c</code></span><span lang="en">Total 3 files individually · <code>cmix v21 -c</code></span></th>
+              <td>943 905</td>
+              <td><strong>723 911</strong></td>
+              <td><strong>−219 994 B (−23<span lang="sl">,</span><span lang="en">.</span>31 %)</strong></td>
+            </tr>
+            <tr class="best">
+              <th scope="row"><span lang="sl">Solidni arhiv <code>.tar</code> (5 384 704 B) · <code>cmix v21</code> proti <code>8zC + PAQ -10LE</code></span><span lang="en">Solid <code>.tar</code> archive (5 384 704 B) · <code>cmix v21</code> vs. <code>8zC + PAQ -10LE</code></span></th>
+              <td>938 840 (<code>cmix v21</code>) / 920 536 (<code>PAQ -10LE</code>)</td>
+              <td><strong>701 372</strong> (<code>8zC + PAQ -10LE</code>)</td>
+              <td><strong>−237 468 B (−25<span lang="sl">,</span><span lang="en">.</span>29 % proti <code>cmix v21 Solid</code>)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details>
+        <summary><span lang="sl">Katere bijektivne transformacije vključujeta Cycle 12 R2 in R3?</span><span lang="en">Which bijective transforms are included in Cycle 12 R2 and R3?</span></summary>
+        <p lang="sl"><strong>Cycle 12 R2 (<code>L_once = 30 476 B</code> = <code>26 248 B</code> P2-C + <code>4 228 B</code> <code>L_r2_decode_min.py.xz</code>):</strong> združuje <code>GEN_19</code> (involucija <code>0 ↔ r_addend</code> na ciljnih poljih relokacij z 1-bajtnim receptom), večprevajalniški <code>GEN_20–22</code> (Lehmerjeva razvrstitev <code>.dynsym</code> iz <code>.gnu.hash</code> in napoved <code>st_value</code>), <code>GEN_23</code> (leksikografsko predponsko kodiranje LCP za <code>.dynstr</code>), <code>GEN_24 / BCJ_X64_V3</code> (bijektivni filter za <code>E8/E9</code>, <code>0F 80..8F</code>, <code>FF 15/25</code> in <code>48/4C 8B/8D/3B [rip+disp32]</code>, preverjen na <code>liblzma-5.8.4.text.bin</code>) ter razporeditev <code>T4</code> z izrezom preverjenih blokov ničel.</p>
+        <p lang="en"><strong>Cycle 12 R2 (<code>L_once = 30 476 B</code> = <code>26 248 B</code> P2-C + <code>4 228 B</code> <code>L_r2_decode_min.py.xz</code>):</strong> combines <code>GEN_19</code> (<code>0 ↔ r_addend</code> involution on relocation target slots with a 1-byte recipe), multi-compiler <code>GEN_20–22</code> (Lehmer <code>.dynsym</code> ordering from <code>.gnu.hash</code> and <code>st_value</code> prediction), <code>GEN_23</code> (lexicographic LCP front-coding for <code>.dynstr</code>), <code>GEN_24 / BCJ_X64_V3</code> (bijective filter for <code>E8/E9</code>, <code>0F 80..8F</code>, <code>FF 15/25</code> and <code>48/4C 8B/8D/3B [rip+disp32]</code>, verified on <code>liblzma-5.8.4.text.bin</code>) and <code>T4</code> section layout with verified zero-run excision.</p>
+        <p lang="sl"><strong>Cycle 12 R3 (<code>L_once = 31 256 B</code> = <code>26 248 B</code> P2-C + <code>5 008 B</code> <code>L_r3_decode_min.py.xz</code>):</strong> z metodo <code>KT-LOO Focus</code> dodaja štiri bijektivne razširitve: (1) <code>BCJ_X64_V4</code> z eksaktnim izrekom o invariantnosti predpone in razširjenimi 64-bitnimi ter 32-bitnimi <code>[rip+disp32]</code> ukazi (<code>−180 879 B</code> na <code>.text</code> v <code>dev5</code>), (2) <code>GEN_25</code> ZigZag delta napovedovalnik za <code>.rela.dyn</code> in <code>.rela.plt</code>, (3) <code>GEN_26</code> 5-ravninski rekonstruktor CIE/FDE zapisov v <code>.eh_frame</code> (<code>−59 983 B</code> na <code>.eh_frame</code> v <code>dev5</code>) ter (4) ZigZag kodiranje <code>st_value</code> v <code>GEN_20–22</code> in MDL-varovano transpozicijo <code>.data.rel.ro</code>.</p>
+        <p lang="en"><strong>Cycle 12 R3 (<code>L_once = 31 256 B</code> = <code>26 248 B</code> P2-C + <code>5 008 B</code> <code>L_r3_decode_min.py.xz</code>):</strong> guided by <code>KT-LOO Focus</code>, R3 adds four bijective upgrades: (1) <code>BCJ_X64_V4</code> with an exact prefix-invariance condition and expanded 64-bit/32-bit <code>[rip+disp32]</code> instructions (<code>−180 879 B</code> on <code>.text</code> across <code>dev5</code>), (2) <code>GEN_25</code> ZigZag delta prediction for <code>.rela.dyn</code> and <code>.rela.plt</code>, (3) <code>GEN_26</code> 5-plane CIE/FDE reconstructor for <code>.eh_frame</code> (<code>−59 983 B</code> on <code>.eh_frame</code> across <code>dev5</code>), and (4) ZigZag <code>st_value</code> residuals in <code>GEN_20–22</code> plus MDL-guarded <code>.data.rel.ro</code> transposition.</p>
+      </details>
+
+      <details>
+        <summary><span lang="sl">Nativno jedro Rust <code>z8c_core</code> in medplatformna preverba (Win11 ↔ Linux Omarchy)</span><span lang="en">Native Rust <code>z8c_core</code> engine and cross-platform verification (Win11 ↔ Linux Omarchy)</span></summary>
+        <p lang="sl">Na domačem računalniku HOME (Linux Omarchy, Rust 1.100.0) je modul transformacij preveden v nativno knjižnico <code>z8c_core</code> (združljivo tudi s ciljem <code>wasm32-unknown-unknown</code>). Na testnih vektorjih <code>00_data_endian</code> in <code>liblzma-5.8.4.text.bin</code> se izhodi Pythona in Rusta ujemajo do zadnjega bita (<code>SHA‑256: 515041c3…</code>, čas kodiranja v Rustu 0,7 ms, obnove 0,3 ms). Na lokalnih programih ELF iz <code>/usr/bin/</code> je kodek brez napak stisnil in bitno točno obnovil <code>zstd</code> (193 792 B, ZIP −13,61 %, 7z −11,44 %), <code>rg</code> (4 377 936 B, ZIP −4,72 %, 7z −3,80 %), <code>git</code> (4 968 112 B, ZIP −4,42 %, 7z −5,00 %) ter opravil stresni preizkus na 153 131 896 B veliki binarni datoteki <code>/usr/bin/mise</code> v 0,355 s (431 MB/s) s 100 % ujemanjem <code>SHA‑256</code>.</p>
+        <p lang="en">On the HOME Linux Omarchy machine (Rust 1.100.0), the transform pipeline has been ported to the native <code>z8c_core</code> crate (also verified for <code>wasm32-unknown-unknown</code>). On the <code>00_data_endian</code> and <code>liblzma-5.8.4.text.bin</code> test vectors, Python and Rust outputs match byte for byte (<code>SHA‑256: 515041c3…</code>, Rust encode 0.7 ms, decode 0.3 ms). On local <code>/usr/bin/</code> ELF executables, the codec compressed and restored <code>zstd</code> (193 792 B, ZIP −13.61%, 7z −11.44%), <code>rg</code> (4 377 936 B, ZIP −4.72%, 7z −3.80%), <code>git</code> (4 968 112 B, ZIP −4.42%, 7z −5.00%) and completed a 153 131 896 B stress test on <code>/usr/bin/mise</code> in 0.355 s (431 MB/s) with 100% <code>SHA‑256</code> verification.</p>
+      </details>
     </section>
 
     <section id="flac" class="section" aria-labelledby="flac-title">
