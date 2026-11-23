@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="description" content="Stisnite datoteko ELF v arhiv Carbon R2 ali iz arhiva obnovite izvirnik. Kodek 8zC v celoti deluje v brskalniku.">
+  <link rel="canonical" href="https://www.mdlxdcc.org/8zC/">
+  <title>Kodek 8zC · Carbon R2</title>
+  <link rel="stylesheet" href="/8zC/style.css">
+  <script defer src="/8zC/app.js"></script>
+</head>
+<body>
+  <header class="mast">
+    <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>8zC</div>
+    <div class="mast-links"><span class="release">Carbon R2</span><a href="/8zC-results/">Rezultati 8zC</a></div>
+  </header>
+  <main>
+    <h1>Kodek 8zC</h1>
+    <p class="intro">Stisnite datoteko ELF ali jo obnovite iz arhiva Carbon R2. Datoteka ostane v vašem brskalniku.</p>
+    <fieldset id="modes">
+      <legend class="sr-only">Izberite postopek</legend>
+      <label><input type="radio" name="mode" value="encode" checked><span>Stisni ELF</span></label>
+      <label><input type="radio" name="mode" value="decode"><span>Obnovi izvirnik</span></label>
+    </fieldset>
+    <section class="panel" aria-labelledby="input-heading">
+      <h2 id="input-heading">Vhodna datoteka ELF</h2>
+      <input type="file" id="file"  hidden>
+      <button type="button" id="choose" class="drop" aria-describedby="limits">
+        <span class="file-icon" id="file-icon" aria-hidden="true">ELF</span>
+        <span id="filename">Izberite datoteko ELF</span>
+        <span id="filehint" class="hint">ali jo povlecite sem</span>
+      </button>
+      <div class="action-row">
+        <span id="limits" class="limits">1 datoteka · do 16 MiB</span>
+        <button type="button" id="start" class="primary" disabled><span id="start-label">Stisni</span> <span aria-hidden="true">→</span></button>
+        <button type="button" id="cancel" class="secondary" hidden>Prekliči</button>
+      </div>
+    </section>
+    <p id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+    <section id="result" class="panel output" aria-labelledby="result-heading" hidden>
+      <div class="output-top">
+        <div><h2 id="result-heading">Obnovljena datoteka</h2><p id="output-name"></p></div>
+        <a id="download" class="primary"><span id="save-label">Shrani ZIP</span> <span aria-hidden="true">↓</span></a>
+      </div>
+      <div id="digest-row" hidden><span>SHA-256</span><code id="digest"></code></div>
+    </section>
+    <noscript>Za uporabo kodeka vklopite JavaScript.</noscript>
+  </main>
+  <footer>8zC <span aria-hidden="true">/</span> Rust + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt">Licence knjižnic</a></footer>
+</body>
+</html>
