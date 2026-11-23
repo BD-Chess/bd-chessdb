@@ -24,6 +24,7 @@
       <div>
         <p class="eyebrow"><time datetime="2026-11-23"><span lang="sl">23. november 2026</span><span lang="en">23 November 2026</span></time></p>
         <h1 id="title">8zC<span lang="sl"> Rezultati kompresije</span><span lang="en"> Compression Results</span></h1>
+        <p class="eyebrow"><span lang="sl">Izvorna zamisel 8Z · Bojan Dobrečevič (BD). Razvoj 8zC · BD × AI Lab.</span><span lang="en">Original 8Z concept · Bojan Dobrečevič (BD). 8zC development · BD × AI Lab.</span> <a href="#origins"><span lang="sl">Od zamisli do preizkusa</span><span lang="en">From idea to test</span></a></p>
         <p class="intro"><span lang="sl">Brezizgubni preizkusi na datotekah Concorde, zvoku FLAC in datotekah ELF. Matrika kodekov prikazuje tudi velikosti stisnjenih tokov pred prištetjem podatkov za obnovo.</span><span lang="en">Lossless trials on Concorde files, FLAC audio and ELF binaries. The codec matrix also shows compressed sizes before restoration data is added.</span></p>
         <nav class="section-links" aria-label="Razdelki / Sections">
           <a href="#concorde">Concorde</a><a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
@@ -163,6 +164,29 @@
         <h2 id="elf-title">A1p ELF</h2>
         <p><span lang="sl">Na treh primerljivih datotekah je neposredni PAQ arhiv meril 64.760 B, slovarski A 66.682 B in B 65.375 B. Panel ima 12/14 potrjenih obnov. Dva poskusa sta se ustavila pri časovni oziroma temperaturni meji.</span><span lang="en">Across three comparable files, direct PAQ used 64,760 B, dictionary path A 66,682 B and path B 65,375 B. The panel has 12/14 verified restores. Two trials reached the time or temperature limit.</span></p>
       </div>
+    </section>
+
+    <section id="origins" class="section" aria-labelledby="origins-title">
+      <div class="section-heading">
+        <h2 id="origins-title"><span lang="sl">Od π do datotek ELF</span><span lang="en">From π to ELF files</span></h2>
+        <p lang="sl">Ali lahko del datoteke natančno obnovimo iz krajše reference na števke π? In ali lahko za vsak del posebej izberemo najkrajši popolni zapis? Bojan Dobrečevič prvo vprašanje v svojem zapisu o nastanku 8Z umešča na 4. oktober 2024, drugo pa neposredno za njim.</p>
+        <p lang="en">Can a shorter reference to the digits of π reproduce part of a file exactly? And can we choose the shortest complete description for each part separately? In his account of how 8Z began, Bojan Dobrečevič dates the first question to 4 October 2024 and places the second immediately afterwards.</p>
+      </div>
+      <details>
+        <summary><span lang="sl">Prvi preizkusi, 2025–2026</span><span lang="en">Early tests, 2025–2026</span></summary>
+        <p lang="sl">V specifikaciji iz oktobra 2025 je BD s sodelavci opisal izbiro med izvornimi bajti, običajnim stiskanjem in determinističnim generatorjem. Pri metodi najkrajšega opisa (MDL) štejejo tudi oznaka generatorja, parametri in podatki za obnovo. Decembra je 8Z na 60 slikah TIFF skupaj zasedel 38,9 % vhodnih bajtov, PNG 46,3 % in JPEG XL 31,4 %. Februarja 2026 je zvočni kodek 8Z v1.5 ustvaril manjše datoteke kot FLAC-12 na 7 izmed 15 izsekov. Julija je ReZIP iskal manjše združljive arhive ZIP, medtem ko je 8zipLab preizkušal lasten format s skupnim slovarjem in odstranjevanjem podvojenih vsebin.</p>
+        <p lang="en">In the October 2025 specification, BD and collaborators described a choice between raw bytes, conventional compression and a deterministic generator. Under minimum description length (MDL), the generator identifier, parameters and restoration data all count. In December, 8Z used 38.9% of the total input bytes on 60 TIFF images, PNG used 46.3% and JPEG XL used 31.4%. In February 2026, 8Z Audio v1.5 produced smaller files than FLAC-12 on 7 of 15 clips. In July, ReZIP searched for smaller compatible ZIP archives, while 8zipLab tested a custom format with a shared dictionary and content deduplication.</p>
+      </details>
+      <p class="note" lang="sl"><strong>Novembra 2026 je P2-C isto zamisel preizkusil na 240 datotekah ELF.</strong> Pravila za obnovo med drugim znova ustvarijo izbrane bajte tabel ELF. Kodirnik na teh mestih zapiše ničle in preostanek stisne s PAQ8PX <code>-7</code>. Pri dekodiranju reference povedo, katere bajte je treba izračunati in kam jih vrniti. Vseh 240 datotek se je obnovilo bitno točno. Neposredni PAQ je zasedel 10 817 209 B, P2-C z referencami, glavami in enim skupnim dekoderjem pa 10 408 291 B. Prihranek na tem naboru je 408 918 B (3,78 %).</p>
+      <p class="note" lang="en"><strong>In November 2026, P2-C tested the same idea on 240 ELF files.</strong> Its restoration rules can regenerate selected bytes in ELF tables. The encoder puts zeros at those positions and compresses the residual with PAQ8PX <code>-7</code>. During decoding, the references identify which bytes to compute and where to put them back. All 240 files were restored byte for byte. Direct PAQ used 10 817 209 B. P2-C used 10 408 291 B including references, headers and one shared decoder, saving 408 918 B (3.78%) on this corpus.</p>
+      <p class="note" lang="sl">Pri P2-C je 8zC-C vodil tehnično zasnovo. 8zC-G je z neodvisnim protiprimerom popravil razlago zgodnjega poskusa in določil merilni protokol. 8zC-HP1 je pripravil kodirnik in merilne programe ter izvedel potrditveni preizkus.</p>
+      <p class="note" lang="en">For P2-C, 8zC-C led the technical design. 8zC-G provided an independent counterexample that corrected the interpretation of an early test and set the measurement protocol. 8zC-HP1 built the encoder and measurement tools and ran the confirmation test.</p>
+      <nav class="section-links" aria-label="Viri in rezultati / Sources and results">
+        <a href="https://www.mdlxdcc.org/crp/Origin.html"><span lang="sl">BD-jev zapis o nastanku</span><span lang="en">BD’s origin account</span></a>
+        <a href="https://www.mdlxdcc.org/8z/8z_compression"><span lang="sl">Meritve 8Z</span><span lang="en">8Z benchmarks</span></a>
+        <a href="https://www.mdlxdcc.org/8z/8zip">8zip / ReZIP</a>
+        <a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a>
+      </nav>
     </section>
   </main>
 
