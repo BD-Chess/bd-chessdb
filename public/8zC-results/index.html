@@ -22,11 +22,11 @@
   <main class="wrap" id="results">
     <section class="hero" aria-labelledby="title">
       <div>
-        <p class="eyebrow"><time datetime="2026-11-22"><span lang="sl">22. november 2026</span><span lang="en">22 November 2026</span></time></p>
+        <p class="eyebrow"><time datetime="2026-11-23"><span lang="sl">23. november 2026</span><span lang="en">23 November 2026</span></time></p>
         <h1 id="title">8zC<span lang="sl"> Rezultati kompresije</span><span lang="en"> Compression Results</span></h1>
-        <p class="intro"><span lang="sl">Brezizgubni preizkusi na datotekah Concorde, zvoku FLAC in datotekah ELF. Velikosti vključujejo podatke, ki jih potrebuje obnova.</span><span lang="en">Lossless trials on Concorde files, FLAC audio and ELF binaries. Measured sizes include the data required for restoration.</span></p>
+        <p class="intro"><span lang="sl">Brezizgubni preizkusi na datotekah Concorde, zvoku FLAC in datotekah ELF. Matrika kodekov prikazuje tudi velikosti stisnjenih tokov pred prištetjem podatkov za obnovo.</span><span lang="en">Lossless trials on Concorde files, FLAC audio and ELF binaries. The codec matrix also shows compressed sizes before restoration data is added.</span></p>
         <nav class="section-links" aria-label="Razdelki / Sections">
-          <a href="#concorde">Concorde</a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
+          <a href="#concorde">Concorde</a><a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
         </nav>
       </div>
       <aside class="highlight">
@@ -82,6 +82,41 @@
       </div>
       <p class="note" lang="sl">Tnm151 potrjuje R2 na drugem zgodovinskem vzorcu. Rezultat R3 na CHE950 velja za teh sedem datotek. Neodvisna preverba R3 na celotnem zgodovinskem posnetku še čaka.</p>
       <p class="note" lang="en">Tnm151 confirms R2 on a second historical sample. The CHE950 result for R3 applies to these seven files. Independent validation of R3 on a full historical checkpoint is still pending.</p>
+    </section>
+
+    <section id="codec-matrix" class="section" aria-labelledby="matrix-title">
+      <div class="section-heading">
+        <h2 id="matrix-title"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></h2>
+        <p lang="sl">Na računalniku Work smo isto knjižnico ELF <code>haskell-data-endian</code> (80 264 B) stisnili neposredno in po predobdelavi 8zC. Kodek v drugem primeru stisne preostanek, ki ga ustvari 8zC.</p>
+        <p lang="en">On the Work PC we compressed the same 80 264 B ELF library, <code>haskell-data-endian</code>, directly and after 8zC preprocessing. In the second case the codec compresses the residual produced by 8zC.</p>
+      </div>
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="matrix-title">
+        <table>
+          <caption><span lang="sl">Bruto velikosti stisnjenih tokov za eno datoteko, pred prištetjem podatkov za obnovo 8zC</span><span lang="en">Gross compressed sizes for one file, before adding 8zC restoration data</span></caption>
+          <thead><tr><th scope="col"><span lang="sl">Kodek in nastavitev</span><span lang="en">Codec and setting</span></th><th scope="col"><span lang="sl">Izvirnik (B)</span><span lang="en">Original (B)</span></th><th scope="col"><span lang="sl">Preostanek (B)</span><span lang="en">Residual (B)</span></th><th scope="col"><span lang="sl">Prihranek (B)</span><span lang="en">Saving (B)</span></th></tr></thead>
+          <tbody>
+            <tr><th scope="row">PAQ8PX v217 <code>-3</code></th><td>9 001</td><td>7 636</td><td>1 365</td></tr>
+            <tr><th scope="row">PAQ8PX v217 <code>-10LE</code></th><td>8 842</td><td>7 486</td><td>1 356</td></tr>
+            <tr><th scope="row">cmix v21 <code>-c</code></th><td>9 339</td><td>7 947</td><td>1 392</td></tr>
+            <tr><th scope="row">7z <code>-mx=9</code></th><td>13 594</td><td>12 071</td><td>1 523</td></tr>
+            <tr><th scope="row">ZIP <code>-mx=9</code></th><td>16 012</td><td>14 363</td><td>1 649</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" lang="sl">PAQ <code>-3</code> je preostanek stisnil v 11,1 s na 7 636 B. Neposredni PAQ <code>-10LE</code> je za 8 842 B porabil 35,4 s. Na istem preostanku je <code>-10LE</code> prihranil še 150 B, cmix pa je porabil 311 B več od <code>-3</code>.</p>
+      <p class="note" lang="en">PAQ <code>-3</code> compressed the residual to 7 636 B in 11.1 s. Direct PAQ <code>-10LE</code> took 35.4 s for 8 842 B. On the same residual, <code>-10LE</code> saved a further 150 B, while cmix used 311 B more than <code>-3</code>.</p>
+      <details>
+        <summary><span lang="sl">Koliko prostora potrebuje obnova?</span><span lang="en">How much space does restoration require?</span></summary>
+        <p lang="sl">Za to datoteko potrebujemo še 15 B (R + H) in enkratni dekoder (L_once) velikosti 26 248 B. Če celoten dekoder pripišemo eni datoteki, veja PAQ <code>-3</code> po tem obračunu porabi 33 899 B. Če je dekoder že v zbirki, dodatna datoteka porabi 7 651 B.</p>
+        <p lang="en">This file also needs 15 B (R + H) and a 26 248 B decoder (L_once). Charging the entire decoder to one file brings the PAQ <code>-3</code> residual path to 33 899 B under this accounting. If the collection already contains the decoder, the additional file accounts for 7 651 B.</p>
+        <p lang="sl">Ločeni posnetek korpusa R3.1 za PAQ <code>-10LE</code> potrjuje 472/479 bitno točnih poslov. V seštevek spada 236/240 datotek (235 popolnih parov in ena brez preostanka). Neposredno stiskanje je zasedlo 8 118 458 B, pot 8zC z vštetimi R + H in enim dekoderjem pa 7 773 608 B. Neto prihranek na teh datotekah je 344 850 B.</p>
+        <p lang="en">A separate R3.1 corpus checkpoint for PAQ <code>-10LE</code> verifies 472/479 byte-exact jobs. The totals cover 236/240 files (235 complete pairs and one file without a residual). Direct compression used 8 118 458 B. The 8zC path used 7 773 608 B including R + H and one decoder, saving 344 850 B net on those files.</p>
+      </details>
+      <details>
+        <summary><span lang="sl">Vir in obseg meritev</span><span lang="en">Source and measurement scope</span></summary>
+        <p lang="sl">Workova matrika kodekov z dne 23. novembra 2026 vsebuje 42 uporabnih nastavitev PAQ in 17 nastavitev 7z/ZIP. Izločili smo tri 9-bajtne izhode PAQ, pri katerih je manjkal slovar. Navedena časa PAQ merita trajanje stiskanja že pripravljenih vhodov. Surovi zapisi ne vsebujejo časa predobdelave, procesorskega časa, meritev RAM, ločenih časov za cmix ali dokazil SHA-256 o obnovi za vsako nastavitev matrike. Ločeni zapisi R3.1 potrjujejo bitno točno razširitev obeh tokov <code>-10LE</code> iz tabele.</p>
+        <p lang="en">The Work codec matrix of 23 November 2026 contains 42 usable PAQ settings and 17 settings for 7z/ZIP. We excluded three 9-byte PAQ outputs produced with a missing dictionary. The PAQ timings measure elapsed compression time on prepared inputs. The raw records omit preprocessing time, CPU time, RAM measurements, separate cmix timings and per-setting SHA-256 restore receipts. Separate R3.1 records verify byte-exact decoding of both <code>-10LE</code> streams in the table.</p>
+      </details>
     </section>
 
     <section id="flac" class="section" aria-labelledby="flac-title">
