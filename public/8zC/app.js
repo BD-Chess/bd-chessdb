@@ -27,7 +27,18 @@ function setLanguage(lang) {
   document.documentElement.lang = lang;
   staticNodes.forEach(([node, text]) => { node.textContent = t(text); });
   document.querySelectorAll("[data-lang]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.lang === lang)));
-  if (!worker) switchMode();
+  const encoding = mode === "encode";
+  byId("input-heading").textContent = t(encoding ? "Vhodna datoteka ELF" : "Vhodni arhiv Carbon R2");
+  byId("limits").textContent = t(encoding ? "1 datoteka · do 16 MiB" : "1 arhiv · do 16 MiB + 1 KiB");
+  byId("start-label").textContent = t(encoding ? "Stisni" : "Obnovi");
+  if (!selected) {
+    byId("filename").textContent = t(encoding ? "Izberite datoteko ELF" : "Izberite arhiv ZIP");
+    byId("filehint").textContent = t(encoding ? "ali jo povlecite sem" : "ali ga povlecite sem");
+  }
+  if (!byId("result").hidden) {
+    byId("result-heading").textContent = encoding ? "Arhiv 8zC ZIP" : t("Obnovljena datoteka");
+    byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani ELF");
+  }
 }
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
@@ -202,4 +213,5 @@ document.addEventListener("keydown", (event) => {
 setTheme(localStorage.getItem("8zc-theme") === "light" ? "light" : "dark");
 byId("theme").addEventListener("click", () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
 document.querySelectorAll("[data-lang]").forEach(button => button.addEventListener("click", () => setLanguage(button.dataset.lang)));
+switchMode();
 setLanguage(language);
