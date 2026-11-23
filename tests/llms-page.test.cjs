@@ -47,7 +47,7 @@ test('shipped JSON matches the schema the page reads', () => {
   assert.equal(COM.schema, 'ai8-llm-meta-commentary-v1');
   assert.equal(UPDATES.schema, 'ai8-llm-meta-updates-v1');
   assert.equal(UPDATES.updated, '2026-11-23');
-  assert.equal(UPDATES.baseline_capture, '2026-11-20');
+  assert.equal(UPDATES.baseline_capture, '2026-11-23');
   assert.ok(UPDATES.items.some(x => x.title === 'Microsoft-Decision-1.1'));
   assert.ok(UPDATES.items.some(x => x.title === 'DaisyRose-27B'));
   assert.ok(UPDATES.items.some(x => x.title === 'GitHub Copilot Fusion Max'));
@@ -73,7 +73,7 @@ test('shipped JSON matches the schema the page reads', () => {
   assert.ok(CAPS.captures.length >= 2 && CAPS.captures.some(c => c.date === '2026-10-30'), 'the 30. 10. capture is kept');
   assert.equal(CAPS.latest, CAPS.captures[0].date);
   assert.ok(!CAPS.captures.some(c => c.date === '2026-11-16'), 'R3 replaces the November 16 public capture');
-  if (CAPS.latest === '2026-11-20') {
+  if (CAPS.latest === '2026-11-23') {
     assert.deepEqual(META.capture_scope, SRC.capture_scope);
     for (const id of ['gpt-6.2-astra', 'gpt-6.2-sol', 'gemini-4-neon']) {
       const model = META.models.find(m => m.model_id === id);
@@ -83,6 +83,12 @@ test('shipped JSON matches the schema the page reads', () => {
     }
   }
   assert.equal(META.data_fetched, CAPS.latest);
+  assert.ok(CAPS.captures.some(c => c.date === '2026-11-20'), 'the R3 capture is archived');
+  if (CAPS.latest === '2026-11-23') {
+    const astra = META.models.find(m => m.model_id === 'gpt-6.2-astra');
+    assert.ok(astra && astra.n_sources >= 5 && astra.overall_rank, 'R4 ARC Prize independently covers Astra');
+    assert.deepEqual(META.capture_scope, SRC.capture_scope, 'R4 provenance shared by model and sources');
+  }
   for (const c of CAPS.captures) {
     assert.equal(c.path, 'data/' + c.date + '/');
     for (const n of ['meta_index.json', 'sources.json', 'commentary_sl.json']) {
