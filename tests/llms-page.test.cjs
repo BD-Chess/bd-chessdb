@@ -14,6 +14,7 @@ const read = name => JSON.parse(fs.readFileSync(path.join(DIR, name), 'utf8'));
 const META = read('meta_index.json');
 const SRC = read('sources.json');
 const COM = read('commentary_sl.json');
+const UPDATES = read('updates.json');
 
 async function boot(url, lang, metaFixture) {
   const requested = [];
@@ -25,7 +26,7 @@ async function boot(url, lang, metaFixture) {
       window.fetch = async (u) => {
         const abs = new URL(u, window.location.href);
         requested.push(abs.pathname);
-        const m = /(?:^|\/)llms\/((?:data\/\d{4}-\d{2}-\d{2}\/)?(?:meta_index|sources|commentary_sl)|captures)\.json$/.exec(abs.pathname);
+        const m = /(?:^|\/)llms\/((?:data\/\d{4}-\d{2}-\d{2}\/)?(?:meta_index|sources|commentary_sl)|captures|updates)\.json$/.exec(abs.pathname);
         if (!m) return { ok: false, status: 404, json: async () => { throw new Error('404'); } };
         const text = fs.readFileSync(path.join(DIR, m[1] + '.json'), 'utf8');
         return { ok: true, status: 200, json: async () => metaFixture && /(?:^|\/)meta_index$/.test(m[1]) ? JSON.parse(JSON.stringify(metaFixture)) : JSON.parse(text) };
@@ -44,6 +45,13 @@ test('shipped JSON matches the schema the page reads', () => {
   assert.equal(META.schema, 'ai8-llm-meta-index-v1');
   assert.equal(SRC.schema, 'ai8-llm-meta-sources-v1');
   assert.equal(COM.schema, 'ai8-llm-meta-commentary-v1');
+  assert.equal(UPDATES.schema, 'ai8-llm-meta-updates-v1');
+  assert.equal(UPDATES.updated, '2026-11-23');
+  assert.equal(UPDATES.baseline_capture, '2026-11-20');
+  assert.ok(UPDATES.items.some(x => x.title === 'Microsoft-Decision-1.1'));
+  assert.ok(UPDATES.items.some(x => x.title === 'DaisyRose-27B'));
+  assert.ok(UPDATES.items.some(x => x.title === 'GitHub Copilot Fusion Max'));
+  for (const item of UPDATES.items) for (const source of item.sources || []) assert.ok(source.url.startsWith('https://'));
   assert.match(META.data_fetched, /^\d{4}-\d{2}-\d{2}$/);
   const ranked = META.models.filter(m => m.overall_rank);
   assert.ok(ranked.length >= 20, 'at least 20 ranked models');
@@ -58,7 +66,7 @@ test('shipped JSON matches the schema the page reads', () => {
   assert.ok(SRC.accepted.length >= 10 && SRC.rejected.length >= 1);
   assert.equal(SRC.accepted.length, META.counts.sources_accepted);
   // No raw scraped pages and nothing secret-looking in the shipped data.
-  for (const f of fs.readdirSync(DIR)) assert.ok(['index.html', 'chats.html', 'meta_index.json', 'sources.json', 'commentary_sl.json', 'captures.json', 'data'].includes(f), 'unexpected file ' + f);
+  for (const f of fs.readdirSync(DIR)) assert.ok(['index.html', 'chats.html', 'meta_index.json', 'sources.json', 'commentary_sl.json', 'captures.json', 'updates.json', 'data'].includes(f), 'unexpected file ' + f);
   // Published captures are listed newest first and the root files mirror the latest capture.
   const CAPS = JSON.parse(fs.readFileSync(path.join(DIR, 'captures.json'), 'utf8'));
   assert.equal(CAPS.schema, 'ai8-llm-meta-captures-v1');
@@ -85,14 +93,14 @@ test('shipped JSON matches the schema the page reads', () => {
     assert.equal(JSON.parse(fs.readFileSync(path.join(DIR, 'data', c.date, 'meta_index.json'), 'utf8')).data_fetched, c.date);
   }
   for (const d of fs.readdirSync(path.join(DIR, 'data'))) assert.ok(CAPS.captures.some(c => c.date === d), 'listed capture ' + d);
-  const all = HTML + JSON.stringify(META) + JSON.stringify(SRC) + JSON.stringify(COM);
+  const all = HTML + JSON.stringify(META) + JSON.stringify(SRC) + JSON.stringify(COM) + JSON.stringify(UPDATES);
   assert.equal(/sk-ant-|ghp_[A-Za-z0-9]{20}|AIza[0-9A-Za-z_-]{30}|BD_GDrive|rclone\.conf|refresh_token/.test(all), false);
 });
 
 test('page renders every table from its own data (SL)', async () => {
   const { window, doc, requested, errors } = await boot('https://www.mdlxdcc.org/llms/');
   assert.deepEqual(errors, []);
-  assert.deepEqual(requested.slice().sort(), ['/llms/captures.json', '/llms/commentary_sl.json', '/llms/meta_index.json', '/llms/sources.json']);
+  assert.deepEqual(requested.slice().sort(), ['/llms/captures.json', '/llms/commentary_sl.json', '/llms/meta_index.json', '/llms/sources.json', '/llms/updates.json']);
   assert.equal(doc.getElementById('status').textContent, '');
   const ranked = META.models.filter(m => m.overall_rank).length;
   assert.equal(rows(doc, 'overall'), Math.min(40, ranked));
@@ -117,6 +125,11 @@ test('page renders every table from its own data (SL)', async () => {
   assert.equal(rows(doc, 'boardleaders'), META.board_leaders.length);
   assert.ok(doc.getElementById('disagree-text').textContent.length > 50, 'disagreement commentary');
   assert.ok(doc.getElementById('commentary').textContent.length > 200, 'commentary');
+  assert.equal(doc.getElementById('novosti').hidden, false, 'current update panel visible');
+  assert.equal(doc.querySelectorAll('#updates-items .update-item').length, UPDATES.items.length);
+  assert.match(doc.getElementById('updates-items').textContent, /Microsoft-Decision-1.1/);
+  assert.match(doc.getElementById('updates-items').textContent, /DaisyRose-27B/);
+  assert.match(doc.getElementById('updates-items').textContent, /GitHub Copilot Fusion Max/);
   assert.equal(doc.querySelectorAll('#accepted details.src').length, SRC.accepted.length);
   assert.equal(doc.querySelectorAll('#rejected li').length, SRC.rejected.length);
   assert.ok(doc.querySelectorAll('#leaders li').length >= 7);
@@ -133,6 +146,7 @@ test('page renders every table from its own data (SL)', async () => {
   assert.match(doc.getElementById('strip-text').textContent, /^Data collected: \d+ \w+ \d{4}$/);
   assert.match(cellText(doc, '#overall thead'), /Overall/);
   assert.equal(doc.title, 'LLM meta-index — which model is really the best');
+  assert.match(doc.getElementById('updates-items').textContent, /Specialized decision model/);
   window.close();
 });
 
@@ -233,6 +247,7 @@ test('older captures stay available: ?d= loads them and the list switches betwee
   assert.equal(sel.value, '2026-10-30');
   assert.equal(sel.options.length, CAPS.captures.length);
   assert.equal(doc.getElementById('strip-warn').hidden, false, 'older capture is marked');
+  assert.equal(doc.getElementById('novosti').hidden, true, 'current landscape update is hidden on an older capture');
   assert.equal(doc.querySelector('a[data-file="meta_index.json"]').getAttribute('href'), 'data/2026-10-30/meta_index.json');
   // Hydrogen came out after this capture, so the note lists it without numbers.
   assert.match(doc.getElementById('newbox').textContent, /gemini-4-hydrogen — izšel 12\. 11\. 2026 · po zadnjem zajemu podatkov/);
