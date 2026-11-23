@@ -22,7 +22,7 @@ OUT.mkdir(parents=True,exist_ok=True)
 SOURCE=json.loads((BASE/"sources.json").read_text(encoding="utf-8"))
 FSTAMP=dt.datetime.now(dt.timezone.utc).isoformat()
 USER_AGENT="Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0"
-MAX_BODY=2_000_000
+MAX_BODY=8_000_000
 HEADERS={"User-Agent": USER_AGENT,"Accept":"application/json, text/csv, text/html, application/yaml, text/plain;q=0.8"}
 def select_urls(src):
   choices=[]
@@ -34,7 +34,24 @@ def select_urls(src):
     choices.append(u)
   data=[u for u in choices if re.search(r"(\.json|\.csv|\.yaml|\.yml)(?:\?|$)|raw\.githubusercontent\.com|datasets-server\.huggingface\.co",u,re.I)]
   result=list(dict.fromkeys(data[:1]+choices[:1]))
-  return result[:2]
+  target=src.get("source_id","")
+  if target=="arc_prize":
+    result.extend([u for u in choices if "/media/data/leaderboard/" in u])
+  elif target=="vals_ai":
+    result.extend([u for u in choices if "_astro/" in u and ".json" in u][:13])
+    result.extend([u for u in choices if "/benchmarks/" in u][:4])
+  elif target=="terminal_bench":
+    result.extend([u for u in choices if "harborframework.com" in u])
+  elif target=="snorkel_ai":
+    result.extend([u for u in choices if ".json" in u][:12])
+  elif target=="slobench":
+    result.extend([u for u in choices if "/leaderboardSubmissions/" in u][:9])
+  elif target=="lmarena":
+    result.extend([
+      "https://datasets-server.huggingface.co/rows?dataset=lmarena-ai/leaderboard-dataset&config="+config+"&split=latest&offset=0&length=100"
+      for config in ("agent","text_style_control","webdev")
+    ])
+  return list(dict.fromkeys(result))[:18]
 def probe(job):
   sid,u=job
   try:
@@ -48,7 +65,7 @@ def probe(job):
               "content_type":ctype,"length":len(content),"truncated":len(content)>MAX_BODY,
               "sha256_sample":hashlib.sha256(short).hexdigest(),"etag":hdr.get("ETag"),
               "last_modified":hdr.get("Last-Modified"),"checked_at_utc":FSTAMP,
-              "sample":short if not len(content)>MAX_BODY and any(t in ctype.lower() for t in ["json","csv","yaml","text/plain"]) else b""}
+              "sample":short if not len(content)>MAX_BODY and (any(t in ctype.lower() for t in ["json","csv","yaml","text/plain","application/zip"]) or sid in {"artificial_analysis","vals_ai","terminal_bench","lmarena"}) else b""}
   except Exception as e:
     return {"source_id":sid,"url":u,"status":"ERROR","error":str(e)[:400],"checked_at_utc":FSTAMP,"sample":b""}
 jobs=[(s["source_id"],u) for s in SOURCE.get("accepted",[]) for u in select_urls(s)]
