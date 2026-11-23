@@ -1,0 +1,57 @@
+name: Materialize verified LLM R4 release candidate
+on:
+  push:
+    branches: [research/llms-r4-capture-20261123]
+    paths:
+      - scripts/llms_r4_materialize.py
+      - .github/workflows/llms-r4-materialize.yml
+permissions:
+  contents: write
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Create clean R4 release branch from current main
+        run: |
+          cp scripts/llms_r4_materialize.py /tmp/llms_r4_materialize.py
+          git fetch origin main
+          git switch -c release/llms-r4-20261123 origin/main
+      - name: Materialize SHA-256 validated research artifact
+        run: python3 /tmp/llms_r4_materialize.py
+      - name: Verify static schema, file parity and R4 main-source accuracy
+        run: |
+          python3 - <<'PY'
+          import json,pathlib
+          root=pathlib.Path("public/llms")
+          cap=json.loads((root/"captures.json").read_text())
+          meta=json.loads((root/"meta_index.json").read_text())
+          src=json.loads((root/"sources.json").read_text())
+          assert cap["latest"]==meta["data_fetched"]=="2026-11-23"
+          assert cap["captures"][1]["date"]=="2026-11-20"
+          assert meta["capture_scope"]==src["capture_scope"]
+          assert src["fetched"]=="2026-11-23"
+          assert all((root/"data/2026-11-23"/name).read_bytes()==(root/name).read_bytes() for name in ("meta_index.json","sources.json","commentary_sl.json"))
+          m={m["model_id"]:m for m in meta["models"]}
+          assert m["gpt-6.2-astra"]["overall_rank"]==9
+          assert m["gpt-6.2-sol"]["overall_rank"]==15
+          assert m["gemini-4-neon"]["overall_rank"]==3
+          print("R4 STATIC PASS", meta["counts"], "source=",src["fetched"])
+          PY
+      - name: Smoke tests of actual published page and capture selectors
+        run: |
+          npm install --prefix /tmp/llms-browser-runtime --no-package-lock --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+          NODE_PATH=/tmp/llms-browser-runtime/node_modules node --test tests/llms-page.test.cjs
+      - name: Commit and push only scoped R4 public files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/llms/meta_index.json public/llms/sources.json public/llms/commentary_sl.json public/llms/captures.json public/llms/updates.json public/llms/data/2026-11-23 docs/LLMS_R4_20261123.md tests/llms-page.test.cjs
+          git diff --cached --stat
+          git commit -m "LLMs R4: 2026-11-23 verified targeted source recapture and ranking"
+          git push origin HEAD:refs/heads/release/llms-r4-20261123
