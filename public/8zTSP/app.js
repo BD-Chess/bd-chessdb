@@ -38,6 +38,18 @@ $('seconds').min = String(RUN_LIMITS.minSeconds); $('seconds').max = String(RUN_
 let manualTimePart = null, manualTimeValue = null;
 let passChoice = null, engineChoice = null;
 const selectedRival = () => RIVALS[engineChoice?.value];
+const mdlDcc = document.createElement('input');
+mdlDcc.type = 'checkbox';
+mdlDcc.id = 'mdlDcc';
+const mdlDccLabel = document.createElement('label');
+mdlDccLabel.className = 'check';
+const mdlDccName = document.createElement('span');
+mdlDccName.textContent = 'MDL×DCC';
+mdlDccLabel.append(mdlDcc, mdlDccName);
+$('refinement').closest('label').after(mdlDccLabel);
+let preferMdlDcc = true;
+mdlDcc.onchange = () => { preferMdlDcc = mdlDcc.checked; };
+const largeMap = () => coords.length / 2 > 12000;
 function rivalCompatible(rival) {
   const cities = coords.length / 2;
   return cities >= rival.min && cities <= rival.max &&
@@ -446,6 +458,9 @@ function recordWasmMemory(worker, bytes) {
 }
 
 function render() {
+  mdlDccLabel.title = lang() === 'sl'
+    ? 'Prilagodljiva izbira iskanja za zemljevide z več kot 12.000 lokacijami.'
+    : 'Adaptive search for maps with more than 12,000 locations.';
   renderWasmMemory();
   const rival = selectedRival();
   const finland = tab === 'nu' && mapMeta?.id === FINLAND && $('example').value === FINLAND;
@@ -541,6 +556,9 @@ function controls() {
   const rival = selectedRival();
   $('run').disabled = !ready || active || !!loading || !coords.length || (!!rival && !rivalCompatible(rival));
   $('stop').disabled = !active && !loading;
+  mdlDccLabel.hidden = !!rival;
+  mdlDcc.disabled = active || !!loading || !ready || !!rival || !largeMap();
+  mdlDcc.checked = largeMap() && preferMdlDcc;
   ['file', 'count', 'seed', 'generate', 'seconds', 'workers', 'refinement', 'twoPass', 'reference', 'collection', 'example', 'p-nu', 'p-rnd', 'p-file'].forEach(id => $(id).disabled = active || !ready);
   if (engineChoice) {
     $('passChoice').hidden = !!rival;
@@ -673,6 +691,7 @@ async function start(options = {}) {
   const topology = workers === 1 ? 'single worker' : sharedThreads ? 'shared workers' : 'separate workers';
   const reference = options.reference ?? (referenceRaw || null);
   const refinement = options.refinement ?? $('refinement').checked;
+  const useMdlDcc = largeMap() && (options.mdlDcc ?? mdlDcc.checked);
   const passMode = options.passMode ?? (options.twoPass === undefined ? passChoice.value : options.twoPass ? passChoice.value === 'stateful' ? 'stateful' : 'restart' : 'one');
   if (!['one','restart','stateful'].includes(passMode) || (passMode === 'stateful' && coords.length/2 <= 12000)) throw Error(PASS_COPY[lang()].large);
   const plan = selectedTimePlan(seconds, options.twoPass ?? (passMode !== 'one'), options);
@@ -695,7 +714,7 @@ async function start(options = {}) {
     wasmSha256: loaderState.metrics?.[sharedThreads ? 'shared' : 'serial']?.sha256 ?? null,
     workers, deviceCores: reportedCores, workerLimit: cores, topology, requestedTopology: execution, poolWorkersCreated: 0, workersTerminated: 0,
     engineRevision: ENGINE_BUILD.engineRevision, webVersion: ENGINE_BUILD.webVersion, passMode, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1] || null, handoffs: [],
-    refinement, twoPass: plan.enabled, passPlan: plan, passEvents: [], passBudgets: [], currentPass: plan.enabled ? 1 : null, reference, unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
+    refinement, mdlDcc: useMdlDcc, twoPass: plan.enabled, passPlan: plan, passEvents: [], passBudgets: [], currentPass: plan.enabled ? 1 : null, reference, unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
     history: [], historyReceived: 0, historyDropped: 0, results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
   render();
@@ -774,7 +793,7 @@ async function start(options = {}) {
         }
         if (data.type === 'done') {
           if (data.handoffSummary) runRecord.handoffs[i] = {...runRecord.handoffs[i],worker:i,...data.handoffSummary};
-          runRecord.results.push({ worker: i, seed: (seed + i) >>> 0, length: data.length, elapsed: data.elapsed, steps: data.steps, poolStats: data.poolStats, probe: data.probe, wasmMemoryBytes: data.wasmMemoryBytes });
+          runRecord.results.push({ worker: i, seed: (seed + i) >>> 0, length: data.length, elapsed: data.elapsed, steps: data.steps, poolStats: data.poolStats, probe: data.probe, wasmMemoryBytes: data.wasmMemoryBytes, dccProposals: data.dccProposals });
           done++;
           if (done === coordinators) {
             runRecord.length = best;
@@ -785,6 +804,7 @@ async function start(options = {}) {
       };
       worker.onerror = event => { if (token !== generation || !active) return; finish('workerFail', event.message); reject(Error(event.message)); };
       worker.postMessage({ type: 'run', token, module, memory, text, seconds, seed: (seed + i) >>> 0, refinement, shared, sharedThreads: sharedThreads ? workers : 0,
+        mdlDcc: useMdlDcc,
         probe: !!options.probe, maxSteps: options.maxSteps, passes: options.passes, twoPass: plan.enabled,
         phaseProfile: passMode === 'stateful' ? 'preserve' : undefined,
         firstBudgetSeconds: plan.firstBudgetSeconds, totalDeadlineEpoch,

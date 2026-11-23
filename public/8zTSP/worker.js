@@ -88,16 +88,16 @@ self.onmessage = async ({data}) => {
       const phaseEnabled = profiled ? profiles[data.phaseProfile] !== 0 : !!data.twoPass;
       self.postMessage({type:'budget',token,wasmMemoryBytes:wasm.memory.buffer.byteLength,plan:{remainingSeconds:remaining,firstSeconds:phaseEnabled ? first : 0,totalDeadlineEpoch:data.totalDeadlineEpoch}});
       const result = profiled
-        ? problem.solve_phase_profile(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first,profiles[data.phaseProfile])
+        ? problem.solve_phase_profile(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first,profiles[data.phaseProfile],data.mdlDcc)
         : data.twoPass
-        ? problem.solve_two_pass(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first)
-        : problem.solve(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement);
+        ? problem.solve_two_pass(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,first,data.mdlDcc)
+        : problem.solve(remaining,data.seed,data.maxSteps || 0,data.passes || 0,data.refinement,data.mdlDcc);
       const tour = result.tour();
       const poolStats = threaded ? Array.from(api.pool_stats()) : null;
       const handoffSummary = profiled ? JSON.parse(result.handoff_summary()) : null;
       const transfers = [tour.buffer];
       self.postMessage({type:'done',token,length:result.length,elapsed:result.elapsed,
-        wall:(performance.now()-started)/1000,steps:result.steps,tour,poolStats,probe,wasmMemoryBytes:wasm.memory.buffer.byteLength,
+        wall:(performance.now()-started)/1000,steps:result.steps,dccProposals:result.dcc_proposals,tour,poolStats,probe,wasmMemoryBytes:wasm.memory.buffer.byteLength,
         ...(profiled ? {handoffSummary} : {})},transfers);
       result.free();
     }

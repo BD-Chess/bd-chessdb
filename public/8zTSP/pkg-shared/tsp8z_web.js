@@ -218,10 +218,11 @@ export class Problem {
      * @param {number} passes
      * @param {boolean} refinement
      * @param {number} first_seconds
+     * @param {boolean | null} [mdl_dcc]
      * @returns {Solution}
      */
-    solve_two_pass(seconds, seed, max_steps, passes, refinement, first_seconds) {
-        const ret = wasm.problem_solve_two_pass(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, first_seconds);
+    solve_two_pass(seconds, seed, max_steps, passes, refinement, first_seconds, mdl_dcc) {
+        const ret = wasm.problem_solve_two_pass(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, first_seconds, isLikeNone(mdl_dcc) ? 0xFFFFFF : mdl_dcc ? 1 : 0);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -238,10 +239,11 @@ export class Problem {
      * @param {boolean} refinement
      * @param {number} first_seconds
      * @param {number} profile
+     * @param {boolean | null} [mdl_dcc]
      * @returns {Solution}
      */
-    solve_phase_profile(seconds, seed, max_steps, passes, refinement, first_seconds, profile) {
-        const ret = wasm.problem_solve_phase_profile(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, first_seconds, profile);
+    solve_phase_profile(seconds, seed, max_steps, passes, refinement, first_seconds, profile, mdl_dcc) {
+        const ret = wasm.problem_solve_phase_profile(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, first_seconds, profile, isLikeNone(mdl_dcc) ? 0xFFFFFF : mdl_dcc ? 1 : 0);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -283,10 +285,11 @@ export class Problem {
      * @param {number} max_steps
      * @param {number} passes
      * @param {boolean} refinement
+     * @param {boolean | null} [mdl_dcc]
      * @returns {Solution}
      */
-    solve(seconds, seed, max_steps, passes, refinement) {
-        const ret = wasm.problem_solve(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement);
+    solve(seconds, seed, max_steps, passes, refinement, mdl_dcc) {
+        const ret = wasm.problem_solve(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, isLikeNone(mdl_dcc) ? 0xFFFFFF : mdl_dcc ? 1 : 0);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -319,6 +322,13 @@ export class Solution {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_solution_free(ptr, 0);
+    }
+    /**
+     * @returns {number}
+     */
+    get dcc_proposals() {
+        const ret = wasm.solution_dcc_proposals(this.__wbg_ptr);
+        return ret;
     }
     /**
      * @returns {string}
