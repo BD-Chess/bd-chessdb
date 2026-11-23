@@ -7,8 +7,8 @@ It is created out of the local reproducible research workspace; this script neve
 from __future__ import annotations
 import base64, hashlib, io, json, os, pathlib, urllib.request, zipfile
 ROOT=pathlib.Path.cwd()
-RELEASE_ZIP_SHA256='83529b7ffce7dfef1dcb7a2fd29dc860573afdf52bd8cf5ccc41ab18bdd0b4ab'
-BLOB_SHA='a00d6a28c7d34ec4be3a2f9c81d89532cb5e096f'
+RELEASE_ZIP_SHA256='74571391e3194883378d35fe8b802420f0b2e765bf00102686e418642eb68b32'
+BLOB_SHA='66b985163d88a580f576f6ba780d6d98353d93c9'
 TARGET='public/llms'
 DATE='2026-11-23'
 TOKEN=os.environ['GITHUB_TOKEN']
