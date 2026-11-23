@@ -175,6 +175,11 @@
     .box table.data th, .box table.data td { border-bottom-color: color-mix(in srgb, var(--plan) 35%, transparent); }
     .comment p, .comment li { max-width: 80ch; }
     .comment ul { padding-left: 1.2rem; }
+    .update-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: .7rem; margin-top: .8rem; }
+    .update-item { min-width: 0; border: 1px solid var(--line); border-radius: .7rem; background: var(--panel); padding: .8rem .95rem; }
+    .update-item h3 { margin: .25rem 0 .35rem; font-size: 1rem; overflow-wrap: anywhere; }
+    .update-item p { margin: .35rem 0; max-width: 80ch; }
+    .update-item .kind { color: var(--muted); font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; }
     .comment li { margin-bottom: .4rem; }
 
     details.more { margin: .6rem 0; }
@@ -324,6 +329,14 @@
       <div class="comment" id="commentary"></div>
     </section>
 
+    <section id="novosti" aria-labelledby="novosti-t" hidden>
+      <div class="eyebrow"><span data-lang="sl">Osvežitev</span><span data-lang="en" hidden>Update</span></div>
+      <h2 id="novosti-t"></h2>
+      <p class="small muted" id="updates-meta"></p>
+      <p class="prose" id="updates-scope"></p>
+      <div id="updates-items" class="update-grid"></div>
+    </section>
+
     <section id="viri" aria-labelledby="viri-t">
       <div class="eyebrow"><span data-lang="sl">Katalog virov</span><span data-lang="en" hidden>Source catalogue</span></div>
       <h2 id="viri-t"><span data-lang="sl">Viri</span><span data-lang="en" hidden>Sources</span></h2>
@@ -403,7 +416,7 @@
   (function () {
     "use strict";
     var root = document.documentElement;
-    var D = null, S = null, C = null;
+    var D = null, S = null, C = null, U = null;
     var BOARD = {}, CATS = ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "sl", "long_context", "speed"];
     var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {}, sort: {}, vend: {}, top: 0 };
     var TOP = 40, CTOP = 25;
@@ -881,6 +894,25 @@
       el("commentary").innerHTML = bl.filter(function (b) { return !isDisagreeBlock(b); }).map(renderBlock).join("") + by;
     }
 
+    function renderUpdates() {
+      var section = el("novosti");
+      if (!section) return;
+      if (!U || CAPDIR) { section.hidden = true; return; }
+      section.hidden = false;
+      el("novosti-t").textContent = (U.title || {})[L()] || "";
+      el("updates-meta").textContent = (L() === "en" ? "Updated " : "Osveženo ") + fmtDate(parseDate(U.updated)) + " · " +
+        (L() === "en" ? "Core ranking baseline " : "Osnova skupne lestvice ") + fmtDate(parseDate(U.baseline_capture));
+      el("updates-scope").textContent = (U.scope || {})[L()] || "";
+      el("updates-items").innerHTML = (U.items || []).map(function (x) {
+        var sources = (x.sources || []).map(function (s) {
+          var label = (s.label && (s.label[L()] || s.label.sl || s.label.en)) || s.url || "";
+          return link(s.url, label);
+        }).join(" · ");
+        return '<article class="update-item"><div class="kind">' + esc((x.label || {})[L()] || "") + '</div><h3>' + esc(x.title || "") +
+          '</h3><p>' + esc((x.summary || {})[L()] || "") + '</p>' + (sources ? '<p class="small">' + sources + '</p>' : "") + '</article>';
+      }).join("");
+    }
+
     function renderSources() {
       if (!S) return;
       var acc = (S.accepted || []).slice().sort(function (a, b) { return (b.respectability_score || 0) - (a.respectability_score || 0) || String(a.name).localeCompare(String(b.name)); });
@@ -921,7 +953,7 @@
     function renderAll() {
       if (!D) return;
       Array.prototype.forEach.call(document.querySelectorAll("[data-ph-sl]"), function (n) { n.setAttribute("placeholder", n.getAttribute(L() === "en" ? "data-ph-en" : "data-ph-sl")); });
-      renderMeta(); renderNew(); renderFilter(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderSources(); renderWeights();
+      renderMeta(); renderNew(); renderFilter(); renderOverall(); renderTiers(); renderCats(); renderDisagree(); renderUpdates(); renderSources(); renderWeights();
     }
 
     // Shareable view: provider filter, best-per-provider, category, sort orders and search live in the query string.
@@ -1015,10 +1047,10 @@
     }
     window.__llmsReady = getJSON("captures.json").catch(function () { return null; }).then(function (c) {
       pickCapture(c);
-      return Promise.all([getJSON(CAPDIR + "meta_index.json"), getJSON(CAPDIR + "sources.json").catch(function () { return null; }), getJSON(CAPDIR + "commentary_sl.json").catch(function () { return null; })]);
+      return Promise.all([getJSON(CAPDIR + "meta_index.json"), getJSON(CAPDIR + "sources.json").catch(function () { return null; }), getJSON(CAPDIR + "commentary_sl.json").catch(function () { return null; }), getJSON("updates.json").catch(function () { return null; })]);
     })
       .then(function (r) {
-        D = r[0]; S = r[1]; C = r[2];
+        D = r[0]; S = r[1]; C = r[2]; U = r[3];
         computePareto();
         (D.boards || []).forEach(function (b) { BOARD[b.board_id] = b; });
         initVendors();
