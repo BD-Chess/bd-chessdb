@@ -106,12 +106,12 @@
       </div>
       <p class="note" lang="sl">PAQ <code>-3</code> je preostanek stisnil v 11,1 s na 7 636 B. Neposredni PAQ <code>-10LE</code> je za 8 842 B porabil 35,4 s. Na istem preostanku je <code>-10LE</code> prihranil še 150 B, cmix pa je porabil 311 B več od <code>-3</code>.</p>
       <p class="note" lang="en">PAQ <code>-3</code> compressed the residual to 7 636 B in 11.1 s. Direct PAQ <code>-10LE</code> took 35.4 s for 8 842 B. On the same residual, <code>-10LE</code> saved a further 150 B, while cmix used 311 B more than <code>-3</code>.</p>
+      <p lang="sl"><strong>Na vseh 240 datotekah ELF je P2-C s PAQ <code>-10LE</code> prihranil 404 240 B (3,80 %).</strong> V preizkusu R3.1 je neposredni PAQ zasedel 10 650 903 B, P2-C pa 10 246 663 B, vključno z referencami in glavami (R + H) ter enim dekoderjem velikosti 26 248 B. Po razširitvi se je SHA-256 ujemal pri vseh 479/479 tokovih. Za 239 datotek sta bila preverjena izvirnik in preostanek, za eno samo izvirnik.</p>
+      <p lang="en"><strong>Across all 240 ELF files, P2-C with PAQ <code>-10LE</code> saved 404 240 B (3.80%).</strong> In the R3.1 trial, direct PAQ used 10 650 903 B. P2-C used 10 246 663 B including references and headers (R + H) and one 26 248 B decoder. All 479/479 decoded streams matched their input SHA-256. The trial checked both the original and the residual for 239 files and only the original for one file.</p>
       <details>
         <summary><span lang="sl">Koliko prostora potrebuje obnova?</span><span lang="en">How much space does restoration require?</span></summary>
         <p lang="sl">Za to datoteko potrebujemo še 15 B (R + H) in enkratni dekoder (L_once) velikosti 26 248 B. Če celoten dekoder pripišemo eni datoteki, veja PAQ <code>-3</code> po tem obračunu porabi 33 899 B. Če je dekoder že v zbirki, dodatna datoteka porabi 7 651 B.</p>
         <p lang="en">This file also needs 15 B (R + H) and a 26 248 B decoder (L_once). Charging the entire decoder to one file brings the PAQ <code>-3</code> residual path to 33 899 B under this accounting. If the collection already contains the decoder, the additional file accounts for 7 651 B.</p>
-        <p lang="sl">Ločeni posnetek korpusa R3.1 za PAQ <code>-10LE</code> potrjuje 472/479 bitno točnih poslov. V seštevek spada 236/240 datotek (235 popolnih parov in ena brez preostanka). Neposredno stiskanje je zasedlo 8 118 458 B, pot 8zC z vštetimi R + H in enim dekoderjem pa 7 773 608 B. Neto prihranek na teh datotekah je 344 850 B.</p>
-        <p lang="en">A separate R3.1 corpus checkpoint for PAQ <code>-10LE</code> verifies 472/479 byte-exact jobs. The totals cover 236/240 files (235 complete pairs and one file without a residual). Direct compression used 8 118 458 B. The 8zC path used 7 773 608 B including R + H and one decoder, saving 344 850 B net on those files.</p>
       </details>
       <details>
         <summary><span lang="sl">Vir in obseg meritev</span><span lang="en">Source and measurement scope</span></summary>
@@ -307,7 +307,7 @@
               <td><span lang="sl">Neposredni ELF ali njegov preostanek</span><span lang="en">Direct ELF or its residual</span></td>
               <td><span lang="sl">Reference, glave in en dekoder za nabor</span><span lang="en">References, headers and one decoder for the corpus</span></td>
               <td><span lang="sl">Primerjava pri istih nastavitvah zstd, 7‑Zip ali PAQ</span><span lang="en">Compared at matching zstd, 7‑Zip or PAQ settings</span></td>
-              <td><span lang="sl">Preverjeno · PAQ −8, 479/479 poslov. Za −10LE je potrjenih 472/479, za −11LE so bile zabeležene napačne obnove.</span><span lang="en">Verified · PAQ −8, 479/479 jobs. For −10LE, 472/479 are verified. The −11LE trials recorded incorrect restores.</span></td>
+              <td><span lang="sl">Preverjeno · PAQ −8 in −10LE sta vsak bitno točno obnovila 479/479 vhodnih tokov. Pri −11LE so bile zabeležene napačne obnove.</span><span lang="en">Verified · PAQ −8 and −10LE each decoded 479/479 input streams exactly. The −11LE trials recorded incorrect restores.</span></td>
             </tr>
             <tr>
               <th scope="row">A0</th>
@@ -443,7 +443,7 @@
               <td><span lang="sl">Mešanje napovedi več kontekstnih modelov</span><span lang="en">Mixes predictions from multiple context models</span></td>
               <td><span lang="sl">Pri P2-C stisne posamezen preostanek, skupni dekoder pravil pripada P2-C.</span><span lang="en">Compresses each P2-C residual separately. P2-C supplies the shared rule decoder.</span></td>
               <td><span lang="sl">Za neposredni tok in preostanek primerjamo izrecno določeni profil.</span><span lang="en">Each direct/residual comparison specifies the profile used.</span></td>
-              <td><span lang="sl">Preverjeno · profil −7 na naboru P2-C. Za profil −3 tabela posamezne knjižnice podaja bruto velikost.</span><span lang="en">Verified · profile −7 on the P2-C corpus. The single-library table gives gross stream sizes for −3.</span></td>
+              <td><span lang="sl">Preverjeno · profil −7 na naboru P2-C in −10LE na vseh 240 datotekah ELF v R3.1. Tabela za posamezno knjižnico podaja bruto velikosti tokov.</span><span lang="en">Verified · profile −7 on the P2-C corpus and −10LE on all 240 ELF files in R3.1. The single-library table gives gross stream sizes.</span></td>
             </tr>
             <tr>
               <th scope="row">cmix v21</th>
