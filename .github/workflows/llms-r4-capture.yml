@@ -1,0 +1,27 @@
+name: LLM R4 read-only source capture
+on:
+  push:
+    branches: [research/llms-r4-capture-20261123]
+    paths: [.github/workflows/llms-r4-capture.yml, scripts/llms_r4_source_probe.py]
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate and probe 35 upstream source families without credentials
+        run: python3 scripts/llms_r4_source_probe.py
+      - name: Preserve baseline and source evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: llms-r4-20261123-upstream-evidence
+          path: |
+            public/llms/meta_index.json
+            public/llms/sources.json
+            public/llms/commentary_sl.json
+            public/llms/captures.json
+            r4-source-audit/
+          retention-days: 14
