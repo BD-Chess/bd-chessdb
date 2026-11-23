@@ -27,7 +27,7 @@
         <p class="eyebrow"><span lang="sl">Izvorna zamisel 8Z · Bojan Dobrečevič (BD). Razvoj 8zC · BD × AI Lab.</span><span lang="en">Original 8Z concept · Bojan Dobrečevič (BD). 8zC development · BD × AI Lab.</span> <a href="#origins"><span lang="sl">Od zamisli do preizkusa</span><span lang="en">From idea to test</span></a></p>
         <p class="intro"><span lang="sl">Brezizgubni preizkusi na datotekah Concorde, zvoku FLAC in datotekah ELF. Matrika kodekov prikazuje tudi velikosti stisnjenih tokov pred prištetjem podatkov za obnovo.</span><span lang="en">Lossless trials on Concorde files, FLAC audio and ELF binaries. The codec matrix also shows compressed sizes before restoration data is added.</span></p>
         <nav class="section-links" aria-label="Razdelki / Sections">
-          <a href="#concorde">Concorde</a><a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
+          <a href="#concorde">Concorde</a><a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a><a href="#technical-matrix"><span lang="sl">Tehnične rešitve</span><span lang="en">Technical features</span></a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
         </nav>
       </div>
       <aside class="highlight">
@@ -164,6 +164,225 @@
         <h2 id="elf-title">A1p ELF</h2>
         <p><span lang="sl">Na treh primerljivih datotekah je neposredni PAQ arhiv meril 64.760 B, slovarski A 66.682 B in B 65.375 B. Panel ima 12/14 potrjenih obnov. Dva poskusa sta se ustavila pri časovni oziroma temperaturni meji.</span><span lang="en">Across three comparable files, direct PAQ used 64,760 B, dictionary path A 66,682 B and path B 65,375 B. The panel has 12/14 verified restores. Two trials reached the time or temperature limit.</span></p>
       </div>
+    </section>
+
+    <section id="technical-matrix" class="section" aria-labelledby="technical-title">
+      <div class="section-heading">
+        <h2 id="technical-title"><span lang="sl">Matrika tehničnih rešitev</span><span lang="en">Technical feature matrix</span></h2>
+        <p lang="sl">Kaj naredi predstavitev podatkov krajšo in kaj potrebuje dekoder? Vrstice primerjajo konkretne postopke. Isti kodek lahko nastopa samostojno ali stisne preostanek, ki ga pripravi 8zC.</p>
+        <p lang="en">What makes a representation shorter, and what does the decoder need? Each row describes a specific method. The same codec can run on its own or compress a residual prepared by 8zC.</p>
+      </div>
+      <div class="comparison feature-grid" role="region" tabindex="0" aria-labelledby="technical-title">
+        <table>
+          <caption><span lang="sl">Oznake veljajo za imenovani profil. V = potrjeno v preizkusu, D = dokumentirano pri avtorju, N = načrt, * = prek PAQ8PX, — = zunaj opisanega načina, ? = vir tega ne potrjuje. Na ozkem zaslonu tabelo pomaknite vstran.</span><span lang="en">Symbols apply to the named profile. V = verified in a test, D = documented by the author, N = planned, * = via PAQ8PX, — = outside this configuration, ? = unestablished in the evidence. Scroll horizontally on a narrow screen.</span></caption>
+          <thead><tr><th scope="col"><span lang="sl">Tehnična funkcija</span><span lang="en">Technical feature</span></th><th scope="col">8zC-M</th><th scope="col">E2-B</th><th scope="col">P2-C v3</th><th scope="col">A1p P2</th><th scope="col">Concorde R1–R3</th><th scope="col">7-Zip Ultra</th><th scope="col">zstd</th><th scope="col">PAQ8PX</th><th scope="col">cmix</th><th scope="col">FLAC R2</th><th scope="col">Super‑8zC</th><th scope="col">8zC-exp</th><th scope="col"><span lang="sl">Ciljni 8zC</span><span lang="en">Target 8zC</span></th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span lang="sl">Iskanje pravil CA2 in GF(2)</span><span lang="en">CA2 and GF(2) rule search</span></th><td>V</td><td>?</td><td>—</td><td>—</td><td>—</td><td>?</td><td>?</td><td>?</td><td>?</td><td>—</td><td>—</td><td>?</td><td>?</td></tr>
+            <tr><th scope="row"><span lang="sl">Obnova tabel ELF iz drugih bajtov</span><span lang="en">Reconstruct ELF tables from other bytes</span></th><td>?</td><td>V</td><td>V</td><td>—</td><td>—</td><td>?</td><td>?</td><td>?</td><td>?</td><td>—</td><td>—</td><td>?</td><td>?</td></tr>
+            <tr><th scope="row"><span lang="sl">Slovar iz ločenih učnih datotek</span><span lang="en">Dictionary trained on separate files</span></th><td>?</td><td>—</td><td>—</td><td>V</td><td>—</td><td>?</td><td>D</td><td>?</td><td>?</td><td>—</td><td>—</td><td>?</td><td>?</td></tr>
+            <tr><th scope="row"><span lang="sl">Skupni zapis povezav med vozlišči Concorde</span><span lang="en">One adjacency record shared across Concorde nodes</span></th><td>—</td><td>—</td><td>—</td><td>—</td><td>V</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>?</td><td>?</td></tr>
+            <tr><th scope="row"><span lang="sl">Solidni arhiv 7z za več datotek</span><span lang="en">Multi-file solid 7z archive</span></th><td>—</td><td>—</td><td>—</td><td>—</td><td>V</td><td>V</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>?</td><td>?</td></tr>
+            <tr><th scope="row"><span lang="sl">Mešanje kontekstnih napovedi za naslednji bit</span><span lang="en">Mix context predictions for the next bit</span></th><td>?</td><td>?</td><td>*</td><td>*</td><td>—</td><td>—</td><td>—</td><td>D</td><td>D</td><td>*</td><td>—</td><td>?</td><td>?</td></tr>
+            <tr><th scope="row"><span lang="sl">Obnova izvirnega FLAC iz WAV in recepta</span><span lang="en">Restore the original FLAC from WAV and a recipe</span></th><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>V</td><td>—</td><td>?</td><td>?</td></tr>
+            <tr><th scope="row"><span lang="sl">Ponovitev izračuna iz korenskega stanja</span><span lang="en">Regenerate from a root checkpoint</span></th><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>V</td><td>?</td><td>?</td></tr>
+            <tr><th scope="row"><span lang="sl">Zbiranje vseh kandidatk in parne meritve</span><span lang="en">Collect all candidate methods and run paired tests</span></th><td>?</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>N</td><td>—</td></tr>
+            <tr><th scope="row"><span lang="sl">Uvrstitev preverjenih specializacij v en program</span><span lang="en">Integrate validated specializations into one program</span></th><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>N</td></tr>
+            <tr><th scope="row"><span lang="sl">Bitno točna obnova vhodne datoteke</span><span lang="en">Byte-exact restoration of the input file</span></th><td>?</td><td>V</td><td>V</td><td>V</td><td>V</td><td>V</td><td>V</td><td>V</td><td>?</td><td>V</td><td>V</td><td>N</td><td>N</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="note" lang="sl">8zC-M je obstoječa laboratorijska veja. Predlagani 8zC-exp bi zbiral in meril kandidatke. Ciljni 8zC bi prevzel uspešne postopke. Za razvrstitev po velikosti potrebujemo isti vhod in enak obračun vseh bajtov za obnovo.</p>
+      <p class="note" lang="en">8zC-M is an existing laboratory branch. The proposed 8zC-exp would collect and measure candidates. The target 8zC would adopt successful methods. A size ranking requires the same input and the same accounting for all bytes needed to restore it.</p>
+      <details class="feature-details" open>
+        <summary id="feature-evidence-title"><span lang="sl">Dokazi po vejah in primerjalnih orodjih</span><span lang="en">Evidence by branch and reference tool</span></summary>
+      <div class="comparison technical-comparison" role="region" tabindex="0" aria-labelledby="feature-evidence-title">
+        <table>
+          <caption><span lang="sl">Preverjeno velja za navedeni preizkus. Razvoj označuje preizkušeni prototip z odprtim vprašanjem, odprto označuje manjkajoči dokaz, načrt pa predlagano funkcijo.</span><span lang="en">Verified applies to the specified test. Development marks a tested prototype with an outstanding question, open marks missing evidence, and planned marks a proposed feature.</span></caption>
+          <thead><tr><th scope="col"><span lang="sl">Program ali veja</span><span lang="en">Program or branch</span></th><th scope="col"><span lang="sl">Predstavitev podatkov</span><span lang="en">Data representation</span></th><th scope="col"><span lang="sl">Kaj se deli ali priloži</span><span lang="en">What is shared or included</span></th><th scope="col"><span lang="sl">Kako se izbere postopek</span><span lang="en">How the method is selected</span></th><th scope="col"><span lang="sl">Dokaz in obseg</span><span lang="en">Evidence and scope</span></th></tr></thead>
+          <tbody>
+            <tr class="feature-group"><th scope="rowgroup" colspan="5"><span lang="sl">Veje in prototipi 8zC</span><span lang="en">8zC branches and prototypes</span></th></tr>
+            <tr>
+              <th scope="row">E2-B · z8c</th>
+              <td><span lang="sl">Izračun izpeljanih tabel ELF in sklici na preverjene matematične generatorje</span><span lang="en">Reconstruction of derived ELF tables and references to verified mathematical generators</span></td>
+              <td><span lang="sl">Pravila dekoderja se obračunajo ločeno</span><span lang="en">Decoder cost accounted for separately</span></td>
+              <td><span lang="sl">Za vsak vhod primerjava z najmanjšim od osmih standardnih profilov</span><span lang="en">Compared with the smallest of eight standard profiles for each input</span></td>
+              <td><span lang="sl">Preverjeno · 2.229/2.229 natančnih obnov, skupaj 1,5995 % manj pred prištetjem dekoderja.</span><span lang="en">Verified · 2,229/2,229 exact restores, 1.5995% smaller in total before adding the decoder.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">P2Cmax · Work</th>
+              <td><span lang="sl">Neposredni ELF ali njegov preostanek</span><span lang="en">Direct ELF or its residual</span></td>
+              <td><span lang="sl">Reference, glave in en dekoder za nabor</span><span lang="en">References, headers and one decoder for the corpus</span></td>
+              <td><span lang="sl">Primerjava pri istih nastavitvah zstd, 7‑Zip ali PAQ</span><span lang="en">Compared at matching zstd, 7‑Zip or PAQ settings</span></td>
+              <td><span lang="sl">Preverjeno · PAQ −8, 479/479 poslov. Za −10LE je potrjenih 472/479, za −11LE so bile zabeležene napačne obnove.</span><span lang="en">Verified · PAQ −8, 479/479 jobs. For −10LE, 472/479 are verified. The −11LE trials recorded incorrect restores.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">A0</th>
+              <td><span lang="sl">Isti preostanek kot celota ali razdeljen na odseke</span><span lang="en">Same residual encoded whole or split into sections</span></td>
+              <td><span lang="sl">Delitev prekine kontekst med odseki</span><span lang="en">Splitting interrupts context between sections</span></td>
+              <td><span lang="sl">Izbor najmanjšega med preizkušenimi tokovi, tudi Brotli, BSC, Kanzi in ZPAQ</span><span lang="en">Selects the smallest of the tested streams, including Brotli, BSC, Kanzi and ZPAQ</span></td>
+              <td><span lang="sl">Razvoj · 9.460 odsekov na 240 preostankih. Seštevek izbire po odsekih je bil 0,48 % večji od celih preostankov s PAQ −7. To je obračun tokov.</span><span lang="en">Development · 9,460 sections across 240 residuals. Selecting per section totalled 0.48% more than whole residuals with PAQ −7. This is stream accounting.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">A1p · P2/P4</th>
+              <td><span lang="sl">Statični slovar iz segmentov učnih paketov</span><span lang="en">Static dictionary from training-package segments</span></td>
+              <td><span lang="sl">P2 predpostavlja že prisoten slovar s 1.044.792 B.</span><span lang="en">P2 assumes a 1,044,792 B dictionary already available.</span></td>
+              <td><span lang="sl">P2 izbere segmente enkrat, P4 preverja dodatke na validacijskih paketih.</span><span lang="en">P2 selects segments once. P4 evaluates additions on validation packages.</span></td>
+              <td><span lang="sl">Preverjeno · 220/220 končnih obnov. P2 prihrani 2,398 % na 31 paketih, na 13 dodatnih datotekah je večji od neposrednega PAQ.</span><span lang="en">Verified · 220/220 final restores. P2 saves 2.398% on 31 packages and exceeds direct PAQ on 13 additional files.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">P2-C FAST</th>
+              <td><span lang="sl">Lažji profil PAQ −3 na izvirniku ali preostanku ELF</span><span lang="en">Lighter PAQ −3 profile on the ELF input or residual</span></td>
+              <td><span lang="sl">En dekoder za skupino</span><span lang="en">One decoder for the group</span></td>
+              <td><span lang="sl">Primerjava celotnega skupinskega stroška</span><span lang="en">Compare total cost across the group</span></td>
+              <td><span lang="sl">Razvoj · 3/3 obnov po obeh poteh. Neposredni paket meri 12.132 B, model s podporo 39.746 B.</span><span lang="en">Development · 3/3 restores on both paths. Direct package 12,132 B, model plus support 39,746 B.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">P1 / P2-D</th>
+              <td><span lang="sl">Dodatne formule za tabele in aritmetična zaporedja</span><span lang="en">Additional formulas for tables and arithmetic sequences</span></td>
+              <td><span lang="sl">Cena skupnega razširjenega dekoderja ostaja odprta.</span><span lang="en">Cost of the extended shared decoder remains open.</span></td>
+              <td><span lang="sl">Ločena meritev posameznih družin na že uporabljenih ELF</span><span lang="en">Separate measurements of each family on previously used ELF inputs</span></td>
+              <td><span lang="sl">Razvoj · 539/539 načrtovanih meritev D1a. Fizični paket na novih izvornih paketih še čaka.</span><span lang="en">Development · 539/539 scheduled D1a measurements. A physical package trial on fresh source packages is pending.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Concorde · HOME</th>
+              <td><span lang="sl">Ločeno kodiranje zapisa dnevnika in preostalih datotek</span><span lang="en">Encodes a log representation separately from the remaining files</span></td>
+              <td><span lang="sl">Zaganjalnik in dekoder sta del arhiva.</span><span lang="en">Launcher and decoder are inside the archive.</span></td>
+              <td><span lang="sl">Primerjava z najmanjšim dobesednim paketom na istem vhodu</span><span lang="en">Compared with the smallest literal package on the same input</span></td>
+              <td><span lang="sl">Razvoj · pri Tnm151 je model 46.639 B manjši, pri italijanskem vhodu je dobesedni USTAR/xz 136 B manjši.</span><span lang="en">Development · the model saves 46,639 B on Tnm151. Literal USTAR/xz is 136 B smaller on the Italian input.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">J2 · post-codec</th>
+              <td><span lang="sl">Iskanje generatorskih segmentov v že stisnjenih tokovih</span><span lang="en">Search for generator-reproducible segments inside compressed streams</span></td>
+              <td><span lang="sl">Za sprejem se mora segment obnoviti natančno.</span><span lang="en">Acceptance requires exact segment reconstruction.</span></td>
+              <td><span lang="sl">Preizkus na izhodih PAQ, 7z, JXL, FLAC in 8ZPQ</span><span lang="en">Tested on PAQ, 7z, JXL, FLAC and 8ZPQ outputs</span></td>
+              <td><span lang="sl">Razvoj · med pregledanimi tokovi noben sprejet segment.</span><span lang="en">Development · no segment was accepted in the tested streams.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">ReZIP</th>
+              <td><span lang="sl">Ponovno stiskanje posameznih članov obstoječega ZIP</span><span lang="en">Recompresses individual members of an existing ZIP</span></td>
+              <td><span lang="sl">Ohrani poti in vsebine v standardnem ZIP.</span><span lang="en">Preserves paths and contents in a standard ZIP.</span></td>
+              <td><span lang="sl">Ob izenačenju izbere izvirni tok.</span><span lang="en">Keeps the original stream on ties.</span></td>
+              <td><span lang="sl">Preverjeno · v poskusu št. 19 je bil končni ZIP 14,45 % manjši od izvirnika.</span><span lang="en">Verified · in trial 19 the final ZIP was 14.45% smaller than the input ZIP.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">8zipLab · FPLB4</th>
+              <td><span lang="sl">Shrani eno kopijo vsake različne vsebine</span><span lang="en">Stores one copy of each distinct payload</span></td>
+              <td><span lang="sl">Več poti kaže na isto vsebino.</span><span lang="en">Multiple paths can point to the same payload.</span></td>
+              <td><span lang="sl">Primerjava Store, XZ, Brotli in zstd</span><span lang="en">Compares Store, XZ, Brotli and zstd</span></td>
+              <td><span lang="sl">Razvoj · 320 poti, 260 različnih vsebin. Na tem naboru slovar ni bil izbran.</span><span lang="en">Development · 320 paths, 260 distinct payloads. The dictionary was not selected on this corpus.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">8zC-M v0.7.2</th>
+              <td><span lang="sl">Iskanje pravil celičnih avtomatov in linearnih rekurz v GF(2)</span><span lang="en">Search for cellular automaton rules and linear recurrences over GF(2)</span></td>
+              <td><span lang="sl">Cena prenosa modela v končnem arhivu ostaja odprta.</span><span lang="en">The cost of shipping the model in a final archive remains open.</span></td>
+              <td><span lang="sl">Iskanje z omejenim procesorskim časom</span><span lang="en">Search under a CPU budget</span></td>
+              <td><span lang="sl">Preverjeno · 300 ujemajočih se izidov obeh jeder. To meri iskanje pravil.</span><span lang="en">Verified · the two engines agreed on 300 cases. This tests rule search.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">P2-C v3 · ELF</th>
+              <td><span lang="sl">Pravila obnovijo izbrane bajte tabel ELF. Kodek stisne preostanek.</span><span lang="en">Rules reconstruct selected ELF table bytes. A codec compresses the residual.</span></td>
+              <td><span lang="sl">Reference in glave na datoteko, en dekoder za zbirko</span><span lang="en">References and headers per file, one decoder for the corpus</span></td>
+              <td><span lang="sl">Primerjava neposredne poti in preostanka z istim kodekom</span><span lang="en">Direct and residual paths compared with the same codec</span></td>
+              <td><span lang="sl">Preverjeno · 240/240 ELF iz 40 novih izvornih paketov. S PAQ8PX −7 je prihranek po stroških obnovitvenih podatkov in dekoderja 408.918 B (3,7803 %).</span><span lang="en">Verified · 240/240 ELF files from 40 fresh source packages. With PAQ8PX −7 the saving after restoration data and decoder costs is 408,918 B (3.7803%).</span></td>
+            </tr>
+            <tr>
+              <th scope="row">A1p · ELF 512 B</th>
+              <td><span lang="sl">Sklici na enake 512-bajtne bloke v slovarju B</span><span lang="en">References to identical 512-byte blocks in dictionary B</span></td>
+              <td><span lang="sl">Slovar in dekoder. Cena je odvisna od tega, ali je slovar že prisoten.</span><span lang="en">Dictionary and decoder. Cost depends on whether the dictionary is already installed.</span></td>
+              <td><span lang="sl">Primerjava celih paketov z referencami ali neposrednim PAQ</span><span lang="en">Whole packages compared with references or direct PAQ</span></td>
+              <td><span lang="sl">Razvoj · obe poti sta obnovili oba preizkusna vhoda. Za ta par je bil manjši neposredni paket.</span><span lang="en">Development · both paths restored both test inputs. The direct package was smaller for this pair.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Concorde R1–R3</th>
+              <td><span lang="sl">R1 shrani povezave, R2 obnovi razdalje iz koordinat, R3 spremeni zapis vrstnega reda povezav.</span><span lang="en">R1 stores adjacency, R2 reconstructs distances from coordinates, R3 changes the encoding of edge order.</span></td>
+              <td><span lang="sl">En skupni odsek za več vozlišč, solidni LZMA2</span><span lang="en">One shared section across node files, solid LZMA2</span></td>
+              <td><span lang="sl">Izbira predstavitve glede na vhod. Tnm151 uporabi R2, CHE950 R3.</span><span lang="en">Input-dependent representation. Tnm151 uses R2, CHE950 uses R3.</span></td>
+              <td><span lang="sl">Preverjeno · Italija 74/74, vzorca Tnm151 17/17 in CHE950 7/7. Drugi celoten zgodovinski preizkus R3 še čaka.</span><span lang="en">Verified · Italy 74/74, Tnm151 sample 17/17, CHE950 sample 7/7. A second full historical R3 test is pending.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">FLAC R2 · mono</th>
+              <td><span lang="sl">Neposredni FLAC ali WAV z receptom za obnovo izvirne datoteke FLAC</span><span lang="en">Direct FLAC or WAV with a recipe to reconstruct the original FLAC file</span></td>
+              <td><span lang="sl">Recept pripada posnetku</span><span lang="en">Recipe belongs to the clip</span></td>
+              <td><span lang="sl">Izbirnik lahko odloži izbiro in ohrani neposredno pot.</span><span lang="en">The selector can defer and keep the direct path.</span></td>
+              <td><span lang="sl">Razvoj · 24/24 obnov. Izbirnik je pri AISHELL‑3 zgrešil primer s prihrankom nad 8 %.</span><span lang="en">Development · 24/24 restores. The selector missed a saving above 8% on AISHELL‑3.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Super‑8zC</th>
+              <td><span lang="sl">Obnova iz korenskega stanja ali ponovni izračun iz vhoda</span><span lang="en">Resume from the root checkpoint or recompute from the input</span></td>
+              <td><span lang="sl">Pripeto okolje za ponovitev izračuna</span><span lang="en">Pinned environment for regeneration</span></td>
+              <td><span lang="sl">Primerjava z dobesedno shrambo v arhivu zstd</span><span lang="en">Compared with literal storage in a zstd archive</span></td>
+              <td><span lang="sl">Razvoj · vsak način obnovi 4/4 datotek pilota s 570 mesti. Najmanjši je dobesedni arhiv.</span><span lang="en">Development · each method restored 4/4 files in the 570-city pilot. The literal archive was smallest.</span></td>
+            </tr>
+          </tbody>
+          <tbody>
+            <tr class="feature-group"><th scope="rowgroup" colspan="5"><span lang="sl">Referenčna orodja in kodeki</span><span lang="en">Reference tools and codecs</span></th></tr>
+            <tr>
+              <th scope="row">8Z v1.4 / JPEG XL / PNG</th>
+              <td><span lang="sl">Brezizgubne predstavitve slik. Starejši 8Z uporablja napovedovanje po ploščicah.</span><span lang="en">Lossless image representations. The earlier 8Z uses tile-based prediction.</span></td>
+              <td><span lang="sl">Merjena je velikost slikovnih zapisov.</span><span lang="en">The comparison counts image bitstreams.</span></td>
+              <td><span lang="sl">Primerjava na istih 60 slikah TIFF</span><span lang="en">Compared on the same 60 TIFF images</span></td>
+              <td><span lang="sl">Preverjeno · delež vhodnih bajtov za 8Z 38,9 %, JPEG XL 31,4 %, PNG 46,3 %. To je zgodovinski slikovni preizkus.</span><span lang="en">Verified · shares of input bytes were 38.9% for 8Z, 31.4% for JPEG XL and 46.3% for PNG in this historical image trial.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">GeCo3 / PAQ8PX</th>
+              <td><span lang="sl">Stiskanje očiščenega zaporedja ACGT</span><span lang="en">Compression of a cleaned ACGT sequence</span></td>
+              <td><span lang="sl">Glave FASTA in izvorno oblikovanje so izločeni iz naloge.</span><span lang="en">FASTA headers and original formatting are outside this task.</span></td>
+              <td><span lang="sl">Objavljene nastavitve GeCo3 in izmerjeni profili PAQ na istem zaporedju</span><span lang="en">Published GeCo3 settings and measured PAQ profiles on the same sequence</span></td>
+              <td><span lang="sl">Preverjeno · GeCo3 je dal manjši arhiv pri kvasu in izseku chr21, PAQ pri E. coli. V celotnem panelu so evidentirane obnove pri 18/21 poskusih.</span><span lang="en">Verified · GeCo3 produced the smaller archive on yeast and the chr21 excerpt, PAQ on E. coli. Restores are recorded for 18/21 trials across the panel.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">7-Zip · LZMA2 Ultra</th>
+              <td><span lang="sl">Slovarsko stiskanje vhodnih bajtov</span><span lang="en">Dictionary compression of input bytes</span></td>
+              <td><span lang="sl">Solidni arhiv deli zgodovino stiskanja med datotekami.</span><span lang="en">A solid archive shares compression history across files.</span></td>
+              <td><span lang="sl">Za primerjavo Concorde je določen enonitni profil Ultra.</span><span lang="en">The Concorde comparison fixes a single-threaded Ultra profile.</span></td>
+              <td><span lang="sl">Preverjeno · neposredni arhiv je obnovil 74/74 italijanskih datotek. Isti kodek stiska tudi pakete R1–R3.</span><span lang="en">Verified · the direct archive restored 74/74 Italian files. The same codec also compresses the R1–R3 packages.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Zstandard</th>
+              <td><span lang="sl">Splošno brezizgubno stiskanje bajtnega toka</span><span lang="en">General lossless byte-stream compression</span></td>
+              <td><span lang="sl">Podpira naučen slovar. V pilotu je zstd stisnil en tok USTAR.</span><span lang="en">Supports a trained dictionary. In the pilot zstd compressed one USTAR stream.</span></td>
+              <td><span lang="sl">V pilotu fiksna stopnja −3</span><span lang="en">Fixed level −3 in the pilot</span></td>
+              <td><span lang="sl">Preverjeno · dobesedni paket pilota meri 2.325 B, 4/4 obnov.</span><span lang="en">Verified · literal pilot package, 2,325 B, 4/4 restores.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">PAQ8PX v217</th>
+              <td><span lang="sl">Mešanje napovedi več kontekstnih modelov</span><span lang="en">Mixes predictions from multiple context models</span></td>
+              <td><span lang="sl">Pri P2-C stisne posamezen preostanek, skupni dekoder pravil pripada P2-C.</span><span lang="en">Compresses each P2-C residual separately. P2-C supplies the shared rule decoder.</span></td>
+              <td><span lang="sl">Za neposredni tok in preostanek primerjamo izrecno določeni profil.</span><span lang="en">Each direct/residual comparison specifies the profile used.</span></td>
+              <td><span lang="sl">Preverjeno · profil −7 na naboru P2-C. Za profil −3 tabela posamezne knjižnice podaja bruto velikost.</span><span lang="en">Verified · profile −7 on the P2-C corpus. The single-library table gives gross stream sizes for −3.</span></td>
+            </tr>
+            <tr>
+              <th scope="row">cmix v21</th>
+              <td><span lang="sl">Predobdelava, napovedi modelov in mešanje kontekstov</span><span lang="en">Preprocessing, model prediction and context mixing</span></td>
+              <td><span lang="sl">V meritvi posamezne knjižnice sta toka ločena.</span><span lang="en">The single-library comparison uses separate streams.</span></td>
+              <td><span lang="sl">Fiksni način -c</span><span lang="en">Fixed mode -c</span></td>
+              <td><span lang="sl">Odprto · izmerjeni sta bruto velikosti obeh tokov. V tej meritvi manjka dokaz bitne obnove.</span><span lang="en">Open · gross sizes were measured for both streams. This measurement lacks byte-exact restore evidence.</span></td>
+            </tr>
+          </tbody>
+          <tbody>
+            <tr class="feature-group"><th scope="rowgroup" colspan="5"><span lang="sl">Predlagana izdelka</span><span lang="en">Proposed tools</span></th></tr>
+            <tr>
+              <th scope="row">8zC-exp</th>
+              <td><span lang="sl">Zbirka vseh kandidatnih postopkov, tudi tistih brez prihranka</span><span lang="en">Collection of all candidate methods, including those that save no bytes</span></td>
+              <td><span lang="sl">Isti vhodi in primerjalne osnove za vsak poskus</span><span lang="en">Same inputs and baselines for each test</span></td>
+              <td><span lang="sl">Parne meritve z vključeno in izključeno rešitvijo</span><span lang="en">Paired tests with each method enabled and disabled</span></td>
+              <td><span lang="sl">Načrt · meriti bajte celotnega paketa, točnost obnove, čas in pomnilnik.</span><span lang="en">Planned · measure total package bytes, exact restoration, time and memory.</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span lang="sl">Ciljni 8zC</span><span lang="en">Target 8zC</span></th>
+              <td><span lang="sl">Izbrane specializacije v enem programu za stiskanje in obnovo</span><span lang="en">Selected methods in one compression and restoration program</span></td>
+              <td><span lang="sl">Dekoder in vse podatke za obnovo všteti v primerjavo</span><span lang="en">Count the decoder and all restoration data in the comparison</span></td>
+              <td><span lang="sl">Uvrstitev po ponovljivem prihranku na ločenih vhodih in bitno točni obnovi</span><span lang="en">Adopt after repeatable savings on separate inputs and byte-exact restoration</span></td>
+              <td><span lang="sl">Načrt · vključitev uspešnih postopkov iz preizkusov 8zC-exp.</span><span lang="en">Planned · integrate methods that pass testing in 8zC-exp.</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </details>
+      <nav class="section-links" aria-label="Dokumentacija kodekov / Codec documentation">
+        <a href="/8z/8zip">8zip / ReZIP</a><a href="https://www.7-zip.org/7z.html">7z</a><a href="https://facebook.github.io/zstd/">Zstandard</a><a href="https://github.com/hxim/paq8px">PAQ8PX</a><a href="https://www.byronknoll.com/cmix.html">cmix</a>
+      </nav>
     </section>
 
     <section id="origins" class="section" aria-labelledby="origins-title">
