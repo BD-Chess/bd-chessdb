@@ -18,7 +18,8 @@
       const lang = new URL(location.href).searchParams.get('lang') || localStorage.getItem('8zc-language') || 'sl';
       document.documentElement.lang = lang === 'en' ? 'en' : 'sl';
       document.documentElement.dataset.language = document.documentElement.lang;
-      if (localStorage.getItem('8zc-story-theme') === 'light') document.documentElement.dataset.theme = 'light';
+      const theme = localStorage.getItem('8zc-theme') || localStorage.getItem('8zc-story-theme');
+      document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
     } catch (_) {}
   </script>
   <style>
@@ -230,31 +231,70 @@
       main.shell > .hero,main.shell > .story-layout,.article { max-width:none; width:100%; }
       .chapter .table-scroll { width:100%; margin-inline:0; position:static; }
     }
+  
+    /* Same centered reading toolbar as the 8zC results page. */
+    .masthead { --background:var(--bg); }
+    .masthead .wrap { width:min(1080px,calc(100% - 48px)); margin-inline:auto; }
+    .masthead .brand { text-decoration:none; font-weight:650; font-size:1.26rem; letter-spacing:-.05em; color:var(--ink); white-space:nowrap; }
+    .masthead .brand span { color:var(--accent); padding-inline:1px; }
+    .masthead .hub { font-size:.92rem; }
+    .masthead { line-height:1.6; }
+    :root[data-theme="light"] .masthead { --background:#f0f3eb; --panel:#fcfdf9; --line:#c7d2c4; --ink:#162b23; --muted:#506253; --accent:#285b33; --link:#285b33; }
+.masthead { position: sticky; top: 0; z-index: 100; display: block; min-height: 0; background: var(--background); }
+.masthead-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 18px; min-height: 62px; padding-block: 8px; }
+.mast-brand, .mast-tools { display: flex; align-items: center; flex-wrap: wrap; min-width: 0; gap: 6px 14px; }
+.mast-brand { flex: 0 1 auto; }
+.mast-tools { justify-content: flex-end; margin-inline-start: auto; }
+.codec-brand { color: var(--ink); font-size: 1.12rem; font-weight: 700; text-decoration: none; }
+.mast-release { font: .76rem/1.4 ui-monospace, monospace; color: var(--muted); }
+.mast-controls { display: flex; align-items: center; gap: 2px; margin: 0; }
+.mast-controls button { min-width: 32px; min-height: 38px; padding: 4px 7px; border: 1px solid transparent; border-radius: 5px; color: var(--muted); background: transparent; font-size: .82rem; line-height: 1.25; cursor: pointer; }
+.mast-controls button:hover { color: var(--ink); background: var(--panel); }
+.mast-controls button[aria-pressed="true"] { color: var(--accent); background: var(--panel); border-color: var(--line); text-decoration: underline; font-weight: 750; }
+#font-reset { min-width: 49px; font-variant-numeric: tabular-nums; }
+.mast-controls button:disabled { opacity: .5; cursor: default; }
+.skip { z-index: 110; }
+
+    .progress { z-index:101; }
+    @media(max-width:690px) { .masthead .wrap { width:calc(100% - 32px); } }
+@media(max-width:690px) {
+  .masthead-inner { justify-content: space-between; gap: 2px 10px; padding-block: 5px; }
+  .mast-tools { width: 100%; margin-inline-start: 0; justify-content: flex-start; gap: 1px 8px; }
+  .mast-brand { gap: 4px 10px; }
+  .mast-tools .hub { font-size: .8rem; }
+  .mast-controls button { min-height: 36px; padding-inline: 5px; }
+}
+
+    @media print { .masthead { display:none !important; } }
+
   </style>
 </head>
 <body>
   <a class="skip" href="#zgodba"><span lang="sl">Preskoči na zgodbo</span><span lang="en">Skip to story</span></a>
   <progress class="progress" id="reading-progress" max="100" value="0" aria-label="Napredek branja" data-aria-sl="Napredek branja" data-aria-en="Reading progress" hidden></progress>
-  <header class="masthead">
-    <div class="shell masthead-inner">
-      <a class="brand" href="/">MDL<span>×</span>DCC</a>
-      <nav class="mast-nav" aria-label="Glavne povezave" data-aria-sl="Glavne povezave" data-aria-en="Main navigation">
-        <a href="/8Z/" class="home-link"><span lang="sl">8Z središče</span><span lang="en">8Z hub</span></a>
-        <a href="/8zC/"><span lang="sl">Kodek</span><span lang="en">Codec</span></a>
-        <a href="/8zC-results/"><span lang="sl">Rezultati</span><span lang="en">Results</span></a>
-        <a href="/8zc-story/" aria-current="page"><span lang="sl">Zgodba</span><span lang="en">Story</span></a>
-      </nav>
-    <div class="header-controls" id="reading-controls" hidden>
-        <div class="languages" role="group" aria-label="Language / Jezik">
-          <button type="button" data-select-language="en" lang="en" aria-pressed="false">EN</button><span aria-hidden="true">|</span><button type="button" data-select-language="sl" lang="sl" aria-pressed="true">SL</button>
+  <header class="masthead" id="story-mast">
+    <div class="wrap masthead-inner">
+      <div class="mast-brand">
+        <a class="brand" href="https://www.mdlxdcc.org/">MDL<span>×</span>DCC</a>
+        <a class="codec-brand" href="/8zC/">8zC</a>
+        <span class="mast-release">Cycle 13 R5 (v8)</span>
+      </div>
+      <div class="mast-tools">
+        <a class="hub" href="https://www.mdlxdcc.org/8z/"><span lang="sl">8Z središče</span><span lang="en">8Z hub</span></a>
+        <a class="hub" href="/8zC/"><span lang="sl">Preizkusi 8zC</span><span lang="en">Try 8zC</span></a>
+        <a class="hub" href="/8zC-results/"><span lang="sl">Rezultati 8zC</span><span lang="en">8zC results</span></a>
+        <div class="languages mast-controls" role="group" aria-label="Jezik / Language" hidden>
+          <button type="button" data-select-language="en" lang="en" aria-pressed="false">EN</button>
+          <button type="button" data-select-language="sl" lang="sl" aria-pressed="true">SL</button>
         </div>
-        <div class="reading-controls" role="group" aria-label="Nastavitve branja" data-aria-sl="Nastavitve branja" data-aria-en="Reading settings">
-          <button type="button" id="font-down" aria-label="Pomanjšaj besedilo" data-aria-sl="Pomanjšaj besedilo" data-aria-en="Decrease text size">A−</button>
-          <button type="button" id="font-reset" aria-label="Ponastavi velikost besedila" data-aria-sl="Ponastavi velikost besedila" data-aria-en="Reset text size">100%</button>
-          <button type="button" id="font-up" aria-label="Povečaj besedilo" data-aria-sl="Povečaj besedilo" data-aria-en="Increase text size">A+</button>
-          </div>
-        <div class="themes" role="group" aria-label="Podlaga" data-aria-sl="Podlaga" data-aria-en="Theme">
-          <button type="button" data-theme-choice="dark" aria-pressed="true">Dark</button><span aria-hidden="true">|</span><button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+        <div id="reading-controls" class="font-controls mast-controls" role="group" aria-label="Velikost pisave / Font size" hidden>
+          <button type="button" id="font-down" data-font-step="-10" aria-label="Zmanjšaj pisavo / Decrease font size">A−</button>
+          <button type="button" id="font-reset" aria-label="Ponastavi pisavo / Reset font size">100%</button>
+          <button type="button" id="font-up" data-font-step="10" aria-label="Povečaj pisavo / Increase font size">A+</button>
+        </div>
+        <div class="theme-controls mast-controls" role="group" aria-label="Tema / Theme" hidden>
+          <button type="button" data-theme-choice="dark" aria-pressed="true">Dark</button>
+          <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
         </div>
         <span class="sr-only" id="reading-status" role="status" aria-live="polite"></span>
       </div>
@@ -790,10 +830,11 @@
       for (const button of themeButtons) button.addEventListener('click', () => {
         const next = button.dataset.themeChoice;
         root.dataset.theme = next;
-        try { localStorage.setItem('8zc-story-theme', next); } catch (_) {}
+        try { localStorage.setItem('8zc-theme', next); } catch (_) {}
         syncTheme();
       });
       syncTheme();
+      try { if (!localStorage.getItem('8zc-theme')) localStorage.setItem('8zc-theme', root.dataset.theme === 'light' ? 'light' : 'dark'); } catch (_) {}
 
       function setFont(percent, announce = false) {
         fontPercent = Math.max(80, Math.min(180, Math.round(percent / 10) * 10));
@@ -801,12 +842,12 @@
         reset.textContent = fontPercent + '%';
         down.disabled = fontPercent === 80;
         up.disabled = fontPercent === 180;
-        try { localStorage.setItem('8zc-story-font-percent', String(fontPercent)); } catch (_) {}
+        try { localStorage.setItem('8zc-results-font-percent', String(fontPercent)); } catch (_) {}
         if (announce) status.textContent = language === 'en' ? 'Text size: ' + fontPercent + ' percent.' : 'Velikost besedila: ' + fontPercent + ' odstotkov.';
         scheduleUpdate();
       }
       try {
-        const saved = localStorage.getItem('8zc-story-font-percent');
+        const saved = localStorage.getItem('8zc-results-font-percent') || localStorage.getItem('8zc-story-font-percent');
         const legacy = localStorage.getItem('8zc-story-font');
         if (saved !== null && /^\d{2,3}$/.test(saved)) fontPercent = Number(saved);
         else if (legacy !== null && /^[0-4]$/.test(legacy)) fontPercent = [90,100,110,120,130][Number(legacy)];
@@ -874,7 +915,7 @@
         if (!scheduled) { scheduled = true; window.requestAnimationFrame(updateReading); }
       }
       selectLanguage(language);
-      document.getElementById('reading-controls').hidden = false;
+      for (const group of document.querySelectorAll('.mast-controls')) group.hidden = false;
       progress.hidden = false;
       setFont(fontPercent);
       window.addEventListener('scroll', scheduleUpdate, { passive:true });
