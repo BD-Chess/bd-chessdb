@@ -12,8 +12,8 @@ const QUICK_SAMPLES = [
     title_sl: "00_data_endian.elf (Linux ELF64 · Haskell)",
     title_en: "00_data_endian.elf (Linux ELF64 · Haskell)",
     raw_B: 80264,
-    zip:  { direct: 15976, best: 10169, pct: "-36,4 %", label: "Cycle13 R2 v5 ELF" },
-    sz7z: { direct: 13555, best: 9389,  pct: "-30,7 %", label: "Cycle13 R2 v5 ELF" },
+    zip:  { direct: 15976, best: 10169, pct: "-36,4 %", label: "Cycle13 R3 v6 ELF" },
+    sz7z: { direct: 13555, best: 9389,  pct: "-30,7 %", label: "Cycle13 R3 v6 ELF" },
     paq:  { direct: 9001,  z8c: 6492,   pct: "-27,9 % (-3)" },
     cmix: null,
   },
@@ -25,11 +25,11 @@ const QUICK_SAMPLES = [
     chip_sl: "Win64 DLL (235 KB)",
     chip_en: "Win64 DLL (235 KB)",
     sha256: "b03a3fc0014c8e7ceb3076e880af923db22fcf2a4327815d5ef7b51fc596df8f",
-    title_sl: "sample_pe64_win32.dll (Windows PE32+ x64 · SPLIT_BE)",
-    title_en: "sample_pe64_win32.dll (Windows PE32+ x64 · SPLIT_BE)",
+    title_sl: "sample_pe64_win32.dll (Windows PE32+ x64 · SPLIT_BE + T4_V6)",
+    title_en: "sample_pe64_win32.dll (Windows PE32+ x64 · SPLIT_BE + T4_V6)",
     raw_B: 234896,
-    zip:  { direct: 87017, best: 77200, pct: "-11,3 %", label: "Cycle13 R2 v5 PE" },
-    sz7z: { direct: 77337, best: 69376, pct: "-10,3 %", label: "Cycle13 R2 v5 PE" },
+    zip:  { direct: 87017, best: 76553, pct: "-12,0 %", label: "Cycle13 R3 v6 PE" },
+    sz7z: { direct: 77337, best: 69376, pct: "-10,3 %", label: "Cycle13 R3 v6 PE" },
   },
   {
     id: "sample_wasm",
@@ -42,64 +42,64 @@ const QUICK_SAMPLES = [
     title_sl: "sample_module.wasm (WebAssembly · WASM_SPLIT_7)",
     title_en: "sample_module.wasm (WebAssembly · WASM_SPLIT_7)",
     raw_B: 120920,
-    zip:  { direct: 51714, best: 44409, pct: "-14,1 %", label: "Cycle13 R2 v5 WASM" },
-    sz7z: { direct: 44536, best: 42578, pct: "-4,4 %",  label: "Cycle13 R2 v5 WASM" },
+    zip:  { direct: 51714, best: 44409, pct: "-14,1 %", label: "Cycle13 R3 v6 WASM" },
+    sz7z: { direct: 44536, best: 42578, pct: "-4,4 %",  label: "Cycle13 R3 v6 WASM" },
   },
   {
     id: "sample_csv",
     url: "/8zC/samples/sample_telemetry.csv",
     filename: "sample_telemetry.csv",
     badge: "CSV",
-    chip_sl: "CSV (447 KB → 611 B!)",
-    chip_en: "CSV (447 KB → 611 B!)",
+    chip_sl: "CSV (447 KB → 471 B!)",
+    chip_en: "CSV (447 KB → 471 B!)",
     sha256: "c85e819abaa6d09227e81a9cba186578fde33cb548668340d33e4874d0475fbf",
-    title_sl: "sample_telemetry.csv (TABULAR_V2 · načini 0..7)",
-    title_en: "sample_telemetry.csv (TABULAR_V2 · modes 0..7)",
+    title_sl: "sample_telemetry.csv (TABULAR_V3 · periodična napoved + rstrip0)",
+    title_en: "sample_telemetry.csv (TABULAR_V3 · seasonal predictor + rstrip0)",
     raw_B: 446980,
-    zip:  { direct: 49944, best: 611,   pct: "-98,8 %", label: "Cycle13 R2 v5 Tabular" },
-    sz7z: { direct: 22942, best: 562,   pct: "-97,6 %", label: "Cycle13 R2 v5 Tabular" },
+    zip:  { direct: 49944, best: 471,   pct: "-99,1 %", label: "Cycle13 R3 v6 Tabular" },
+    sz7z: { direct: 22942, best: 428,   pct: "-98,1 %", label: "Cycle13 R3 v6 Tabular" },
   },
   {
     id: "sample_jsonl",
     url: "/8zC/samples/sample_events.jsonl",
     filename: "sample_events.jsonl",
     badge: "JSONL",
-    chip_sl: "JSONL (610 KB → 682 B!)",
-    chip_en: "JSONL (610 KB → 682 B!)",
+    chip_sl: "JSONL (610 KB → 498 B!)",
+    chip_en: "JSONL (610 KB → 498 B!)",
     sha256: "0e81136425d74fa21d47612a2bf17fe34fb6900ce819e80d0a25bd4d6bd6bb85",
-    title_sl: "sample_events.jsonl (Strukturirani dnevniki JSONL · TABULAR_V2)",
-    title_en: "sample_events.jsonl (Structured JSONL logs · TABULAR_V2)",
+    title_sl: "sample_events.jsonl (Strukturirani dnevniki JSONL · TABULAR_V3)",
+    title_en: "sample_events.jsonl (Structured JSONL logs · TABULAR_V3)",
     raw_B: 610000,
-    zip:  { direct: 28016, best: 682,   pct: "-97,6 %", label: "Cycle13 R2 v5 JSONL" },
-    sz7z: { direct: 7754,  best: 606,   pct: "-92,2 %", label: "Cycle13 R2 v5 JSONL" },
+    zip:  { direct: 28016, best: 498,   pct: "-98,2 %", label: "Cycle13 R3 v6 JSONL" },
+    sz7z: { direct: 7754,  best: 456,   pct: "-94,1 %", label: "Cycle13 R3 v6 JSONL" },
   },
   {
     id: "sample_wav",
     url: "/8zC/samples/sample_stereo_pcm16.wav",
     filename: "sample_stereo_pcm16.wav",
     badge: "WAV",
-    chip_sl: "WAV PCM16 (32 KB)",
-    chip_en: "WAV PCM16 (32 KB)",
+    chip_sl: "WAV PCM16 (32 KB → 2,6 KB!)",
+    chip_en: "WAV PCM16 (32 KB → 2.6 KB!)",
     sha256: "34272b7c3e240f31802a9f54290bc752c5648d45e64bc7aeb857f2590e29344b",
-    title_sl: "sample_stereo_pcm16.wav (Stereo 16-bit PCM zvok · Mid/Side LPC)",
-    title_en: "sample_stereo_pcm16.wav (Stereo 16-bit PCM audio · Mid/Side LPC)",
+    title_sl: "sample_stereo_pcm16.wav (Stereo 16-bit PCM zvok · WAV_V2 LPC-12 + uvarint)",
+    title_en: "sample_stereo_pcm16.wav (Stereo 16-bit PCM audio · WAV_V2 LPC-12 + uvarint)",
     raw_B: 32044,
-    zip:  { direct: 26932, best: 3305,  pct: "-87,7 %", label: "Cycle13 R2 v5 WAV" },
-    sz7z: { direct: 21233, best: 3156,  pct: "-85,1 %", label: "Cycle13 R2 v5 WAV" },
+    zip:  { direct: 26932, best: 2669,  pct: "-90,1 %", label: "Cycle13 R3 v6 WAV_V2" },
+    sz7z: { direct: 21233, best: 2563,  pct: "-87,9 %", label: "Cycle13 R3 v6 WAV_V2" },
   },
   {
     id: "sample_bmp",
     url: "/8zC/samples/sample_image.bmp",
     filename: "sample_image.bmp",
     badge: "BMP",
-    chip_sl: "BMP 24-bit (590 KB → 9,5 KB!)",
-    chip_en: "BMP 24-bit (590 KB → 9.5 KB!)",
+    chip_sl: "BMP 24-bit (590 KB → 1.373 B!)",
+    chip_en: "BMP 24-bit (590 KB → 1,373 B!)",
     sha256: "e7ba9ed8f3e47113a3b68b004b208c1effc7743d13246f130d82d99eba78e9f5",
-    title_sl: "sample_image.bmp (512×384 · IMAGE_V2 +128 YCoCg + ClampedGrad)",
-    title_en: "sample_image.bmp (512×384 · IMAGE_V2 +128 YCoCg + ClampedGrad)",
+    title_sl: "sample_image.bmp (512×384 · IMAGE_V3 LinearGrad + DiagLag4 + rstrip0)",
+    title_en: "sample_image.bmp (512×384 · IMAGE_V3 LinearGrad + DiagLag4 + rstrip0)",
     raw_B: 589878,
-    zip:  { direct: 513897, best: 9563,  pct: "-98,1 %", label: "Cycle13 R2 v5 IMAGE_V2" },
-    sz7z: { direct: 271080, best: 5070,  pct: "-98,1 %", label: "Cycle13 R2 v5 IMAGE_V2" },
+    zip:  { direct: 513897, best: 1373,  pct: "-99,73 %", label: "Cycle13 R3 v6 IMAGE_V3" },
+    sz7z: { direct: 271080, best: 1229,  pct: "-99,55 %", label: "Cycle13 R3 v6 IMAGE_V3" },
   },
   {
     id: "sample_autodcc",
@@ -112,8 +112,8 @@ const QUICK_SAMPLES = [
     title_sl: "sample_autodcc_sensor.bin (FMT_AUTO_DCC · samodejni korak + delta)",
     title_en: "sample_autodcc_sensor.bin (FMT_AUTO_DCC · auto-stride + delta)",
     raw_B: 33808,
-    zip:  { direct: 12017, best: 209,   pct: "-98,3 %", label: "Cycle13 R2 v5 Auto-DCC" },
-    sz7z: { direct: 6927,  best: 224,   pct: "-96,8 %", label: "Cycle13 R2 v5 Auto-DCC" },
+    zip:  { direct: 12017, best: 209,   pct: "-98,3 %", label: "Cycle13 R3 v6 Auto-DCC" },
+    sz7z: { direct: 6927,  best: 224,   pct: "-96,8 %", label: "Cycle13 R3 v6 Auto-DCC" },
   },
 ];
 
@@ -138,7 +138,7 @@ const ELF_BENCHMARK_SAMPLES = [
     title_en: "02_calf_so.elf (C++ / GCC audio plugin)",
     raw_B: 1182672,
     zip:  { direct: 297204, z8c_r3: 207569, z8c_v5: 188435, pct_v5: "-36,6 %" },
-    sz7z: { direct: 239015, z8c_r3: 174354, z8c_v5: 160004, pct_v5: "-33,1 %" },
+    sz7z: { direct: 239015, z8c_r3: 174354, z8c_v5: 160003, pct_v5: "-33,1 %" },
     paq:  { direct: 145887, z8c: 123729, pct: "-15,2 % (-10LE)" },
     cmix: { direct: 145654, z8c: 111456, pct: "-23,5 % (R3+cmix)" },
   },
@@ -161,8 +161,8 @@ const ELF_BENCHMARK_SAMPLES = [
     title_sl: "01_jwtui.elf (Rust / LLVM izvršljivi program)",
     title_en: "01_jwtui.elf (Rust / LLVM executable)",
     raw_B: 2726704,
-    zip:  { direct: 1290629, z8c_r3: 1000231, z8c_v5: 966382, pct_v5: "-25,1 %" },
-    sz7z: { direct: 1047223, z8c_r3: 779900,  z8c_v5: 744230, pct_v5: "-28,9 %" },
+    zip:  { direct: 1290629, z8c_r3: 1000231, z8c_v5: 961771, pct_v5: "-25,5 %" },
+    sz7z: { direct: 1047223, z8c_r3: 779900,  z8c_v5: 743969, pct_v5: "-29,0 %" },
     paq:  { direct: 704961,  z8c: 522419,  pct: "-25,9 % (-10LE)" },
     cmix: { direct: 683352,  z8c: 501302,  pct: "-26,6 %" },
   },
@@ -173,8 +173,8 @@ const ELF_BENCHMARK_SAMPLES = [
     title_sl: "04_geany.elf (C / C++ urejevalnik · 3,92 MB)",
     title_en: "04_geany.elf (C / C++ IDE executable · 3.92 MB)",
     raw_B: 3922032,
-    zip:  { direct: 1733761, z8c_r3: 1495837, z8c_v5: 1414272, pct_v5: "-18,4 %" },
-    sz7z: { direct: 1412165, z8c_r3: 1230998, z8c_v5: 1140038, pct_v5: "-19,3 %" },
+    zip:  { direct: 1733761, z8c_r3: 1495837, z8c_v5: 1406766, pct_v5: "-18,9 %" },
+    sz7z: { direct: 1412165, z8c_r3: 1230998, z8c_v5: 1140037, pct_v5: "-19,3 %" },
     paq:  null,
     cmix: null,
   },
@@ -221,23 +221,23 @@ const translations = {
   "Brskalnik ni mogel zagnati opravila. Odprite aplikacijo prek lokalnega spletnega strežnika.":
     "The browser could not start the operation.",
   "Primerjava kompresij (Čisti kodek proti 8zC)": "Compression comparison (Raw codec vs. 8zC)",
-  "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R2 v5) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256.":
-    "Live multi-format browser benchmark (Rust + WebAssembly Cycle 13 R2 v5) and verified reference matrices with 100% byte-exact SHA-256 restoration.",
+  "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R3 v6) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256.":
+    "Live multi-format browser benchmark (Rust + WebAssembly Cycle 13 R3 v6) and verified reference matrices with 100% byte-exact SHA-256 restoration.",
   "Živi izid v vašem brskalniku": "Live result in your browser",
   "Kodek / stopnja": "Codec / stage",
   "Surovo": "Raw",
   "Čisti kodek": "Direct codec",
   "8zC + kodek": "8zC + codec",
   "Prihranek": "Savings",
-  "Cycle 13 R2 (v5) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)":
-    "Cycle 13 R2 (v5) · 7 multi-format samples (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)",
+  "Cycle 13 R3 (v6) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)":
+    "Cycle 13 R3 (v6) · 7 multi-format samples (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)",
   "Vzorec in družina formata": "Sample and format family",
-  "Čisti ZIP → 8zC v5 + ZIP": "Direct ZIP → 8zC v5 + ZIP",
-  "Čisti 7z → 8zC v5 + 7z": "Direct 7z → 8zC v5 + 7z",
+  "Čisti ZIP → 8zC v6 + ZIP": "Direct ZIP → 8zC v6 + ZIP",
+  "Čisti 7z → 8zC v6 + 7z": "Direct 7z → 8zC v6 + 7z",
   "Živi preizkus": "Live test",
   "Preizkusi v živo →": "Test live →",
-  "Cycle 13 R2 (v5) & R3 · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)":
-    "Cycle 13 R2 (v5) & R3 · Reference matrix of 5 ELF64 binaries (.zip · .7z · .paq · .cmix)",
+  "Cycle 13 R3 (v6) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)":
+    "Cycle 13 R3 (v6) · Reference matrix of 5 ELF64 binaries (.zip · .7z · .paq · .cmix)",
   "Zaženi 00_data_endian.elf v živo →": "Run 00_data_endian.elf live →",
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
@@ -437,8 +437,8 @@ function renderLiveCompare(data) {
   const baseZip = matchedQuick ? matchedQuick.zip.direct : matchedElf ? matchedElf.zip.direct : data.browserZipBytes;
   addRow(
     language === "en"
-      ? "Browser WASM: Direct ZIP vs. 8zC Cycle 13 R2 v5 (live)"
-      : "Brskalnik WASM: Čisti ZIP proti 8zC Cycle 13 R2 v5 (v živo)",
+      ? "Browser WASM: Direct ZIP vs. 8zC Cycle 13 R3 v6 (live)"
+      : "Brskalnik WASM: Čisti ZIP proti 8zC Cycle 13 R3 v6 (v živo)",
     data.inputBytes,
     baseZip,
     data.z8cZipBytes,
@@ -447,14 +447,14 @@ function renderLiveCompare(data) {
 
   if (matchedQuick) {
     addRow(
-      language === "en" ? "8zC v5 + 7-Zip Deflate (-mx=9)" : "8zC v5 + 7-Zip Deflate (-mx=9)",
+      language === "en" ? "8zC v6 + 7-Zip Deflate (-mx=9)" : "8zC v6 + 7-Zip Deflate (-mx=9)",
       matchedQuick.raw_B,
       matchedQuick.zip.direct,
       matchedQuick.zip.best,
       matchedQuick.zip.label
     );
     addRow(
-      language === "en" ? "8zC v5 + 7-Zip LZMA (-mx=9)" : "8zC v5 + 7-Zip LZMA (-mx=9)",
+      language === "en" ? "8zC v6 + 7-Zip LZMA (-mx=9)" : "8zC v6 + 7-Zip LZMA (-mx=9)",
       matchedQuick.raw_B,
       matchedQuick.sz7z.direct,
       matchedQuick.sz7z.best,
@@ -518,7 +518,7 @@ function setLanguage(lang) {
 
   byId("compare-heading").textContent = t("Primerjava kompresij (Čisti kodek proti 8zC)");
   byId("compare-sub").textContent = t(
-    "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R2 v5) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256."
+    "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R3 v6) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256."
   );
   byId("th-live-codec").textContent = t("Kodek / stopnja");
   byId("th-live-raw").textContent = t("Surovo");
@@ -527,22 +527,22 @@ function setLanguage(lang) {
   byId("th-live-save").textContent = t("Prihranek");
 
   byId("v4-matrix-title").textContent = t(
-    "Cycle 13 R2 (v5) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)"
+    "Cycle 13 R3 (v6) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)"
   );
   byId("th-v4-file").textContent = t("Vzorec in družina formata");
   byId("th-v4-raw").textContent = t("Surovo");
-  byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v5 + ZIP");
-  byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v5 + 7z");
+  byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v6 + ZIP");
+  byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v6 + 7z");
   byId("th-v4-try").textContent = t("Živi preizkus");
 
   byId("matrix-title").textContent = t(
-    "Cycle 13 R2 (v5) & R3 · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)"
+    "Cycle 13 R3 (v6) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)"
   );
   runSampleLiveBtn.textContent = t("Zaženi 00_data_endian.elf v živo →");
   byId("th-m-file").textContent = t("Vzorčni ELF (prevajalnik)");
   byId("th-m-raw").textContent = t("Surovo");
-  byId("th-m-zip").textContent = t("Čisti ZIP → 8zC v5 + ZIP");
-  byId("th-m-7z").textContent = t("Čisti 7z → 8zC v5 + 7z");
+  byId("th-m-zip").textContent = t("Čisti ZIP → 8zC v6 + ZIP");
+  byId("th-m-7z").textContent = t("Čisti 7z → 8zC v6 + 7z");
   byId("th-m-paq").textContent = t("Čisti PAQ8PX → 8zC + PAQ");
   byId("th-m-cmix").textContent = t("Čisti cmix v21 → 8zC + cmix");
 
