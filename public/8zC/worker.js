@@ -9,7 +9,7 @@ async function getWasmInstance() {
     if (!response.ok) throw new Error("Brskalnik ni mogel prebrati datoteke decoder.wasm.");
     cachedWasmBytes = await response.arrayBuffer();
   }
-  // Fresh instance per file (<1 ms from cached ArrayBuffer) guarantees zero WASM linear-memory accumulation across large batches
+  // Fresh instance per call (<1 ms from cached ArrayBuffer) guarantees zero WASM linear-memory accumulation
   const { instance } = await WebAssembly.instantiate(cachedWasmBytes, {});
   return instance.exports;
 }
@@ -24,14 +24,33 @@ async function sha256Hex(bytes) {
   }
 }
 
+function bytesEqual(a, b) {
+  if (a.byteLength !== b.byteLength) return false;
+  for (let i = 0; i < a.byteLength; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+async function verifyBytesMatch(inputBytes, restoredBytes, inputDigestOpt) {
+  if (restoredBytes.byteLength !== inputBytes.byteLength) {
+    return { verified: false, inputDigest: inputDigestOpt || "", restoredDigest: "" };
+  }
+  const inputDigest = inputDigestOpt !== undefined ? inputDigestOpt : await sha256Hex(inputBytes);
+  const restoredDigest = await sha256Hex(restoredBytes);
+  if (inputDigest && restoredDigest) {
+    return { verified: inputDigest === restoredDigest, inputDigest, restoredDigest };
+  }
+  return { verified: bytesEqual(inputBytes, restoredBytes), inputDigest: "", restoredDigest: "" };
+}
+
 async function measureBrowserZipSize(inputBytes) {
   if (typeof CompressionStream === "undefined") return null;
   try {
     const cs = new CompressionStream("deflate-raw");
     const writer = cs.writable.getWriter();
-    writer.write(inputBytes);
-    writer.close();
-    const buf = await new Response(cs.readable).arrayBuffer();
+    const writePromise = writer.write(inputBytes).then(() => writer.close());
+    const [buf] = await Promise.all([new Response(cs.readable).arrayBuffer(), writePromise]);
     return buf.byteLength + 102;
   } catch {
     return null;
@@ -65,7 +84,7 @@ function isNative8zcMagic(bytes) {
     bytes[1] === 0x5a &&
     bytes[2] === 0x43 &&
     bytes[3] === 0x4e &&
-    bytes[4] === 0x01
+    (bytes[4] === 0x01 || bytes[4] === 0x02)
   );
 }
 
@@ -94,43 +113,67 @@ self.onmessage = async ({ data }) => {
         const f = files[i];
         self.postMessage({ progress: true, index: i + 1, total: files.length, filename: f.name });
         const maxBytes = MAX_FILE_BYTES + 65536;
-        if (!f.size || f.size > maxBytes) {
-          throw new Error(`Datoteka "${f.name}" je prazna ali presega mejo 256 MiB.`);
-        }
-        const api = await getWasmInstance();
-        const input = new Uint8Array(await f.arrayBuffer());
-        const op = resolveFileOp(f, defaultOp, encodeFormat, input);
-        const t0 = performance.now();
-        const out = callWasm(api, op, input);
-        const elapsedMs = Math.max(1, Math.round(performance.now() - t0));
-
-        let verified = true;
-        let browserZipBytes = null;
-        const outDigest = await sha256Hex(out);
-
-        if (op === "encode" || op === "encode_native") {
-          // Verify lossless roundtrip inside fresh WASM instance for files <= 64 MiB automatically
-          if (input.length <= 64 * 1024 * 1024) {
-            const apiDec = await getWasmInstance();
-            const restored = callWasm(apiDec, "decode", out);
-            verified = restored.length === input.length && restored.every((b, idx) => b === input[idx]);
-            if (!verified) throw new Error(`Preverba bitno točne obnove za "${f.name}" ni uspela.`);
-            browserZipBytes = await measureBrowserZipSize(input);
+        try {
+          if (!f.size || f.size > maxBytes) {
+            throw new Error(`Datoteka "${f.name}" je prazna ali presega mejo 256 MiB.`);
           }
-        }
+          const input = new Uint8Array(await f.arrayBuffer());
+          const op = resolveFileOp(f, defaultOp, encodeFormat, input);
 
-        items.push({
-          origName: f.name,
-          op,
-          inputBytes: input.length,
-          outputBytes: out.byteLength,
-          browserZipBytes,
-          digest: outDigest,
-          verified,
-          elapsedMs,
-          bytes: out.buffer,
-        });
-        transfers.push(out.buffer);
+          let api = await getWasmInstance();
+          const t0 = performance.now();
+          const out = callWasm(api, op, input);
+          const elapsedMs = Math.max(1, Math.round(performance.now() - t0));
+          api = null; // Release encoder WASM linear memory before verification instance
+
+          let verified = false;
+          let browserZipBytes = null;
+          const outDigest = await sha256Hex(out);
+
+          if (op === "encode" || op === "encode_native") {
+            const inputDigest = await sha256Hex(input);
+            let apiDec = await getWasmInstance();
+            const restored = callWasm(apiDec, "decode", out);
+            apiDec = null;
+            const check = await verifyBytesMatch(input, restored, inputDigest);
+            verified = check.verified;
+            if (!verified) {
+              throw new Error(`Preverba bitno točne obnove za "${f.name}" ni uspela.`);
+            }
+            browserZipBytes = await measureBrowserZipSize(input);
+          } else {
+            verified = out.byteLength <= MAX_FILE_BYTES;
+            if (!verified) {
+              throw new Error(`Obnovljena datoteka "${f.name}" presega mejo 256 MiB.`);
+            }
+          }
+
+          items.push({
+            origName: f.name,
+            op,
+            inputBytes: input.length,
+            outputBytes: out.byteLength,
+            browserZipBytes,
+            digest: outDigest,
+            verified,
+            elapsedMs,
+            bytes: out.buffer,
+          });
+          transfers.push(out.buffer);
+        } catch (fileErr) {
+          items.push({
+            origName: f.name,
+            op: defaultOp,
+            inputBytes: f.size || 0,
+            outputBytes: 0,
+            browserZipBytes: null,
+            digest: "",
+            verified: false,
+            error: fileErr.message || "Napaka pri obdelavi datoteke.",
+            elapsedMs: 0,
+            bytes: null,
+          });
+        }
       }
 
       self.postMessage({ batchDone: true, items }, transfers);
@@ -142,23 +185,27 @@ self.onmessage = async ({ data }) => {
       throw new Error("Datoteka je prazna ali presega dovoljeno velikost (256 MiB).");
     }
 
-    const api = await getWasmInstance();
     const input = new Uint8Array(await file.arrayBuffer());
 
     if (mode === "compare") {
       const inputDigest = await sha256Hex(input);
+
+      let api = await getWasmInstance();
       const t0 = performance.now();
       const encodedZip = callWasm(api, "encode", input);
       const encodeMs = Math.max(1, Math.round(performance.now() - t0));
+      const hasNativeFn = typeof api.encode_native === "function";
+      api = null;
 
-      const apiDec = await getWasmInstance();
+      let apiDec = await getWasmInstance();
       const t1 = performance.now();
       const restoredZip = callWasm(apiDec, "decode", encodedZip);
       const decodeMs = Math.max(1, Math.round(performance.now() - t1));
+      apiDec = null;
 
-      const restoredDigestZip = await sha256Hex(restoredZip);
-      const verifiedZip =
-        restoredZip.length === input.length && restoredZip.every((byte, i) => byte === input[i]);
+      const checkZip = await verifyBytesMatch(input, restoredZip, inputDigest);
+      const restoredDigestZip = checkZip.restoredDigest;
+      const verifiedZip = checkZip.verified;
 
       let encodedNative = null;
       let encodeNativeMs = null;
@@ -166,20 +213,22 @@ self.onmessage = async ({ data }) => {
       let restoredDigestNat = "";
       let verifiedNative = true;
 
-      if (typeof api.encode_native === "function") {
-        const apiNatEnc = await getWasmInstance();
+      if (hasNativeFn) {
+        let apiNatEnc = await getWasmInstance();
         const t2 = performance.now();
         encodedNative = callWasm(apiNatEnc, "encode_native", input);
         encodeNativeMs = Math.max(1, Math.round(performance.now() - t2));
+        apiNatEnc = null;
 
-        const apiNatDec = await getWasmInstance();
+        let apiNatDec = await getWasmInstance();
         const t3 = performance.now();
         const restoredNative = callWasm(apiNatDec, "decode", encodedNative);
         decodeNativeMs = Math.max(1, Math.round(performance.now() - t3));
+        apiNatDec = null;
 
-        restoredDigestNat = await sha256Hex(restoredNative);
-        verifiedNative =
-          restoredNative.length === input.length && restoredNative.every((byte, i) => byte === input[i]);
+        const checkNat = await verifyBytesMatch(input, restoredNative, inputDigest);
+        restoredDigestNat = checkNat.restoredDigest;
+        verifiedNative = checkNat.verified;
       }
 
       const verified = verifiedZip && verifiedNative;
@@ -223,9 +272,30 @@ self.onmessage = async ({ data }) => {
       return;
     }
 
+    let api = await getWasmInstance();
     const result = callWasm(api, mode, input);
+    api = null;
+
+    let verified = false;
+    if (mode === "encode" || mode === "encode_native") {
+      const inputDigest = await sha256Hex(input);
+      let apiDec = await getWasmInstance();
+      const restored = callWasm(apiDec, "decode", result);
+      apiDec = null;
+      const check = await verifyBytesMatch(input, restored, inputDigest);
+      verified = check.verified;
+      if (!verified) {
+        throw new Error("Preverba bitno točne obnove v brskalniku ni uspela.");
+      }
+    } else {
+      if (result.byteLength > MAX_FILE_BYTES) {
+        throw new Error("Obnovljena datoteka presega dovoljeno velikost (256 MiB).");
+      }
+      verified = true;
+    }
+
     const digest = await sha256Hex(result);
-    self.postMessage({ bytes: result.buffer, outputOp: mode, digest }, [result.buffer]);
+    self.postMessage({ bytes: result.buffer, outputOp: mode, digest, verified }, [result.buffer]);
   } catch (error) {
     self.postMessage({ error: error.message || "Brskalnik ni mogel dokončati opravila." });
   }

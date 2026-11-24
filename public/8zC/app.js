@@ -14,6 +14,7 @@ const QUICK_SAMPLES = [
     raw_B: 80264,
     zip:  { direct: 15976, best: 9915,  pct: "-37,9 %", label: "Cycle13 R6 v9 ELF" },
     sz7z: { direct: 13555, best: 9281,  pct: "-31,5 %", label: "Cycle13 R6 v9 ELF" },
+    nat:  { bytes: 9488,   pct7z: "-30,0 %" },
     paq:  { direct: 9001,  z8c: 6492,   pct: "-27,9 % (-3)" },
     cmix: null,
   },
@@ -30,6 +31,7 @@ const QUICK_SAMPLES = [
     raw_B: 234896,
     zip:  { direct: 87017, best: 75273, pct: "-13,5 %", label: "Cycle13 R6 v9 PE" },
     sz7z: { direct: 77337, best: 69386, pct: "-10,3 %", label: "Cycle13 R6 v9 PE" },
+    nat:  { bytes: 72038,  pct7z: "-6,9 % vs 7z" },
   },
   {
     id: "sample_wasm",
@@ -44,6 +46,7 @@ const QUICK_SAMPLES = [
     raw_B: 120920,
     zip:  { direct: 51714, best: 43659, pct: "-15,6 %", label: "Cycle13 R6 v9 WASM" },
     sz7z: { direct: 44536, best: 42300, pct: "-5,0 %",  label: "Cycle13 R6 v9 WASM" },
+    nat:  { bytes: 44266,  pct7z: "-0,6 % vs 7z" },
   },
   {
     id: "sample_csv",
@@ -58,6 +61,7 @@ const QUICK_SAMPLES = [
     raw_B: 446980,
     zip:  { direct: 49944, best: 437,   pct: "-99,13 %", label: "Cycle13 R6 v9 Tabular" },
     sz7z: { direct: 22942, best: 392,   pct: "-98,29 %", label: "Cycle13 R6 v9 Tabular" },
+    nat:  { bytes: 294,    pct7z: "-98,72 % vs 7z" },
   },
   {
     id: "sample_jsonl",
@@ -72,6 +76,7 @@ const QUICK_SAMPLES = [
     raw_B: 610000,
     zip:  { direct: 28016, best: 495,   pct: "-98,23 %", label: "Cycle13 R6 v9 JSONL" },
     sz7z: { direct: 7754,  best: 448,   pct: "-94,22 %", label: "Cycle13 R6 v9 JSONL" },
+    nat:  { bytes: 341,    pct7z: "-95,60 % vs 7z" },
   },
   {
     id: "sample_wav",
@@ -86,6 +91,7 @@ const QUICK_SAMPLES = [
     raw_B: 32044,
     zip:  { direct: 26932, best: 1964,  pct: "-92,7 %", label: "Cycle13 R6 v9 WAV_V4" },
     sz7z: { direct: 21233, best: 1884,  pct: "-91,1 %", label: "Cycle13 R6 v9 WAV_V4" },
+    nat:  { bytes: 1825,   pct7z: "-91,4 % vs 7z" },
   },
   {
     id: "sample_bmp",
@@ -100,6 +106,7 @@ const QUICK_SAMPLES = [
     raw_B: 589878,
     zip:  { direct: 513897, best: 503,   pct: "-99,90 %", label: "Cycle13 R6 v9 IMAGE_V4" },
     sz7z: { direct: 271080, best: 487,   pct: "-99,82 %", label: "Cycle13 R6 v9 IMAGE_V4" },
+    nat:  { bytes: 397,    pct7z: "-99,85 % vs 7z" },
   },
   {
     id: "sample_autodcc",
@@ -114,6 +121,7 @@ const QUICK_SAMPLES = [
     raw_B: 33808,
     zip:  { direct: 12017, best: 246,   pct: "-98,0 %", label: "Cycle13 R6 v9 Auto-DCC" },
     sz7z: { direct: 6927,  best: 224,   pct: "-96,8 %", label: "Cycle13 R6 v9 Auto-DCC" },
+    nat:  { bytes: 84,     pct7z: "-98,8 % vs 7z" },
   },
 ];
 
@@ -127,6 +135,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 80264,
     zip:  { direct: 15976, z8c_r3: 10484, z8c_v9: 9915,  pct_v9: "-37,9 %" },
     sz7z: { direct: 13555, z8c_r3: 9525,  z8c_v9: 9281,  pct_v9: "-31,5 %" },
+    nat:  { bytes: 9488,   pct7z: "-30,0 % vs 7z" },
     paq:  { direct: 9001,  z8c: 6492,  pct: "-27,9 % (-3)" },
     cmix: null,
   },
@@ -139,6 +148,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 1182672,
     zip:  { direct: 297204, z8c_r3: 207569, z8c_v9: 184690, pct_v9: "-37,9 %" },
     sz7z: { direct: 239015, z8c_r3: 174354, z8c_v9: 158990, pct_v9: "-33,5 %" },
+    nat:  null,
     paq:  { direct: 145887, z8c: 123729, pct: "-15,2 % (-10LE)" },
     cmix: { direct: 145654, z8c: 111456, pct: "-23,5 % (R3+cmix)" },
   },
@@ -151,6 +161,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 1472320,
     zip:  { direct: 283835, z8c_r3: 186015, z8c_v9: 158107, pct_v9: "-44,3 %" },
     sz7z: { direct: 210821, z8c_r3: 140758, z8c_v9: 131135, pct_v9: "-37,8 %" },
+    nat:  { bytes: 141662, pct7z: "-32,8 % vs 7z" },
     paq:  { direct: 117163, z8c: 99514,  pct: "-15,1 % (-10LE)" },
     cmix: { direct: 114899, z8c: 98691,  pct: "-14,1 %" },
   },
@@ -163,6 +174,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 2726704,
     zip:  { direct: 1290629, z8c_r3: 1000231, z8c_v9: 937814, pct_v9: "-27,3 %" },
     sz7z: { direct: 1047223, z8c_r3: 779900,  z8c_v9: 743482, pct_v9: "-29,0 %" },
+    nat:  { bytes: 804112, pct7z: "-23,2 % vs 7z" },
     paq:  { direct: 704961,  z8c: 522419,  pct: "-25,9 % (-10LE)" },
     cmix: { direct: 683352,  z8c: 501302,  pct: "-26,6 %" },
   },
@@ -175,6 +187,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 3922032,
     zip:  { direct: 1733761, z8c_r3: 1495837, z8c_v9: 1374082, pct_v9: "-20,7 %" },
     sz7z: { direct: 1412165, z8c_r3: 1230998, z8c_v9: 1140037, pct_v9: "-19,3 %" },
+    nat:  null,
     paq:  null,
     cmix: null,
   },
@@ -188,8 +201,8 @@ const translations = {
     "The first row measures the current file in your browser; the direct ZIP size is estimated from browser Deflate plus a ZIP wrapper. Other rows are recorded external-codec measurements for the same SHA-256. The reference matrices below show those external measurements.",
   "Rezultati 8zC": "8zC results",
   "Kodek 8zC": "8zC codec",
-  "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x01, brez zunanjih knjižnic) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
-    "Compress one or multiple files at once into our 100% sovereign multi-plane .8zc format (8ZCN\\x01, zero external libraries) or .8zc.zip, and automatically restore originals. Everything runs 100% locally in your browser (Rust + WebAssembly).",
+  "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x02 z dolžino in CRC-32, brez zunanjih knjižnic) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
+    "Compress one or multiple files at once into our 100% sovereign multi-plane .8zc format (8ZCN\\x02 with length and CRC-32, zero external libraries) or .8zc.zip, and automatically restore originals. Everything runs 100% locally in your browser (Rust + WebAssembly).",
   "Izberite postopek": "Choose an operation",
   "Format izhoda": "Output format",
   "Format .8zc (suveren)": "Format .8zc (sovereign)",
@@ -259,17 +272,32 @@ const translations = {
   "Vzorec in družina formata": "Sample and format family",
   "Čisti ZIP → 8zC v9 + ZIP": "Direct ZIP → 8zC v9 + ZIP",
   "Čisti 7z → 8zC v9 + 7z": "Direct 7z → 8zC v9 + 7z",
+  "Suvereni .8zc (v1.0)": "Sovereign .8zc (v1.0)",
   "Živi preizkus": "Live test",
   "Preizkusi v živo →": "Test live →",
-  "Cycle 13 R6 (v9) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)":
-    "Cycle 13 R6 (v9) · Reference matrix of 5 ELF64 binaries (.zip · .7z · .paq · .cmix)",
+  "Cycle 13 R6 (v9) + v1.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
+    "Cycle 13 R6 (v9) + v1.0 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
   "Zaženi 00_data_endian.elf v živo →": "Run 00_data_endian.elf live →",
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
   "Čisti cmix v21 → 8zC + cmix": "Direct cmix v21 → 8zC + cmix",
 };
 
-let language = localStorage.getItem("8zc-language") === "en" ? "en" : "sl";
+function safeGetStorage(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSetStorage(key, val) {
+  try {
+    localStorage.setItem(key, val);
+  } catch {}
+}
+
+let language = safeGetStorage("8zc-language") === "en" ? "en" : "sl";
 const t = (text) => (language === "en" ? translations[text] || text : text);
 const byId = (id) => document.getElementById(id);
 
@@ -472,6 +500,14 @@ function renderV4Matrix() {
     td7z.innerHTML = `<span>${fmtB(s.sz7z.direct)}</span> → <strong>${fmtB(s.sz7z.best)}</strong> <span class="badge">${s.sz7z.pct}</span>`;
     tr.appendChild(td7z);
 
+    const tdNat = document.createElement("td");
+    if (s.nat) {
+      tdNat.innerHTML = `<strong>${fmtB(s.nat.bytes)}</strong> <span class="badge">${s.nat.pct7z}</span>`;
+    } else {
+      tdNat.textContent = "—";
+    }
+    tr.appendChild(tdNat);
+
     const tdTry = document.createElement("td");
     const btn = document.createElement("button");
     btn.type = "button";
@@ -507,6 +543,14 @@ function renderElfMatrix() {
     const td7z = document.createElement("td");
     td7z.innerHTML = `<span>${fmtB(s.sz7z.direct)}</span> → <strong>${fmtB(s.sz7z.z8c_v9)}</strong> <span class="badge">${s.sz7z.pct_v9}</span>`;
     tr.appendChild(td7z);
+
+    const tdNat = document.createElement("td");
+    if (s.nat) {
+      tdNat.innerHTML = `<strong>${fmtB(s.nat.bytes)}</strong> <span class="badge">${s.nat.pct7z}</span>`;
+    } else {
+      tdNat.textContent = "—";
+    }
+    tr.appendChild(tdNat);
 
     const tdPaq = document.createElement("td");
     if (s.paq) {
@@ -698,20 +742,21 @@ function updateSelectionLabels() {
 
 function setLanguage(lang) {
   language = lang;
-  localStorage.setItem("8zc-language", lang);
+  safeSetStorage("8zc-language", lang);
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-lang]").forEach((button) =>
     button.setAttribute("aria-pressed", String(button.dataset.lang === lang))
   );
 
   byId("results-link").textContent = t("Rezultati 8zC");
+  byId("results-link").href = "/8zc-results/?lang=" + lang;
   byId("author-credit").textContent = t("Ideje, raziskovalne povezave in arhitektura · Bojan Dobrečevič (BD). Skupni razvoj in preverjanje · BD × AI Lab.");
   byId("origin-link").textContent = t("Izvor in celotna zgodba BD × AI Lab");
   byId("origin-link").href = "/8zc-story/?lang=" + lang;
   byId("reference-note").textContent = t("Prva vrstica meri trenutno datoteko v brskalniku; velikost neposrednega ZIP je ocenjena iz brskalniškega Deflate in ovojnice ZIP. Druge vrstice so zabeležene meritve zunanjih kodekov za isti SHA-256. Referenčni matriki spodaj prikazujeta te zunanje meritve.");
   document.querySelector("h1").textContent = t("Kodek 8zC");
   document.querySelector(".intro").textContent = t(
-    "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x01, brez zunanjih knjižnic) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly)."
+    "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x02 z dolžino in CRC-32, brez zunanjih knjižnic) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly)."
   );
   document.querySelector("#modes legend").textContent = t("Izberite postopek");
   const modeSpans = document.querySelectorAll("#modes label span");
@@ -762,16 +807,18 @@ function setLanguage(lang) {
   byId("th-v4-raw").textContent = t("Surovo");
   byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
   byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
+  if (byId("th-v4-nat")) byId("th-v4-nat").textContent = t("Suvereni .8zc (v1.0)");
   byId("th-v4-try").textContent = t("Živi preizkus");
 
   byId("matrix-title").textContent = t(
-    "Cycle 13 R6 (v9) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)"
+    "Cycle 13 R6 (v9) + v1.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)"
   );
   runSampleLiveBtn.textContent = t("Zaženi 00_data_endian.elf v živo →");
   byId("th-m-file").textContent = t("Vzorčni ELF (prevajalnik)");
   byId("th-m-raw").textContent = t("Surovo");
   byId("th-m-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
   byId("th-m-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
+  if (byId("th-m-nat")) byId("th-m-nat").textContent = t("Suvereni .8zc (v1.0)");
   byId("th-m-paq").textContent = t("Čisti PAQ8PX → 8zC + PAQ");
   byId("th-m-cmix").textContent = t("Čisti cmix v21 → 8zC + cmix");
 
@@ -793,7 +840,7 @@ function setLanguage(lang) {
 
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
-  localStorage.setItem("8zc-theme", theme);
+  safeSetStorage("8zc-theme", theme);
   byId("theme").textContent = theme === "dark" ? "☀ Light" : "☾ Dark";
 }
 
@@ -974,17 +1021,24 @@ function showBatchResult(items) {
   let totBaseZip = 0;
   let countWithBase = 0;
   let totOut = 0;
+  let verifiedCount = 0;
+  let errorCount = 0;
 
   for (const it of items) {
     const outName = outputFileNameFor(it.origName, it.op);
-    const outUint8 = new Uint8Array(it.bytes);
-    zipEntries.push({ name: outName, bytes: outUint8 });
-
-    totIn += it.inputBytes;
-    totOut += it.outputBytes;
-    if (it.browserZipBytes) {
-      totBaseZip += it.browserZipBytes;
-      countWithBase++;
+    const hasError = Boolean(it.error || !it.bytes);
+    const outUint8 = hasError ? null : new Uint8Array(it.bytes);
+    if (!hasError && outUint8) {
+      zipEntries.push({ name: outName, bytes: outUint8 });
+      totIn += it.inputBytes;
+      totOut += it.outputBytes;
+      if (it.browserZipBytes) {
+        totBaseZip += it.browserZipBytes;
+        countWithBase++;
+      }
+      if (it.verified) verifiedCount++;
+    } else {
+      errorCount++;
     }
 
     const tr = document.createElement("tr");
@@ -1011,40 +1065,58 @@ function showBatchResult(items) {
     tr.appendChild(tdBase);
 
     const tdOut = document.createElement("td");
-    const st = document.createElement("strong");
-    st.textContent = fmtB(it.outputBytes);
-    tdOut.appendChild(st);
+    if (hasError) {
+      tdOut.textContent = "—";
+    } else {
+      const st = document.createElement("strong");
+      st.textContent = fmtB(it.outputBytes);
+      tdOut.appendChild(st);
+    }
     tr.appendChild(tdOut);
 
     const tdSave = document.createElement("td");
-    if ((it.op === "encode" || it.op === "encode_native") && it.browserZipBytes) {
+    if (hasError) {
+      tdSave.textContent = it.error || (language === "en" ? "Failed" : "Napaka");
+    } else if ((it.op === "encode" || it.op === "encode_native") && it.browserZipBytes) {
       const diff = it.outputBytes - it.browserZipBytes;
       const bdg = document.createElement("span");
       bdg.className = "badge";
-      bdg.textContent = `${diff.toLocaleString(language === "en" ? "en-US" : "sl-SI")} B (${fmtPct(diff, it.browserZipBytes)}) · ✓ SHA-256`;
+      const verTag = it.verified
+        ? " · ✓ SHA-256"
+        : (language === "en" ? " · Not verified" : " · Ni preverjeno");
+      bdg.textContent = `${diff.toLocaleString(language === "en" ? "en-US" : "sl-SI")} B (${fmtPct(diff, it.browserZipBytes)})${verTag}`;
       tdSave.appendChild(bdg);
+    } else if (it.verified) {
+      tdSave.textContent = it.digest ? `✓ SHA-256: ${it.digest.slice(0, 12)}…` : "✓ Preverjeno";
     } else {
-      tdSave.textContent = it.digest ? `SHA-256: ${it.digest.slice(0, 12)}…` : "✓ OK";
+      tdSave.textContent = language === "en" ? "Not verified" : "Ni preverjeno";
     }
     tr.appendChild(tdSave);
 
     const tdDl = document.createElement("td");
-    const a = document.createElement("a");
-    a.className = "chip-btn mini-btn";
-    a.href = trackUrl(new Blob([outUint8], { type: it.op === "encode" ? "application/zip" : "application/octet-stream" }));
-    a.download = outName;
-    a.textContent = (language === "en" ? "Save ↓" : "Shrani ↓");
-    tdDl.appendChild(a);
+    if (!hasError && outUint8) {
+      const a = document.createElement("a");
+      a.className = "chip-btn mini-btn";
+      a.href = trackUrl(new Blob([outUint8], { type: it.op === "encode" ? "application/zip" : "application/octet-stream" }));
+      a.download = outName;
+      a.textContent = (language === "en" ? "Save ↓" : "Shrani ↓");
+      tdDl.appendChild(a);
+    } else {
+      tdDl.textContent = "—";
+    }
     tr.appendChild(tdDl);
 
     tbody.appendChild(tr);
   }
 
+  const okItemsCount = items.length - errorCount;
+  const allVerified = errorCount === 0 && verifiedCount === items.length;
+
   // Total summary row
   const trTot = document.createElement("tr");
   const thTot = document.createElement("th");
   thTot.scope = "row";
-  thTot.innerHTML = `<strong>${language === "en" ? `TOTAL (${items.length} files)` : `SKUPAJ (${items.length} datotek)`}</strong>`;
+  thTot.innerHTML = `<strong>${language === "en" ? `TOTAL (${okItemsCount}/${items.length} files)` : `SKUPAJ (${okItemsCount}/${items.length} datotek)`}</strong>`;
   trTot.appendChild(thTot);
 
   const tdOpT = document.createElement("td");
@@ -1056,7 +1128,7 @@ function showBatchResult(items) {
   trTot.appendChild(tdInT);
 
   const tdBaseT = document.createElement("td");
-  tdBaseT.textContent = countWithBase === items.length ? fmtB(totBaseZip) : "—";
+  tdBaseT.textContent = countWithBase === items.length && errorCount === 0 ? fmtB(totBaseZip) : "—";
   trTot.appendChild(tdBaseT);
 
   const tdOutT = document.createElement("td");
@@ -1064,11 +1136,16 @@ function showBatchResult(items) {
   trTot.appendChild(tdOutT);
 
   const tdSaveT = document.createElement("td");
-  if (countWithBase === items.length && totBaseZip > 0) {
+  if (allVerified && countWithBase === items.length && totBaseZip > 0) {
     const diffT = totOut - totBaseZip;
-    tdSaveT.innerHTML = `<span class="badge">${diffT.toLocaleString(language === "en" ? "en-US" : "sl-SI")} B (${fmtPct(diffT, totBaseZip)})</span>`;
+    tdSaveT.innerHTML = `<span class="badge">${diffT.toLocaleString(language === "en" ? "en-US" : "sl-SI")} B (${fmtPct(diffT, totBaseZip)}) · ✓ ${verifiedCount}/${items.length} SHA-256</span>`;
+  } else if (allVerified) {
+    tdSaveT.textContent = `✓ ${verifiedCount}/${items.length} SHA-256`;
   } else {
-    tdSaveT.textContent = "100 % OK";
+    tdSaveT.textContent =
+      language === "en"
+        ? `${verifiedCount}/${items.length} verified${errorCount ? ` (${errorCount} failed)` : ""}`
+        : `${verifiedCount}/${items.length} preverjeno${errorCount ? ` (${errorCount} napak)` : ""}`;
   }
   trTot.appendChild(tdSaveT);
 
@@ -1077,17 +1154,30 @@ function showBatchResult(items) {
   trTot.appendChild(tdDlT);
   tbody.appendChild(trTot);
 
-  const bundleBlob = buildStoreZip(zipEntries);
-  downloadAll.href = trackUrl(bundleBlob);
-  downloadAll.download = `8zC_batch_${items.length}_files.zip`;
-
-  byId("batch-summary").textContent =
-    language === "en"
-      ? `${items.length} files processed (${fmtB(totIn)} → ${fmtB(totOut)}) · Bundle size: ${fmtB(bundleBlob.size)}`
-      : `Obdelanih ${items.length} datotek (${fmtB(totIn)} → ${fmtB(totOut)}) · Skupni paket: ${fmtB(bundleBlob.size)}`;
+  if (zipEntries.length > 0) {
+    const bundleBlob = buildStoreZip(zipEntries);
+    downloadAll.href = trackUrl(bundleBlob);
+    downloadAll.download = `8zC_batch_${zipEntries.length}_files.zip`;
+    downloadAll.hidden = false;
+    byId("batch-summary").textContent =
+      language === "en"
+        ? `${okItemsCount}/${items.length} files processed (${fmtB(totIn)} → ${fmtB(totOut)}) · Bundle size: ${fmtB(bundleBlob.size)}`
+        : `Obdelanih ${okItemsCount}/${items.length} datotek (${fmtB(totIn)} → ${fmtB(totOut)}) · Skupni paket: ${fmtB(bundleBlob.size)}`;
+  } else {
+    downloadAll.hidden = true;
+    byId("batch-summary").textContent =
+      language === "en" ? "No files succeeded in batch." : "Nobena datoteka v paketu ni bila uspešno obdelana.";
+  }
 
   byId("batch-result").hidden = false;
-  status(t("Paketna obdelava je zaključena — posamezne datoteke ali skupni ZIP so pripravljeni za prenos."));
+  status(
+    errorCount
+      ? (language === "en"
+          ? `Batch finished with ${errorCount} error(s) (${okItemsCount}/${items.length} succeeded).`
+          : `Paketna obdelava končana z opozorili (${okItemsCount}/${items.length} uspešnih, ${errorCount} napak).`)
+      : t("Paketna obdelava je zaključena — posamezne datoteke ali skupni ZIP so pripravljeni za prenos."),
+    errorCount > 0
+  );
 }
 
 async function loadSampleById(sampleId, autoCompare = false) {
@@ -1222,12 +1312,13 @@ cancel.addEventListener("click", stop);
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && worker) stop();
 });
-setTheme(localStorage.getItem("8zc-theme") === "light" ? "light" : "dark");
+setTheme(safeGetStorage("8zc-theme") === "light" ? "light" : "dark");
 byId("theme").addEventListener("click", () =>
   setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark")
 );
 document
   .querySelectorAll("[data-lang]")
   .forEach((button) => button.addEventListener("click", () => setLanguage(button.dataset.lang)));
+const requestedLang = new URL(location.href).searchParams.get("lang");
 switchMode();
-setLanguage(language);
+setLanguage(requestedLang === "en" || requestedLang === "sl" ? requestedLang : language);

@@ -82,8 +82,15 @@
   Cache-Control: no-cache
 
 # Carbon R2 uses a dedicated Web Worker and a WebAssembly module.
+/8zC/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
 /8zC/decoder.wasm
   Content-Type: application/wasm
+  Cache-Control: public, max-age=0, must-revalidate
 /8zC/00_data_endian.elf
   Content-Type: application/octet-stream
 /8zC/app.js
@@ -92,3 +99,21 @@
   Content-Type: text/javascript; charset=utf-8
 /8zC/style.css
   Content-Type: text/css; charset=utf-8
+
+/8zc-results/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/8zC-results/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/8zc-story/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-xRnqp4h6UebGYYndrb9UptjM6QVi5zJANqJpBexMArQ=' 'sha256-5hhqiwK2vxsVykciD7yk3Beods4BDymlLjwzHkpaOPQ='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
