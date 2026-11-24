@@ -1,0 +1,46 @@
+name: Verify public LLMS archive cleanup
+on:
+  push:
+    branches: [research/llms-r5-capture-20261124]
+    paths: ['.github/workflows/verify-llms-r4-removal-20261124.yml']
+permissions:
+  contents: read
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Read-only check of current production capture and removed archive
+        run: |
+          python3 -u - <<'PY'
+          import json, hashlib, time, urllib.request, urllib.error
+          root='https://www.mdlxdcc.org/llms/'
+          def fetch(path):
+              req=urllib.request.Request(root+path+'?verify='+str(time.time_ns()),headers={'Cache-Control':'no-cache','User-Agent':'MDLxDCC-archive-readback/1'})
+              with urllib.request.urlopen(req,timeout=12) as r: return r.read()
+          for i in range(26):
+              try:
+                  c=json.loads(fetch('captures.json'))
+                  assert c['latest']=='2026-11-24'
+                  assert [x['date'] for x in c['captures']]==['2026-11-24','2026-11-20','2026-10-30']
+                  meta=fetch('meta_index.json')
+                  assert hashlib.sha256(meta).hexdigest()=='83d5c5cd8237c3e9771aab16840798fd731bedaa647510ecb1a9e4e3402de4c3'
+                  assert fetch('data/2026-11-24/meta_index.json')==meta
+                  for day in ['2026-11-20','2026-10-30']:
+                      assert json.loads(fetch('data/'+day+'/meta_index.json'))['data_fetched']==day
+                  for name in ['meta_index.json','sources.json','commentary_sl.json']:
+                      try:
+                          body=fetch('data/2026-11-23/'+name)
+                      except urllib.error.HTTPError as e:
+                          assert e.code in [404,410],e.code
+                      else:
+                          try: parsed=json.loads(body)
+                          except ValueError: pass
+                          else: raise AssertionError('removed public archive still serves JSON '+name)
+                  print('LIVE_ARCHIVE_CLEANUP_PASS',c['latest'],[x['date'] for x in c['captures']],hashlib.sha256(meta).hexdigest())
+                  break
+              except Exception as e:
+                  print('Not verified:',repr(e))
+                  if i==25: raise
+                  time.sleep(15)
+          PY
