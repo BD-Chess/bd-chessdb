@@ -1,0 +1,41 @@
+name: Decode Arena R5 verified upstream parquet
+on:
+  push:
+    branches: [research/llms-r5-capture-20261124]
+    paths: ['.github/workflows/llms-r5-arena-decode.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  decode:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: llms-r5-20261124-upstream
+          run-id: 45360123407
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: upstream
+      - run: python3 -m pip install --disable-pip-version-check --no-input pyarrow==19.0.1
+      - name: Verify artifact hashes and decode complete parquet
+        run: |
+          python3 - <<'PY'
+          import json,hashlib,pathlib,pyarrow.parquet as pq
+          p=pathlib.Path('upstream'); d=json.loads((p/'probe-report.json').read_text()); out={}
+          assert d['date']=='2026-11-24'
+          for r in d['probes']:
+              if r['source_id']=='lmarena' and r['url'].endswith('.parquet') and r.get('file'):
+                  f=p/r['file']; assert hashlib.sha256(f.read_bytes()).hexdigest()==r['sha256']
+                  key=r['url'].split('/')[-2]
+                  table=pq.read_table(f)
+                  out[key]={'url':r['url'],'sha256':r['sha256'],'rows':table.to_pylist(),'row_count':table.num_rows}
+          assert all(k in out for k in ['text_style_control','webdev','agent'])
+          pathlib.Path('arena-decoded.json').write_text(json.dumps(out,default=str,ensure_ascii=False,allow_nan=False))
+          print({k:v['row_count'] for k,v in out.items()})
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: llms-r5-arena-decoded
+          path: arena-decoded.json
+          retention-days: 14
