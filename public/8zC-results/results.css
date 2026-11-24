@@ -115,10 +115,19 @@ summary { padding: 10px 0; cursor: pointer; color: var(--accent); min-height: 44
   th, td { padding-inline: 6px; }
 }
 
-/* Use the available viewport for every benchmark table, not only the feature matrix. */
-.wrap { width:calc(100% - 48px); max-width:none; }
-.comparison { width:100%; max-width:none; }
-.comparison table { width:100%; table-layout:auto; }
-#technical-matrix .comparison { position:static; left:auto; width:100%; transform:none; }
-.comparison td,.comparison th { overflow-wrap:break-word; }
-@media(max-width:690px) { .wrap { width:calc(100% - 24px); } }
+/* Keep the original centered reading column. Only benchmark tables break out
+   to the full usable width of main, excluding the viewport's scrollbar. */
+main.wrap {
+  width: calc(100% - 48px);
+  container-type: inline-size;
+}
+main.wrap > section { width: min(100%, 1080px); margin-inline: auto; }
+.comparison { width: 100cqw; max-width: none; min-width: 0; margin-inline: calc((100% - 100cqw) / 2); }
+.comparison table { width: 100%; table-layout: auto; }
+#technical-matrix .comparison { position: static; left: auto; width: 100cqw; transform: none; }
+.comparison td, .comparison th { overflow-wrap: break-word; }
+@media (max-width: 690px) { main.wrap { width: calc(100% - 32px); } }
+@media print {
+  main.wrap { container-type: normal; width: 100%; }
+  .comparison, #technical-matrix .comparison { width: 100%; margin-inline: 0; overflow: visible; }
+}

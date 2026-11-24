@@ -201,6 +201,35 @@
     @media(max-width:1050px) { .shell { width:calc(100% - 48px); } .story-layout { grid-template-columns:minmax(0,1fr); gap:0; } .sidebar { top:var(--mast-height,68px); } .article { max-width:none; } .chapter { scroll-margin-top:calc(var(--mast-height,68px) + 60px); } }
     @media(max-width:700px) { .shell { width:calc(100% - 28px); } .header-controls { justify-content:flex-end; margin-left:auto; gap:4px 8px; } .masthead-inner { gap:4px 10px; } .mast-nav { margin-left:auto; } .sidebar { margin-inline:-14px; padding-inline:14px; } .header-controls button { font-size:13px; min-width:36px; min-height:40px; padding:4px 7px; } #font-reset { min-width:53px; } }
     @media print { .shell { width:100%; } .article { font-size:10pt; } .table-scroll table { min-width:0; } }
+  
+    /* Keep the original centered story shell, sidebar and reading measure.
+       Only the tables break out to the full usable width of main. */
+    main.shell { width:calc(100% - 64px); container-type:inline-size; }
+    main.shell > .hero, main.shell > .story-layout { width:min(100%,1320px); margin-inline:auto; }
+    footer.shell { width:min(1320px,calc(100% - 64px)); }
+    .story-layout { --story-gap:clamp(42px,6vw,92px); gap:var(--story-gap); }
+    .article { max-width:890px; }
+    .chapter .table-scroll { width:100cqw; max-width:none; min-width:0; background:var(--bg); }
+    @media(min-width:1051px) {
+      .chapter .table-scroll {
+        margin-inline-start:calc((min(100cqw,1320px) - 100cqw) / 2 - 230px - var(--story-gap));
+        margin-inline-end:0;
+        position:relative;
+        z-index:21;
+      }
+    }
+    @media(max-width:1050px) {
+      main.shell,footer.shell { width:calc(100% - 48px); }
+      .story-layout { gap:0; }
+      .article { max-width:820px; }
+      .chapter .table-scroll { margin-inline:calc((100% - 100cqw) / 2); }
+    }
+    @media(max-width:700px) { main.shell,footer.shell { width:calc(100% - 28px); } }
+    @media print {
+      main.shell,footer.shell { width:100%; container-type:normal; }
+      main.shell > .hero,main.shell > .story-layout,.article { max-width:none; width:100%; }
+      .chapter .table-scroll { width:100%; margin-inline:0; position:static; }
+    }
   </style>
 </head>
 <body>
