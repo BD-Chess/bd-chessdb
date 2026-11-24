@@ -188,18 +188,21 @@ const translations = {
     "The first row measures the current file in your browser; the direct ZIP size is estimated from browser Deflate plus a ZIP wrapper. Other rows are recorded external-codec measurements for the same SHA-256. The reference matrices below show those external measurements.",
   "Rezultati 8zC": "8zC results",
   "Kodek 8zC": "8zC codec",
-  "Stisnite eno ali več datotek hkrati (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhivov 8zC obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
-    "Compress one or multiple files at once (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM or structured binary via Auto-DCC) or restore originals from 8zC archives. Everything runs 100% locally in your browser (Rust + WebAssembly).",
+  "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x01, brez zunanjih knjižnic) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
+    "Compress one or multiple files at once into our 100% sovereign multi-plane .8zc format (8ZCN\\x01, zero external libraries) or .8zc.zip, and automatically restore originals. Everything runs 100% locally in your browser (Rust + WebAssembly).",
   "Izberite postopek": "Choose an operation",
+  "Format izhoda": "Output format",
+  "Format .8zc (suveren)": "Format .8zc (sovereign)",
+  "Format .8zc.zip": "Format .8zc.zip",
   "Stisni datoteke": "Compress files",
   "Obnovi izvirnike": "Restore originals",
   "Vhodne datoteke (6 družin formatov)": "Input files (6 format families)",
-  "Vhodni arhivi 8zC ZIP": "8zC ZIP input archives",
+  "Vhodni arhivi .8zc / 8zC ZIP": ".8zc / 8zC ZIP input archives",
   "1-klik vzorci:": "1-click samples:",
   "Izberite eno ali več datotek": "Choose one or more files",
-  "Izberite enega ali več arhivov ZIP": "Choose one or more ZIP archives",
-  "ali jih povlecite sem (lahko tudi mešano: navadne datoteke in arhive *.8zc.zip hkrati!)":
-    "or drop them here (you can even drop mixed raw files and *.8zc.zip archives together!)",
+  "Izberite enega ali več arhivov .8zc / ZIP": "Choose one or more .8zc / ZIP archives",
+  "ali jih povlecite sem (lahko tudi mešano: navadne datoteke ter arhive *.8zc in *.8zc.zip hkrati!)":
+    "or drop them here (you can even drop mixed raw files with *.8zc and *.8zc.zip archives together!)",
   "ali jih povlecite sem": "or drop them here",
   "1–100 datotek · do 256 MiB / datoteko (1 GiB skupaj)": "1–100 files · up to 256 MiB / file (1 GiB batch)",
   "1–100 arhivov · do 256 MiB / arhiv (1 GiB skupaj)": "1–100 archives · up to 256 MiB / archive (1 GiB batch)",
@@ -211,7 +214,9 @@ const translations = {
   "Obdelaj vse": "Process all",
   "Prekliči": "Cancel",
   "Obnovljena datoteka": "Restored file",
+  "Arhiv 8zC (.8zc)": "8zC Sovereign Archive (.8zc)",
   "Arhiv 8zC ZIP": "8zC ZIP archive",
+  "Shrani .8zc": "Save .8zc",
   "Shrani ZIP": "Save ZIP",
   "Shrani izvirnik": "Save original",
   "Shrani vse (.zip)": "Save all (.zip)",
@@ -284,6 +289,7 @@ const MAX_BATCH_BYTES = 1024 * 1024 * 1024;
 const MAX_BATCH_FILES = 100;
 
 const modes = byId("modes");
+const encFormats = byId("enc-formats");
 const fileInput = byId("file");
 const choose = byId("choose");
 const start = byId("start");
@@ -296,6 +302,7 @@ const download = byId("download");
 const downloadAll = byId("download-all");
 
 let mode = "encode";
+let encodeFormat = "native";
 let selectedFiles = [];
 let activeSampleId = null;
 let worker = null;
@@ -413,13 +420,16 @@ function inferBadge(name) {
   if (lower.endsWith(".wav")) return "WAV";
   if (lower.endsWith(".bmp") || lower.endsWith(".ppm")) return "BMP";
   if (lower.endsWith(".bin") || lower.endsWith(".dat")) return "DCC";
+  if (lower.endsWith(".8zc")) return "8ZC";
   if (lower.endsWith(".zip")) return "ZIP";
   return "8zC";
 }
 
 function outputFileNameFor(origName, op) {
+  if (op === "encode_native") return origName + ".8zc";
   if (op === "encode") return origName + ".8zc.zip";
   if (/\.8zc\.zip$/i.test(origName)) return origName.replace(/\.8zc\.zip$/i, "");
+  if (/\.8zc$/i.test(origName)) return origName.replace(/\.8zc$/i, "");
   if (/\.zip$/i.test(origName)) {
     const stripped = origName.replace(/\.zip$/i, "");
     return stripped.includes(".") ? stripped : stripped + ".bin";
@@ -570,6 +580,18 @@ function renderLiveCompare(data) {
     tbody.appendChild(tr);
   };
 
+  if (typeof data.z8cNativeBytes === "number") {
+    addRow(
+      language === "en"
+        ? "Browser Deflate ZIP vs. Sovereign 8zC v1.0 (.8zc · live)"
+        : "Brskalniški Deflate ZIP proti suverenemu 8zC v1.0 (.8zc · v živo)",
+      data.inputBytes,
+      data.browserZipBytes,
+      data.z8cNativeBytes,
+      `${data.encodeNativeMs} ms enc / ${data.decodeNativeMs} ms dec`
+    );
+  }
+
   addRow(
     language === "en"
       ? "Browser Deflate ZIP vs. 8zC WASM v9 (live)"
@@ -632,11 +654,13 @@ function renderLiveCompare(data) {
 function updateSelectionLabels() {
   const encoding = mode === "encode";
   if (!selectedFiles.length) {
-    byId("file-icon").textContent = encoding ? "8zC" : "ZIP";
-    byId("filename").textContent = t(encoding ? "Izberite eno ali več datotek" : "Izberite enega ali več arhivov ZIP");
+    byId("file-icon").textContent = encoding ? (encodeFormat === "zip" ? "ZIP" : "8zC") : "ARC";
+    byId("filename").textContent = t(
+      encoding ? "Izberite eno ali več datotek" : "Izberite enega ali več arhivov .8zc / ZIP"
+    );
     byId("filehint").textContent = t(
       encoding
-        ? "ali jih povlecite sem (lahko tudi mešano: navadne datoteke in arhive *.8zc.zip hkrati!)"
+        ? "ali jih povlecite sem (lahko tudi mešano: navadne datoteke ter arhive *.8zc in *.8zc.zip hkrati!)"
         : "ali jih povlecite sem"
     );
     byId("start-label").textContent = t(encoding ? "Stisni" : "Obnovi");
@@ -655,8 +679,8 @@ function updateSelectionLabels() {
     compareBtn.hidden = !encoding;
   } else {
     const totBytes = selectedFiles.reduce((acc, f) => acc + f.size, 0);
-    const hasArc = selectedFiles.some((f) => f.name.toLowerCase().endsWith(".8zc.zip"));
-    const hasRaw = selectedFiles.some((f) => !f.name.toLowerCase().endsWith(".8zc.zip"));
+    const hasArc = selectedFiles.some((f) => /\.(8zc|8zc\.zip)$/i.test(f.name));
+    const hasRaw = selectedFiles.some((f) => !/\.(8zc|8zc\.zip)$/i.test(f.name));
     byId("file-icon").textContent = `${selectedFiles.length}×`;
     byId("filename").textContent =
       language === "en"
@@ -687,15 +711,20 @@ function setLanguage(lang) {
   byId("reference-note").textContent = t("Prva vrstica meri trenutno datoteko v brskalniku; velikost neposrednega ZIP je ocenjena iz brskalniškega Deflate in ovojnice ZIP. Druge vrstice so zabeležene meritve zunanjih kodekov za isti SHA-256. Referenčni matriki spodaj prikazujeta te zunanje meritve.");
   document.querySelector("h1").textContent = t("Kodek 8zC");
   document.querySelector(".intro").textContent = t(
-    "Stisnite eno ali več datotek hkrati (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhivov 8zC obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly)."
+    "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x01, brez zunanjih knjižnic) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly)."
   );
   document.querySelector("#modes legend").textContent = t("Izberite postopek");
   const modeSpans = document.querySelectorAll("#modes label span");
   if (modeSpans[0]) modeSpans[0].textContent = t("Stisni datoteke");
   if (modeSpans[1]) modeSpans[1].textContent = t("Obnovi izvirnike");
+  const fmtLegend = document.querySelector("#enc-formats legend");
+  if (fmtLegend) fmtLegend.textContent = t("Format izhoda");
+  const fmtSpans = document.querySelectorAll("#enc-formats label span");
+  if (fmtSpans[0]) fmtSpans[0].textContent = t("Format .8zc (suveren)");
+  if (fmtSpans[1]) fmtSpans[1].textContent = t("Format .8zc.zip");
 
   const encoding = mode === "encode";
-  byId("input-heading").textContent = t(encoding ? "Vhodne datoteke (6 družin formatov)" : "Vhodni arhivi 8zC ZIP");
+  byId("input-heading").textContent = t(encoding ? "Vhodne datoteke (6 družin formatov)" : "Vhodni arhivi .8zc / 8zC ZIP");
   byId("samples-caption").textContent = t("1-klik vzorci:");
   byId("limits").textContent = t(
     encoding
@@ -748,8 +777,13 @@ function setLanguage(lang) {
 
   updateSelectionLabels();
   if (!byId("result").hidden) {
-    byId("result-heading").textContent = t(encoding ? "Arhiv 8zC ZIP" : "Obnovljena datoteka");
-    byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani izvirnik");
+    const outOp = encoding ? (encodeFormat === "zip" ? "encode" : "encode_native") : "decode";
+    byId("result-heading").textContent = t(
+      outOp === "encode_native" ? "Arhiv 8zC (.8zc)" : outOp === "encode" ? "Arhiv 8zC ZIP" : "Obnovljena datoteka"
+    );
+    byId("save-label").textContent = t(
+      outOp === "encode_native" ? "Shrani .8zc" : outOp === "encode" ? "Shrani ZIP" : "Shrani izvirnik"
+    );
   }
   renderSampleChips();
   renderV4Matrix();
@@ -821,16 +855,18 @@ function acceptFiles(rawFileList) {
     return;
   }
 
-  // Convenience: if user drops 1 file ending in .8zc.zip while in encode mode, switch to decode automatically
+  // Convenience: if user drops 1 file ending in .8zc or .8zc.zip while in encode mode, switch to decode automatically
   if (arr.length === 1) {
     const nm = arr[0].name.toLowerCase();
-    if (nm.endsWith(".8zc.zip") && mode !== "decode") {
+    if ((nm.endsWith(".8zc") || nm.endsWith(".8zc.zip")) && mode !== "decode") {
       modes.querySelector('input[value="decode"]').checked = true;
       mode = "decode";
+      encFormats.hidden = true;
       setLanguage(language);
-    } else if (!nm.endsWith(".zip") && mode === "decode") {
+    } else if (!nm.endsWith(".zip") && !nm.endsWith(".8zc") && mode === "decode") {
       modes.querySelector('input[value="encode"]').checked = true;
       mode = "encode";
+      encFormats.hidden = false;
       setLanguage(language);
     }
   }
@@ -847,14 +883,20 @@ function acceptFiles(rawFileList) {
   }
 }
 
+function switchFormat() {
+  encodeFormat = encFormats.querySelector("input:checked").value === "zip" ? "zip" : "native";
+  updateSelectionLabels();
+}
+
 function switchMode() {
   mode = modes.querySelector("input:checked").value;
   const encoding = mode === "encode";
-  fileInput.accept = encoding ? "" : ".zip,application/zip";
+  encFormats.hidden = !encoding;
+  fileInput.accept = encoding ? "" : ".8zc,.8zc.zip,.zip,application/zip";
   fileInput.value = "";
   sampleChips.hidden = !encoding;
   byId("samples-caption").hidden = !encoding;
-  byId("input-heading").textContent = t(encoding ? "Vhodne datoteke (6 družin formatov)" : "Vhodni arhivi 8zC ZIP");
+  byId("input-heading").textContent = t(encoding ? "Vhodne datoteke (6 družin formatov)" : "Vhodni arhivi .8zc / 8zC ZIP");
   byId("limits").textContent = t(
     encoding
       ? "1–100 datotek · do 256 MiB / datoteko (1 GiB skupaj)"
@@ -865,6 +907,7 @@ function switchMode() {
 
 function busy(active) {
   modes.disabled = active;
+  encFormats.disabled = active;
   choose.disabled = active;
   compareBtn.disabled = active;
   runSampleLiveBtn.disabled = active;
@@ -893,19 +936,25 @@ function trackUrl(blob) {
   return u;
 }
 
-function showResult({ bytes, digest }) {
-  const encoding = mode === "encode";
+function showResult({ bytes, digest, outputOp }) {
+  const resolvedOp =
+    outputOp || (mode === "encode" ? (encodeFormat === "zip" ? "encode" : "encode_native") : "decode");
+  const encoding = resolvedOp !== "decode";
   const singleFile = selectedFiles[0];
-  const name = outputFileNameFor(singleFile ? singleFile.name : "output", mode);
+  const name = outputFileNameFor(singleFile ? singleFile.name : "output", resolvedOp);
   const url = trackUrl(
     new Blob([bytes], {
-      type: encoding ? "application/zip" : "application/octet-stream",
+      type: resolvedOp === "encode" ? "application/zip" : "application/octet-stream",
     })
   );
   download.href = url;
   download.download = name;
-  byId("result-heading").textContent = t(encoding ? "Arhiv 8zC ZIP" : "Obnovljena datoteka");
-  byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani izvirnik");
+  byId("result-heading").textContent = t(
+    resolvedOp === "encode_native" ? "Arhiv 8zC (.8zc)" : resolvedOp === "encode" ? "Arhiv 8zC ZIP" : "Obnovljena datoteka"
+  );
+  byId("save-label").textContent = t(
+    resolvedOp === "encode_native" ? "Shrani .8zc" : resolvedOp === "encode" ? "Shrani ZIP" : "Shrani izvirnik"
+  );
   byId("output-name").textContent =
     name + " · " + bytes.byteLength.toLocaleString(language === "en" ? "en-US" : "sl-SI") + " B";
   byId("digest").textContent = digest || "";
@@ -945,7 +994,12 @@ function showBatchResult(items) {
     tr.appendChild(th);
 
     const tdOp = document.createElement("td");
-    tdOp.textContent = it.op === "encode" ? (language === "en" ? "Compress" : "Stiskanje") : (language === "en" ? "Restore" : "Obnova");
+    tdOp.textContent =
+      it.op === "encode_native"
+        ? (language === "en" ? "Compress (.8zc)" : "Stiskanje (.8zc)")
+        : it.op === "encode"
+        ? (language === "en" ? "Compress (.8zc.zip)" : "Stiskanje (.zip)")
+        : (language === "en" ? "Restore" : "Obnova");
     tr.appendChild(tdOp);
 
     const tdIn = document.createElement("td");
@@ -963,7 +1017,7 @@ function showBatchResult(items) {
     tr.appendChild(tdOut);
 
     const tdSave = document.createElement("td");
-    if (it.op === "encode" && it.browserZipBytes) {
+    if ((it.op === "encode" || it.op === "encode_native") && it.browserZipBytes) {
       const diff = it.outputBytes - it.browserZipBytes;
       const bdg = document.createElement("span");
       bdg.className = "badge";
@@ -1106,7 +1160,7 @@ function runWorker(workerMode) {
           ? `Starting batch of ${selectedFiles.length} files …`
           : `Zaganjam paketno obdelavo ${selectedFiles.length} datotek …`
       );
-      worker.postMessage({ mode: "batch", defaultMode: mode, files: selectedFiles });
+      worker.postMessage({ mode: "batch", defaultMode: mode, encodeFormat, files: selectedFiles });
     } else {
       status(
         workerMode === "compare"
@@ -1115,7 +1169,7 @@ function runWorker(workerMode) {
           ? t("Stiskanje poteka …")
           : t("Obnova poteka …")
       );
-      worker.postMessage({ mode: workerMode, file: selectedFiles[0] });
+      worker.postMessage({ mode: workerMode, encodeFormat, file: selectedFiles[0] });
     }
   } catch {
     finish();
@@ -1158,7 +1212,10 @@ for (const type of ["dragover", "drop"]) {
   });
 }
 modes.addEventListener("change", switchMode);
-start.addEventListener("click", () => runWorker(mode));
+encFormats.addEventListener("change", switchFormat);
+start.addEventListener("click", () =>
+  runWorker(mode === "encode" ? (encodeFormat === "zip" ? "encode" : "encode_native") : "decode")
+);
 compareBtn.addEventListener("click", handleCompareClick);
 runSampleLiveBtn.addEventListener("click", () => loadSampleById("00_data_endian", true));
 cancel.addEventListener("click", stop);

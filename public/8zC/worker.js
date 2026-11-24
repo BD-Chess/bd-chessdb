@@ -49,7 +49,7 @@ function callWasm(api, fnName, inputBytes) {
     const view = new Uint8Array(api.memory.buffer, offset, size);
     if (code !== 0) {
       const detail = new TextDecoder().decode(view);
-      throw new Error((fnName === "encode" ? "Stiskanje ni uspelo." : "Obnova ni uspela.") + (detail ? " " + detail : ""));
+      throw new Error((fnName.startsWith("encode") ? "Stiskanje ni uspelo." : "Obnova ni uspela.") + (detail ? " " + detail : ""));
     }
     return view.slice();
   } finally {
@@ -57,17 +57,32 @@ function callWasm(api, fnName, inputBytes) {
   }
 }
 
-function resolveFileOp(file, defaultMode, inputBytes) {
+function isNative8zcMagic(bytes) {
+  return (
+    bytes &&
+    bytes.length >= 5 &&
+    bytes[0] === 0x38 &&
+    bytes[1] === 0x5a &&
+    bytes[2] === 0x43 &&
+    bytes[3] === 0x4e &&
+    bytes[4] === 0x01
+  );
+}
+
+function resolveFileOp(file, defaultMode, encodeFormat, inputBytes) {
   const nameLow = (file.name || "").toLowerCase();
-  if (nameLow.endsWith(".8zc.zip")) return "decode";
+  if (isNative8zcMagic(inputBytes) || nameLow.endsWith(".8zc") || nameLow.endsWith(".8zc.zip")) {
+    return "decode";
+  }
   if (defaultMode === "decode") return "decode";
-  return "encode";
+  return encodeFormat === "zip" ? "encode" : "encode_native";
 }
 
 self.onmessage = async ({ data }) => {
   try {
     const { mode, file, files } = data;
-    if (!["encode", "decode", "compare", "batch"].includes(mode)) throw new Error("Neznan postopek.");
+    const encodeFormat = data.encodeFormat === "zip" ? "zip" : "native";
+    if (!["encode", "encode_native", "decode", "compare", "batch"].includes(mode)) throw new Error("Neznan postopek.");
 
     if (mode === "batch") {
       if (!Array.isArray(files) || !files.length) throw new Error("Ni izbranih datotek.");
@@ -84,16 +99,16 @@ self.onmessage = async ({ data }) => {
         }
         const api = await getWasmInstance();
         const input = new Uint8Array(await f.arrayBuffer());
-        const op = resolveFileOp(f, defaultOp, input);
+        const op = resolveFileOp(f, defaultOp, encodeFormat, input);
         const t0 = performance.now();
         const out = callWasm(api, op, input);
         const elapsedMs = Math.max(1, Math.round(performance.now() - t0));
 
         let verified = true;
         let browserZipBytes = null;
-        let outDigest = await sha256Hex(out);
+        const outDigest = await sha256Hex(out);
 
-        if (op === "encode") {
+        if (op === "encode" || op === "encode_native") {
           // Verify lossless roundtrip inside fresh WASM instance for files <= 64 MiB automatically
           if (input.length <= 64 * 1024 * 1024) {
             const apiDec = await getWasmInstance();
@@ -133,47 +148,84 @@ self.onmessage = async ({ data }) => {
     if (mode === "compare") {
       const inputDigest = await sha256Hex(input);
       const t0 = performance.now();
-      const encoded = callWasm(api, "encode", input);
+      const encodedZip = callWasm(api, "encode", input);
       const encodeMs = Math.max(1, Math.round(performance.now() - t0));
 
       const apiDec = await getWasmInstance();
       const t1 = performance.now();
-      const restored = callWasm(apiDec, "decode", encoded);
+      const restoredZip = callWasm(apiDec, "decode", encodedZip);
       const decodeMs = Math.max(1, Math.round(performance.now() - t1));
 
-      const restoredDigest = await sha256Hex(restored);
-      const verified = restored.length === input.length && restored.every((byte, i) => byte === input[i]);
-      const sha256Verified = Boolean(inputDigest && restoredDigest && inputDigest === restoredDigest);
-      if (!verified || (inputDigest && restoredDigest && !sha256Verified)) {
+      const restoredDigestZip = await sha256Hex(restoredZip);
+      const verifiedZip =
+        restoredZip.length === input.length && restoredZip.every((byte, i) => byte === input[i]);
+
+      let encodedNative = null;
+      let encodeNativeMs = null;
+      let decodeNativeMs = null;
+      let restoredDigestNat = "";
+      let verifiedNative = true;
+
+      if (typeof api.encode_native === "function") {
+        const apiNatEnc = await getWasmInstance();
+        const t2 = performance.now();
+        encodedNative = callWasm(apiNatEnc, "encode_native", input);
+        encodeNativeMs = Math.max(1, Math.round(performance.now() - t2));
+
+        const apiNatDec = await getWasmInstance();
+        const t3 = performance.now();
+        const restoredNative = callWasm(apiNatDec, "decode", encodedNative);
+        decodeNativeMs = Math.max(1, Math.round(performance.now() - t3));
+
+        restoredDigestNat = await sha256Hex(restoredNative);
+        verifiedNative =
+          restoredNative.length === input.length && restoredNative.every((byte, i) => byte === input[i]);
+      }
+
+      const verified = verifiedZip && verifiedNative;
+      const sha256Verified = Boolean(
+        inputDigest &&
+          restoredDigestZip &&
+          inputDigest === restoredDigestZip &&
+          (!encodedNative || (restoredDigestNat && inputDigest === restoredDigestNat))
+      );
+      if (!verified || (inputDigest && restoredDigestZip && !sha256Verified)) {
         throw new Error("Preverba bitno točne obnove v brskalniku ni uspela.");
       }
 
       const browserZipBytes = await measureBrowserZipSize(input);
-      const archiveDigest = await sha256Hex(encoded);
+      const useNativeOut = encodedNative && encodeFormat !== "zip";
+      const primaryOut = useNativeOut ? encodedNative : encodedZip;
+      const outputOp = useNativeOut ? "encode_native" : "encode";
+      const archiveDigest = await sha256Hex(primaryOut);
 
       self.postMessage(
         {
           compare: true,
-          bytes: encoded.buffer,
+          bytes: primaryOut.buffer,
+          outputOp,
           digest: archiveDigest,
           inputBytes: input.length,
           inputDigest,
-          restoredDigest,
+          restoredDigest: restoredDigestNat || restoredDigestZip,
           verified,
           sha256Verified,
-          z8cZipBytes: encoded.byteLength,
+          z8cZipBytes: encodedZip.byteLength,
+          z8cNativeBytes: encodedNative ? encodedNative.byteLength : undefined,
           browserZipBytes,
           encodeMs,
           decodeMs,
+          encodeNativeMs,
+          decodeNativeMs,
         },
-        [encoded.buffer]
+        [primaryOut.buffer]
       );
       return;
     }
 
     const result = callWasm(api, mode, input);
     const digest = await sha256Hex(result);
-    self.postMessage({ bytes: result.buffer, digest }, [result.buffer]);
+    self.postMessage({ bytes: result.buffer, outputOp: mode, digest }, [result.buffer]);
   } catch (error) {
     self.postMessage({ error: error.message || "Brskalnik ni mogel dokončati opravila." });
   }

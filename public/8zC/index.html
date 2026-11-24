@@ -5,26 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <meta name="description" content="Univerzalni večformatni kodek 8zC (Cycle 13 R6 v9): v brskalniku stisnite eno ali več datotek (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM, Auto-DCC) do 256 MiB ter primerjajte kompresijo s 100 % obnovo SHA-256.">
+  <meta name="description" content="Suvereni večformatni kodek 8zC v1.0 (.8zc 8ZCN\x01 + Cycle 13 R6 v9): v brskalniku stisnite eno ali več datotek do 256 MiB v suvereni format .8zc ali .8zc.zip ter obnovite izvirnike s 100 % SHA-256.">
   <link rel="canonical" href="https://www.mdlxdcc.org/8zC/">
-  <title>Kodek 8zC · Cycle 13 R6 (v9) Multi-Format</title>
+  <title>Kodek 8zC · v1.0 Native (.8zc) + Cycle 13 R6 (v9)</title>
   <link rel="stylesheet" href="/8zC/style.css">
   <script defer src="/8zC/app.js"></script>
 </head>
 <body>
   <header class="mast">
     <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>8zC</div>
-    <div class="mast-links"><span class="release" id="release-tag">Cycle 13 R6 (v9) · 6 Format Families</span><button id="theme" type="button">☀ Light</button><span class="languages"><button type="button" data-lang="en">EN</button> | <button type="button" data-lang="sl">SL</button></span><a href="/8zC-results/" id="results-link">Rezultati 8zC</a></div>
+    <div class="mast-links"><span class="release" id="release-tag">v1.0 Native (.8zc) · Cycle 13 R6 (v9)</span><button id="theme" type="button">☀ Light</button><span class="languages"><button type="button" data-lang="en">EN</button> | <button type="button" data-lang="sl">SL</button></span><a href="/8zC-results/" id="results-link">Rezultati 8zC</a></div>
   </header>
   <main>
     <h1>Kodek 8zC</h1>
-    <p class="intro">Stisnite eno ali več datotek hkrati (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhivov 8zC obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).</p>
+    <p class="intro">Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format <strong>.8zc</strong> (<code>8ZCN\x01</code>, brez zunanjih knjižnic) ali v <code>.8zc.zip</code> ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).</p>
     <p class="hint"><span id="author-credit">Ideje, raziskovalne povezave in arhitektura · Bojan Dobrečevič (BD). Skupni razvoj in preverjanje · BD × AI Lab.</span> <a id="origin-link" href="/8zc-story/">Izvor in celotna zgodba BD × AI Lab</a></p>
-    <fieldset id="modes">
-      <legend class="sr-only">Izberite postopek</legend>
-      <label><input type="radio" name="mode" value="encode" checked><span>Stisni datoteke</span></label>
-      <label><input type="radio" name="mode" value="decode"><span>Obnovi izvirnike</span></label>
-    </fieldset>
+    <div class="controls-bar">
+      <fieldset id="modes">
+        <legend class="sr-only">Izberite postopek</legend>
+        <label><input type="radio" name="mode" value="encode" checked><span>Stisni datoteke</span></label>
+        <label><input type="radio" name="mode" value="decode"><span>Obnovi izvirnike</span></label>
+      </fieldset>
+      <fieldset id="enc-formats">
+        <legend class="sr-only">Format izhoda</legend>
+        <label><input type="radio" name="encfmt" value="native" checked><span>Format .8zc (suveren)</span></label>
+        <label><input type="radio" name="encfmt" value="zip"><span>Format .8zc.zip</span></label>
+      </fieldset>
+    </div>
     <section class="panel" aria-labelledby="input-heading">
       <div class="panel-head">
         <h2 id="input-heading">Vhodne datoteke (6 družin formatov)</h2>
@@ -35,7 +42,7 @@
       <button type="button" id="choose" class="drop" aria-describedby="limits">
         <span class="file-icon" id="file-icon" aria-hidden="true">8zC</span>
         <span id="filename">Izberite eno ali več datotek</span>
-        <span id="filehint" class="hint">ali jih povlecite sem (lahko tudi mešano: navadne datoteke in arhive *.8zc.zip hkrati!)</span>
+        <span id="filehint" class="hint">ali jih povlecite sem (lahko tudi mešano: navadne datoteke ter arhive *.8zc in *.8zc.zip hkrati!)</span>
       </button>
       <div class="action-row">
         <span id="limits" class="limits">1–100 datotek · do 256 MiB / datoteko (1 GiB skupaj)</span>
@@ -148,6 +155,6 @@
     </section>
     <noscript>Za uporabo kodeka vklopite JavaScript.</noscript>
   </main>
-  <footer>8zC Cycle 13 R6 (v9) <span aria-hidden="true">/</span> Rust <code>z8c_core v0.9.0</code> + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt" id="licenses-link">Licence knjižnic</a></footer>
+  <footer>8zC v1.0 Native (<code>8ZCN\x01</code>) + Cycle 13 R6 (v9) <span aria-hidden="true">/</span> Rust <code>z8c_core v1.0.0</code> + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt" id="licenses-link">Licence knjižnic</a></footer>
 </body>
 </html>
