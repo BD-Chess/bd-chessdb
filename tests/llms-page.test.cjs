@@ -86,7 +86,7 @@ test('shipped JSON matches the schema the page reads', () => {
   }
   assert.equal(META.data_fetched, CAPS.latest);
   assert.ok(CAPS.captures.some(c => c.date === '2026-11-20'), 'the R3 capture is archived');
-  assert.ok(CAPS.captures.some(c => c.date === '2026-11-23'), 'the R4 capture is archived');
+  assert.ok(!CAPS.captures.some(c => c.date === '2026-11-23'), 'R5 replaces the November 23 public capture by owner request');
   if (CAPS.latest === '2026-11-24') {
     const astra = META.models.find(m => m.model_id === 'gpt-6.2-astra');
     assert.ok(astra && astra.n_sources >= 6 && astra.overall_rank, 'R5 independent sources cover Astra');
@@ -261,7 +261,7 @@ test('older captures stay available: ?d= loads them and the list switches betwee
   // Hydrogen came out after this capture, so the note lists it without numbers.
   assert.match(doc.getElementById('newbox').textContent, /gemini-4-hydrogen — izšel 12\. 11\. 2026 · po zadnjem zajemu podatkov/);
   window.close();
-  const b = await boot('https://www.mdlxdcc.org/llms/?d=2026-11-16');
+  const b = await boot('https://www.mdlxdcc.org/llms/?d=2026-11-23');
   assert.deepEqual(b.errors, []);
   assert.equal(b.doc.getElementById('cap-sel').value, CAPS.latest, 'the removed capture URL falls back to the latest capture');
   assert.ok(b.requested.includes('/llms/meta_index.json'));
