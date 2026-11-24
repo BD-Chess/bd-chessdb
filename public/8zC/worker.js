@@ -67,8 +67,11 @@ self.onmessage = async ({ data: { mode, file } }) => {
       const decodeMs = Math.max(1, Math.round(performance.now() - t1));
 
       const restoredDigest = await sha256Hex(restored);
-      const verified = restored.length === input.length && (!inputDigest || inputDigest === restoredDigest);
-      if (!verified) throw new Error("Preverba SHA-256 obnove v brskalniku ni uspela.");
+      const verified = restored.length === input.length && restored.every((byte, i) => byte === input[i]);
+      const sha256Verified = Boolean(inputDigest && restoredDigest && inputDigest === restoredDigest);
+      if (!verified || (inputDigest && restoredDigest && !sha256Verified)) {
+        throw new Error("Preverba bitno točne obnove v brskalniku ni uspela.");
+      }
 
       const browserZipBytes = await measureBrowserZipSize(input);
       const archiveDigest = await sha256Hex(encoded);
@@ -82,6 +85,7 @@ self.onmessage = async ({ data: { mode, file } }) => {
           inputDigest,
           restoredDigest,
           verified,
+          sha256Verified,
           z8cZipBytes: encoded.byteLength,
           browserZipBytes,
           encodeMs,

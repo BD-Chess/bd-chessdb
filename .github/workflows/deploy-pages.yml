@@ -20,6 +20,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Verify 8zC evidence tables and browser comparison
+        run: |
+          node --check public/8zC/app.js
+          node --check public/8zC/worker.js
+          node --test tests/8zc-results.test.mjs
       - name: Keep newly published pages searchable
         env:
           SEARCH_HEAD: ${{ github.sha }}
