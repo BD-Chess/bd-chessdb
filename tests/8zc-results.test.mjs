@@ -12,7 +12,7 @@ const appSource = read('public/8zC/app.js');
 const workerSource = read('public/8zC/worker.js');
 const plain = (html) => html.replace(/<[^>]*>/g, '').replace(/[\u202f\u00a0]/g, '');
 
-test('published v7 rows match frozen evidence and add up to their totals', () => {
+test('published v8 rows match frozen evidence and add up to their totals', () => {
   const html = read('public/8zC-results/index.html');
   for (const [cohort, expectedRows] of Object.entries(fixture.cohorts)) {
     const table = html.match(new RegExp(`<table data-benchmark-cohort="${cohort}">([\\s\\S]*?)</table>`))?.[1];
@@ -26,10 +26,10 @@ test('published v7 rows match frozen evidence and add up to their totals', () =>
       const cells = [...rendered.matchAll(/<td>([\s\S]*?)<\/td>/g)].map((m) => plain(m[1]));
       for (const [codec, cell] of [['zip', 0], ['7z', 2]]) {
         const actual = cells[cell].match(/^(\d+) → (\d+) → (\d+)$/)?.slice(1).map(Number);
-        const expected = ['direct_B', 'v6_B', 'v7_B'].map((key) => row[codec][key]);
+        const expected = ['direct_B', 'v7_B', 'v8_B'].map((key) => row[codec][key]);
         assert.deepEqual(actual, expected, `${row.tag} ${codec}`);
         actual.forEach((n, i) => { sums[codec][i] += n; });
-        const difference = row[codec].v7_B - row[codec].direct_B;
+        const difference = row[codec].v8_B - row[codec].direct_B;
         const reported = cells[cell + 1].match(/^([−+]?\d+) B/)[1].replace('−', '-');
         assert.equal(Number(reported), difference, `${row.tag} ${codec} saving`);
       }
@@ -73,9 +73,9 @@ test('sample reference sizes retain their recorded codec and source hash', () =>
     assert.equal(actual.sha256, expected.sha256);
     assert.equal(actual.raw_B, expected.raw_B);
     assert.equal(actual.zip.direct, expected.zip.direct_B);
-    assert.equal(actual.zip.best, expected.zip.v7_B);
+    assert.equal(actual.zip.best, expected.zip.v8_B);
     assert.equal(actual.sz7z.direct, expected['7z'].direct_B);
-    assert.equal(actual.sz7z.best, expected['7z'].v7_B);
+    assert.equal(actual.sz7z.best, expected['7z'].v8_B);
   }
 });
 
