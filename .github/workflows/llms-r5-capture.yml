@@ -1,0 +1,26 @@
+name: LLM R5 upstream evidence capture
+on:
+  push:
+    branches: [research/llms-r5-capture-20261124]
+    paths: ['scripts/llms_r5_capture.py','.github/workflows/llms-r5-capture.yml']
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            public/llms/sources.json
+            scripts/llms_r5_capture.py
+          sparse-checkout-cone-mode: false
+      - name: Capture public benchmark payloads
+        run: python3 scripts/llms_r5_capture.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: llms-r5-20261124-upstream
+          path: r5-source-audit/
+          retention-days: 14
