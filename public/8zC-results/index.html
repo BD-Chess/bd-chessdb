@@ -28,6 +28,7 @@
         <p class="intro"><span lang="sl">Aktualni 8zC v8 (Cycle 13 R5) brezizgubno pripravlja podatke v šestih družinah formatov, preden jih stisne izbrani kodek. Spodaj so najprej rezultati aktualne različice, nato tehnična dokazila in zgodovinski preizkusi. Prihranke merimo proti istim neposrednim kodekom; ločimo velikost arhiva in celotno prvo dostavo z dekoderjem.</span><span lang="en">Current 8zC v8 (Cycle 13 R5) losslessly preprocesses data across six format families before compression by the selected codec. Current results come first, followed by technical evidence and historical experiments. Savings are measured against the same direct codecs, distinguishing archive size from complete first delivery including the decoder.</span></p>
         <nav class="section-links" aria-label="Razdelki / Sections">
           <a href="https://www.mdlxdcc.org/8zC/"><span lang="sl">Preizkusi 8zC</span><span lang="en">Try 8zC</span></a>
+          <a href="#elite-overview"><span lang="sl">PAQ in cmix</span><span lang="en">PAQ and cmix</span></a>
           <a href="#v8-overview"><span lang="sl">Aktualni rezultati v8</span><span lang="en">Current v8 results</span></a>
           <a href="#multiformat-v4"><span lang="sl">Večformatne meritve</span><span lang="en">Multi-format benchmarks</span></a>
           <a href="#elf-preprocessing"><span lang="sl">ELF in fizični arhivi</span><span lang="en">ELF and physical archives</span></a>
@@ -54,7 +55,49 @@
           <p><strong>6</strong> <span lang="sl">podprtih družin formatov v8</span><span lang="en">supported v8 format families</span></p>
         </div>
         <a class="highlight-cross" href="#v8-overview"><strong>−20<span lang="sl">,</span><span lang="en">.</span>65 %</strong> <span lang="sl">8zC + ZIP proti 7-Zip Ultra (ista zbirka, z dekoderjem)</span><span lang="en">8zC + ZIP versus 7-Zip Ultra (same corpus, decoder included)</span></a>
+      
+        <div class="highlight-proof">
+          <p class="highlight-label">P2-C / R3 · PAQ &amp; cmix</p>
+          <p><strong>−26<span lang="sl">,</span><span lang="en">.</span>85 %</strong> <span lang="sl">proti PAQ −10LE</span><span lang="en">versus PAQ −10LE</span></p>
+          <p><strong>−23<span lang="sl">,</span><span lang="en">.</span>35 %</strong> <span lang="sl">proti cmix v21</span><span lang="en">versus cmix v21</span></p>
+          <p class="highlight-accounting"><span lang="sl">3 izbrane ELF, solid · brez dodatne dostave dekoderja.</span><span lang="en">3 selected ELF, solid · excludes additional decoder delivery.</span></p>
+          <p><strong>−3<span lang="sl">,</span><span lang="en">.</span>80 %</strong> <span lang="sl">neto proti PAQ −10LE · 240 ELF, z dekoderjem</span><span lang="en">net versus PAQ −10LE · 240 ELF, decoder included</span></p>
+        </div>
+        <a class="highlight-cross" href="#elite-overview"><span lang="sl">Primerjava s PAQ in cmix</span><span lang="en">PAQ and cmix comparison</span> ↓</a>
       </aside>
+    </section>
+
+    <section id="elite-overview" class="section current-overview" aria-labelledby="elite-overview-title">
+      <div class="section-heading">
+        <h2 id="elite-overview-title"><span lang="sl">8zC proti vrhunskim kompresorjem</span><span lang="en">8zC against leading compressors</span></h2>
+        <p><span lang="sl">Primerjava z ZIP, 7-Zip Ultra in zahtevnima kontekstnima mešalnikoma PAQ8PX ter cmix. 8zC izboljšuje predstavitev podatkov pred stiskanjem; vsak rezultat velja za navedeno različico, nabor in obračun.</span><span lang="en">Comparison with ZIP, 7-Zip Ultra and the demanding context mixers PAQ8PX and cmix. 8zC improves the data representation before compression; each result applies to its stated version, corpus and accounting.</span></p>
+      </div>
+      <div class="current-cross">
+        <p class="highlight-label"><span lang="sl">Izbrani solidni preizkus · tri datoteke ELF</span><span lang="en">Selected solid trial · three ELF files</span></p>
+        <h3>−28<span lang="sl">,</span><span lang="en">.</span>27 % <span lang="sl">proti čistemu cmix</span><span lang="en">versus direct cmix</span></h3>
+        <p>cmix v21: <strong>938 840 B</strong> → 8zC R3 + PAQ8PX −10LE: <strong>673 413 B</strong>.</p>
+        <p><span lang="sl">Prihranek pred dodatno dostavo dekoderja. Na širšem korpusu 240 datotek ELF je P2-C s PAQ −10LE dosegel 3,80 % neto prihranka, skupaj s podatki za obnovo in dekoderjem.</span><span lang="en">Saving before additional decoder delivery. On the wider 240-file ELF corpus, P2-C with PAQ −10LE achieved 3.80% net savings, including restoration data and the decoder.</span></p>
+      </div>
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="elite-overview-title">
+        <table class="overview-table" data-summary="leading-codecs">
+          <caption><span lang="sl">Najpomembnejši izmerjeni dosežki BD × AI Lab · manjši arhiv je boljši.</span><span lang="en">Key measured achievements of BD × AI Lab · smaller is better.</span></caption>
+          <thead><tr><th scope="col"><span lang="sl">Nabor in metoda 8zC</span><span lang="en">Corpus and 8zC method</span></th><th scope="col"><span lang="sl">Primerjalnik</span><span lang="en">Baseline</span></th><th scope="col"><span lang="sl">Čisti kodek</span><span lang="en">Direct codec</span></th><th scope="col"><span lang="sl">Z 8zC</span><span lang="en">With 8zC</span></th><th scope="col"><span lang="sl">Sprememba velikosti</span><span lang="en">Size change</span></th><th scope="col"><span lang="sl">Obračun</span><span lang="en">Accounting</span></th></tr></thead>
+          <tbody>
+            <tr class="best"><th scope="row"><span lang="sl">Holdout-15 · 8zC v8 + ZIP</span><span lang="en">Holdout-15 · 8zC v8 + ZIP</span></th><td>ZIP</td><td>4 953 549 B</td><td>2 883 995 B</td><td><strong>−41<span lang="sl">,</span><span lang="en">.</span>78 %</strong></td><td><span lang="sl">Z dekoderjem</span><span lang="en">Decoder included</span></td></tr>
+            <tr class="best"><th scope="row"><span lang="sl">Holdout-15 · 8zC v8 + 7z</span><span lang="en">Holdout-15 · 8zC v8 + 7z</span></th><td>7-Zip Ultra</td><td>3 634 606 B</td><td>2 493 585 B</td><td><strong>−31<span lang="sl">,</span><span lang="en">.</span>39 %</strong></td><td><span lang="sl">Z dekoderjem</span><span lang="en">Decoder included</span></td></tr>
+            <tr><th scope="row"><span lang="sl">Holdout-15 · 8zC v8 + ZIP</span><span lang="en">Holdout-15 · 8zC v8 + ZIP</span></th><td>7-Zip Ultra</td><td>3 634 606 B</td><td>2 883 995 B</td><td><strong>−20<span lang="sl">,</span><span lang="en">.</span>65 %</strong></td><td><span lang="sl">Z dekoderjem</span><span lang="en">Decoder included</span></td></tr>
+            <tr class="best"><th scope="row"><span lang="sl">3 izbrane ELF · R3 + PAQ −10LE (solid)</span><span lang="en">3 selected ELF · R3 + PAQ −10LE (solid)</span></th><td>PAQ −10LE</td><td>920 536 B</td><td>673 413 B</td><td><strong>−26<span lang="sl">,</span><span lang="en">.</span>85 %</strong></td><td><span lang="sl">Brez dodatne dostave dekoderja</span><span lang="en">Excludes additional decoder delivery</span></td></tr>
+            <tr class="best"><th scope="row"><span lang="sl">3 izbrane ELF · P2-C + cmix v21 (solid)</span><span lang="en">3 selected ELF · P2-C + cmix v21 (solid)</span></th><td>cmix v21</td><td>938 840 B</td><td>719 598 B</td><td><strong>−23<span lang="sl">,</span><span lang="en">.</span>35 %</strong></td><td><span lang="sl">Brez dodatne dostave dekoderja</span><span lang="en">Excludes additional decoder delivery</span></td></tr>
+            <tr class="best"><th scope="row"><span lang="sl">3 izbrane ELF · R3 + PAQ −10LE (solid)</span><span lang="en">3 selected ELF · R3 + PAQ −10LE (solid)</span></th><td>cmix v21</td><td>938 840 B</td><td>673 413 B</td><td><strong>−28<span lang="sl">,</span><span lang="en">.</span>27 %</strong></td><td><span lang="sl">Brez dodatne dostave dekoderja</span><span lang="en">Excludes additional decoder delivery</span></td></tr>
+            <tr class="best"><th scope="row"><span lang="sl">240 ELF · P2-C + PAQ −10LE</span><span lang="en">240 ELF · P2-C + PAQ −10LE</span></th><td>PAQ −10LE</td><td>10 650 903 B</td><td>10 246 663 B</td><td><strong>−3<span lang="sl">,</span><span lang="en">.</span>80 %</strong></td><td><span lang="sl">Z R + H in skupnim dekoderjem</span><span lang="en">Includes R + H and shared decoder</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" lang="sl"><strong>Opomba:</strong> Zmage proti PAQ in cmix so bile dosežene že s predhodnima generacijama 8zC, P2-C in Cycle 12 R3. Celovite primerjave z najnovejšo različico v8 (Cycle 13 R5) proti PAQ in cmix še niso potrjene. Rezultati treh izbranih ELF veljajo za skupni solidni TAR (5 384 704 B), ne za poljuben korpus. V teh treh primerjavah dodatna dostava skupnega dekoderja ni obračunana.</p>
+      <p class="note" lang="en"><strong>Note:</strong> The gains against PAQ and cmix were achieved with earlier generations of 8zC, P2-C and Cycle 12 R3. Comprehensive comparisons of the latest v8 (Cycle 13 R5) against PAQ and cmix have not yet been confirmed. The three selected ELF results apply to a shared solid TAR (5,384,704 B), not an arbitrary corpus. These three comparisons exclude additional delivery of the shared decoder.</p>
+      <p class="note" lang="sl"><strong>Dokazni obseg:</strong> v8: 94/94 bitno točnih obnov fizičnih arhivov na štirih kohortah (47 vhodov × 2 kodeka). P2-C/PAQ −10LE, širši korpus: 479/479 preverjenih tokov na 240 datotekah (239 parov izvirnik/preostanek in en samostojni izvirnik), 237/239 parnih zmag z R + H. Neto prihranek vključuje skupni dekoder velikosti 26 248 B.</p>
+      <p class="note" lang="en"><strong>Verification scope:</strong> v8: 94/94 byte-exact restorations of physical archives across four cohorts (47 inputs × 2 codecs). P2-C/PAQ −10LE, wider corpus: 479/479 verified streams across 240 files (239 original/residual pairs and one original-only stream), 237/239 paired wins including R + H. Net savings include the 26,248 B shared decoder.</p>
+      <nav class="section-links" aria-label="Podrobni dokazi / Detailed evidence"><a href="#elf-preprocessing"><span lang="sl">Podrobne meritve PAQ in cmix</span><span lang="en">Detailed PAQ and cmix benchmarks</span></a><a href="#codec-matrix"><span lang="sl">Potrditveni preizkus 240 ELF</span><span lang="en">240 ELF confirmation trial</span></a><a href="#v8-overview"><span lang="sl">Vse štiri kohorte v8</span><span lang="en">All four v8 cohorts</span></a></nav>
     </section>
 
     <section id="v8-overview" class="section current-overview" aria-labelledby="v8-overview-title">
