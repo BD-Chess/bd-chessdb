@@ -1,0 +1,43 @@
+name: Verify R5 public capture readback
+on:
+  push:
+    branches: [research/llms-r5-capture-20261124]
+    paths: ['.github/workflows/verify-llms-r5-live-20261124.yml']
+permissions:
+  contents: read
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Verify production data, archives and public page (read only)
+        shell: bash
+        run: |
+          python3 -u - <<'PY'
+          import hashlib, json, time, urllib.request
+          from datetime import datetime, timezone
+          root = "https://www.mdlxdcc.org/llms/"
+          def fetch(path):
+              req = urllib.request.Request(root + path + "?r5_verify=" + str(time.time_ns()), headers={"Cache-Control":"no-cache","User-Agent":"MDLxDCC-R5-readback/1"})
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  assert response.status == 200
+                  return response.read()
+          for i in range(24):
+              try:
+                  captures = json.loads(fetch("captures.json"))
+                  assert captures["latest"] == "2026-11-24", captures["latest"]
+                  meta = fetch("meta_index.json")
+                  assert hashlib.sha256(meta).hexdigest() == "83d5c5cd8237c3e9771aab16840798fd731bedaa647510ecb1a9e4e3402de4c3"
+                  assert fetch("data/2026-11-24/meta_index.json") == meta
+                  assert fetch("sources.json") == fetch("data/2026-11-24/sources.json")
+                  assert fetch("commentary_sl.json") == fetch("data/2026-11-24/commentary_sl.json")
+                  assert {x["date"] for x in captures["captures"]} >= {"2026-11-24","2026-11-23","2026-11-20","2026-10-30"}
+                  assert b"<html" in fetch("").lower()
+              except Exception as e:
+                  print("Not verified yet:", repr(e), flush=True)
+                  if i == 23: raise
+                  time.sleep(15)
+              else:
+                  print("LIVE_R5_VERIFIED", datetime.now(timezone.utc).isoformat(), "date=2026-11-24 meta_sha256="+hashlib.sha256(meta).hexdigest(), flush=True)
+                  break
+          PY
