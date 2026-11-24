@@ -1,1 +1,1 @@
-export const ENGINE_BUILD = {"webVersion":"0.2","engineRevision":"0bbe6b945bacecb9d77dde22252f951c885a0218","wasmSha256":{"serial":"5f6ad5771d0aa0ff8396f72642d8982a0dd21d312f14f6d3b7954905235b0626","shared":"3936d27e47111f7a5be3ec56cc2d1b98d792790def0cc7e85be57e3dc541537f"}};
+export const ENGINE_BUILD = {"webVersion":"0.2","engineRevision":"e78d7ff4b4cd65735f76fe91c7d0ffceb93abbd8","wasmSha256":{"serial":"fe8199bd61f4ebead6e1d44b22b5c3391755a224565aa2aa2401a38cee03626d","shared":"5ba995ab45af951485cf4db6e41e871b0a3f07671defb302d9658efa7dbbf9be"}};
