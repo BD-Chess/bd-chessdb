@@ -9,6 +9,7 @@ function selectLanguage(language) {
   document.documentElement.lang = language;
   document.documentElement.dataset.language = language;
   document.title = titles[language];
+  for (const link of document.querySelectorAll('a[href^="/8zc-story/"]')) link.href = '/8zc-story/?lang=' + language;
   for (const button of buttons) {
     button.setAttribute("aria-pressed", String(button.dataset.selectLanguage === language));
   }

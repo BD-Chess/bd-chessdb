@@ -183,7 +183,7 @@ const ELF_BENCHMARK_SAMPLES = [
 const translations = {
   "Ideje, raziskovalne povezave in arhitektura · Bojan Dobrečevič (BD). Skupni razvoj in preverjanje · BD × AI Lab.":
     "Ideas, research connections and architecture · Bojan Dobrečevič (BD). Collaborative development and verification · BD × AI Lab.",
-  "Izvor in celotna zgodba BD × AI Lab": "Origin and full story of BD × AI Lab (SL)",
+  "Izvor in celotna zgodba BD × AI Lab": "Origin and full story of BD × AI Lab",
   "Prva vrstica meri trenutno datoteko v brskalniku; velikost neposrednega ZIP je ocenjena iz brskalniškega Deflate in ovojnice ZIP. Druge vrstice so zabeležene meritve zunanjih kodekov za isti SHA-256. Referenčni matriki spodaj prikazujeta te zunanje meritve.":
     "The first row measures the current file in your browser; the direct ZIP size is estimated from browser Deflate plus a ZIP wrapper. Other rows are recorded external-codec measurements for the same SHA-256. The reference matrices below show those external measurements.",
   "Rezultati 8zC": "8zC results",
@@ -509,6 +509,7 @@ function setLanguage(lang) {
   byId("results-link").textContent = t("Rezultati 8zC");
   byId("author-credit").textContent = t("Ideje, raziskovalne povezave in arhitektura · Bojan Dobrečevič (BD). Skupni razvoj in preverjanje · BD × AI Lab.");
   byId("origin-link").textContent = t("Izvor in celotna zgodba BD × AI Lab");
+  byId("origin-link").href = "/8zc-story/?lang=" + lang;
   byId("reference-note").textContent = t("Prva vrstica meri trenutno datoteko v brskalniku; velikost neposrednega ZIP je ocenjena iz brskalniškega Deflate in ovojnice ZIP. Druge vrstice so zabeležene meritve zunanjih kodekov za isti SHA-256. Referenčni matriki spodaj prikazujeta te zunanje meritve.");
   document.querySelector("h1").textContent = t("Kodek 8zC");
   document.querySelector(".intro").textContent = t(
