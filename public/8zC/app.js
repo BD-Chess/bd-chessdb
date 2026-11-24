@@ -14,7 +14,7 @@ const QUICK_SAMPLES = [
     raw_B: 80264,
     zip:  { direct: 15976, best: 9915,  pct: "-37,9 %", label: "Cycle13 R6 v9 ELF" },
     sz7z: { direct: 13555, best: 9281,  pct: "-31,5 %", label: "Cycle13 R6 v9 ELF" },
-    nat:  { bytes: 9488,   pct7z: "-30,0 %" },
+    nat:  { bytes: 9128,   pct7z: "-32,7 %" },
     paq:  { direct: 9001,  z8c: 6492,   pct: "-27,9 % (-3)" },
     cmix: null,
   },
@@ -31,7 +31,7 @@ const QUICK_SAMPLES = [
     raw_B: 234896,
     zip:  { direct: 87017, best: 75273, pct: "-13,5 %", label: "Cycle13 R6 v9 PE" },
     sz7z: { direct: 77337, best: 69386, pct: "-10,3 %", label: "Cycle13 R6 v9 PE" },
-    nat:  { bytes: 72038,  pct7z: "-6,9 % vs 7z" },
+    nat:  { bytes: 69397,  pct7z: "-10,3 % vs 7z" },
   },
   {
     id: "sample_wasm",
@@ -46,7 +46,7 @@ const QUICK_SAMPLES = [
     raw_B: 120920,
     zip:  { direct: 51714, best: 43659, pct: "-15,6 %", label: "Cycle13 R6 v9 WASM" },
     sz7z: { direct: 44536, best: 42300, pct: "-5,0 %",  label: "Cycle13 R6 v9 WASM" },
-    nat:  { bytes: 44266,  pct7z: "-0,6 % vs 7z" },
+    nat:  { bytes: 41772,  pct7z: "-6,2 % vs 7z" },
   },
   {
     id: "sample_csv",
@@ -61,7 +61,7 @@ const QUICK_SAMPLES = [
     raw_B: 446980,
     zip:  { direct: 49944, best: 437,   pct: "-99,13 %", label: "Cycle13 R6 v9 Tabular" },
     sz7z: { direct: 22942, best: 392,   pct: "-98,29 %", label: "Cycle13 R6 v9 Tabular" },
-    nat:  { bytes: 294,    pct7z: "-98,72 % vs 7z" },
+    nat:  { bytes: 331,    pct7z: "-98,56 % vs 7z" },
   },
   {
     id: "sample_jsonl",
@@ -76,7 +76,7 @@ const QUICK_SAMPLES = [
     raw_B: 610000,
     zip:  { direct: 28016, best: 495,   pct: "-98,23 %", label: "Cycle13 R6 v9 JSONL" },
     sz7z: { direct: 7754,  best: 448,   pct: "-94,22 %", label: "Cycle13 R6 v9 JSONL" },
-    nat:  { bytes: 341,    pct7z: "-95,60 % vs 7z" },
+    nat:  { bytes: 362,    pct7z: "-95,33 % vs 7z" },
   },
   {
     id: "sample_wav",
@@ -91,7 +91,7 @@ const QUICK_SAMPLES = [
     raw_B: 32044,
     zip:  { direct: 26932, best: 1964,  pct: "-92,7 %", label: "Cycle13 R6 v9 WAV_V4" },
     sz7z: { direct: 21233, best: 1884,  pct: "-91,1 %", label: "Cycle13 R6 v9 WAV_V4" },
-    nat:  { bytes: 1825,   pct7z: "-91,4 % vs 7z" },
+    nat:  { bytes: 1729,   pct7z: "-91,9 % vs 7z" },
   },
   {
     id: "sample_bmp",
@@ -106,7 +106,7 @@ const QUICK_SAMPLES = [
     raw_B: 589878,
     zip:  { direct: 513897, best: 503,   pct: "-99,90 %", label: "Cycle13 R6 v9 IMAGE_V4" },
     sz7z: { direct: 271080, best: 487,   pct: "-99,82 %", label: "Cycle13 R6 v9 IMAGE_V4" },
-    nat:  { bytes: 397,    pct7z: "-99,85 % vs 7z" },
+    nat:  { bytes: 370,    pct7z: "-99,86 % vs 7z" },
   },
   {
     id: "sample_autodcc",
@@ -135,7 +135,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 80264,
     zip:  { direct: 15976, z8c_r3: 10484, z8c_v9: 9915,  pct_v9: "-37,9 %" },
     sz7z: { direct: 13555, z8c_r3: 9525,  z8c_v9: 9281,  pct_v9: "-31,5 %" },
-    nat:  { bytes: 9488,   pct7z: "-30,0 % vs 7z" },
+    nat:  { bytes: 9128,   pct7z: "-32,7 % vs 7z" },
     paq:  { direct: 9001,  z8c: 6492,  pct: "-27,9 % (-3)" },
     cmix: null,
   },
@@ -161,7 +161,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 1472320,
     zip:  { direct: 283835, z8c_r3: 186015, z8c_v9: 158107, pct_v9: "-44,3 %" },
     sz7z: { direct: 210821, z8c_r3: 140758, z8c_v9: 131135, pct_v9: "-37,8 %" },
-    nat:  { bytes: 141662, pct7z: "-32,8 % vs 7z" },
+    nat:  { bytes: 130948, pct7z: "-37,9 % vs 7z" },
     paq:  { direct: 117163, z8c: 99514,  pct: "-15,1 % (-10LE)" },
     cmix: { direct: 114899, z8c: 98691,  pct: "-14,1 %" },
   },
@@ -174,7 +174,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 2726704,
     zip:  { direct: 1290629, z8c_r3: 1000231, z8c_v9: 937814, pct_v9: "-27,3 %" },
     sz7z: { direct: 1047223, z8c_r3: 779900,  z8c_v9: 743482, pct_v9: "-29,0 %" },
-    nat:  { bytes: 804112, pct7z: "-23,2 % vs 7z" },
+    nat:  { bytes: 753837, pct7z: "-28,0 % vs 7z" },
     paq:  { direct: 704961,  z8c: 522419,  pct: "-25,9 % (-10LE)" },
     cmix: { direct: 683352,  z8c: 501302,  pct: "-26,6 %" },
   },
@@ -207,6 +207,9 @@ const translations = {
   "Format izhoda": "Output format",
   "Format .8zc (suveren)": "Format .8zc (sovereign)",
   "Format .8zc.zip": "Format .8zc.zip",
+  "Stopnja stiskanja .8zc": ".8zc compression level",
+  "Max (v1.1 Optimal)": "Max (v1.1 Optimal)",
+  "Hitro (v1.0)": "Fast (v1.0)",
   "Stisni datoteke": "Compress files",
   "Obnovi izvirnike": "Restore originals",
   "Vhodne datoteke (6 družin formatov)": "Input files (6 format families)",
@@ -272,11 +275,11 @@ const translations = {
   "Vzorec in družina formata": "Sample and format family",
   "Čisti ZIP → 8zC v9 + ZIP": "Direct ZIP → 8zC v9 + ZIP",
   "Čisti 7z → 8zC v9 + 7z": "Direct 7z → 8zC v9 + 7z",
-  "Suvereni .8zc (v1.0)": "Sovereign .8zc (v1.0)",
+  "Suvereni .8zc (v1.1)": "Sovereign .8zc (v1.1)",
   "Živi preizkus": "Live test",
   "Preizkusi v živo →": "Test live →",
-  "Cycle 13 R6 (v9) + v1.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
-    "Cycle 13 R6 (v9) + v1.0 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
+  "Cycle 13 R6 (v9) + v1.1 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
+    "Cycle 13 R6 (v9) + v1.1 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
   "Zaženi 00_data_endian.elf v živo →": "Run 00_data_endian.elf live →",
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
@@ -318,6 +321,7 @@ const MAX_BATCH_FILES = 100;
 
 const modes = byId("modes");
 const encFormats = byId("enc-formats");
+const encLevels = byId("enc-levels");
 const fileInput = byId("file");
 const choose = byId("choose");
 const start = byId("start");
@@ -331,6 +335,7 @@ const downloadAll = byId("download-all");
 
 let mode = "encode";
 let encodeFormat = "native";
+let encodeLevel = "max";
 let selectedFiles = [];
 let activeSampleId = null;
 let worker = null;
@@ -624,11 +629,33 @@ function renderLiveCompare(data) {
     tbody.appendChild(tr);
   };
 
-  if (typeof data.z8cNativeBytes === "number") {
+  if (typeof data.z8cNativeMaxBytes === "number") {
     addRow(
       language === "en"
-        ? "Browser Deflate ZIP vs. Sovereign 8zC v1.0 (.8zc · live)"
-        : "Brskalniški Deflate ZIP proti suverenemu 8zC v1.0 (.8zc · v živo)",
+        ? "Browser Deflate ZIP vs. Sovereign 8zC v1.1 Max (.8zc · Optimal Bt4-DP · live)"
+        : "Brskalniški Deflate ZIP proti suverenemu 8zC v1.1 Max (.8zc · Optimal Bt4-DP · v živo)",
+      data.inputBytes,
+      data.browserZipBytes,
+      data.z8cNativeMaxBytes,
+      `${data.encodeNativeMaxMs} ms enc / ${data.decodeNativeMs} ms dec`
+    );
+  }
+  if (typeof data.z8cNativeFastBytes === "number") {
+    addRow(
+      language === "en"
+        ? "Browser Deflate ZIP vs. Sovereign 8zC Hitro (.8zc · Fast · live)"
+        : "Brskalniški Deflate ZIP proti suverenemu 8zC Hitro (.8zc · v živo)",
+      data.inputBytes,
+      data.browserZipBytes,
+      data.z8cNativeFastBytes,
+      `${data.encodeNativeFastMs} ms enc`
+    );
+  }
+  if (typeof data.z8cNativeBytes === "number" && typeof data.z8cNativeMaxBytes !== "number" && typeof data.z8cNativeFastBytes !== "number") {
+    addRow(
+      language === "en"
+        ? "Browser Deflate ZIP vs. Sovereign 8zC v1.1 (.8zc · live)"
+        : "Brskalniški Deflate ZIP proti suverenemu 8zC v1.1 (.8zc · v živo)",
       data.inputBytes,
       data.browserZipBytes,
       data.z8cNativeBytes,
@@ -767,6 +794,11 @@ function setLanguage(lang) {
   const fmtSpans = document.querySelectorAll("#enc-formats label span");
   if (fmtSpans[0]) fmtSpans[0].textContent = t("Format .8zc (suveren)");
   if (fmtSpans[1]) fmtSpans[1].textContent = t("Format .8zc.zip");
+  const lvlLegend = document.querySelector("#enc-levels legend");
+  if (lvlLegend) lvlLegend.textContent = t("Stopnja stiskanja .8zc");
+  const lvlSpans = document.querySelectorAll("#enc-levels label span");
+  if (lvlSpans[0]) lvlSpans[0].textContent = t("Max (v1.1 Optimal)");
+  if (lvlSpans[1]) lvlSpans[1].textContent = t("Hitro (v1.0)");
 
   const encoding = mode === "encode";
   byId("input-heading").textContent = t(encoding ? "Vhodne datoteke (6 družin formatov)" : "Vhodni arhivi .8zc / 8zC ZIP");
@@ -807,18 +839,18 @@ function setLanguage(lang) {
   byId("th-v4-raw").textContent = t("Surovo");
   byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
   byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
-  if (byId("th-v4-nat")) byId("th-v4-nat").textContent = t("Suvereni .8zc (v1.0)");
+  if (byId("th-v4-nat")) byId("th-v4-nat").textContent = t("Suvereni .8zc (v1.1)");
   byId("th-v4-try").textContent = t("Živi preizkus");
 
   byId("matrix-title").textContent = t(
-    "Cycle 13 R6 (v9) + v1.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)"
+    "Cycle 13 R6 (v9) + v1.1 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)"
   );
   runSampleLiveBtn.textContent = t("Zaženi 00_data_endian.elf v živo →");
   byId("th-m-file").textContent = t("Vzorčni ELF (prevajalnik)");
   byId("th-m-raw").textContent = t("Surovo");
   byId("th-m-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
   byId("th-m-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
-  if (byId("th-m-nat")) byId("th-m-nat").textContent = t("Suvereni .8zc (v1.0)");
+  if (byId("th-m-nat")) byId("th-m-nat").textContent = t("Suvereni .8zc (v1.1)");
   byId("th-m-paq").textContent = t("Čisti PAQ8PX → 8zC + PAQ");
   byId("th-m-cmix").textContent = t("Čisti cmix v21 → 8zC + cmix");
 
@@ -909,11 +941,13 @@ function acceptFiles(rawFileList) {
       modes.querySelector('input[value="decode"]').checked = true;
       mode = "decode";
       encFormats.hidden = true;
+      if (encLevels) encLevels.hidden = true;
       setLanguage(language);
     } else if (!nm.endsWith(".zip") && !nm.endsWith(".8zc") && mode === "decode") {
       modes.querySelector('input[value="encode"]').checked = true;
       mode = "encode";
       encFormats.hidden = false;
+      if (encLevels) encLevels.hidden = encodeFormat !== "native";
       setLanguage(language);
     }
   }
@@ -932,13 +966,21 @@ function acceptFiles(rawFileList) {
 
 function switchFormat() {
   encodeFormat = encFormats.querySelector("input:checked").value === "zip" ? "zip" : "native";
+  if (encLevels) encLevels.hidden = mode !== "encode" || encodeFormat !== "native";
   updateSelectionLabels();
+}
+
+function switchLevel() {
+  if (encLevels) {
+    encodeLevel = encLevels.querySelector("input:checked").value === "fast" ? "fast" : "max";
+  }
 }
 
 function switchMode() {
   mode = modes.querySelector("input:checked").value;
   const encoding = mode === "encode";
   encFormats.hidden = !encoding;
+  if (encLevels) encLevels.hidden = !encoding || encodeFormat !== "native";
   fileInput.accept = encoding ? "" : ".8zc,.8zc.zip,.zip,application/zip";
   fileInput.value = "";
   sampleChips.hidden = !encoding;
@@ -955,6 +997,7 @@ function switchMode() {
 function busy(active) {
   modes.disabled = active;
   encFormats.disabled = active;
+  if (encLevels) encLevels.disabled = active;
   choose.disabled = active;
   compareBtn.disabled = active;
   runSampleLiveBtn.disabled = active;
@@ -1250,7 +1293,7 @@ function runWorker(workerMode) {
           ? `Starting batch of ${selectedFiles.length} files …`
           : `Zaganjam paketno obdelavo ${selectedFiles.length} datotek …`
       );
-      worker.postMessage({ mode: "batch", defaultMode: mode, encodeFormat, files: selectedFiles });
+      worker.postMessage({ mode: "batch", defaultMode: mode, encodeFormat, encodeLevel, files: selectedFiles });
     } else {
       status(
         workerMode === "compare"
@@ -1259,7 +1302,7 @@ function runWorker(workerMode) {
           ? t("Stiskanje poteka …")
           : t("Obnova poteka …")
       );
-      worker.postMessage({ mode: workerMode, encodeFormat, file: selectedFiles[0] });
+      worker.postMessage({ mode: workerMode, encodeFormat, encodeLevel, file: selectedFiles[0] });
     }
   } catch {
     finish();
@@ -1303,6 +1346,7 @@ for (const type of ["dragover", "drop"]) {
 }
 modes.addEventListener("change", switchMode);
 encFormats.addEventListener("change", switchFormat);
+if (encLevels) encLevels.addEventListener("change", switchLevel);
 start.addEventListener("click", () =>
   runWorker(mode === "encode" ? (encodeFormat === "zip" ? "encode" : "encode_native") : "decode")
 );

@@ -2,8 +2,21 @@
 
 const MAX_FILE_BYTES = 256 * 1024 * 1024; // 256 MiB per file (fits comfortably inside 2-4 GiB wasm32 Worker heap)
 let cachedWasmBytes = null;
+let cachedFastWasmBytes = null;
 
-async function getWasmInstance() {
+async function getWasmInstance(useFallbackFastModule = false) {
+  if (useFallbackFastModule) {
+    if (!cachedFastWasmBytes) {
+      const resp = await fetch("./decoder_fast.wasm");
+      if (resp.ok) {
+        cachedFastWasmBytes = await resp.arrayBuffer();
+      }
+    }
+    if (cachedFastWasmBytes) {
+      const { instance } = await WebAssembly.instantiate(cachedFastWasmBytes, {});
+      return instance.exports;
+    }
+  }
   if (!cachedWasmBytes) {
     const response = await fetch("./decoder.wasm");
     if (!response.ok) throw new Error("Brskalnik ni mogel prebrati datoteke decoder.wasm.");
@@ -76,6 +89,19 @@ function callWasm(api, fnName, inputBytes) {
   }
 }
 
+async function encodeNativeWithLevel(inputBytes, level) {
+  let api = await getWasmInstance(false);
+  if (level === "fast") {
+    if (typeof api.encode_native_fast === "function") {
+      return callWasm(api, "encode_native_fast", inputBytes);
+    }
+    api = null;
+    let fastApi = await getWasmInstance(true);
+    return callWasm(fastApi, "encode_native", inputBytes);
+  }
+  return callWasm(api, "encode_native", inputBytes);
+}
+
 function isNative8zcMagic(bytes) {
   return (
     bytes &&
@@ -101,6 +127,7 @@ self.onmessage = async ({ data }) => {
   try {
     const { mode, file, files } = data;
     const encodeFormat = data.encodeFormat === "zip" ? "zip" : "native";
+    const encodeLevel = data.encodeLevel === "fast" ? "fast" : "max";
     if (!["encode", "encode_native", "decode", "compare", "batch"].includes(mode)) throw new Error("Neznan postopek.");
 
     if (mode === "batch") {
@@ -120,11 +147,16 @@ self.onmessage = async ({ data }) => {
           const input = new Uint8Array(await f.arrayBuffer());
           const op = resolveFileOp(f, defaultOp, encodeFormat, input);
 
-          let api = await getWasmInstance();
           const t0 = performance.now();
-          const out = callWasm(api, op, input);
+          let out;
+          if (op === "encode_native") {
+            out = await encodeNativeWithLevel(input, encodeLevel);
+          } else {
+            let api = await getWasmInstance(false);
+            out = callWasm(api, op, input);
+            api = null;
+          }
           const elapsedMs = Math.max(1, Math.round(performance.now() - t0));
-          api = null; // Release encoder WASM linear memory before verification instance
 
           let verified = false;
           let browserZipBytes = null;
@@ -132,7 +164,7 @@ self.onmessage = async ({ data }) => {
 
           if (op === "encode" || op === "encode_native") {
             const inputDigest = await sha256Hex(input);
-            let apiDec = await getWasmInstance();
+            let apiDec = await getWasmInstance(false);
             const restored = callWasm(apiDec, "decode", out);
             apiDec = null;
             const check = await verifyBytesMatch(input, restored, inputDigest);
@@ -190,14 +222,14 @@ self.onmessage = async ({ data }) => {
     if (mode === "compare") {
       const inputDigest = await sha256Hex(input);
 
-      let api = await getWasmInstance();
+      let api = await getWasmInstance(false);
       const t0 = performance.now();
       const encodedZip = callWasm(api, "encode", input);
       const encodeMs = Math.max(1, Math.round(performance.now() - t0));
       const hasNativeFn = typeof api.encode_native === "function";
       api = null;
 
-      let apiDec = await getWasmInstance();
+      let apiDec = await getWasmInstance(false);
       const t1 = performance.now();
       const restoredZip = callWasm(apiDec, "decode", encodedZip);
       const decodeMs = Math.max(1, Math.round(performance.now() - t1));
@@ -210,17 +242,19 @@ self.onmessage = async ({ data }) => {
       let encodedNative = null;
       let encodeNativeMs = null;
       let decodeNativeMs = null;
+      let z8cNativeFastBytes = undefined;
+      let encodeNativeFastMs = null;
+      let z8cNativeMaxBytes = undefined;
+      let encodeNativeMaxMs = null;
       let restoredDigestNat = "";
       let verifiedNative = true;
 
       if (hasNativeFn) {
-        let apiNatEnc = await getWasmInstance();
         const t2 = performance.now();
-        encodedNative = callWasm(apiNatEnc, "encode_native", input);
+        encodedNative = await encodeNativeWithLevel(input, encodeLevel);
         encodeNativeMs = Math.max(1, Math.round(performance.now() - t2));
-        apiNatEnc = null;
 
-        let apiNatDec = await getWasmInstance();
+        let apiNatDec = await getWasmInstance(false);
         const t3 = performance.now();
         const restoredNative = callWasm(apiNatDec, "decode", encodedNative);
         decodeNativeMs = Math.max(1, Math.round(performance.now() - t3));
@@ -229,6 +263,26 @@ self.onmessage = async ({ data }) => {
         const checkNat = await verifyBytesMatch(input, restoredNative, inputDigest);
         restoredDigestNat = checkNat.restoredDigest;
         verifiedNative = checkNat.verified;
+
+        if (encodeLevel === "max") {
+          z8cNativeMaxBytes = encodedNative.byteLength;
+          encodeNativeMaxMs = encodeNativeMs;
+          if (input.length <= 524288) {
+            const tf0 = performance.now();
+            const encFast = await encodeNativeWithLevel(input, "fast");
+            encodeNativeFastMs = Math.max(1, Math.round(performance.now() - tf0));
+            z8cNativeFastBytes = encFast.byteLength;
+          }
+        } else {
+          z8cNativeFastBytes = encodedNative.byteLength;
+          encodeNativeFastMs = encodeNativeMs;
+          if (input.length <= 524288) {
+            const tm0 = performance.now();
+            const encMax = await encodeNativeWithLevel(input, "max");
+            encodeNativeMaxMs = Math.max(1, Math.round(performance.now() - tm0));
+            z8cNativeMaxBytes = encMax.byteLength;
+          }
+        }
       }
 
       const verified = verifiedZip && verifiedNative;
@@ -253,6 +307,7 @@ self.onmessage = async ({ data }) => {
           compare: true,
           bytes: primaryOut.buffer,
           outputOp,
+          encodeLevel,
           digest: archiveDigest,
           inputBytes: input.length,
           inputDigest,
@@ -261,6 +316,10 @@ self.onmessage = async ({ data }) => {
           sha256Verified,
           z8cZipBytes: encodedZip.byteLength,
           z8cNativeBytes: encodedNative ? encodedNative.byteLength : undefined,
+          z8cNativeFastBytes,
+          encodeNativeFastMs,
+          z8cNativeMaxBytes,
+          encodeNativeMaxMs,
           browserZipBytes,
           encodeMs,
           decodeMs,
@@ -272,14 +331,19 @@ self.onmessage = async ({ data }) => {
       return;
     }
 
-    let api = await getWasmInstance();
-    const result = callWasm(api, mode, input);
-    api = null;
+    let result;
+    if (mode === "encode_native") {
+      result = await encodeNativeWithLevel(input, encodeLevel);
+    } else {
+      let api = await getWasmInstance(false);
+      result = callWasm(api, mode, input);
+      api = null;
+    }
 
     let verified = false;
     if (mode === "encode" || mode === "encode_native") {
       const inputDigest = await sha256Hex(input);
-      let apiDec = await getWasmInstance();
+      let apiDec = await getWasmInstance(false);
       const restored = callWasm(apiDec, "decode", result);
       apiDec = null;
       const check = await verifyBytesMatch(input, restored, inputDigest);
@@ -295,7 +359,7 @@ self.onmessage = async ({ data }) => {
     }
 
     const digest = await sha256Hex(result);
-    self.postMessage({ bytes: result.buffer, outputOp: mode, digest, verified }, [result.buffer]);
+    self.postMessage({ bytes: result.buffer, outputOp: mode, encodeLevel, digest, verified }, [result.buffer]);
   } catch (error) {
     self.postMessage({ error: error.message || "Brskalnik ni mogel dokončati opravila." });
   }
