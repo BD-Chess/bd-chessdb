@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Celotna zgodba 8zC: Bojan Dobrečevič, številna raziskovalna semena, sodelavci AI, uspešni in neuspešni poskusi ter razvoj BD × AI Lab.">
+  <meta name="theme-color" content="#101d1d">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="sl_SI">
+  <meta property="og:title" content="8zC — zgodba BD × AI Lab">
+  <meta property="og:description" content="Od matematičnega vprašanja do kompresorja in raziskovalnega sodelovanja. Ideje, izvedbe, ugovori in dokazi.">
+  <meta property="og:url" content="https://www.mdlxdcc.org/8zc-story/">
+  <link rel="canonical" href="https://www.mdlxdcc.org/8zc-story/">
+  <title>8zC — zgodba BD × AI Lab | MDL×DCC</title>
+  <script>
+    try {
+      if (localStorage.getItem('8zc-story-theme') === 'light') document.documentElement.dataset.theme = 'light';
+    } catch (_) {}
+  </script>
+  <style>
+    :root { color-scheme: dark; --bg:#101d1d; --panel:#172b28; --panel-soft:#142420; --ink:#ecf1e7; --muted:#b6c7bd; --line:#38534a; --accent:#c4dfaa; --gold:#e1c58c; --link:#c4dfaa; --shadow:rgba(0,0,0,.16); --reading-size:1.08rem; font-family:"Avenir Next","Segoe UI",system-ui,sans-serif; background:var(--bg); color:var(--ink); }
+    :root[data-theme="light"] { color-scheme:light; --bg:#f4f2e9; --panel:#e9ecdf; --panel-soft:#eff0e6; --ink:#20342c; --muted:#52665b; --line:#bac7b5; --accent:#365a34; --gold:#80602b; --link:#315a38; --shadow:rgba(43,54,30,.07); }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:100px; }
+    body { margin:0; line-height:1.7; -webkit-font-smoothing:antialiased; }
+    [hidden] { display:none !important; }
+    a { color:var(--link); text-underline-offset:.22em; text-decoration-thickness:1px; }
+    a:hover { color:var(--ink); }
+    button,summary { font:inherit; }
+    button,a,summary { -webkit-tap-highlight-color:transparent; }
+    a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible { outline:3px solid var(--gold); outline-offset:5px; border-radius:2px; }
+    button { cursor:pointer; }
+    ::selection { color:var(--bg); background:var(--accent); }
+    .shell { width:min(1320px,calc(100% - 64px)); margin-inline:auto; }
+    .skip { position:fixed; z-index:100; top:10px; left:16px; padding:10px 18px; background:var(--ink); color:var(--bg); transform:translateY(-160%); }
+    .skip:focus { transform:none; }
+    .masthead { position:sticky; top:0; z-index:30; background:var(--bg); border-bottom:1px solid var(--line); }
+    .masthead-inner { min-height:68px; display:flex; align-items:center; justify-content:space-between; gap:18px; }
+    .brand { color:var(--ink); text-decoration:none; font-size:1.2rem; font-weight:650; letter-spacing:-.05em; white-space:nowrap; }
+    .brand span { color:var(--accent); }
+    .mast-nav { display:flex; align-items:center; flex-wrap:wrap; gap:4px 24px; }
+    .mast-nav a { display:inline-flex; align-items:center; min-height:44px; text-decoration:none; font-size:.9rem; }
+    .mast-nav a[aria-current] { color:var(--ink); border-bottom:1px solid var(--gold); }
+    .progress { position:fixed; top:0; left:0; z-index:40; width:100%; height:3px; border:0; background:transparent; appearance:none; pointer-events:none; }
+    .progress::-webkit-progress-bar { background:transparent; }
+    .progress::-webkit-progress-value { background:var(--gold); }
+    .progress::-moz-progress-bar { background:var(--gold); }
+    .eyebrow,.chapter-label,.micro { font:500 .76rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.1em; text-transform:uppercase; }
+    .eyebrow { color:var(--gold); margin:0 0 24px; }
+    .hero { padding:clamp(48px,8vw,100px) 0 0; }
+    .hero-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(270px,.65fr); gap:clamp(32px,6vw,100px); align-items:center; }
+    h1,h2,h3 { font-family:Georgia,"Times New Roman",serif; font-weight:400; }
+    h1 { margin:0; font-size:clamp(3.6rem,7.6vw,7rem); letter-spacing:-.065em; line-height:1.01; }
+    h1 em { display:block; font-style:italic; color:var(--accent); }
+    .hero-deck { font-size:clamp(1.12rem,1.8vw,1.35rem); line-height:1.65; max-width:57ch; margin:30px 0 0; color:var(--muted); }
+    .hero-deck strong { color:var(--ink); font-weight:600; }
+    .hero-mark { border-top:1px solid var(--gold); border-bottom:1px solid var(--line); padding:25px 0 28px; }
+    .hero-word { font:400 clamp(6rem,13vw,11rem)/1 Georgia,serif; letter-spacing:-.09em; color:var(--accent); margin:0 0 24px; }
+    .hero-mark .micro { color:var(--gold); margin:0 0 16px; }
+    .hero-mark p:last-child { color:var(--muted); margin:0; max-width:29ch; font-size:.97rem; }
+    .hero-mark strong { color:var(--ink); }
+    .hero-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; margin:34px 0 0; }
+    .button-link { display:inline-flex; align-items:center; justify-content:center; gap:16px; min-height:48px; padding:11px 20px; border:1px solid var(--accent); border-radius:3px; background:var(--accent); color:var(--bg); text-decoration:none; font-weight:650; font-size:.92rem; }
+    .button-link:hover { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+    .hero-actions>a:not(.button-link) { display:inline-flex; align-items:center; min-height:44px; font-size:.94rem; }
+    .byline { display:flex; gap:12px 28px; flex-wrap:wrap; align-items:center; color:var(--muted); font-size:.84rem; margin-top:52px; padding:18px 0; border-block:1px solid var(--line); }
+    .byline strong { color:var(--ink); font-weight:550; }
+    .reading-controls { display:flex; align-items:center; gap:7px; margin-left:auto; }
+    .reading-controls button { min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:3px; background:var(--panel-soft); color:var(--ink); padding:5px 12px; }
+    .reading-controls button:disabled { opacity:.45; cursor:default; }
+    .reading-controls button[aria-pressed="true"] { border-color:var(--accent); color:var(--accent); }
+    .route { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0 30px; padding:32px 0 40px; margin:0; list-style:none; }
+    .route li { padding-top:12px; border-top:1px solid var(--line); }
+    .route a { text-decoration:none; display:block; min-height:68px; }
+    .route .date { display:block; font:500 .76rem/1.4 ui-monospace,monospace; color:var(--gold); margin-bottom:9px; }
+    .route .name { color:var(--ink); font-size:.96rem; line-height:1.4; }
+    .route a:hover .name { text-decoration:underline; text-underline-offset:.2em; }
+    .story-layout { display:grid; grid-template-columns:230px minmax(0,1fr); gap:clamp(42px,6vw,92px); align-items:start; padding-bottom:48px; }
+    .sidebar { position:sticky; top:92px; }
+    .toc { border-top:1px solid var(--line); }
+    .toc summary { padding:16px 0; color:var(--muted); cursor:pointer; font-size:.86rem; font-weight:600; min-height:50px; }
+    .toc-list { list-style:none; padding:0; margin:0; }
+    .toc-list li { margin:0; }
+    .toc-list a { display:flex; align-items:baseline; gap:13px; min-height:37px; padding:7px 8px 7px 0; font-size:.84rem; line-height:1.45; color:var(--muted); text-decoration:none; border-right:2px solid transparent; }
+    .toc-list .num { font:400 .68rem/1.5 ui-monospace,monospace; color:var(--gold); width:17px; flex:none; }
+    .toc-list a[aria-current="location"] { color:var(--accent); border-color:var(--accent); }
+    .toc-list a:hover { color:var(--ink); }
+    .toc-extra { margin-top:20px; padding-top:15px; border-top:1px solid var(--line); font-size:.77rem; color:var(--muted); }
+    .toc-extra a { display:inline-block; min-height:32px; padding-block:4px; }
+    .article { min-width:0; max-width:890px; font-size:var(--reading-size); }
+    .chapter { border-top:1px solid var(--line); padding:52px 0 62px; scroll-margin-top:96px; }
+    .chapter-label { color:var(--gold); margin:0 0 16px; font-size:.73rem; }
+    .chapter h2 { font-size:clamp(2.15rem,4vw,3.45rem); letter-spacing:-.045em; line-height:1.12; margin:0 0 24px; max-width:23ch; text-wrap:balance; }
+    .chapter h3 { font-size:clamp(1.45rem,2.4vw,1.95rem); letter-spacing:-.025em; line-height:1.25; margin:36px 0 15px; color:var(--ink); }
+    .chapter p,.chapter>ul,.chapter>ol { max-width:72ch; }
+    .chapter p { margin:0 0 20px; }
+    .chapter strong { font-weight:650; }
+    .lead { font-size:1.13em; color:var(--ink); line-height:1.65; }
+    .muted { color:var(--muted); }
+    .chapter ul,.chapter ol { padding-left:1.35em; }
+    .chapter li { padding-left:.18em; margin:9px 0; }
+    .chapter li::marker { color:var(--accent); }
+    .source-link { font:500 .73rem/1.4 ui-monospace,monospace; white-space:nowrap; margin-left:.25em; vertical-align:.08em; text-decoration:none; }
+    .source-link:hover { text-decoration:underline; }
+    .note { border-left:2px solid var(--gold); padding:4px 0 4px 23px; margin:28px 0; color:var(--muted); font-size:.91em; }
+    .note p:last-child { margin-bottom:0; }
+    .principle { margin:34px 0; padding:28px 30px; border-block:1px solid var(--line); background:var(--panel-soft); }
+    .principle .micro { color:var(--gold); font-size:.7rem; margin:0 0 11px; }
+    .principle p:last-child { margin:0; font:400 clamp(1.4rem,2.7vw,1.9rem)/1.45 Georgia,serif; letter-spacing:-.025em; }
+    .two-up { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:26px; margin:28px 0; }
+    .two-up>div { border-top:2px solid var(--accent); padding-top:18px; min-width:0; }
+    .two-up h3 { margin:0 0 13px; font-size:1.5rem; }
+    .two-up p { color:var(--muted); font-size:.94em; }
+    .table-scroll { overflow-x:auto; margin:28px 0; border:1px solid var(--line); border-radius:3px; }
+    table { width:100%; border-collapse:collapse; font-size:.86em; line-height:1.55; font-variant-numeric:tabular-nums; }
+    caption { padding:15px 18px; text-align:left; color:var(--muted); background:var(--panel-soft); font-size:.94em; }
+    th,td { padding:13px 16px; text-align:left; vertical-align:top; border-top:1px solid var(--line); }
+    thead th { color:var(--muted); font-size:.9em; font-weight:550; background:var(--panel-soft); }
+    tbody th { font-weight:600; }
+    .wide-table { min-width:650px; }
+    .numeric-table { min-width:660px; }
+    .numeric-table th:not(:first-child),.numeric-table td { text-align:right; white-space:nowrap; }
+    .numeric-table tfoot { font-weight:650; background:var(--panel); color:var(--accent); }
+    .loss { color:var(--gold); }
+    .table-hint { display:none; font-size:.77rem; color:var(--muted); margin-top:-18px !important; }
+    .step-list { counter-reset:step; list-style:none; padding:0 !important; margin:28px 0; }
+    .step-list li { counter-increment:step; position:relative; padding:16px 0 18px 57px; margin:0; border-top:1px solid var(--line); }
+    .step-list li::before { content:counter(step,decimal-leading-zero); position:absolute; left:0; top:18px; font:500 .78rem/1.4 ui-monospace,monospace; color:var(--gold); }
+    .step-list strong { display:block; margin-bottom:5px; }
+    .step-list p { font-size:.96em; color:var(--muted); margin:0; }
+    .seed { margin-top:34px; padding-top:25px; border-top:1px solid var(--line); }
+    .seed .micro { color:var(--gold); font-size:.68rem; margin:0 0 10px; }
+    .seed h3 { margin-top:0; }
+    .status { display:inline-flex; align-items:center; min-height:26px; padding:3px 9px; border:1px solid var(--line); border-radius:3px; font:500 .66rem/1.4 ui-monospace,monospace; letter-spacing:.025em; color:var(--muted); margin-bottom:13px; }
+    .release-banner { display:flex; justify-content:space-between; gap:24px; align-items:center; padding:23px 26px; border:1px solid var(--line); background:var(--panel); margin:28px 0; }
+    .release-banner p { margin:0; }
+    .release-banner .release-num { font:400 3.2rem/1 Georgia,serif; letter-spacing:-.05em; color:var(--accent); }
+    .release-banner small { display:block; color:var(--muted); font-size:.78rem; margin-top:7px; }
+    .family-list { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0 !important; margin:25px 0 !important; }
+    .family-list li { font:.76rem/1.5 ui-monospace,monospace; padding:6px 10px; margin:0; border:1px solid var(--line); color:var(--accent); border-radius:3px; }
+    .equation { margin:28px 0; padding:25px; background:var(--panel); border-left:3px solid var(--accent); }
+    .equation .micro { color:var(--gold); margin:0 0 12px; font-size:.68rem; }
+    .equation p:last-child { font:400 1.2em/1.6 Georgia,serif; margin:0; }
+    code { font:.85em/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; }
+    .chronology { list-style:none; padding:0 !important; margin:32px 0 0; }
+    .chronology li { display:grid; grid-template-columns:140px minmax(0,1fr); gap:24px; padding:22px 0; margin:0; border-top:1px solid var(--line); }
+    .chronology .when { color:var(--gold); font:500 .75rem/1.5 ui-monospace,monospace; padding-top:4px; }
+    .chronology h3 { font-family:inherit; font-size:1rem; font-weight:650; margin:0 0 7px; letter-spacing:0; }
+    .chronology p { font-size:.92em; color:var(--muted); margin:0; }
+    .sources { list-style:none; padding:0 !important; }
+    .sources li { padding:20px 0; margin:0; border-top:1px solid var(--line); scroll-margin-top:110px; }
+    .sources strong { display:block; margin-bottom:6px; }
+    .sources p { font-size:.88em; color:var(--muted); margin:0 0 9px; }
+    .sources a { font-size:.88em; }
+    .source-meta { margin:25px 0; padding:22px 24px; background:var(--panel-soft); font-size:.86em; color:var(--muted); }
+    .source-meta h3 { margin:0 0 12px; font-family:inherit; font-weight:600; font-size:1rem; letter-spacing:0; }
+    .source-meta p:last-child { margin-bottom:0; }
+    .closing { padding:38px 0 12px; }
+    .closing p { font:400 clamp(1.7rem,3.3vw,2.45rem)/1.4 Georgia,serif; color:var(--accent); letter-spacing:-.025em; }
+    .footer { padding:28px 0 36px; border-top:1px solid var(--line); display:flex; align-items:baseline; justify-content:space-between; gap:20px; flex-wrap:wrap; color:var(--muted); font-size:.84rem; }
+    .footer nav { display:flex; flex-wrap:wrap; gap:22px; }
+    .footer a { display:inline-flex; min-height:44px; align-items:center; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(min-width:1051px) { .toc summary { list-style:none; pointer-events:none; } .toc summary::-webkit-details-marker { display:none; } }
+    @media(max-width:1050px) { .shell { width:calc(100% - 48px); } .story-layout { grid-template-columns:1fr; gap:0; } .sidebar { top:68px; z-index:20; background:var(--bg); margin-inline:-24px; padding-inline:24px; border-bottom:1px solid var(--line); } .toc { border-top:0; } .toc summary { padding:12px 0; } .toc[open] .toc-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 20px; max-height:60vh; overflow:auto; padding-bottom:12px; } .toc-list a { min-height:44px; } .toc-extra { display:none; } .article { margin-inline:auto; width:100%; max-width:820px; } .chapter { scroll-margin-top:130px; } .hero { padding-top:55px; } }
+    @media(max-width:700px) { .shell { width:calc(100% - 36px); } .masthead-inner { min-height:62px; gap:10px; } .brand { font-size:1.06rem; } .mast-nav { gap:2px 14px; } .mast-nav a { font-size:.8rem; } .mast-nav .home-link { display:none; } .hero-grid { grid-template-columns:1fr; gap:30px; } h1 { font-size:clamp(3.35rem,11vw,5rem); } .hero-deck { font-size:1.1rem; margin-top:24px; } .hero-mark { display:grid; grid-template-columns:110px minmax(0,1fr); align-items:center; gap:12px 20px; padding:20px 0; } .hero-word { font-size:5.2rem; margin:0; grid-row:1/3; } .hero-mark .micro { margin:0; font-size:.67rem; } .hero-mark p:last-child { font-size:.87rem; max-width:none; } .byline { margin-top:32px; gap:8px 22px; } .reading-controls { margin-left:0; width:100%; } .reading-controls button:last-child { margin-left:auto; } .route { grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 20px; padding-block:26px 30px; } .route a { min-height:55px; } .sidebar { top:62px; margin-inline:-18px; padding-inline:18px; } .chapter { padding:38px 0 46px; } .article { --reading-size:1.035rem; } .two-up { grid-template-columns:1fr; gap:12px; } .principle { padding:23px 22px; } .table-hint { display:block; } .chronology li { grid-template-columns:105px minmax(0,1fr); gap:16px; } .chronology .when { font-size:.68rem; } .release-banner { padding:18px; } .release-banner .button-link { font-size:.8rem; padding:9px 12px; } }
+    @media(max-width:390px) { .mast-nav { gap:9px; } .brand { font-size:1rem; } .mast-nav a { font-size:.74rem; } .toc[open] .toc-list { grid-template-columns:1fr; } .hero-mark { grid-template-columns:88px minmax(0,1fr); } .hero-word { font-size:4.4rem; } .chronology li { grid-template-columns:1fr; gap:8px; } .release-banner { align-items:flex-start; flex-direction:column; } }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print { :root { --bg:#fff; --panel:#f3f3ee; --panel-soft:#f8f8f3; --ink:#17291e; --muted:#455447; --line:#bbb; --accent:#294f2e; --gold:#725523; --link:#294f2e; } body { font-size:10pt; } .masthead,.sidebar,.reading-controls,.progress,.hero-actions,.route,.footer { display:none !important; } .shell { width:100%; } .hero { padding-top:0; } h1 { font-size:36pt; } .hero-grid { grid-template-columns:1fr 180px; } .hero-word { font-size:70pt; } .hero-deck { font-size:12pt; } .byline { margin-top:20px; } .story-layout { display:block; } .article { max-width:none; font-size:10pt; } .chapter { padding:24px 0; } .chapter h2 { font-size:23pt; } h2,h3 { break-after:avoid; } table,.note,.principle { break-inside:avoid; } .table-scroll { overflow:visible; } .wide-table,.numeric-table { min-width:0; } a { color:inherit; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#zgodba">Preskoči na zgodbo</a>
+  <progress class="progress" id="reading-progress" max="100" value="0" aria-label="Napredek branja" hidden></progress>
+  <header class="masthead">
+    <div class="shell masthead-inner">
+      <a class="brand" href="/">MDL<span>×</span>DCC</a>
+      <nav class="mast-nav" aria-label="Glavne povezave">
+        <a href="/8Z/" class="home-link">8Z središče</a>
+        <a href="/8zC/">Kodek</a>
+        <a href="/8zC-results/">Rezultati</a>
+        <a href="/8zc-story/" aria-current="page">Zgodba</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell" id="zgodba">
+    <section class="hero" aria-labelledby="story-title">
+      <p class="eyebrow">8Z raziskave / Zgodba BD × AI Lab</p>
+      <div class="hero-grid">
+        <div>
+          <h1 id="story-title">Od vprašanja<br>do skupnega <em>raziskovanja.</em></h1>
+          <p class="hero-deck"><strong>Bojan Dobrečevič (BD) in sodelavci AI razvijajo 8zC skozi številna nova semena, povezave, izvedbe in preizkuse.</strong> Ob kompresorju nastaja tudi način dela, ki človekovo zamisel poveže z dokazljivim rezultatom — in z naslednjim vprašanjem.</p>
+          <div class="hero-actions">
+            <a class="button-link" href="#zacetek">Preberi zgodbo <span aria-hidden="true">↓</span></a>
+            <a href="/8zC/">Preizkusi 8zC <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+        <aside class="hero-mark" aria-label="Dve povezani razvojni zgodbi">
+          <p class="hero-word" aria-hidden="true">8zC</p>
+          <p class="micro">Človek. AI. Ideje. Dokazi.</p>
+          <p><strong>Dve povezani zgodbi:</strong> razvoj brezizgubnega kompresorja in razvoj laboratorija, v katerem človek ter AI ostajata dejavna soustvarjalca.</p>
+        </aside>
+      </div>
+      <div class="byline">
+        <span><strong>Ideje in arhitektura</strong> · Bojan Dobrečevič</span>
+        <span><strong>Skupni razvoj</strong> · BD × AI Lab</span>
+        <span><time datetime="2026-11-24">24. november 2026</time></span>
+        <span id="reading-time">Daljše branje</span>
+        <div class="reading-controls" id="reading-controls" role="group" aria-label="Nastavitve branja" hidden>
+          <button type="button" id="font-down" aria-label="Pomanjšaj besedilo">A−</button>
+          <button type="button" id="font-up" aria-label="Povečaj besedilo">A+</button>
+          <button type="button" id="theme-toggle" aria-pressed="false">Svetla podlaga</button>
+        </div>
+        <span class="sr-only" id="reading-status" role="status" aria-live="polite"></span>
+      </div>
+      <ol class="route" aria-label="Štiri obdobja zgodbe">
+        <li><a href="#zacetek"><span class="date">2024 / 2025</span><span class="name">Matematični opis<br>in njegova preizkušnja</span></a></li>
+        <li><a href="#arhivi"><span class="date">JULIJ 2026</span><span class="name">8ZIP in 8ZIPLAB<br>Arhiv kot celota</span></a></li>
+        <li><a href="#p2c"><span class="date">NOVEMBER 2026</span><span class="name">P2-C in 8zC<br>Od recepta do obnove</span></a></li>
+        <li><a href="#laboratorij"><span class="date">RAZVOJ, KI SE NADALJUJE</span><span class="name">BD × AI Lab<br>Ideje ostajajo v zanki</span></a></li>
+      </ol>
+    </section>
+
+    <div class="story-layout">
+      <aside class="sidebar">
+        <details class="toc" id="toc" open>
+          <summary>Poglavja zgodbe</summary>
+          <nav aria-label="Kazalo zgodbe">
+            <ol class="toc-list">
+              <li><a href="#zacetek"><span class="num">01</span>Začetek in sprememba ideje</a></li>
+              <li><a href="#mostovi"><span class="num">02</span>Mostovi med področji</a></li>
+              <li><a href="#poskusi"><span class="num">03</span>Slike, zvok in DNA</a></li>
+              <li><a href="#arhivi"><span class="num">04</span>Julijska arhivska arena</a></li>
+              <li><a href="#p2c"><span class="num">05</span>Od regeneracije do P2-C</a></li>
+              <li><a href="#semena"><span class="num">06</span>Številna nadaljnja semena</a></li>
+              <li><a href="#laboratorij"><span class="num">07</span>Kako nastaja laboratorij</a></li>
+              <li><a href="#sodelavci"><span class="num">08</span>Različni prispevki sodelavcev</a></li>
+              <li><a href="#v8"><span class="num">09</span>v8 in obseg meritev</a></li>
+              <li><a href="#dokazi"><span class="num">10</span>Kaj pomeni dober dokaz</a></li>
+              <li><a href="#metoda"><span class="num">11</span>Takšno delo za druge ljudi</a></li>
+              <li><a href="#casovnica"><span class="num">12</span>Časovnica</a></li>
+              <li><a href="#viri"><span class="num">13</span>Viri in način branja</a></li>
+            </ol>
+          </nav>
+        </details>
+        <div class="toc-extra">Uredniška sinteza GPT<br><a href="#viri">Izvor in meje dokazil</a><br><a href="#story-title">Nazaj na začetek ↑</a></div>
+      </aside>
+
+      <article class="article" aria-labelledby="story-title">
+        <section class="chapter" id="zacetek" aria-labelledby="h-zacetek">
+          <p class="chapter-label">01 / Izvor, ki se spreminja</p>
+          <h2 id="h-zacetek">Vprašanje je odprlo pot. Nova vprašanja so jo razvijala.</h2>
+          <p class="lead">Bojan Dobrečevič je izvorni pobudnik 8Z, arhitekt raziskovalnega okolja in trajni vsebinski soustvarjalec 8zC. Njegov prispevek se nadaljuje z novimi zamislimi, povezavami med področji, tehničnimi ugovori in merili, po katerih se presoja rezultat.</p>
+          <p>Izvor projekta je mogoče povedati v enem stavku: ali lahko del podatkov zamenjamo s krajšim matematičnim opisom, iz katerega jih nato natančno obnovimo? Toda tak stavek je samo začetek zgodbe. Med njim in delujočim kompresorjem so spremenjene hipoteze, neuspešni poskusi, nove domene, konkretni algoritmi in veliko dela pri preverjanju.</p>
+          <p>BD je skozi ta razvoj prispeval številna semena. AI sodelavci so dodajali svoje ideje, formalizacije, izvedbe, protiprimere in meritve. Za razumevanje nastanka programa je zato treba slediti temu, kako se ti prispevki srečujejo in spreminjajo drug drugega. <a class="source-link" href="#vir-izvor" aria-label="Vir: izvor in atribucija">[1]</a></p>
+
+          <h3>Dve začetni potezi</h3>
+          <p>Prvo BD-jevo vprašanje je zadevalo π: ali lahko podatkovne bite v datoteki nadomestimo z referenco na bite, ki jih najdemo v tej deterministični konstanti? π je bil konkreten povod za širše vprašanje o matematičnih virih, generatorjih in kratkih receptih.</p>
+          <p>Druga poteza je bila lokalna izbira. Ni treba, da en mehanizem opiše celotno datoteko. Za vsak predel lahko tekmujejo neposreden zapis, običajna kompresija in regeneracija po pravilu. Smiselna je tista možnost, ki zahteva najmanjši <strong>celotni opis</strong> in vrne natančno iste bajte.</p>
+          <p>To je projektna uporaba načela MDL, <em>Minimum Description Length</em> oziroma najkrajšega opisa. Teorija je obstajala že prej. BD-jev prispevek je v vprašanjih, načinu uporabe in razvoju tega merila znotraj njegovega raziskovalnega programa. Priznanje prispevka ne zahteva trditve o izumu splošne teorije.</p>
+          <div class="principle">
+            <p class="micro">Vprašanje, ki ostane</p>
+            <p>Kateri del podatkov moramo res poslati — in katerega lahko prejemnik natančno obnovi iz krajšega pravila?</p>
+          </div>
+
+          <h3>Datum, ki ga je treba povedati natančno</h3>
+          <p>Retrospektiva <em>Origin</em> prvo kompresijsko vprašanje umešča na 4. oktober 2024. Popis pregledanega tehničnega arhiva najstarejši ohranjeni dokument postavlja na 4. oktober 2025, z notranjo oznako oktober 2025. Starejši pogovor je lahko zunaj tega arhiva; mogoča je tudi datacijska napaka. Zato razlikujemo med datumom v osebni retrospektivi in datumom ohranjenega artefakta. <a class="source-link" href="#vir-izvor" aria-label="Vir: zgodovinski datumi">[1]</a></p>
+          <p>Širša osebna predzgodovina se v poznejših zapisih vrača do leta 1995, do razmišljanj o zavesti, koherenci in kompleksnosti. To je ozadje BD-jeve poti. Ne pomeni, da so bile vse poznejše formule ali tehnične rešitve dokončane že takrat. CFH v tej zgodbi ostaja hipoteza in konceptualni vir vprašanj.</p>
+
+          <h3>Ko poskus spremeni prvotno hipotezo</h3>
+          <p>Začetna pot ni prinesla preproste zmage. Pi-Hunterjev navidezno poseben signal na sintetičnem primeru se je ohranil tudi po zamenjavi π s psevdonaključnimi semeni. Poznejši arhivski pregled tekov PiX iz junija 2026 poroča še o nič MDL zmagah na 686.289 realnih bajtnih kosih ter dodatnih 59.724 kosih iz slikovnih predstavitev.</p>
+          <p>Tak izid omeji razlago konkretnega poskusa. Ne dokazuje nemožnosti vsakega generatorja na vseh podatkih. Pokaže pa, da doseženega učinka ne smemo pripisati posebnosti π, če ga dobimo tudi brez nje.</p>
+          <p>BD-jev odziv na kontrole Pi-Hunterja, ohranjen v zapisu iz decembra 2025, je vsebinsko pomemben: strukturo lahko nosijo pravilo celičnega avtomata, preslikava in geometrija, π pa je nespecialno seme. Raziskovalno vprašanje se je premaknilo h <strong>strukturi procesa in predstavitve</strong>. Človekov prispevek je tu sprememba hipoteze po rezultatu, ne samo njen prvi izrek; poznejši PiX izidi so dodali svojo omejitev. <a class="source-link" href="#vir-arhiv" aria-label="Vir: zgodnji poskusi in negativni rezultati">[2]</a></p>
+        </section>
+
+        <section class="chapter" id="mostovi" aria-labelledby="h-mostovi">
+          <p class="chapter-label">02 / Povezave, ki odprejo nov problem</p>
+          <h2 id="h-mostovi">Od opisa podatkov do poti, merila in krmiljenja.</h2>
+          <p class="lead">BD-jevo raziskovanje pogosto spremeni vprašanje tako, da poveže dve področji. Uporaben most mora prenesti mehanizem ali strukturo, potem pa prestati lasten preizkus.</p>
+          <h3>Ali se najkrajša pot tudi najkrajše opiše?</h3>
+          <p>To vprašanje poveže kompresijo s problemom trgovskega potnika, TSP. Odpre možnost, da opis rešitve pove nekaj o strukturi iskanja. Ne predstavlja splošnega dokaza, da bo najkrajši zapis vedno določil optimalno pot. Potrebna je natančna predstavitev ture in primerjava na konkretnih problemih.</p>
+          <p>V zapisih o izvoru se pojavljajo tudi vizualna semena: odmev, gravitacija, piramida, pogled z različnih meril. Njihova vloga je odpreti vprašanje, katero strukturo tak pogled razkrije. Matematična formalizacija in koda pokažeta, ali iz opazke nastane uporaben postopek. <a class="source-link" href="#vir-izvor" aria-label="Vir: TSP in medpodročni mostovi">[1]</a></p>
+
+          <h3>DCC: konceptualni most in izvedljiv prikaz</h3>
+          <p><em>Origin</em> prvi izvedljivi prikaz DCC poveže z BD-jevo pobudo za demonstracijo klaustruma v okolju 8Z OS. Gemini je sestavil prikaz sklopljenih oscilatorjev, senzorja kompleksnosti in povratnega prilagajanja. V tej epizodi sta jasno vidna dva prispevka: človekova konceptualna povezava in konkretna AI izvedba.</p>
+          <p>V raziskovalnih arenah se krmilni pogled pozneje prenese na zgodovino odločitev: kdaj razširiti iskanje, kdaj poglobiti obetavno smer in kam nameniti omejeni proračun. BD doda še rekurzivno vprašanje: ali naj tudi izbiro krmilnika presoja MDL? S tem sam način iskanja postane predmet primerjave.</p>
+          <p>Tehnični krmilnik in hipoteza o zavesti imata različni dokazili. Delujoča povratna zanka je konkreten programski rezultat; ne potrdi sama po sebi širše razlage zavesti.</p>
+
+          <h3>MSTD in TEP: različni prispevki v istem razvoju</h3>
+          <p>BD-jevo seme zooma oziroma večmerilnega pogleda vodi v MSTD. C1/Claude nato predlaga povezan obrat: najboljše najdene ture naj izboljšujejo reprezentacijo, iz katere nastaja piramida. Ta predlog je TEP, <em>Tour-Enriched Pyramid</em>. Natančna zgodovina ohrani oba izvora. <a class="source-link" href="#vir-tep" aria-label="Vir: MSTD, TEP in nadaljnji ugovor">[3]</a></p>
+          <p>Sledi še ena izmenjava. C1 predlaga trdo nastavljen prag kakovosti tur. BD vpraša, zakaj je prag trdo kodiran, če se sistem lahko uči. Builder C nato uvede uteženo afiniteto, pri kateri ture prispevajo glede na svojo kakovost.</p>
+          <p><strong>Prvotni obrat TEP ostane C1-jev, kritični ugovor je BD-jev, konkretna izvedba spremembe pa Builderjeva.</strong> Človeški prispevek se tukaj pojavi znotraj algoritemske zasnove. AI predlog in človeški popravek imata vsak svojo vlogo.</p>
+          <div class="note"><p>C1 v svojem zapisu opozori tudi na omejitev primerjave: kontrola ni imela povsem enakega celotnega proračuna, zato ni mogoče pripisati vsega poznejšega izboljšanja enemu samemu posegu. Priznanje prispevka in previdnost pri sklepanju se dopolnjujeta.</p></div>
+
+          <h3>RHP: raziskovanje dobi svojo arhitekturo</h3>
+          <p><strong>Resonance Hybrid Protocol</strong> izvorno arhitekturo DCC, klaustruma in resonance pripisuje BD, razvoj in nadaljnje preglede pa tudi sodelavcem AI. RHP oblikuje pogoje, v katerih se različne perspektive dovolj razvijejo, soočijo z močnimi ugovori in nazadnje vstopijo v preizkus. <a class="source-link" href="#vir-metoda" aria-label="Vir: RHP in raziskovalna metoda">[4]</a></p>
+          <p>Pomembni so izvor ideje, ohranitev uporabnega dela neuspelega predloga, ločitev nasprotnih predpostavk in prenos naučenega v naslednjo sejo. Človeški poseg lahko pride kadarkoli. Nov pogled ni omejen na prvi stavek pred začetkom dela.</p>
+          <p>Dokumentirani protokol je treba ločiti od avtomatizirane izvedbe. Opis senzorjev, vlog in zank še ne pomeni, da vsi ti deli neprekinjeno tečejo kot programski krmilnik. Marec 2026 označuje izvor arhitekture; vseh poznejših dodatkov protokola ni smiselno prestaviti v isti začetni mesec.</p>
+        </section>
+
+        <section class="chapter" id="poskusi" aria-labelledby="h-poskusi">
+          <p class="chapter-label">03 / Prejšnje veje, uporabne omejitve</p>
+          <h2 id="h-poskusi">Slike, zvok in DNA so razširili raziskovalni prostor.</h2>
+          <p class="lead">8zC je del širše družine 8Z. Med vejami se prenašajo vprašanja, merila in izkušnje. Neposredni prenos kode pa potrebuje konkretno revizijo ali predajo.</p>
+          <p>Pri slikah se pojavijo prediktorji SUB in PAETH, celoštevilski Haar, bajtne ravnine in prileganje ravnine. Ob njih tekmujejo običajni kompresorji. Pregled starejšega slikovnega kodeka v njem ni našel uporabe naslovov v π. Slikovnih rezultatov zato ni mogoče predstaviti kot potrditev prvotne π predstavitve.</p>
+          <div class="table-scroll" role="region" tabindex="0" aria-label="Primerjave zgodnjih slikovnih, zvočnih in genomskih vej">
+            <table class="wide-table">
+              <caption>Izbrani rezultati iz pregledov predhodnih vej. Vsak velja za svoj nabor in navedeno primerjavo.</caption>
+              <thead><tr><th scope="col">Veja in nabor</th><th scope="col">Poročani rezultat</th><th scope="col">Meja sklepa</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">8Z Image · 60 TIFF</th><td>8Z: 86.042.016 B<br>PNG: 102.485.649 B<br>JPEG XL: 69.611.921 B</td><td>Prednost pred navedenim PNG izhodiščem; JPEG XL je v tej primerjavi manjši.</td></tr>
+                <tr><th scope="row">8Z-Audio v1.5 · 15 izsekov</th><td>7 od 15 izsekov je manjših od FLAC-12; skupni zapis je približno 1,03 % večji.</td><td>Posamične zmage še ne pomenijo skupne prednosti.</td></tr>
+                <tr><th scope="row">8Z-FASTA · 50 vhodov</th><td>Prednost proti 7-Zipu na 44 od 50 vhodov; specializirani GeCo3 doseže boljši skupni rezultat.</td><td>Domenski napredek ni splošna zmaga nad vsemi genomskimi kodeki.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-hint">Tabelo lahko vodoravno pomaknete.</p>
+          <p>Ti rezultati so uporabni prav zato, ker vsebujejo tudi meje. Pokazali so, da je mogoče izkoristiti strukturo posamezne domene, obenem pa razkrili prednost drugih specializiranih metod. Poznejši aFLAC oziroma avFLAC je druga veja z lastnimi zahtevami združljivosti in lastnimi meritvami. <a class="source-link" href="#vir-arhiv" aria-label="Vir: primerjave slik, zvoka in FASTA">[2]</a></p>
+
+          <h3>Ostanek kot novo raziskovalno vprašanje</h3>
+          <p>Prediktor iz podatkov odstrani tisto, kar zna pojasniti. Za njim ostane napaka napovedi oziroma <em>ostanek</em>. Ali lahko drug model v tem ostanku odkrije novo strukturo? To vprašanje povezuje domenske prediktorje s poznejšimi kaskadami in transformacijami 8zC.</p>
+          <p>Prehod ni samoumeven: vsak dodatni korak lahko prinese nove parametre, čas in strošek dekodiranja. Kaskada je koristna, kadar po celotnem obračunu izboljša rezultat in omogoči eksaktno obratno pot.</p>
+
+          <h3>Bin→DNA: nova predstavitev, nov nabor modelov</h3>
+          <p>Ločena BD-jeva pobuda predlaga reverzibilno štirisimbolno predstavitev splošnih binarnih podatkov. S tem se odpre raziskovanje modelov, povezanih z obratnimi komplementi, palindromi in WaveCA. Predlog je v novembrskem načrtu naveden kot kandidat za areno. <a class="source-link" href="#vir-semena" aria-label="Vir: poznejša semena in Bin-DNA">[5]</a></p>
+          <p>Sama zamenjava abecede ne odstrani informacije. Korist mora prinesti model, ki v novi predstavitvi prepozna uporabno strukturo. Celoten opis in natančna obnova ostaneta merili tudi tedaj, ko ideja prihaja iz oddaljene domene.</p>
+        </section>
+
+        <section class="chapter" id="arhivi" aria-labelledby="h-arhivi">
+          <p class="chapter-label">04 / Julij 2026</p>
+          <h2 id="h-arhivi">Arhiv postane predmet raziskovanja.</h2>
+          <p class="lead">Julijski 8ZIP in 8ZIPLAB sta pomembna vmesna koraka. V njiju je vidna arhitektura, ki izbira med predstavitvami ter upošteva celoten paket, dejansko uporabo in kakovost dokaza.</p>
+          <p>Dve raziskovalni študiji z dne 6. julija 2026 BD izrecno navedeta kot arhitekta in nosilca koncepta. Arhiv obravnavata kot strukturiran predmet: vsebuje poti, podobna imena, ponovljene predloge, različne vrste datotek, skupne vsebine in podatke, ki so že stisnjeni. Izbira naj zajame vse te ravni.</p>
+          <p>Na zasnovo vpliva konkretna potreba po uporabi gradiva v običajnih orodjih in projektnih okoljih. Zato nastaneta povezani, tehnično različni smeri. <a class="source-link" href="#vir-julij" aria-label="Vir: julijska arhitektura in predaje">[6]</a></p>
+          <div class="two-up">
+            <div><h3>8ZIP / ReZIP</h3><p>Ohraniti običajni ZIP z metodama Store in Deflate. Več kodirnikov lahko prispeva kandidate, končni arhiv pa mora odpreti navadno orodje za ZIP in vrniti pravo drevo datotek.</p></div>
+            <div><h3>8ZIPLAB / FPLB</h3><p>Raziskovati slovarje, deduplikacijo in pozneje več kodekov v lastnem vsebniku z natančno določenim postopkom obnove. Njegov rezultat ima drugačno združljivost od navadnega ZIP.</p></div>
+          </div>
+
+          <h3>Majhna zmaga pokaže pomen celotnega računa</h3>
+          <p>Prvi besedilni vzorec prinese 174 bajtov manjši celotni ZIP od navedenega 7-Zip izhodišča. Notranji pregled razkrije zanimivo podrobnost: podatkovni tok 8ZIP je za 22 bajtov večji, ovojnica pa za 196 bajtov manjša. Prednost nastane pri velikosti celotnega arhiva.</p>
+          <p>Na velikem izvlečku BDTA/HSR zgodnja izvedba s Pythonovim zlibom še zaostaja za 7-Zipom. Naslednji načrt zato 7-Zip vključi med notranje kandidate arene. Razvoj uvede ločeni fazi analize in kodiranja ter primerjavo končnega paketa. Meritev spremeni izvedbo ideje.</p>
+          <p>Pri izbiri tokov iz več kodirnikov obstaja predhodno delo, med drugim ZIPMIX in ZIPMAX. Julijska nadaljevalna predaja to izrecno prizna. Prispevek 8ZIP se presoja po njegovi konkretni razširitvi, preverjanju in rezultatih, brez pripisovanja celotnega izvornega načela.</p>
+
+          <h3>Preverjevalnik mora prestati ugovor</h3>
+          <p>Pregled v0.2.3A odkrije, da lahko preverjevalnik spregleda dodatne imenike, skrite podatke v imeniških vnosih ali nedovoljeno metodo ZIP. Običajni datotečni testi so uspeli, vendar izdaja zaradi te vrzeli dobi oceno <strong>FAIL</strong>. Naslednja revizija okrepi preverjanje in ohrani sled istega drevesa 4.965 datotek.</p>
+          <p>Razkrita je tudi nepoštena primerjalna osnova: kandidat, označen kot zunanji, je nastal iz obstoječega 8ZIP zmagovalca. Tak rezultat ne more dokazovati neodvisne zunanje primerjave. Izvor kandidatov postane del dokaza, skupaj z njihovo velikostjo.</p>
+
+          <h3>Deduplikacija zmaga; splošnost slovarja ostane odprta</h3>
+          <p>V laboratorijski različici v0.2.1 pregled odkrije identične vsebine na različnih straneh razdelitve na učenje, validacijo in zadržani preizkus. Korist za tisti arhiv ostane veljavna, močnejša razlaga o prenosljivem slovarju pa potrebuje popravek. V0.2.2 zato enake vsebine ohrani v isti skupini.</p>
+          <div class="table-scroll" role="region" tabindex="0" aria-label="Rezultat 8ZIPLAB v0.2.2">
+            <table>
+              <caption>Pregled 19. julija 2026 · 320 poti, 260 različnih vsebin; 256 realnih in 64 kontrolnih datotek.</caption>
+              <thead><tr><th scope="col">Predstavitev</th><th scope="col">Celotni zapis</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Standardni ZIP v primerjavi</th><td>39.894.200 B</td></tr>
+                <tr><th scope="row">FPLB3 z deduplikacijo, brez slovarja</th><td>33.111.059 B</td></tr>
+                <tr><th scope="row">Končni FPLB3 s slovarjem</th><td><strong>33.076.405 B</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Končni arhiv je za 6.817.795 bajtov oziroma približno 17,09 % manjši od navedenega ZIP izhodišča in obnovi vseh 320 poti. Glavnino koristi prinese deduplikacija. Slovar prinese še 34.654 bajtov prihranka, na realnem zadržanem preizkusu pa le 154 bajtov. Ena popravljena validacijska skupina je negativna; prenos med neodvisnimi arhivi ostane <strong>nedokazan</strong>. To je močan rezultat za konkretni arhiv in precej ožji signal o splošnosti slovarja. <a class="source-link" href="#vir-julij" aria-label="Vir: končni pregled 8ZIPLAB v0.2.2">[6]</a></p>
+          <p>Naslednji načrt predvidi areno več kodekov, ohranitev preverjenega prejšnjega zmagovalca in poznejšo vključitev slikovnih ter zvočnih metod. Julijske veje tako povezujejo izvor 8Z z novembrskim 8zC prek vprašanj, arhitekture in preverjanja. Za neposredno kodno genealogijo vsakega modula bi potrebovali dodatno konkretno sled.</p>
+        </section>
+
+        <section class="chapter" id="p2c" aria-labelledby="h-p2c">
+          <p class="chapter-label">05 / November 2026</p>
+          <h2 id="h-p2c">Recept za podatke dobi dejansko obratno pot.</h2>
+          <p class="lead">BD novembra ponovno odpre smer <em>Compression with Math</em> in naroči ločeni trajni raziskovalni seji. Problem postane bolj oprijemljiv: katere bajte že določajo drugi deli datoteke ali znan postopek?</p>
+          <p>Laboratorij 8zC-M raziskuje generatorje in njihova skrita stanja: celične avtomate, linearne rekurence, psevdonaključne generatorje in druge deterministične strukture. BD-jeva usmeritev vključuje iskanje začetnega stanja in hitrejšo izvedbo v Rustu. To širi raziskovalni program; posamezni algoritmi in njihovi parametri imajo svojo sled prispevkov.</p>
+
+          <h3>Kaj naredi P2-C</h3>
+          <p>Pri P2-C kodirnik poišče izbrane predele, ki jih zna natančno regenerirati. Zapiše recept in pripravi ostanek, ki ga nato stisne običajni kompresor. Dekodirnik opravi obratno pot. Pri izpeljanih tabelah ELF je del strukture odvisen od drugih delov iste datoteke. Če ponovno računanje z vsemi potrebnimi navodili stane manj od dostave bajtov, nastane prihranek. <a class="source-link" href="#vir-p2c" aria-label="Vir: P2-C, vloge in meritev">[7]</a></p>
+          <ol class="step-list" aria-label="Pot od izvirnika do natančne obnove">
+            <li><strong>Prepoznaj izračunljivi del.</strong><p>Preveri, kateri predel lahko obnovi določeno pravilo iz razpoložljivih podatkov.</p></li>
+            <li><strong>Pripravi recept in ostanek.</strong><p>Opis mora vsebovati vse, kar bo potrebovala obnova. Krajši tok sam zase še ni celotni račun.</p></li>
+            <li><strong>Stisni in izberi.</strong><p>Primerjaj veljavne poti z enakim merilom in vsemi dodatnimi stroški.</p></li>
+            <li><strong>Obnovi in primerjaj.</strong><p>Iz dejanskega arhiva rekonstruiraj izvirnik ter preveri dolžino in SHA-256.</p></li>
+          </ol>
+
+          <h3>Skupni rezultat ima razločljive prispevke</h3>
+          <p>BD-jevi začetni vprašanji in novembrsko ponovno odprtje smeri določijo raziskovalni prostor. Seja <strong>8zC-C</strong> razvije tehnično zasnovo, ki regenerirane bajte poveže z verjetnostno stisnjenim ostankom. <strong>8zC-G</strong> prispeva neodvisni protiprimer, pregled in merilni protokol. <strong>8zC-HP1</strong> sestavi pripravo ostanka in referenc, kodirnik, izbiro korpusa ter merilno in nadzorno verigo.</p>
+          <p>Protiprimer 8zC-G popravi premočan zgodnji sklep. Iz prihranka preprostega ničlenja ni mogoče samodejno določiti meje, ki jo lahko doseže pravi vsebnik. To je intelektualni prispevek AI sodelavca: spremeni razumevanje problema in s tem naslednji poskus.</p>
+          <div class="principle">
+            <p class="micro">P2-C / omejena potrditvena primerjava</p>
+            <p>240 eksaktnih obnov datotek ELF.<br>408.918 B oziroma 3,7803 % neto prihranka proti navedenemu PAQ8PX −7 izhodišču.</p>
+          </div>
+          <p>Obračun vključuje reference, glave in en dodatni dekoderski paket velikosti 26.248 bajtov. Rezultat velja za ta korpus in to primerjavo. Število pravilnih obnov, skupni prihranek in število posamičnih velikostnih zmag so tri različne količine.</p>
+
+          <h3>Eno knjižnico razumeti, nato razširiti pogled</h3>
+          <p>BD zahteva poglobljeno analizo datoteke <code>data_endian</code>. Ena datoteka postane dovolj majhen predmet, da je mogoče podrobno razumeti posamezne strukture in ostanek. Nato sledi njegovo vprašanje o širitvi prek ELF. Razvoj preide v več družin formatov, različne prediktorje in ločene korpuse.</p>
+          <p>AI sodelavci prispevajo konkretne mehanizme in njihove izvedbe. Workova Pythonova raziskava pripravi meritve in vektorje; Homeova veja jih prenaša v Rust in WebAssembly. Človekov poseg spreminja strategijo in obseg, izvedbe pa razkrivajo, kje ta smer deluje.</p>
+
+          <h3>Izpeljane strukture tudi drugje</h3>
+          <p>Pri Concorde posnetkih se odpre možnost ponovnega izračuna shranjenih dolžin povezav iz koordinat. Zvočne poti FLAC/WAV in pilot regeneracije iz začetnega vhoda postavljajo sorodno vprašanje: katera informacija je že določena z drugim delom opisa?</p>
+          <p>Javna stran z rezultati te domene obravnava ločeno. Italijanski Concorde posnetek na primer poroča o 74 eksaktnih obnovah in 8,29 % manjšem paketu od navedene primerjave s 7-Zip Ultra. Manjši vzorci imajo drugačne izide. Ta raznolikost je razlog za izbiro po podatkih in po celotnem strošku. <a class="source-link" href="#vir-rezultati" aria-label="Vir: javne primerjave Concorde in drugih domen">[8]</a></p>
+        </section>
+
+        <section class="chapter" id="semena" aria-labelledby="h-semena">
+          <p class="chapter-label">06 / Prispevki, ki se nadaljujejo</p>
+          <h2 id="h-semena">Številna semena. Različni tehnični učinki.</h2>
+          <p class="lead">BD-jeve vloge ni mogoče ustrezno opisati samo z začetnim vprašanjem ali z organizacijo izvajalcev. Poznejši viri dokumentirajo nove, vsebinsko različne smeri. To je izbor družin prispevkov, ne končni popis njegovih idej.</p>
+          <p>Njihova raznolikost postane jasna, ko pogledamo, kaj vsaka spremeni: čas zajema informacije, tok podatkov, začetno stanje modela, vrstni red, predmet izbire ali način dostave. Nekatere smeri imajo konkretne preizkuse, druge so arhitekturni predlogi. Status posamezne izvedbe mora ostati viden. <a class="source-link" href="#vir-semena" aria-label="Vir: nadaljnje BD-jeve raziskovalne smeri">[5]</a></p>
+
+          <div class="seed">
+            <p class="micro">Spremeni čas in mesto zajema</p>
+            <h3>Recept ohraniti ob nastanku podatkov</h3>
+            <span class="status">Capture at Birth · arhitekturna smer</span>
+            <p>Končna datoteka pogosto skriva postopek, po katerem je nastala. Predlog <em>8zC-plugin</em> oziroma <em>8zC-birth</em> poskuša formule, nastavitve, semena in potrebni ostanek zajeti že med ustvarjanjem podatkov. Obnova postane deterministično ponovno izvajanje.</p>
+            <p>To odpre drugačen problem od naknadnega iskanja vzorcev. Hkrati zahteva natančno določitev različice generatorja, nedeterminističnih vhodov in okolja za obnovo. Pregledani načrt ne dokazuje že dokončanega splošnega vtičnika.</p>
+          </div>
+          <div class="seed">
+            <p class="micro">Spremeni tok, ki ga vidi kompresor</p>
+            <h3>Reverzibilni vbrizgi</h3>
+            <span class="status">Tokovni vbrizgi · raziskovalni kandidati</span>
+            <p>Znane strukture, poravnave ali sidra se pred stiskanjem dodajo na izbrana mesta. Njihov namen je pomagati napovedovanju ali iskanju ujemanj določenega kompresorja. Pri obnovi jih je treba natančno odstraniti.</p>
+            <p>Daljši vhod lahko v posamezni predstavitvi vodi do krajšega stisnjenega zapisa, vendar se to mora izmeriti. Plačati je treba tudi opis vbrizga in vse, kar potrebuje dekodirnik. Sama zanimivost mehanizma ni dokaz neto koristi.</p>
+          </div>
+          <div class="seed">
+            <p class="micro">Spremeni naslednji poskus</p>
+            <h3>Iterativni slovarji in priprava modela</h3>
+            <span class="status">P4 in P5 · različni raziskovalni smeri</span>
+            <p>Pri P4 stiskanje pokaže drage predele. Njihova analiza usmeri naslednji slovar ali vbrizg, nato se celoten rezultat ponovno izmeri. Poskus tako postane informacija za naslednji poskus.</p>
+            <p>P5 odpira drugo vprašanje: ali lahko začetno stanje modela pripravimo z domenskim priorjem ali ponovljivo ogrevalno pripravo? Tudi dekodirnik mora poznati ali ustvariti enako pripravo. Začetno stanje je del zasnove in obračuna.</p>
+          </div>
+          <div class="seed">
+            <p class="micro">Spremeni bližino podatkov</p>
+            <h3>Urejanje datotek in notranjih sekcij</h3>
+            <span class="status">O1–O3 · most med TSP in kompresijo</span>
+            <p>Če podobne vsebine postavimo skupaj, jih kompresor lahko vidi v ugodnejšem zaporedju. Predlog poveže podobnost podatkov in iskanje vrstnega reda, tudi z metodami 8zTSP. Zgodba se ne ustavi pri celih datotekah: podobne notranje sekcije so lahko ločene z velikimi deli druge vsebine.</p>
+            <p>Pri obnovi je treba vsak kos vrniti na pravo mesto. Meje, dolžine in permutacija zato sodijo v celotni strošek. Prednost je odvisna tudi od okna in obnašanja izbranega kompresorja.</p>
+          </div>
+          <div class="seed">
+            <p class="micro">Spremeni raziskovalni prostor</p>
+            <h3>Predpriprava, nove predstavitve in stare arene</h3>
+            <span class="status">Predlogi za širšo raziskovalno areno</span>
+            <p>Usmeritev <code>prep-for</code> predlaga pripravo za izbrani kodek — PAQ, 7z, cmix ali ZIP. Bin→DNA odpira drug nabor modelov. Kvantno navdihnjeni q1–q3 predlagajo klasične postopke mešanja, iskanja in tenzorske predstavitve. Pi-Hunter in Math-Hunter dobita mesto v širši areni skupaj s svojimi prejšnjimi rezultati.</p>
+            <p>Pri vsakem kandidatu je treba določiti dejanski algoritem. Ime, analogija ali vključitev v načrt ne dokazuje splošne prednosti. Vrednost raziskovalne smeri je tudi v tem, da pripelje do natančnega, izvedljivega vprašanja.</p>
+          </div>
+          <div class="seed">
+            <p class="micro">Spremeni prehod od raziskave do uporabe</p>
+            <h3>Arena, skupno jedro in preprosta obnova</h3>
+            <span class="status">8zC-exp · Rust · Super ZIP</span>
+            <p>BD-jeva arhitekturna smer loči raziskovalni <em>8zC-exp</em>, kjer ostanejo raznoliki kandidati, od glavnega 8zC, kamor napredujejo preverjene koristne rešitve. Skupno jedro Rust naj ohrani isti format in obnovo na Windows, Linuxu in v brskalniku.</p>
+            <p>Super ZIP in univerzalni dekodirnik odpreta še uporabniško vprašanje: kako nekdo prejme arhiv in ga preprosto obnovi? Predlog brezplačne obnove ter poslovnega modela kodiranja je del produktne razprave. Končni pogoji in dokončana izvedba potrebujejo svoja dokazila.</p>
+          </div>
+          <h3>Prispevek in uspešnost sta povezani, različni stvari</h3>
+          <p>Semena imajo izvor tudi takrat, ko prva izvedba ne zmaga. Raziskovalni prispevek je lahko novo vprašanje, sprememba cilja ali ugovor, zaradi katerega je meritev sploh poštena. Njegovo vrednost nato določajo razlaga, poskusi in uporabno znanje, ki ga naslednji krog ohrani.</p>
+          <p>Odstotka človeških in AI zaslug ni mogoče izračunati iz števila vrstic kode ali sporočil. En poseg lahko spremeni velik del izvedbe, veliko izvedbe pa lahko razkrije šibkost ene predpostavke. Boljša zgodovina sledi povezavam med konkretnimi prispevki.</p>
+        </section>
+
+        <section class="chapter" id="laboratorij" aria-labelledby="h-laboratorij">
+          <p class="chapter-label">07 / Druga razvojna zgodba</p>
+          <h2 id="h-laboratorij">Kompresor se razvija. Razvija se tudi način sodelovanja.</h2>
+          <p class="lead">Del zgodovine 8zC je delo, ki običajno ostane zunaj tehničnih poročil: kdo poveže seje, prenese ugovor, pripravi pogoje za poskus in ohrani znanje po koncu pogovora.</p>
+          <h3>Ko je človek tudi prenosnik konteksta</h3>
+          <p>BD opisuje zgodnejše delo v spletnih brskalnikih: vprašanje je prinesel drugemu modelu, primerjal odzive, prenesel nasprotni argument in shranil uporabni rezultat. Skripte je lokalno zaganjal, vračal izpise in ob menjavi seje pripravljal predaje.</p>
+          <p>Takšno delo ima administrativno in raziskovalno plast. Kopiranje besedila je prenos. Izbira, kateri ugovor odnesti drugam in kako preoblikovati vprašanje, pa spreminja raziskavo. Poznejša avtomatizacija prevzame del prenosa; izvor vsebinskih odločitev s tem ostane pomemben. <a class="source-link" href="#vir-laboratorij" aria-label="Vir: razvoj načina sodelovanja">[9]</a></p>
+
+          <h3>Trajne seje dobijo skupno delovno okolje</h3>
+          <p>Predaja z 11. novembra dokumentira BD-jevo naročilo dveh samostojnih trajnih projektnih sej. Razdeli delo med izvedbo in neodvisni pregled ter opiše sodelovanje prek delovnih artefaktov. Cilji, zamrznitev kandidata, merilni protokol in omejitve virov postanejo del dogovorjenega okvira.</p>
+          <p>Tim/GPT in drugi sodelavci prispevajo k izvedbenim ter merilnim verigam, produktni razpravi in kontinuiteti. AI lahko neposredno prebere paket, sestavi meritev, spremlja tek in zapiše rezultat za naslednjega sodelavca. Človeku ni treba prenašati vsake vmesne datoteke.</p>
+          <p>Ta premik ustvarja prostor za novo človeško raziskovalno delo: katero področje povezati, katero predpostavko napasti, kaj razumeti podrobneje in kaj je za uporabo res pomembno.</p>
+          <div class="table-scroll" role="region" tabindex="0" aria-label="Razvoj načina dela v laboratoriju">
+            <table class="wide-table">
+              <caption>Razvoj je postopen; datumi vseh prehodov niso v celoti rekonstruirani.</caption>
+              <thead><tr><th scope="col">Način dela</th><th scope="col">Kaj povezuje BD</th><th scope="col">Kaj prevzamejo sodelavci in orodja</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Spletni pogovori</th><td>Vprašanja, kodo, izpise, ugovore in nadaljevanje med sejami.</td><td>Predloge in analizo znotraj posameznega pogovora.</td></tr>
+                <tr><th scope="row">Trajnejše projektne seje</th><td>Cilje, nove vsebinske posege in odločitve ob pomembnih odcepih.</td><td>Branje artefaktov, izvedbo meritev, zapise in strukturirane predaje.</td></tr>
+                <tr><th scope="row">Povezana 8W in 8H</th><td>Širši mandat, raziskovalna merila, nove smeri in nadzor obsega.</td><td>Zaporedne kroge specifikacije, Pythonove izvedbe, pregleda, prenosa v Rust/WASM in povratne analize.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-hint">Tabelo lahko vodoravno pomaknete.</p>
+
+          <h3>Dva gostitelja in dve komplementarni izvedbi</h3>
+          <p>Predaje 23. in 24. novembra dokumentirajo razdelitev med 8W na Windows in 8H na Linuxu. 8W hitro razvija Pythonove transformacije, izdela fizične arhive, preveri obnovo in pripravi testne vektorje. 8H prispeva analizo, pregled, prenos v Rust in WebAssembly ter specifikacijo za naslednji poskus. Oblačni GEM2 dodatno pripravi sinteze in nove gradnike.</p>
+          <p>To je povezana razvojna zanka. Koda se sreča z meritvijo; meritev z ločenim dekodiranjem; vektorji z drugo izvedbo; preostali vzorci z novim vprašanjem. V eni noči se lahko izvede več korakov, ki bi prej zahtevali zaporedno ročno prenašanje.</p>
+          <p>BD ostaja prisoten pri novih vprašanjih, prioritetah, ugovorih in širitvah. Izziv poglobljene analize <code>data_endian</code> in pobuda za več formatov sta konkretna primera vpliva na nadaljnji razvoj.</p>
+
+          <h3>Lokalni raziskovalni skavt razširi zbirko predlogov</h3>
+          <p>Poznejša dopolnitev zgodbe laboratorija opiše še lokalni model in raziskovalnega koordinatorja, ki zbirata ter primerjata predloge več spletnih modelov. Zbirka Gemma vključuje prispevke, pripisane med drugim DeepSeeku in Groku, ter širši nabor kandidatov za analizo bajtov in nove transformacije.</p>
+          <p>Ta veja lahko razširi pogled in pripravi material za naslednjo areno. Predlog pa dobi tehnično težo šele, ko ga izvajalec prevede v konkreten mehanizem in izmeri. Vključitev v zbirko, število soglasnih modelov ali obljubljeni prihranek ne nadomestijo preizkusa. Nove predloge zato ločujemo od zamrznjenih rezultatov v8. <a class="source-link" href="#vir-laboratorij" aria-label="Vir: zbirka modelnih predlogov in razvoj laboratorija">[9]</a></p>
+
+          <h3>Kaj pomeni samostojnost takšnega sistema</h3>
+          <p>Samostojnost je tu sposobnost opraviti več razvojnih korakov zapored znotraj določene naloge: pripraviti spremembo, jo izmeriti, predati, prenesti v drugo izvedbo, pregledati in predlagati naslednji poskus. AI pri tem lahko prispeva ustvarjalne rešitve, ne zgolj izvede dobesedno navodilo.</p>
+          <p>Nastanek sistema ima svojo zgodovino. BD je zasnoval in povezal raziskovalno okolje, naročil delo ter ga poganjal z idejami. AI sodelavci so soustvarjali izvedbo in izboljšave. Večja samostojnost izvajanja je dosežek tega skupnega razvoja.</p>
+          <div class="principle"><p class="micro">Kontinuiteta sodelovanja</p><p>Avtomatizacija zmanjša potrebo po človeku kot kurirju. Vsebinsko sodelovanje se nadaljuje pri vprašanjih, presoji in novih smereh.</p></div>
+          <p>Drugi jezik in dekodirnik sta koristni preverbi. Če Python in Rust iz istega formata obnovita enake bajte, je to močnejše od ponovitve iste funkcije v istem procesu. Obe izvedbi pa lahko podedujeta isto napačno predpostavko. Zato ostajajo potrebni negativni primeri, neveljavni vhodi in primerjalni poskusi.</p>
+        </section>
+
+        <section class="chapter" id="sodelavci" aria-labelledby="h-sodelavci">
+          <p class="chapter-label">08 / Avtorstvo, ki ohrani podrobnosti</p>
+          <h2 id="h-sodelavci">Skupni podpis. Konkretni prispevki.</h2>
+          <p class="lead">Podpis BD × AI Lab pove, da je rezultat skupen. Natančna zgodovina pokaže, kako je nastal: kdo je odprl vprašanje, dodal mehanizem, našel napako, napisal kodo in izvedel preverjanje.</p>
+          <p>Izjava, da je AI samo napisal kodo, bi izgubila lastne zamisli in ugovore sodelavcev. Izjava, da je BD samo dal prvo idejo, bi izgubila njegove nadaljnje posege. Posamezne vloge se prekrivajo in spreminjajo med razvojem.</p>
+          <div class="table-scroll" role="region" tabindex="0" aria-label="Izbrani dokumentirani prispevki BD in sodelavcev AI">
+            <table class="wide-table">
+              <caption>Izbor dokumentiranih prispevkov. Imena sej označujejo zgodovinsko delo, ne nespremenljive vloge za ves projekt.</caption>
+              <thead><tr><th scope="col">Sodelavec ali veja</th><th scope="col">Dokumentirani prispevek</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Bojan Dobrečevič · BD</th><td>Izvorna in nadaljnja vprašanja, medpodročni mostovi, tehnični ugovori, raziskovalna merila, produktne smeri in arhitektura laboratorija.</td></tr>
+                <tr><th scope="row">Gemini pri zgodnjem DCC</th><td>Izvedljivi prikaz sklopljenih oscilatorjev in povratnega prilagajanja na BD-jevo pobudo.</td></tr>
+                <tr><th scope="row">C1 / Claude pri TEP</th><td>Predlog, da najboljše ture povratno izboljšajo piramido, in zapis nadaljnje izmenjave z BD.</td></tr>
+                <tr><th scope="row">Builder C</th><td>Utežena afiniteta po BD-jevem ugovoru glede trdo nastavljenega praga pri TEP.</td></tr>
+                <tr><th scope="row">8zC-C</th><td>Tehnična zasnova P2-C in povezava regeneracije z verjetnostno kompresijo ostanka.</td></tr>
+                <tr><th scope="row">8zC-G</th><td>Protiprimer, neodvisni pregled, predregistracija in merilni protokol. Predaja 11. novembra to oznako poveže z GPT 6.1 Sol.</td></tr>
+                <tr><th scope="row">8zC-HP1 / Tim-GPT v pripadajočih zapisih</th><td>Kodirna in merilna veriga, pregled dokazil, kontinuiteta ter poznejša produktna razprava z BD.</td></tr>
+                <tr><th scope="row">8W / Work</th><td>Pythonovo raziskovanje, izvedba transformacij, fizični arhivi, meritve, testni vektorji in predaje.</td></tr>
+                <tr><th scope="row">8H / Home</th><td>Analiza struktur in ostanka, pregled, Rust/WASM prenos, navzkrižno preverjanje ter novi predlogi.</td></tr>
+                <tr><th scope="row">GEM2</th><td>Sinteze napredka ter donorske funkcije in vektorji za naslednjo različico.</td></tr>
+                <tr><th scope="row">Lokalni model in drugi spletni modeli</th><td>Zbiranje ter širjenje kandidatnih mehanizmov, ki lahko vstopijo v empirično areno.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-hint">Tabelo lahko vodoravno pomaknete.</p>
+          <p>Podrobnejša predaja ima pri atribuciji prednost pred širokim povzetkom. Tako začetni TEP ostane pripisan C1, BD-jev ugovor pa BD. Podobno oznake 8zC-G iz novembrske predaje ne smemo avtomatično zamenjati za Gemini zgolj zato, ker se ime začne s črko G. <a class="source-link" href="#vir-tep" aria-label="Vir: natančna atribucija TEP">[3]</a> <a class="source-link" href="#vir-p2c" aria-label="Vir: natančne vloge pri P2-C">[7]</a></p>
+          <p>Hash revizije določi konkretne bajte. Ime avtorja commita samo zase ne dokazuje, kdo je prvotno izrekel zamisel ali kdaj je nastala vsaka vrstica. Za to so pomembne tudi predaje, izvorni zapisi in sled sprememb.</p>
+          <p>Avtorstva ni treba spremeniti v lestvico zaslug. Pomembno je ohraniti razliko med semenom, konceptualnim prenosom, arhitekturno odločitvijo, algoritemskim predlogom, izvedbo, protiprimerom in empiričnim preverjanjem. En sodelavec lahko prispeva na več teh ravneh.</p>
+        </section>
+
+        <section class="chapter" id="v8" aria-labelledby="h-v8">
+          <p class="chapter-label">09 / Stanje 24. novembra 2026</p>
+          <h2 id="h-v8">v8: širši kodek, natančno omejene primerjave.</h2>
+          <p class="lead">Razvoj od v4 do v8 razširi 8zC prek specializiranega ELF pristopa v šest družin formatov. Pythonova raziskovalna veja in objavljena Rust/WASM veja imata povezano zgodovino ter različna merilna okolja.</p>
+          <div class="release-banner">
+            <div><p class="release-num">v8</p><small>Cycle 13 R5 · z8c_core 0.8.0</small></div>
+            <a class="button-link" href="/8zC/">Odpri spletni kodek <span aria-hidden="true">↗</span></a>
+          </div>
+          <p>Javna veja ob tej posodobitvi uporablja različico v8. Prejšnja v7 ostaja pomemben zgodovinski mejnik in zamrznjena primerjalna osnova. Trenutno aplikacijo ter njene različice je mogoče preveriti na strani kodeka in v javnem repozitoriju. <a class="source-link" href="#vir-koda" aria-label="Vir: javna veja in programski artefakti v8">[10]</a></p>
+          <ul class="family-list" aria-label="Šest družin formatov"><li>ELF64</li><li>PE / COFF</li><li>WebAssembly</li><li>CSV / TSV / JSONL</li><li>WAV / BMP / PPM</li><li>Auto-DCC</li></ul>
+          <p>Mehanizmi izkoriščajo različne strukture: strojne ukaze in izpeljane tabele, lokalne indekse WebAssembly, stolpce in ponavljanje v tabelah, predikcijo zvočnih vzorcev ter slikovnih kanalov. Auto-DCC dodaja splošnejše delta in transpozicijske poti. Šest družin pomeni širši razpon izvedbe, ne popolne pokritosti vseh možnih datotek v njih.</p>
+
+          <h3>47 korpusnih vhodov, dve arhivski poti</h3>
+          <p>Zamrznjena dostava 8W za v8 poroča o <strong>94 uspešnih izoliranih obnovitvah</strong>: 47 korpusnih vhodov, vsak obdelan prek ZIP in 7z. Ti izidi pripadajo določenim vhodom, različici transformacij, minimalnemu dekodirniku in navedenima kodekoma. <a class="source-link" href="#vir-rezultati" aria-label="Vir: kohorte in rezultati v8">[8]</a></p>
+          <div class="table-scroll" role="region" tabindex="0" aria-label="Rezultati v8 in razlike do v7 po štirih kohortah">
+            <table class="numeric-table">
+              <caption>Fizični arhivi raziskovalne dostave 8W. Razlika je v8 − v7; negativna pomeni manjši zapis. Skupna dodatna podpora za obnovo tukaj še ni prišteta.</caption>
+              <thead><tr><th scope="col">Kohorta</th><th scope="col">ZIP v8</th><th scope="col">Δ v7</th><th scope="col">7z v8</th><th scope="col">Δ v7</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">ELF Dev5</th><td>2.687.602 B</td><td>−15.664 B</td><td>2.183.412 B</td><td>−1.910 B</td></tr>
+                <tr><th scope="row">ELF Holdout12</th><td>2.500.443 B</td><td>−3.549 B</td><td>2.096.742 B</td><td class="loss">+4.831 B</td></tr>
+                <tr><th scope="row">Multi Dev15</th><td>4.837.124 B</td><td>−38.223 B</td><td>4.188.451 B</td><td>−35.450 B</td></tr>
+                <tr><th scope="row">Multi Holdout15</th><td>2.874.035 B</td><td>−20.328 B</td><td>2.483.625 B</td><td>−23.438 B</td></tr>
+              </tbody>
+              <tfoot><tr><th scope="row">Skupaj</th><td>12.899.204 B</td><td>−77.764 B</td><td>10.952.230 B</td><td>−55.967 B</td></tr></tfoot>
+            </table>
+          </div>
+          <p class="table-hint">Tabelo lahko vodoravno pomaknete.</p>
+          <p>Skupni rezultat se izboljša, vendar se 7z vsota za ELF Holdout12 poveča za 4.831 bajtov. Nova generacija torej ne zmaga pri vsakem razredu in kodeku. Izbirnik potrebuje neposredno pot ter prejšnje kandidate, kadar so na določenem vhodu boljši.</p>
+          <p>Primerjava v8 uporablja navedene zamrznjene številke v7. To ni trditev o sveži ponovni meritvi vsakega starejšega izhodišča v istem zagonu. Prav tako brskalniški ZIP in zunanji 7-Zip ne uporabljata nujno enakega kodiranja ali ovojnice. Žive meritve sodijo k svojemu živemu izhodišču; referenčne tabele k svojemu merilnemu okolju.</p>
+
+          <h3>Osem spletnih vzorcev ne pomeni osmih novih korpusov</h3>
+          <p>Aplikacija ponuja osem vzorčnih vhodov. Dodatnih 14 arhivov v poročilu 8W predstavlja sedem ne-ELF vzorcev po dveh poteh; osmi vzorec ELF je že v osnovni kohorti. Štirje ne-ELF vzorci — WASM, CSV, JSONL in BMP — prav tako vsebinsko ponovijo korpusne vhode.</p>
+          <p>Oba nabora skupaj zato predstavljata 50 različnih vhodnih vsebin po SHA-256. Število izvedenih obnov in število različnih podatkovnih vhodov odgovarjata na različni vprašanji. Isti vzorec, preizkušen v več okoljih, je uporaben za združljivost, ne poveča pa samodejno širine podatkov.</p>
+
+          <h3>Celotna dostava vključuje obnovo</h3>
+          <p>V8 poročilo navaja 9.960 bajtov minimalnega stisnjenega dekodirnika. Za poti, ki potrebujejo tudi osnovo P2-C, se prišteje 26.248 bajtov: skupaj 36.208 bajtov dodatne podpore pri prvi dostavi. To je velikost konkretnega Pythonovega paketa za obnovo, ne velikost spletnega WASM modula.</p>
+          <div class="equation"><p class="micro">Za izbrani scenarij dostave</p><p>Celotni zapis = stisnjeni ostanek + recepti in glave + vse dodatne odvisnosti, ki jih prejemnik še nima.</p></div>
+          <p>Če je dekodirnik že nameščen, je račun drugačen kot pri prvi dostavi. En skupni dekoder se pri skupni zbirki šteje enkrat. Pri posameznih neodvisnih prejemnikih pa je treba določiti, kaj vsak od njih dejansko prejme.</p>
+
+          <h3>Prihranek, čas in pomnilnik</h3>
+          <p>BD-jeva merila vključujejo tudi uporabnost. Primerjalna matrika na <code>data_endian</code> pokaže, da lahko priprava podatkov premakne ugodno razmerje med velikostjo in časom proti manj zahtevni nastavitvi kodeka. Ločeni tek s PAQ −10LE na 240 ELF poroča o 404.240 bajtih neto prihranka po referencah, glavah in enem dekoderju. To je druga primerjava od prej navedene poti PAQ −7.</p>
+          <p>Meritve časa stiskanja že pripravljenega ostanka ne vključujejo samodejno časa predobdelave. Iz časa in pomnilnika tudi ni mogoče neposredno izračunati prihranka električne energije. Za to je potrebna meritev moči oziroma energije celotne verige. <a class="source-link" href="#vir-rezultati" aria-label="Vir: primerjalna matrika kodekov in omejitve meritev">[8]</a></p>
+          <div class="note"><p>Velik prihranek na periodični telemetriji, regularni sintetični sliki ali generiranem številskem zaporedju pokaže, da model izkoristi tisto strukturo. Ne napoveduje enakega odstotka za poljubno fotografijo, dnevnik ali že stisnjen tok.</p></div>
+        </section>
+
+        <section class="chapter" id="dokazi" aria-labelledby="h-dokazi">
+          <p class="chapter-label">10 / Dokazna disciplina</p>
+          <h2 id="h-dokazi">Dobra zgodba o napredku ohrani tudi ugovor.</h2>
+          <p class="lead">Pri kompresiji lahko majhen zapis izgleda prepričljivo, dokler ne vprašamo, kaj manjka za obnovo. Pri zgodovini lahko prepričljiva pripoved izgleda popolno, dokler ne vprašamo, čigav prispevek je izpustila.</p>
+          <h3>Pravilnost, prihranek in izbira so ločene lastnosti</h3>
+          <p>Arhiv lahko natančno obnovi podatke in je vseeno večji od neposrednega zapisa. Izbirnik lahko med pravilnimi kandidati izbere napačnega. Poročilo lahko pravilno opiše en vzorec, njegov povzetek pa preveč posploši rezultat.</p>
+          <p>Javna gradiva vsebujejo takšne primere. Pilot Super-8zC obnovi vse štiri datoteke, vendar ostane najmanjša dobesedna arhivska pot. Pri FLAC R2 je pravilna obnova ločena od kakovosti izbirnika, ki na enem primeru spregleda možnost prihranka. Pri julijskem slovarju je korist za arhiv močnejša od dokaza o prenosu na druge zbirke. <a class="source-link" href="#vir-rezultati" aria-label="Vir: pilot regeneracije, FLAC in meje rezultatov">[8]</a></p>
+
+          <h3>Kaj šteje kot potrditev?</h3>
+          <div class="table-scroll" role="region" tabindex="0" aria-label="Različne vrste dokazil in njihove meje">
+            <table class="wide-table">
+              <caption>Vsaka raven podpira določeno vrsto trditve.</caption>
+              <thead><tr><th scope="col">Dokazilo</th><th scope="col">Kaj lahko pove</th><th scope="col">Kaj še potrebuje drugo preverjanje</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Zapis ideje</th><td>Izvor, vprašanje, predlagani mehanizem in avtorstvo.</td><td>Izvedljivost in dejanski učinek.</td></tr>
+                <tr><th scope="row">Enotski vektor</th><td>Obnašanje določene funkcije na točno določenem vhodu.</td><td>Splošno pravilnost, robne primere in celotni program.</td></tr>
+                <tr><th scope="row">Izolirana obnova</th><td>Da je konkretni arhiv mogoče obnoviti z navedenim dekodirnikom in odvisnostmi.</td><td>Širino korpusa, primerjalno prednost in vse neveljavne vhode.</td></tr>
+                <tr><th scope="row">Primerjalni tek</th><td>Rezultat določenih različic, nastavitev in podatkov po dogovorjenem računu.</td><td>Prenos na druge podatke in druga okolja.</td></tr>
+                <tr><th scope="row">Objavljena aplikacija</th><td>Dejansko dostopno različico in uporabniško pot.</td><td>Vse širše trditve iz raziskovalnih načrtov.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-hint">Tabelo lahko vodoravno pomaknete.</p>
+          <p>Različne seje lahko napišejo tri povzetke iste meritve. To še vedno ostane en izvorni rezultat. Neodvisnost zahteva ločen preizkus ali novo dokazilo, ne samo drugo besedilo.</p>
+
+          <h3>Razlike med viri ostanejo označene</h3>
+          <p>Natančno leto začetnega vprašanja ostaja razlika med retrospektivo in ohranjenim arhivom. Za TEP se uporabi podrobna atribucija, ki loči BD-jevo seme MSTD, C1-jev obrat in nadaljnji ugovor. Namenski protokol pojasni pomen RHP. Za različico programa pa imajo prednost njena koda, testni podatki in dejanska objava.</p>
+          <p>Hitro indeksiranje s premikom bitov ni dokaz linearnega reševanja optimalne TSP poti. Primerjalni rezultat proti eni nastavitvi cmix ne določi svetovno najboljšega kompresorja. Arhitekturna vizija o prihodnjih jedrih ne potrdi že dokončanih funkcij ali pravnih pogojev njihove uporabe.</p>
+          <p>Takšna natančnost ohrani vrednost dosežkov. BD-jevemu prispevku daje trdno podlago, AI prispevkom jasno sled, uporabniku pa možnost razumeti, kaj lahko od konkretne različice pričakuje.</p>
+        </section>
+
+        <section class="chapter" id="metoda" aria-labelledby="h-metoda">
+          <p class="chapter-label">11 / Prenos na druge ljudi</p>
+          <h2 id="h-metoda">Človek z dobro idejo potrebuje pot do preizkusa.</h2>
+          <p class="lead">Izkušnja BD × AI Lab ponuja vzorec za druge ljudi. Prenosljiva je metoda: zajeti idejo, zgraditi povezavo, izvesti poskus, ohraniti rezultat in nadaljevati.</p>
+          <p>To poglavje je predlog, izpeljan iz te zgodovine. Splošna platforma za vse uporabnike s tem še ni dokazana. Pri drugih ljudeh bi bilo treba preveriti njeno uporabnost, stroške, zanesljivost in vpliv na količino njihove administracije.</p>
+
+          <h3>Vstop je lahko preprosta opazka</h3>
+          <p>Človek ne potrebuje najprej popolne specifikacije ali poznavanja imen algoritmov. Začne lahko z opažanjem, primerom, skico ali ugovorom. AI pomaga določiti mehanizem, manjkajočo informacijo in primer, na katerem bi bilo idejo mogoče preveriti.</p>
+          <p>Izvorna poved ostane ob poznejši formalizaciji. Sicer lahko tehnično lepši prepis nadomesti človekovo zamisel, čez nekaj iteracij pa ostane napačen vtis, da se je vse začelo pri avtorju kode. Enaka skrb velja za nove predloge AI sodelavcev.</p>
+
+          <h3>Pet delov enega razvojnega kroga</h3>
+          <ol class="step-list">
+            <li><strong>Seme</strong><p>Zapiši vprašanje ali opažanje, njegov izvor in kontekst. Označi, kaj je podatek in kaj domneva.</p></li>
+            <li><strong>Most</strong><p>Poveži idejo z možnimi metodami in predstavitvami. Pojasni, kaj se prenaša med področji ter kje analogija preneha veljati.</p></li>
+            <li><strong>Preizkus</strong><p>Izberi najmanjši poskus, ki lahko razloči pomembne razlage. Vnaprej določi primerjavo, merilo ter sprejemljiv strošek.</p></li>
+            <li><strong>Rezultat</strong><p>Shrani dejansko izvedbo, vhod, parametre in izhod. Sklep omeji na tisto, kar je bilo preverjeno.</p></li>
+            <li><strong>Ohranjeno znanje</strong><p>Povej, kaj je potrjeno, kaj ovrženo in kaj ostaja odprto. Ohrani uporabni del ter naslednji izvedljivi korak.</p></li>
+          </ol>
+          <p>Človek lahko prispeva novo seme pri kateremkoli delu. Rezultat lahko spremeni cilj, ugovor lahko spremeni model, druga domena pa razkrije možnost, ki je prva razprava ni zajela.</p>
+
+          <h3>Najprej majhen laboratorij</h3>
+          <p>Za začetek zadostujejo človek, en AI sodelavec z ustreznimi orodji, urejeno delovno mesto in ponovljiv preizkus. Drugi izvajalec je smiseln, ko ima jasno drugo nalogo: iskati protiprimer, obnoviti artefakt v ločenem okolju ali prenesti format v drugo izvedbo.</p>
+          <p>Več modelov prinese tudi več usklajevanja. Majhna zanesljiva zanka je dobro izhodišče. Razširitev naj rešuje konkretno omejitev, na primer pomanjkanje drugega pogleda ali možnost vzporednega dela na ločenih delih.</p>
+
+          <h3>AI prevzame administracijo dokazil</h3>
+          <p>Uporabniku ne bi smelo biti treba izpolnjevati obrazca ob vsaki novi ideji. AI lahko iz pogovora pripravi kratek zapis: izvorno seme, spremembo, avtorja, najmočnejši ugovor, preizkus, rezultat in naslednji korak. Človek popravi bistvene nesporazume.</p>
+          <p>Artefakt, različica in hash povežejo sklep s konkretno izvedbo. Izvorna izjava poveže izvedbo z mislijo, zaradi katere je nastala. Kratek zapis neuspeha prepreči, da bi naslednja seja isto napačno predpostavko ponovno razglasila za odkritje.</p>
+          <p>Takšna sled varuje človeško in AI avtorstvo. Njena naloga je omogočiti nadaljevanje in preverjanje, ne ustvariti tekmovanja po številu zabeleženih idej.</p>
+
+          <h3>Samostojno delo ima dogovorjen obseg</h3>
+          <p>Pred daljšim ciklom človek določi namen, dovoljene vire, porabo in merila uspeha. Znotraj tega okvira lahko sistem sam bere predaje, izdela kandidat, ga preveri in pripravi naslednji poskus. Pomembna sprememba cilja ali obsega potrebuje novo presojo.</p>
+          <p>Predaja naj drugemu sodelavcu omogoči nadaljevanje brez človeka kot kurirja. Pri kompresiji so to vhodni hashi, format, dekodirnik, meritev celotne dostave in pričakovani obnovljeni bajti. V drugi domeni se spremeni vrsta dokaza.</p>
+          <p>Sočasno delo potrebuje jasno odgovornost za posamezen artefakt, pregled trenutnega stanja pred spremembo in ohranitev prejšnje različice. Hitrost je uporabna, kadar je mogoče razumeti tudi, kaj se je spremenilo in kako nadaljevati po prekinitvi.</p>
+
+          <h3>Razvrsti kandidate in ohrani specialiste</h3>
+          <p>Raziskovalna arena lahko obdrži metodo, ki deluje samo na enem razredu podatkov. Kandidat brez splošne prednosti je lahko uporaben gradnik, kontrola ali podlaga za drug most. Izid zapišemo skupaj s pogoji, pod katerimi velja.</p>
+          <p>Uporabniški program potrebuje manjši nabor zanesljivih poti. Ločitev med 8zC-exp in glavnim 8zC je zato prenosljiva arhitekturna ideja: raziskovanje ohrani širino, produkt pa jasnost in preverjeno obnašanje. <a class="source-link" href="#vir-semena" aria-label="Vir: ločitev raziskovalne arene in produkta">[5]</a></p>
+
+          <h3>Kako preveriti, ali metoda pomaga tudi drugim</h3>
+          <p>Primeren pilot bi vključil ljudi z različnimi predznanji. Vsak bi začel z lastnim vprašanjem in dobil enako minimalno podporo za formalizacijo, poskus in kontinuiteto. Merili bi čas do prvega preverljivega rezultata, strošek, ponovljivost, izgubljene ali napačno pripisane ideje ter količino človeške administracije.</p>
+          <p>Dober izid je lahko tudi zgodaj zavrnjena hipoteza, če človek razume razlog in lahko pridobljeno znanje uporabi. Smisel sodelovanja je povečati kakovost nadaljnjega raziskovanja in možnost, da nova ideja dobi pošten preizkus.</p>
+          <div class="closing"><p>Človek lahko ostane dejaven miselni sodelavec skozi ves razvoj. AI lahko prevzame velik del gradnje, preverjanja in kontinuitete — ter prispeva svoje nove ideje.</p></div>
+        </section>
+
+        <section class="chapter" id="casovnica" aria-labelledby="h-casovnica">
+          <p class="chapter-label">12 / Pogled skozi čas</p>
+          <h2 id="h-casovnica">Razvoj v več obdobjih.</h2>
+          <p>Časovnica združuje osebno retrospektivo, ohranjene tehnične zapise in poznejše predaje. Kjer datum ni enako trdno podprt, je to označeno.</p>
+          <ol class="chronology">
+            <li><span class="when">1995<br>RETROSPEKTIVA</span><div><h3>Osebno intelektualno ozadje</h3><p>BD pozneje na to obdobje naveže razmišljanje o zavesti, koherenci in kompleksnosti. Datiranje vseh poznejših formul v isto leto ni potrjeno.</p></div></li>
+            <li><span class="when">4. OKTOBER<br>2024 / 2025</span><div><h3>Matematični vir in izbira po predelih</h3><p>Origin prvo vprašanje umešča v 2024. Najstarejši tehnični dokument v pregledanem popisu nosi oktober 2025. Izvor in datum ohranjenega artefakta ostajata ločena podatka.</p></div></li>
+            <li><span class="when">OKTOBER–DECEMBER<br>2025</span><div><h3>Generatorji, kontrole in sprememba hipoteze</h3><p>Zgodnji poskusi omejijo razlago posebnosti π. BD usmeri pozornost k pravilu, preslikavi in geometriji procesa.</p></div></li>
+            <li><span class="when">MAREC<br>2026</span><div><h3>MSTD, TEP in raziskovalna arhitektura</h3><p>Večmerilno seme, C1-jev TEP, BD-jev nadaljnji ugovor in Builderjeva izvedba ohranijo svoje prispevke. RHP dobi izvorno arhitekturo, ki se pozneje dopolnjuje.</p></div></li>
+            <li><span class="when">JULIJ<br>2026</span><div><h3>8ZIP in 8ZIPLAB</h3><p>Arhiv postane predmet MDL izbire. Standardna in lastna pot ostaneta ločeni. Merjenje razkrije koristi deduplikacije, omejitve slovarjev in napake preverjevalnika.</p></div></li>
+            <li><span class="when">11.–23. NOVEMBER<br>2026</span><div><h3>Trajne seje, generatorji in P2-C</h3><p>BD ponovno odpre smer Compression with Math. Sodelavci zgradijo izvedbeno in merilno verigo; potrditveni P2-C tek zajame 240 ELF datotek.</p></div></li>
+            <li><span class="when">23.–24. NOVEMBER<br>2026</span><div><h3>Nova semena in večformatni kodek</h3><p>Poglobljeno razumevanje ene datoteke se razširi na šest družin. V razvojni zanki 8W–8H nastajajo Pythonove transformacije, vektorji in Rust/WASM izvedbe; v7 je zgodovinska primerjalna osnova.</p></div></li>
+            <li><span class="when">24. NOVEMBER<br>2026</span><div><h3>Cycle 13 R5, v8</h3><p>Zamrznjena Pythonova dostava poroča o štirih kohortah in izolirani obnovi. Javna veja uporablja z8c_core 0.8.0. Naslednji kandidati se presojajo ločeno od že objavljenih rezultatov.</p></div></li>
+          </ol>
+        </section>
+
+        <section class="chapter" id="viri" aria-labelledby="h-viri">
+          <p class="chapter-label">13 / Viri in odgovornost za pripoved</p>
+          <h2 id="h-viri">Zgodba je povezana z dokazili.</h2>
+          <p class="lead">Ta stran je GPT-jeva uredniška sinteza zapisov BD in različnih AI sodelavcev. Posamezni prispevki so pripisani po virih; drugim sodelavcem ne pripisuje soglasja s celotnim sedanjim besedilom.</p>
+          <p>Podlaga vključuje združeni zgodbi 8W in 8H o razvoju 8zC ter laboratorija, Tim/GPT-jevo kronologijo, namenski pregled atribucije, zapis C1 o TEP, RHP, julijske arhivske predaje in novembrska tehnična dokazila. Za aktualno javno različico sta uporabljena objavljena veja in repozitorij. <strong>Posodobitev: 24. november 2026.</strong></p>
+          <p>Spodaj so javne vstopne točke in opis uporabljenega projektnega gradiva. Viri iz zasebnega projektnega arhiva so označeni kot takšni; do njih ne vodijo povezave, ki bi od javnega bralca zahtevale dostop do zasebnih map.</p>
+          <ol class="sources">
+            <li id="vir-izvor"><strong>1 · Izvor in začetna vprašanja</strong><p>Javni Origin opisuje BD-jevo pot, začetni kompresijski vprašanji, medpodročne povezave ter MSTD in TEP. Namenski pregled atribucije iz novembra 2026 doda razčlenitev prispevkov in omejitve datiranja.</p><a href="/crp/Origin.html">Preberi The Origin — 8Z Research Program ↗</a></li>
+            <li id="vir-arhiv"><strong>2 · Zgodnji poskusi in domenske primerjave</strong><p>Pregledana projektna dokumenta: popis 8ZC z 11. novembra in primerjava predhodnih ter aktualnih vej z 18. novembra 2026. Vsebujejo navedene negativne izide PiX in primerjave Image, Audio ter FASTA. Številke na tej strani so povzete iz teh poročil; ne pomenijo nove izvedbe zgodovinskih testov.</p><a href="/crp/AI8_Reasoning.html">Raziskovalni okvir 8Z ↗</a></li>
+            <li id="vir-tep"><strong>3 · MSTD, TEP in BD-jev nadaljnji ugovor</strong><p>Uporabljen je namenski C1-jev zgodovinski zapis z 8. oktobra 2026, primerjan z Origin. Začetni TEP je pripisan C1/Claude; BD-jevo seme večmerilnega pogleda ter njegov poznejši ugovor sta ohranjena ločeno.</p><a href="/crp/Origin.html">Javna širša zgodovina MSTD in TEP ↗</a></li>
+            <li id="vir-metoda"><strong>4 · Resonance Hybrid Protocol</strong><p>RHP v2.8: BD-jeva izvorna arhitektura, razvoj z LLM sodelavci, nadaljnji pregledi in prehod od različnih pogledov k empiričnemu poskusu.</p><a href="/BD/BD_AIM3_RHP.html">Preberi protokol RHP ↗</a></li>
+            <li id="vir-semena"><strong>5 · Nadaljnja semena in arhitekturne smeri</strong><p>Tehnična matrika, združeni načrt manjkajočih plasti in BD–Tim/GPT produktna razprava z 23. novembra 2026. Javna matrika razlikuje že izvedene rešitve in raziskovalne predloge.</p><a href="/8zC-results/#architecture-layers">Deset plasti in raziskovalne smeri 8zC ↗</a></li>
+            <li id="vir-julij"><strong>6 · Julijska arhivska veja</strong><p>Pregledani paket kontinuitete 8ZIP z 7. julija vsebuje študiji z 6. julija in izrecno navedbo BD kot arhitekta ter nosilca koncepta. Uporabljene so tudi nadaljevalne predaje 18.–19. julija, pregled v0.2.3A/B ter končni neodvisni pregled 8ZIPLAB v0.2.2 z 19. julija. To so projektni arhivski viri.</p></li>
+            <li id="vir-p2c"><strong>7 · P2-C, protokol in vloge</strong><p>Predaja z 11. novembra ter namenski atribucijski pregled z 23. novembra 2026. Dokazni obseg PAQ −7 je 240 ELF datotek z obračunom referenc, glav in enega dodatnega dekoderskega paketa.</p><a href="/8zC-results/#origins">Javna razčlenitev izvora in P2-C prispevkov ↗</a></li>
+            <li id="vir-rezultati"><strong>8 · Javne tabele in zamrznjena v8 dostava</strong><p>Cycle 13 R5: štiri kohorte, zamrznjena primerjava z v7, izolirane obnove in spletni vzorci. Ista stran ločeno obravnava Concorde, FLAC, regeneracijo in matriko zunanjih kodekov.</p><a href="/8zC-results/">Celotni rezultati in meje primerjav ↗</a></li>
+            <li id="vir-laboratorij"><strong>9 · Razvoj BD × AI Lab</strong><p>Združeni zgodbi 8W in 8H, Tim/GPT-jeva kronologija ter dopolnitev laboratorijske zgodbe z 24. novembra 2026. Vključena je poznejša dopolnitev o lokalnem raziskovalnem skavtu in zbirki modelnih predlogov. Mejne tehnične trditve so ločene od preverjenih objavljenih rezultatov.</p><a href="/BD/">Bojan Dobrečevič in raziskovalno okolje ↗</a></li>
+            <li id="vir-koda"><strong>10 · Objavljena programska veja</strong><p>Javna veja Cycle 13 R5, Rust z8c_core 0.8.0 in WebAssembly. Za to posodobitev je referenčna revizija <code>e946504</code>; repozitorij ohrani zgodovino prejšnjih različic.</p><a href="https://github.com/BD-Chess/bd-chessdb/tree/e946504a8cc94281af8e308ac36916a483b9211f/public/8zC">Koda in artefakti referenčne objave ↗</a><br><a href="/8zC/">Trenutna spletna aplikacija ↗</a></li>
+          </ol>
+          <div class="source-meta"><h3>Kako brati to zgodbo</h3><p>Retrospektiva je označena kot retrospektiva. Predlog ostane predlog do konkretnega preizkusa. Meritev se nanaša na svojo različico, podatke in primerjalno osnovo. Če se širok povzetek razlikuje od natančne predaje ali tabele, ima za konkretno trditev prednost natančnejše dokazilo.</p><p>Stran ohrani pomembne rezultate in omejitve, javno uporabne atribucije ter zgodovino sodelovanja. Živi projekt se lahko po navedenem datumu spremeni.</p></div>
+          <div class="closing"><p>8zC raste skozi človekova in AI vprašanja, nove mehanizme, ugovore in preverjanje. Skupni rezultat postane razumljiv, ko ohranimo tudi pot, po kateri je nastal.</p></div>
+          <div class="hero-actions"><a class="button-link" href="/8zC/">Preizkusi kodek <span aria-hidden="true">↗</span></a><a href="/8zC-results/">Razišči merilne rezultate →</a></div>
+        </section>
+      </article>
+    </div>
+  </main>
+  <footer class="shell footer">
+    <div>BD × AI Lab · 8Z raziskave<br>Uredniška sinteza GPT · 24. november 2026</div>
+    <nav aria-label="Povezave v nogi"><a href="/">MDL×DCC</a><a href="/8zC/">Kodek</a><a href="/8zC-results/">Rezultati</a><a href="#story-title">Na začetek ↑</a></nav>
+  </footer>
+  <script>
+    (() => {
+      'use strict';
+      const root = document.documentElement;
+      const article = document.querySelector('.article');
+      const toc = document.getElementById('toc');
+      const tocLinks = Array.from(document.querySelectorAll('.toc-list a'));
+      const chapters = Array.from(document.querySelectorAll('.chapter'));
+      const progress = document.getElementById('reading-progress');
+      const themeButton = document.getElementById('theme-toggle');
+      const down = document.getElementById('font-down');
+      const up = document.getElementById('font-up');
+      const status = document.getElementById('reading-status');
+      const wide = window.matchMedia('(min-width: 1051px)');
+      const fontSizes = [0.96, 1.08, 1.2, 1.32, 1.44];
+      let fontIndex = 1;
+
+      function syncTheme() {
+        const light = root.dataset.theme === 'light';
+        themeButton.setAttribute('aria-pressed', String(light));
+        document.querySelector('meta[name="theme-color"]').content = light ? '#f4f2e9' : '#101d1d';
+      }
+      themeButton.addEventListener('click', () => {
+        const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+        root.dataset.theme = next;
+        try { localStorage.setItem('8zc-story-theme', next); } catch (_) {}
+        syncTheme();
+      });
+      syncTheme();
+
+      function setFont(index, announce = false) {
+        fontIndex = Math.max(0, Math.min(fontSizes.length - 1, index));
+        article.style.setProperty('--reading-size', fontSizes[fontIndex] + 'rem');
+        down.disabled = fontIndex === 0;
+        up.disabled = fontIndex === fontSizes.length - 1;
+        try { localStorage.setItem('8zc-story-font', String(fontIndex)); } catch (_) {}
+        if (announce) status.textContent = 'Velikost besedila: ' + Math.round(fontSizes[fontIndex] / 1.08 * 100) + ' odstotkov.';
+        scheduleUpdate();
+      }
+      try {
+        const saved = localStorage.getItem('8zc-story-font');
+        if (saved !== null && /^\d$/.test(saved)) fontIndex = Number(saved);
+      } catch (_) {}
+      down.addEventListener('click', () => setFont(fontIndex - 1, true));
+      up.addEventListener('click', () => setFont(fontIndex + 1, true));
+
+      function syncToc() { toc.open = wide.matches; }
+      syncToc();
+      if (wide.addEventListener) wide.addEventListener('change', syncToc);
+      tocLinks.forEach(link => link.addEventListener('click', () => {
+        if (!wide.matches) toc.open = false;
+      }));
+
+      let scheduled = false;
+      function updateReading() {
+        scheduled = false;
+        const articleTop = article.getBoundingClientRect().top + window.scrollY;
+        const articleEnd = articleTop + article.offsetHeight - window.innerHeight;
+        const percent = articleEnd <= articleTop ? 100 : (window.scrollY - articleTop) / (articleEnd - articleTop) * 100;
+        progress.value = Math.max(0, Math.min(100, percent));
+        let active = chapters[0].id;
+        for (const chapter of chapters) {
+          if (chapter.getBoundingClientRect().top <= 180) active = chapter.id;
+          else break;
+        }
+        for (const link of tocLinks) {
+          if (link.hash === '#' + active) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        }
+      }
+      function scheduleUpdate() {
+        if (!scheduled) { scheduled = true; window.requestAnimationFrame(updateReading); }
+      }
+      const words = article.textContent.trim().split(/\s+/u).length;
+      document.getElementById('reading-time').textContent = 'Približno ' + Math.ceil(words / 210) + ' min branja';
+      document.getElementById('reading-controls').hidden = false;
+      progress.hidden = false;
+      setFont(fontIndex);
+      window.addEventListener('scroll', scheduleUpdate, { passive:true });
+      window.addEventListener('resize', scheduleUpdate, { passive:true });
+      window.addEventListener('load', scheduleUpdate, { once:true });
+      scheduleUpdate();
+    })();
+  </script>
+</body>
+</html>
