@@ -117,14 +117,28 @@ footer span { margin-inline: 5px; }
 :root[data-theme="light"] .mark i { background: #cdf383; }
 :root[data-theme="light"] #status[data-error] { color: #983a26; }
 
-/* Keep the file controls comfortably sized; give every comparison table the viewport. */
-main { width:calc(100% - 40px); max-width:none; }
-main > .panel:not(.compare-section), main > #status { max-width:860px; }
-main > h1, main > .intro, main > .hint { max-width:860px; }
-.compare-section,.table-wrap { width:100%; max-width:none; min-width:0; }
-.cmp-table { width:100%; table-layout:auto; }
-.cmp-table thead th { white-space:normal; }
-.cmp-table th:first-child { white-space:normal; overflow-wrap:break-word; }
-@media(max-width:480px) { main { width:calc(100% - 24px); } }
-.mast,footer { width:calc(100% - 40px); max-width:none; }
-@media(max-width:480px) { .mast,footer { width:calc(100% - 24px); } }
+/* Center the original 860px workspace; only the comparison panel spans the viewport.
+   Explicit grid tracks avoid 100vw scrollbar overflow and keep mobile gutters. */
+main {
+  width: calc(100% - 40px);
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) min(100%, 860px) minmax(0, 1fr);
+}
+main > * { grid-column: 2; min-width: 0; }
+main > #modes { justify-self: start; max-width: 100%; }
+main > .compare-section { grid-column: 1 / -1; width: 100%; min-width: 0; }
+.compare-section > .output-top,
+.compare-section .live-box > :not(.table-wrap),
+.compare-section .matrix-head {
+  max-width: 802px;
+  margin-inline: auto;
+}
+.table-wrap { width: 100%; max-width: 100%; min-width: 0; }
+.cmp-table { width: 100%; table-layout: auto; }
+.cmp-table thead th { white-space: normal; }
+.cmp-table th:first-child, .cmp-table td:first-child { white-space: normal; overflow-wrap: break-word; }
+@media (max-width: 480px) {
+  main { width: calc(100% - 24px); }
+  #modes { flex-wrap: wrap; }
+}
