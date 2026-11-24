@@ -39,3 +39,44 @@ test('invalid catalogues fail safely and result counts are bounded', () => {
   assert.equal(search.search(items,'page',12).length,12);
   assert.deepEqual(search.search(items,'',12),[]);
 });
+
+test('Aktualno is the first Start category and moves the existing project shortcuts without duplicates', () => {
+  const html = fs.readFileSync('public/Start/index.html','utf8');
+  const groups = [...html.matchAll(/<details[^>]*data-category="([^"]+)"/g)].map(m=>m[1]);
+  assert.equal(groups[0], 'current');
+  assert.equal(groups[1], 'ai');
+  const current = html.match(/<details[^>]*data-category="current"[\s\S]*?<\/details>/)[0];
+  for (const route of ['/8zC-results/','/tsp/8ztsp/','/8zTSP/','/8zllm/','/8znas/']) {
+    assert.ok(current.includes('href="'+route+'"'), route);
+    assert.equal(html.split('href="'+route+'"').length, 2, route);
+  }
+  const contract = require('../public/Start/state.js');
+  assert.equal(contract.categories[0], 'current');
+  const prefs = {lang:'sl',theme:'dark',mode:'overview',linkGroup:'lab',newsGroup:'science',city:'Ljubljana',scale:100,calendarDate:'2026-11-24',calendarMonth:'2026-11',openPanels:Object.fromEntries(contract.panels.map(id=>[id,false])),openGroups:{ai:false,research:true,development:false,daily:false,travel:false,lab:false}};
+  const prior={version:1,preferences:prefs,links:{daily:[],lab:[],markets:[]},events:[],notes:'preserved',saved:[]};
+  let n=contract.normalize(prior);
+  assert.equal(n.preferences.openGroups.current,true);
+  assert.equal(n.preferences.openGroups.research,true);
+  assert.equal(n.notes,'preserved');
+  prefs.openGroups.current=false;
+  n=contract.normalize(prior);
+  assert.equal(n.preferences.openGroups.current,false);
+  prefs.openGroups.current='false';
+  assert.throws(()=>contract.normalize(prior),/invalidData/);
+});
+test('8zLLM and 8zNAS are public, cross-linked and discoverable at the lowercase routes', () => {
+  const index = JSON.parse(fs.readFileSync('public/site-search-index.json','utf8'));
+  const items = search.publicEntries(index,base);
+  const redirects=fs.readFileSync('public/_redirects','utf8');
+  for(const [name,slug,peer] of [['8zLLM','8zllm','8znas'],['8zNAS','8znas','8zllm']]){
+    const html=fs.readFileSync('public/'+name+'/index.html','utf8');
+    assert.ok(html.includes('href="/'+peer+'/"'));
+    assert.ok(html.includes('lang="sl"')&&html.includes('lang="en"'));
+    assert.ok(html.includes('https://www.mdlxdcc.org/'+slug+'/'));
+    assert.ok(html.includes('/shared/8z-research.css')&&html.includes('/shared/8z-research.js'));
+    assert.ok(redirects.includes('/'+slug+'/ /'+name+'/index.html 200!'));
+    assert.ok(search.search(items,name).some(item=>new URL(item.url).pathname.toLowerCase()==='/'+slug+'/'));
+    assert.ok(!/drive\.google\.com|onedrive\.live\.com/i.test(html),'no private source links');
+  }
+  assert.equal(index.total_pages,index.items.length);
+});

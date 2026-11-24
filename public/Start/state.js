@@ -5,7 +5,7 @@
   const groups = ['daily', 'lab', 'markets'];
   const panels = ['bs-links-panel', 'bs-agenda-panel', 'bs-news-panel', 'bs-weather-panel', 'bs-note-panel', 'bs-reading-panel', 'bs-more-panel', 'bs-data-panel', 'bs-plans-panel', 'bs-markets-panel', 'bs-live-news-panel'];
   const panelDefaults = { 'bs-plans-panel': true, 'bs-markets-panel': false, 'bs-live-news-panel': true };
-  const categories = ['ai', 'research', 'development', 'daily', 'travel', 'lab'];
+  const categories = ['current', 'ai', 'research', 'development', 'daily', 'travel', 'lab'];
   const fail = () => { throw new Error('invalidData'); };
   function date(value) {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -49,7 +49,7 @@
     if (p.openGroups !== undefined) {
       if (!p.openGroups || typeof p.openGroups !== 'object' || Array.isArray(p.openGroups)) fail();
       preferences.openGroups = {};
-      for (const id of categories) { if (typeof p.openGroups[id] !== 'boolean') fail(); preferences.openGroups[id] = p.openGroups[id]; }
+      for (const id of categories) { const value = id === 'current' && p.openGroups[id] === undefined ? true : p.openGroups[id]; if (typeof value !== 'boolean') fail(); preferences.openGroups[id] = value; }
     }
     const links = {};
     if (!input.links || typeof input.links !== 'object' || Array.isArray(input.links)) fail();
