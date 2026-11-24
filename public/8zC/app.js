@@ -1,10 +1,109 @@
 "use strict";
 
-const SAMPLE_ELF_URL = "/8zC/00_data_endian.elf";
-const SAMPLE_ELF_NAME = "00_data_endian.elf";
-const SAMPLE_ELF_SHA256 = "7a08d5a9e1e9b2b3556c866df883e58ddbf1879fd7859a5e33845f6560476bcc";
+const QUICK_SAMPLES = [
+  {
+    id: "00_data_endian",
+    url: "/8zC/00_data_endian.elf",
+    filename: "00_data_endian.elf",
+    badge: "ELF",
+    chip_sl: "ELF64 (80 KB)",
+    chip_en: "ELF64 (80 KB)",
+    sha256: "7a08d5a9e1e9b2b3556c866df883e58ddbf1879fd7859a5e33845f6560476bcc",
+    title_sl: "00_data_endian.elf (Linux ELF64 · Haskell)",
+    title_en: "00_data_endian.elf (Linux ELF64 · Haskell)",
+    raw_B: 80264,
+    zip:  { direct: 15976, best: 10484, pct: "-34,4 %", label: "Cycle12 R3 / v4" },
+    sz7z: { direct: 13555, best: 9525,  pct: "-29,7 %", label: "Cycle12 R3 / v4" },
+    paq:  { direct: 9001,  z8c: 6492,   pct: "-27,9 % (-3)" },
+    cmix: null,
+  },
+  {
+    id: "sample_pe64",
+    url: "/8zC/samples/sample_pe64_win32.dll",
+    filename: "sample_pe64_win32.dll",
+    badge: "DLL",
+    chip_sl: "Win64 DLL (235 KB)",
+    chip_en: "Win64 DLL (235 KB)",
+    sha256: "b03a3fc0014c8e7ceb3076e880af923db22fcf2a4327815d5ef7b51fc596df8f",
+    title_sl: "sample_pe64_win32.dll (Windows PE32+ x64)",
+    title_en: "sample_pe64_win32.dll (Windows PE32+ x64)",
+    raw_B: 234896,
+    zip:  { direct: 87017, best: 78765, pct: "-9,5 %", label: "Cycle13 v4 PE" },
+    sz7z: { direct: 77337, best: 70817, pct: "-8,4 %", label: "Cycle13 v4 PE" },
+  },
+  {
+    id: "sample_wasm",
+    url: "/8zC/samples/sample_module.wasm",
+    filename: "sample_module.wasm",
+    badge: "WASM",
+    chip_sl: "WASM (121 KB)",
+    chip_en: "WASM (121 KB)",
+    sha256: "b3b38d82ff4c4cdf9c8bb4490ebcd236d0966c41ce80688afed729979383ea6d",
+    title_sl: "sample_module.wasm (WebAssembly modul)",
+    title_en: "sample_module.wasm (WebAssembly module)",
+    raw_B: 120920,
+    zip:  { direct: 51714, best: 45563, pct: "-11,9 %", label: "Cycle13 v4 WASM" },
+    sz7z: { direct: 44536, best: 43000, pct: "-3,4 %",  label: "Cycle13 v4 WASM" },
+  },
+  {
+    id: "sample_csv",
+    url: "/8zC/samples/sample_telemetry.csv",
+    filename: "sample_telemetry.csv",
+    badge: "CSV",
+    chip_sl: "CSV (447 KB)",
+    chip_en: "CSV (447 KB)",
+    sha256: "c85e819abaa6d09227e81a9cba186578fde33cb548668340d33e4874d0475fbf",
+    title_sl: "sample_telemetry.csv (Tabelarični CSV)",
+    title_en: "sample_telemetry.csv (Tabular CSV)",
+    raw_B: 446980,
+    zip:  { direct: 49944, best: 12799, pct: "-74,4 %", label: "Cycle13 v4 Tabular" },
+    sz7z: { direct: 22942, best: 5553,  pct: "-75,8 %", label: "Cycle13 v4 Tabular" },
+  },
+  {
+    id: "sample_jsonl",
+    url: "/8zC/samples/sample_events.jsonl",
+    filename: "sample_events.jsonl",
+    badge: "JSONL",
+    chip_sl: "JSONL (610 KB)",
+    chip_en: "JSONL (610 KB)",
+    sha256: "0e81136425d74fa21d47612a2bf17fe34fb6900ce819e80d0a25bd4d6bd6bb85",
+    title_sl: "sample_events.jsonl (Strukturirani dnevniki JSONL)",
+    title_en: "sample_events.jsonl (Structured JSONL logs)",
+    raw_B: 610000,
+    zip:  { direct: 28016, best: 923,   pct: "-96,7 %", label: "Cycle13 v4 JSONL" },
+    sz7z: { direct: 7754,  best: 703,   pct: "-90,9 %", label: "Cycle13 v4 JSONL" },
+  },
+  {
+    id: "sample_wav",
+    url: "/8zC/samples/sample_stereo_pcm16.wav",
+    filename: "sample_stereo_pcm16.wav",
+    badge: "WAV",
+    chip_sl: "WAV PCM16 (32 KB)",
+    chip_en: "WAV PCM16 (32 KB)",
+    sha256: "34272b7c3e240f31802a9f54290bc752c5648d45e64bc7aeb857f2590e29344b",
+    title_sl: "sample_stereo_pcm16.wav (Stereo 16-bit PCM zvok)",
+    title_en: "sample_stereo_pcm16.wav (Stereo 16-bit PCM audio)",
+    raw_B: 32044,
+    zip:  { direct: 26932, best: 3306,  pct: "-87,7 %", label: "Cycle13 v4 WAV" },
+    sz7z: { direct: 21233, best: 3156,  pct: "-85,1 %", label: "Cycle13 v4 WAV" },
+  },
+  {
+    id: "sample_bmp",
+    url: "/8zC/samples/sample_image.bmp",
+    filename: "sample_image.bmp",
+    badge: "BMP",
+    chip_sl: "BMP 24-bit (590 KB)",
+    chip_en: "BMP 24-bit (590 KB)",
+    sha256: "e7ba9ed8f3e47113a3b68b004b208c1effc7743d13246f130d82d99eba78e9f5",
+    title_sl: "sample_image.bmp (24-bitna rastrska slika 512×384)",
+    title_en: "sample_image.bmp (24-bit raster BMP 512×384)",
+    raw_B: 589878,
+    zip:  { direct: 513897, best: 34530, pct: "-93,3 %", label: "Cycle13 v4 YCoCg+MED" },
+    sz7z: { direct: 271080, best: 21001, pct: "-92,3 %", label: "Cycle13 v4 YCoCg+MED" },
+  },
+];
 
-const BENCHMARK_SAMPLES = [
+const ELF_BENCHMARK_SAMPLES = [
   {
     id: "00_data_endian",
     filename: "00_data_endian.elf",
@@ -20,7 +119,7 @@ const BENCHMARK_SAMPLES = [
   {
     id: "02_calf_so",
     filename: "02_calf_so.elf",
-    sha256: "eb624fa72d5d1a6f86b2ca5f52b1c48ef8982e1294ce9ec20377050c9fa3a3a0",
+    sha256: "a931f96cf3904a6f88063b77483c5cbd95a35b8fd1e1547ae8056ccf05fd3244",
     title_sl: "02_calf_so.elf (C++ / GCC avdio vtičnik)",
     title_en: "02_calf_so.elf (C++ / GCC audio plugin)",
     raw_B: 1182672,
@@ -58,16 +157,18 @@ const BENCHMARK_SAMPLES = [
 const translations = {
   "Rezultati 8zC": "8zC results",
   "Kodek 8zC": "8zC codec",
-  "Stisnite datoteko ELF ali jo obnovite iz arhiva Carbon R2. Datoteka ostane v vašem brskalniku.": "Compress an ELF file or restore it from a Carbon R2 archive. Your file stays in your browser.",
+  "Stisnite datoteko (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV ali BMP/PPM) ali iz arhiva 8zC obnovite izvirnik. Vse teče lokalno v vašem brskalniku (Rust + WebAssembly).":
+    "Compress a file (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV or BMP/PPM) or restore the original from an 8zC archive. Everything runs locally in your browser (Rust + WebAssembly).",
   "Izberite postopek": "Choose an operation",
-  "Stisni ELF": "Compress ELF",
+  "Stisni datoteko": "Compress file",
   "Obnovi izvirnik": "Restore original",
-  "Vhodna datoteka ELF": "ELF input file",
-  "Vhodni arhiv Carbon R2": "Carbon R2 input archive",
-  "Vzorec ELF (80 KB)": "Sample ELF (80 KB)",
-  "Izberite datoteko ELF": "Choose an ELF file",
+  "Vhodna datoteka (5 družin formatov)": "Input file (5 format families)",
+  "Vhodni arhiv 8zC ZIP": "8zC ZIP input archive",
+  "1-klik vzorci:": "1-click samples:",
+  "Izberite poljubno datoteko": "Choose any file",
   "Izberite arhiv ZIP": "Choose a ZIP archive",
-  "ali jo povlecite sem (ali kliknite Vzorec ELF zgoraj)": "or drop it here (or click Sample ELF above)",
+  "ali jo povlecite sem (ali kliknite vzorec zgoraj: ELF, DLL, WASM, CSV, JSONL, WAV, BMP)":
+    "or drop it here (or click a sample chip above: ELF, DLL, WASM, CSV, JSONL, WAV, BMP)",
   "ali ga povlecite sem": "or drop it here",
   "1 datoteka · do 16 MiB": "1 file · up to 16 MiB",
   "1 arhiv · do 16 MiB + 1 KiB": "1 archive · up to 16 MiB + 1 KiB",
@@ -78,33 +179,41 @@ const translations = {
   "Obnovljena datoteka": "Restored file",
   "Arhiv 8zC ZIP": "8zC ZIP archive",
   "Shrani ZIP": "Save ZIP",
-  "Shrani ELF": "Save ELF",
+  "Shrani izvirnik": "Save original",
   "Licence knjižnic": "Library licenses",
   "Izberite samo eno datoteko.": "Choose one file.",
   "Datoteka je prazna.": "The file is empty.",
   "Datoteka presega dovoljeno velikost.": "The file exceeds the size limit.",
   "Postopek je preklican.": "Operation cancelled.",
   "Arhiv je pripravljen za shranjevanje.": "Your archive is ready to save.",
-  "Datoteka ELF je pripravljena za shranjevanje.": "Your ELF file is ready to save.",
+  "Izvirna datoteka je pripravljena za shranjevanje.": "Your restored file is ready to save.",
   "Stiskanje poteka …": "Compressing …",
   "Obnova poteka …": "Restoring …",
   "Primerjava kompresij v brskalniku poteka …": "Running browser compression comparison …",
-  "Nalagam vzorčno datoteko 00_data_endian.elf …": "Loading sample file 00_data_endian.elf …",
-  "Vzorčna datoteka 00_data_endian.elf ni dostopna.": "Sample file 00_data_endian.elf could not be loaded.",
-  "Opravila ni bilo mogoče dokončati. Preverite, ali so datoteke spletnega kodeka dostopne.": "The operation failed. Check that the codec files are available.",
-  "Brskalnik ni mogel zagnati opravila. Odprite aplikacijo prek lokalnega spletnega strežnika.": "The browser could not start the operation.",
+  "Opravila ni bilo mogoče dokončati. Preverite, ali so datoteke spletnega kodeka dostopne.":
+    "The operation failed. Check that the codec files are available.",
+  "Brskalnik ni mogel zagnati opravila. Odprite aplikacijo prek lokalnega spletnega strežnika.":
+    "The browser could not start the operation.",
   "Primerjava kompresij (Čisti kodek proti 8zC)": "Compression comparison (Raw codec vs. 8zC)",
-  "Živi preizkus v brskalniku (WebAssembly) in preverjena matrika 4 kodekov (ZIP, 7z, PAQ8PX, cmix v21) s 100 % bitno točno obnovo SHA-256.": "Live in-browser WebAssembly test and verified 4-codec benchmark matrix (ZIP, 7z, PAQ8PX, cmix v21) with 100% byte-exact SHA-256 restoration.",
+  "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 v4) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256.":
+    "Live multi-format browser benchmark (Rust + WebAssembly Cycle 13 v4) and verified reference matrices with 100% byte-exact SHA-256 restoration.",
   "Živi izid v vašem brskalniku": "Live result in your browser",
   "Kodek / stopnja": "Codec / stage",
-  "Surovi ELF": "Raw ELF",
+  "Surovo": "Raw",
   "Čisti kodek": "Direct codec",
   "8zC + kodek": "8zC + codec",
   "Prihranek": "Savings",
-  "Referenčna matrika 4 vzorčnih datotek ELF (.zip · .7z · .paq · .cmix)": "Reference matrix of 4 sample ELF binaries (.zip · .7z · .paq · .cmix)",
+  "Cycle 13 Multi-Format v4 · 6 novih formatov (PE64 · WASM · CSV · JSONL · WAV · BMP)":
+    "Cycle 13 Multi-Format v4 · 6 new formats (PE64 · WASM · CSV · JSONL · WAV · BMP)",
+  "Vzorec in družina formata": "Sample and format family",
+  "Čisti ZIP → 8zC v4 + ZIP": "Direct ZIP → 8zC v4 + ZIP",
+  "Čisti 7z → 8zC v4 + 7z": "Direct 7z → 8zC v4 + 7z",
+  "Živi preizkus": "Live test",
+  "Preizkusi v živo →": "Test live →",
+  "Cycle 12 R3 · Referenčna matrika 4 datotek ELF64 (.zip · .7z · .paq · .cmix)":
+    "Cycle 12 R3 · Reference matrix of 4 ELF64 binaries (.zip · .7z · .paq · .cmix)",
   "Zaženi 00_data_endian.elf v živo →": "Run 00_data_endian.elf live →",
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
-  "Surovo": "Raw",
   "Čisti ZIP → 8zC + ZIP": "Direct ZIP → 8zC + ZIP",
   "Čisti 7z → 8zC + 7z": "Direct 7z → 8zC + 7z",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
@@ -125,13 +234,13 @@ function fmtPct(savedBytes, baseBytes) {
   return (language === "en" ? pct : pct.replace(".", ",")) + " %";
 }
 
-const MAX_ELF_BYTES = 16 * 1024 * 1024;
+const MAX_INPUT_BYTES = 16 * 1024 * 1024;
 const modes = byId("modes");
 const fileInput = byId("file");
 const choose = byId("choose");
 const start = byId("start");
 const cancel = byId("cancel");
-const sampleBtn = byId("sample-btn");
+const sampleChips = byId("sample-chips");
 const compareBtn = byId("compare-btn");
 const runSampleLiveBtn = byId("run-sample-live");
 const statusLine = byId("status");
@@ -139,14 +248,78 @@ const download = byId("download");
 
 let mode = "encode";
 let selected = null;
+let activeSampleId = null;
 let worker = null;
 let objectUrl = null;
 let lastCompareData = null;
 
-function renderReferenceMatrix() {
+function inferBadge(name) {
+  if (!name) return "8zC";
+  const lower = name.toLowerCase();
+  if (lower.endsWith(".elf") || lower.endsWith(".so")) return "ELF";
+  if (lower.endsWith(".dll") || lower.endsWith(".exe")) return "PE64";
+  if (lower.endsWith(".wasm")) return "WASM";
+  if (lower.endsWith(".csv") || lower.endsWith(".tsv")) return "CSV";
+  if (lower.endsWith(".jsonl") || lower.endsWith(".ndjson")) return "JSON";
+  if (lower.endsWith(".wav")) return "WAV";
+  if (lower.endsWith(".bmp") || lower.endsWith(".ppm")) return "BMP";
+  if (lower.endsWith(".zip")) return "ZIP";
+  return "8zC";
+}
+
+function renderSampleChips() {
+  sampleChips.textContent = "";
+  for (const s of QUICK_SAMPLES) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chip-btn" + (activeSampleId === s.id ? " active" : "");
+    btn.textContent = language === "en" ? s.chip_en : s.chip_sl;
+    btn.disabled = Boolean(worker);
+    btn.addEventListener("click", () => loadSampleById(s.id, false));
+    sampleChips.appendChild(btn);
+  }
+}
+
+function renderV4Matrix() {
+  const tbody = byId("v4-matrix-body");
+  tbody.textContent = "";
+  for (const s of QUICK_SAMPLES.slice(1)) {
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = language === "en" ? s.title_en : s.title_sl;
+    tr.appendChild(th);
+
+    const tdRaw = document.createElement("td");
+    tdRaw.textContent = fmtB(s.raw_B);
+    tr.appendChild(tdRaw);
+
+    const tdZip = document.createElement("td");
+    tdZip.innerHTML = `<span>${fmtB(s.zip.direct)}</span> → <strong>${fmtB(s.zip.best)}</strong> <span class="badge">${s.zip.pct}</span>`;
+    tr.appendChild(tdZip);
+
+    const td7z = document.createElement("td");
+    td7z.innerHTML = `<span>${fmtB(s.sz7z.direct)}</span> → <strong>${fmtB(s.sz7z.best)}</strong> <span class="badge">${s.sz7z.pct}</span>`;
+    tr.appendChild(td7z);
+
+    const tdTry = document.createElement("td");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chip-btn mini-btn";
+    btn.textContent = t("Preizkusi v živo →");
+    btn.disabled = Boolean(worker);
+    btn.addEventListener("click", () => loadSampleById(s.id, true));
+    tdTry.appendChild(btn);
+    tr.appendChild(tdTry);
+
+    tbody.appendChild(tr);
+  }
+}
+
+function renderElfMatrix() {
   const tbody = byId("matrix-body");
   tbody.textContent = "";
-  for (const s of BENCHMARK_SAMPLES) {
+  for (const s of ELF_BENCHMARK_SAMPLES) {
     const tr = document.createElement("tr");
     const tdTitle = document.createElement("th");
     tdTitle.scope = "row";
@@ -158,15 +331,11 @@ function renderReferenceMatrix() {
     tr.appendChild(tdRaw);
 
     const tdZip = document.createElement("td");
-    const zipBest = s.zip.z8c_r3 || s.zip.z8c_r2;
-    const zipPct = s.zip.pct_r3 || s.zip.pct_r2;
-    tdZip.innerHTML = `<span>${fmtB(s.zip.direct)}</span> → <strong>${fmtB(zipBest)}</strong> <span class="badge">${zipPct}</span>`;
+    tdZip.innerHTML = `<span>${fmtB(s.zip.direct)}</span> → <strong>${fmtB(s.zip.z8c_r3)}</strong> <span class="badge">${s.zip.pct_r3}</span>`;
     tr.appendChild(tdZip);
 
     const td7z = document.createElement("td");
-    const szBest = s.sz7z.z8c_r3 || s.sz7z.z8c_r2;
-    const szPct = s.sz7z.pct_r3 || s.sz7z.pct_r2;
-    td7z.innerHTML = `<span>${fmtB(s.sz7z.direct)}</span> → <strong>${fmtB(szBest)}</strong> <span class="badge">${szPct}</span>`;
+    td7z.innerHTML = `<span>${fmtB(s.sz7z.direct)}</span> → <strong>${fmtB(s.sz7z.z8c_r3)}</strong> <span class="badge">${s.sz7z.pct_r3}</span>`;
     tr.appendChild(td7z);
 
     const tdPaq = document.createElement("td");
@@ -190,13 +359,16 @@ function renderLiveCompare(data) {
   const tbody = byId("live-compare-body");
   tbody.textContent = "";
 
-  const matchedSample = BENCHMARK_SAMPLES.find(
+  const matchedQuick = QUICK_SAMPLES.find(
+    (s) => (data.inputDigest && s.sha256 === data.inputDigest) || (selected && s.filename === selected.name && s.raw_B === data.inputBytes)
+  );
+  const matchedElf = ELF_BENCHMARK_SAMPLES.find(
     (s) => (data.inputDigest && s.sha256 === data.inputDigest) || (selected && s.filename === selected.name && s.raw_B === data.inputBytes)
   );
 
   byId("live-compare-title").textContent =
     (language === "en" ? "Live result in your browser: " : "Živi izid v vašem brskalniku: ") +
-    (selected ? selected.name : SAMPLE_ELF_NAME);
+    (selected ? selected.name : "00_data_endian.elf");
 
   const addRow = (label, rawB, baseB, z8cB, note) => {
     const tr = document.createElement("tr");
@@ -233,53 +405,48 @@ function renderLiveCompare(data) {
     tbody.appendChild(tr);
   };
 
-  const baseZip = matchedSample ? matchedSample.zip.direct : data.browserZipBytes;
+  const baseZip = matchedQuick ? matchedQuick.zip.direct : matchedElf ? matchedElf.zip.direct : data.browserZipBytes;
   addRow(
-    language === "en" ? "Browser WASM: ZIP vs. 8zC Carbon R2 (live)" : "Brskalnik WASM: ZIP proti 8zC Carbon R2 (v živo)",
+    language === "en"
+      ? "Browser WASM: Direct ZIP vs. 8zC Cycle 13 v4 (live)"
+      : "Brskalnik WASM: Čisti ZIP proti 8zC Cycle 13 v4 (v živo)",
     data.inputBytes,
     baseZip,
     data.z8cZipBytes,
     `${data.encodeMs} ms enc / ${data.decodeMs} ms dec`
   );
 
-  if (matchedSample) {
+  if (matchedQuick) {
     addRow(
-      language === "en" ? "8zC Cycle12 R2 + ZIP (Deflate -mx=9)" : "8zC Cycle12 R2 + ZIP (Deflate -mx=9)",
-      matchedSample.raw_B,
-      matchedSample.zip.direct,
-      matchedSample.zip.z8c_r2,
-      "Cycle12 R2"
+      language === "en" ? "8zC + 7-Zip Deflate (-mx=9)" : "8zC + 7-Zip Deflate (-mx=9)",
+      matchedQuick.raw_B,
+      matchedQuick.zip.direct,
+      matchedQuick.zip.best,
+      matchedQuick.zip.label
     );
-    if (matchedSample.zip.z8c_r3) {
-      addRow(
-        language === "en" ? "8zC Cycle12 R3 + ZIP (GEN_25 + .eh_frame)" : "8zC Cycle12 R3 + ZIP (GEN_25 + .eh_frame)",
-        matchedSample.raw_B,
-        matchedSample.zip.direct,
-        matchedSample.zip.z8c_r3,
-        "Cycle12 R3"
-      );
-    }
     addRow(
-      language === "en" ? "8zC Cycle12 + 7z (LZMA -mx=9)" : "8zC Cycle12 + 7z (LZMA -mx=9)",
-      matchedSample.raw_B,
-      matchedSample.sz7z.direct,
-      matchedSample.sz7z.z8c_r3 || matchedSample.sz7z.z8c_r2,
-      matchedSample.sz7z.z8c_r3 ? "Cycle12 R3" : "Cycle12 R2"
+      language === "en" ? "8zC + 7-Zip LZMA (-mx=9)" : "8zC + 7-Zip LZMA (-mx=9)",
+      matchedQuick.raw_B,
+      matchedQuick.sz7z.direct,
+      matchedQuick.sz7z.best,
+      matchedQuick.sz7z.label
     );
+  }
+  if (matchedElf) {
     addRow(
       "8zC + PAQ8PX v217",
-      matchedSample.raw_B,
-      matchedSample.paq.direct,
-      matchedSample.paq.z8c,
-      matchedSample.paq.pct
+      matchedElf.raw_B,
+      matchedElf.paq.direct,
+      matchedElf.paq.z8c,
+      matchedElf.paq.pct
     );
-    if (matchedSample.cmix) {
+    if (matchedElf.cmix) {
       addRow(
         "8zC + cmix v21",
-        matchedSample.raw_B,
-        matchedSample.cmix.direct,
-        matchedSample.cmix.z8c,
-        matchedSample.cmix.pct
+        matchedElf.raw_B,
+        matchedElf.cmix.direct,
+        matchedElf.cmix.z8c,
+        matchedElf.cmix.pct
       );
     }
   }
@@ -304,16 +471,16 @@ function setLanguage(lang) {
   byId("results-link").textContent = t("Rezultati 8zC");
   document.querySelector("h1").textContent = t("Kodek 8zC");
   document.querySelector(".intro").textContent = t(
-    "Stisnite datoteko ELF ali jo obnovite iz arhiva Carbon R2. Datoteka ostane v vašem brskalniku."
+    "Stisnite datoteko (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV ali BMP/PPM) ali iz arhiva 8zC obnovite izvirnik. Vse teče lokalno v vašem brskalniku (Rust + WebAssembly)."
   );
   document.querySelector("#modes legend").textContent = t("Izberite postopek");
   const modeSpans = document.querySelectorAll("#modes label span");
-  if (modeSpans[0]) modeSpans[0].textContent = t("Stisni ELF");
+  if (modeSpans[0]) modeSpans[0].textContent = t("Stisni datoteko");
   if (modeSpans[1]) modeSpans[1].textContent = t("Obnovi izvirnik");
 
   const encoding = mode === "encode";
-  byId("input-heading").textContent = t(encoding ? "Vhodna datoteka ELF" : "Vhodni arhiv Carbon R2");
-  sampleBtn.textContent = t("Vzorec ELF (80 KB)");
+  byId("input-heading").textContent = t(encoding ? "Vhodna datoteka (5 družin formatov)" : "Vhodni arhiv 8zC ZIP");
+  byId("samples-caption").textContent = t("1-klik vzorci:");
   byId("limits").textContent = t(encoding ? "1 datoteka · do 16 MiB" : "1 arhiv · do 16 MiB + 1 KiB");
   byId("compare-label").textContent = t("Primerjaj kompresije");
   byId("start-label").textContent = t(encoding ? "Stisni" : "Obnovi");
@@ -322,14 +489,26 @@ function setLanguage(lang) {
 
   byId("compare-heading").textContent = t("Primerjava kompresij (Čisti kodek proti 8zC)");
   byId("compare-sub").textContent = t(
-    "Živi preizkus v brskalniku (WebAssembly) in preverjena matrika 4 kodekov (ZIP, 7z, PAQ8PX, cmix v21) s 100 % bitno točno obnovo SHA-256."
+    "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 v4) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256."
   );
   byId("th-live-codec").textContent = t("Kodek / stopnja");
-  byId("th-live-raw").textContent = t("Surovi ELF");
+  byId("th-live-raw").textContent = t("Surovo");
   byId("th-live-base").textContent = t("Čisti kodek");
   byId("th-live-8zc").textContent = t("8zC + kodek");
   byId("th-live-save").textContent = t("Prihranek");
-  byId("matrix-title").textContent = t("Referenčna matrika 4 vzorčnih datotek ELF (.zip · .7z · .paq · .cmix)");
+
+  byId("v4-matrix-title").textContent = t(
+    "Cycle 13 Multi-Format v4 · 6 novih formatov (PE64 · WASM · CSV · JSONL · WAV · BMP)"
+  );
+  byId("th-v4-file").textContent = t("Vzorec in družina formata");
+  byId("th-v4-raw").textContent = t("Surovo");
+  byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v4 + ZIP");
+  byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v4 + 7z");
+  byId("th-v4-try").textContent = t("Živi preizkus");
+
+  byId("matrix-title").textContent = t(
+    "Cycle 12 R3 · Referenčna matrika 4 datotek ELF64 (.zip · .7z · .paq · .cmix)"
+  );
   runSampleLiveBtn.textContent = t("Zaženi 00_data_endian.elf v živo →");
   byId("th-m-file").textContent = t("Vzorčni ELF (prevajalnik)");
   byId("th-m-raw").textContent = t("Surovo");
@@ -339,9 +518,11 @@ function setLanguage(lang) {
   byId("th-m-cmix").textContent = t("Čisti cmix v21 → 8zC + cmix");
 
   if (!selected) {
-    byId("filename").textContent = t(encoding ? "Izberite datoteko ELF" : "Izberite arhiv ZIP");
+    byId("filename").textContent = t(encoding ? "Izberite poljubno datoteko" : "Izberite arhiv ZIP");
     byId("filehint").textContent = t(
-      encoding ? "ali jo povlecite sem (ali kliknite Vzorec ELF zgoraj)" : "ali ga povlecite sem"
+      encoding
+        ? "ali jo povlecite sem (ali kliknite vzorec zgoraj: ELF, DLL, WASM, CSV, JSONL, WAV, BMP)"
+        : "ali ga povlecite sem"
     );
   } else {
     byId("filehint").textContent =
@@ -350,9 +531,11 @@ function setLanguage(lang) {
   }
   if (!byId("result").hidden) {
     byId("result-heading").textContent = t(encoding ? "Arhiv 8zC ZIP" : "Obnovljena datoteka");
-    byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani ELF");
+    byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani izvirnik");
   }
-  renderReferenceMatrix();
+  renderSampleChips();
+  renderV4Matrix();
+  renderElfMatrix();
   if (lastCompareData) renderLiveCompare(lastCompareData);
 }
 
@@ -375,25 +558,32 @@ function status(message, error = false) {
   statusLine.toggleAttribute("data-error", error);
 }
 
-function selectFile(file) {
+function selectFile(file, sampleId = null) {
   const encoding = mode === "encode";
   selected = file;
+  activeSampleId = sampleId;
   start.disabled = !file;
   clearResult();
   status("");
+  byId("file-icon").textContent = file ? inferBadge(file.name) : encoding ? "8zC" : "ZIP";
   byId("filename").textContent = file
     ? file.name
-    : t(encoding ? "Izberite datoteko ELF" : "Izberite arhiv ZIP");
+    : t(encoding ? "Izberite poljubno datoteko" : "Izberite arhiv ZIP");
   byId("filehint").textContent = file
     ? file.size.toLocaleString(language === "en" ? "en-US" : "sl-SI") +
       (language === "en" ? " B · Click to replace" : " B · Kliknite za zamenjavo")
-    : t(encoding ? "ali jo povlecite sem (ali kliknite Vzorec ELF zgoraj)" : "ali ga povlecite sem");
+    : t(
+        encoding
+          ? "ali jo povlecite sem (ali kliknite vzorec zgoraj: ELF, DLL, WASM, CSV, JSONL, WAV, BMP)"
+          : "ali ga povlecite sem"
+      );
+  renderSampleChips();
 }
 
 function acceptFiles(files) {
   if (!files.length || worker) return;
   const file = files[0];
-  const maxBytes = MAX_ELF_BYTES + (mode === "decode" ? 1024 : 0);
+  const maxBytes = MAX_INPUT_BYTES + (mode === "decode" ? 1024 : 0);
   if (files.length !== 1 || !file.size || file.size > maxBytes) {
     selectFile(null);
     status(
@@ -406,7 +596,7 @@ function acceptFiles(files) {
     );
     return;
   }
-  selectFile(file);
+  selectFile(file, null);
   status((language === "en" ? "Selected file: " : "Izbrana datoteka: ") + file.name);
 }
 
@@ -415,10 +605,11 @@ function switchMode() {
   const encoding = mode === "encode";
   fileInput.accept = encoding ? "" : ".zip,application/zip";
   fileInput.value = "";
-  sampleBtn.hidden = !encoding;
+  sampleChips.hidden = !encoding;
+  byId("samples-caption").hidden = !encoding;
   compareBtn.hidden = !encoding;
-  byId("input-heading").textContent = t(encoding ? "Vhodna datoteka ELF" : "Vhodni arhiv Carbon R2");
-  byId("file-icon").textContent = encoding ? "ELF" : "ZIP";
+  byId("input-heading").textContent = t(encoding ? "Vhodna datoteka (5 družin formatov)" : "Vhodni arhiv 8zC ZIP");
+  byId("file-icon").textContent = encoding ? "8zC" : "ZIP";
   byId("limits").textContent = t(encoding ? "1 datoteka · do 16 MiB" : "1 arhiv · do 16 MiB + 1 KiB");
   byId("start-label").textContent = t(encoding ? "Stisni" : "Obnovi");
   selectFile(null);
@@ -427,11 +618,12 @@ function switchMode() {
 function busy(active) {
   modes.disabled = active;
   choose.disabled = active;
-  sampleBtn.disabled = active;
   compareBtn.disabled = active;
   runSampleLiveBtn.disabled = active;
   start.hidden = active;
   cancel.hidden = !active;
+  renderSampleChips();
+  renderV4Matrix();
 }
 
 function finish() {
@@ -449,9 +641,20 @@ function stop() {
 
 function showResult({ bytes, digest }) {
   const encoding = mode === "encode";
-  const base = selected.name.replace(encoding ? /\.elf$/i : /\.zip$/i, "");
-  const stem = encoding ? base : base.replace(/\.elf$/i, "");
-  const name = (stem || "carbon-r2") + (encoding ? ".zip" : ".elf");
+  let name;
+  if (encoding) {
+    name = (selected ? selected.name : "archive") + ".8zc.zip";
+  } else {
+    const rawName = selected ? selected.name : "restored.bin";
+    if (/\.8zc\.zip$/i.test(rawName)) {
+      name = rawName.replace(/\.8zc\.zip$/i, "");
+    } else if (/\.zip$/i.test(rawName)) {
+      const stripped = rawName.replace(/\.zip$/i, "");
+      name = stripped.includes(".") ? stripped : stripped + ".bin";
+    } else {
+      name = rawName + ".restored";
+    }
+  }
   objectUrl = URL.createObjectURL(
     new Blob([bytes], {
       type: encoding ? "application/zip" : "application/octet-stream",
@@ -460,38 +663,37 @@ function showResult({ bytes, digest }) {
   download.href = objectUrl;
   download.download = name;
   byId("result-heading").textContent = t(encoding ? "Arhiv 8zC ZIP" : "Obnovljena datoteka");
-  byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani ELF");
+  byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani izvirnik");
   byId("output-name").textContent =
     name + " · " + bytes.byteLength.toLocaleString(language === "en" ? "en-US" : "sl-SI") + " B";
   byId("digest").textContent = digest || "";
   byId("digest-row").hidden = !digest;
   byId("result").hidden = false;
-  status(t(encoding ? "Arhiv je pripravljen za shranjevanje." : "Datoteka ELF je pripravljena za shranjevanje."));
+  status(
+    t(encoding ? "Arhiv je pripravljen za shranjevanje." : "Izvirna datoteka je pripravljena za shranjevanje.")
+  );
 }
 
-async function fetchSampleElfFile() {
-  status(t("Nalagam vzorčno datoteko 00_data_endian.elf …"));
-  const resp = await fetch(SAMPLE_ELF_URL);
-  if (!resp.ok) throw new Error(t("Vzorčna datoteka 00_data_endian.elf ni dostopna."));
-  const blob = await resp.blob();
-  return new File([blob], SAMPLE_ELF_NAME, { type: "application/octet-stream" });
-}
-
-async function loadSample(autoCompare = false) {
+async function loadSampleById(sampleId, autoCompare = false) {
   if (worker) return;
+  const s = QUICK_SAMPLES.find((x) => x.id === sampleId) || QUICK_SAMPLES[0];
   if (mode !== "encode") {
     modes.querySelector('input[value="encode"]').checked = true;
     switchMode();
   }
   try {
-    const file = await fetchSampleElfFile();
-    selectFile(file);
-    status((language === "en" ? "Loaded sample ELF: " : "Naložen vzorčni ELF: ") + file.name);
+    status((language === "en" ? "Loading sample " : "Nalagam vzorec ") + s.filename + " …");
+    const resp = await fetch(s.url);
+    if (!resp.ok) throw new Error((language === "en" ? "Could not load " : "Ni mogoče naložiti ") + s.filename);
+    const blob = await resp.blob();
+    const file = new File([blob], s.filename, { type: "application/octet-stream" });
+    selectFile(file, s.id);
+    status((language === "en" ? "Loaded sample: " : "Naložen vzorec: ") + file.name);
     if (autoCompare) {
       runWorker("compare");
     }
   } catch (err) {
-    status(err.message || t("Vzorčna datoteka 00_data_endian.elf ni dostopna."), true);
+    status(err.message || "Error loading sample", true);
   }
 }
 
@@ -517,7 +719,10 @@ function runWorker(workerMode) {
     worker.onerror = () => {
       if (worker !== current) return;
       finish();
-      status(t("Opravila ni bilo mogoče dokončati. Preverite, ali so datoteke spletnega kodeka dostopne."), true);
+      status(
+        t("Opravila ni bilo mogoče dokončati. Preverite, ali so datoteke spletnega kodeka dostopne."),
+        true
+      );
       start.focus();
     };
     busy(true);
@@ -532,7 +737,10 @@ function runWorker(workerMode) {
     worker.postMessage({ mode: workerMode, file: selected });
   } catch {
     finish();
-    status(t("Brskalnik ni mogel zagnati opravila. Odprite aplikacijo prek lokalnega spletnega strežnika."), true);
+    status(
+      t("Brskalnik ni mogel zagnati opravila. Odprite aplikacijo prek lokalnega spletnega strežnika."),
+      true
+    );
     start.focus();
   }
 }
@@ -541,7 +749,7 @@ async function handleCompareClick() {
   if (worker) return;
   byId("compare-panel").hidden = false;
   if (!selected) {
-    await loadSample(true);
+    await loadSampleById("00_data_endian", true);
   } else {
     runWorker("compare");
   }
@@ -570,8 +778,7 @@ for (const type of ["dragover", "drop"]) {
 modes.addEventListener("change", switchMode);
 start.addEventListener("click", () => runWorker(mode));
 compareBtn.addEventListener("click", handleCompareClick);
-sampleBtn.addEventListener("click", () => loadSample(false));
-runSampleLiveBtn.addEventListener("click", () => loadSample(true));
+runSampleLiveBtn.addEventListener("click", () => loadSampleById("00_data_endian", true));
 cancel.addEventListener("click", stop);
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && worker) stop();

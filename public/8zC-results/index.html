@@ -27,8 +27,8 @@
         <p class="eyebrow"><span lang="sl">Izvorna zamisel 8Z · Bojan Dobrečevič (BD). Razvoj 8zC · BD × AI Lab.</span><span lang="en">Original 8Z concept · Bojan Dobrečevič (BD). 8zC development · BD × AI Lab.</span> <a href="#origins"><span lang="sl">Od zamisli do preizkusa</span><span lang="en">From idea to test</span></a></p>
         <p class="intro"><span lang="sl">Brezizgubni preizkusi na datotekah Concorde, zvoku FLAC in datotekah ELF. Matrika kodekov prikazuje tudi velikosti stisnjenih tokov pred prištetjem podatkov za obnovo.</span><span lang="en">Lossless trials on Concorde files, FLAC audio and ELF binaries. The codec matrix also shows compressed sizes before restoration data is added.</span></p>
         <nav class="section-links" aria-label="Razdelki / Sections">
-          <a href="https://www.mdlxdcc.org/8zC/"><span lang="sl">Odpri kodek 8zC</span><span lang="en">Open the 8zC codec</span></a>
-          <a href="#concorde">Concorde</a><a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a><a href="#elf-preprocessing"><span lang="sl">Cycle 12 ELF &amp; cmix</span><span lang="en">Cycle 12 ELF &amp; cmix</span></a><a href="#technical-matrix"><span lang="sl">Tehnične rešitve</span><span lang="en">Technical features</span></a><a href="#architecture-layers"><span lang="sl">Deset plasti 8zC</span><span lang="en">Ten layers of 8zC</span></a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
+          <a href="https://www.mdlxdcc.org/8zC/"><span lang="sl">Odpri večformatni kodek 8zC</span><span lang="en">Open multi-format 8zC codec</span></a>
+          <a href="#multiformat-v4"><span lang="sl">Večformatni Cycle 13 v4</span><span lang="en">Multi-format Cycle 13 v4</span></a><a href="#concorde">Concorde</a><a href="#codec-matrix"><span lang="sl">Matrika kodekov</span><span lang="en">Codec matrix</span></a><a href="#elf-preprocessing"><span lang="sl">Cycle 12 ELF &amp; cmix</span><span lang="en">Cycle 12 ELF &amp; cmix</span></a><a href="#technical-matrix"><span lang="sl">Tehnične rešitve</span><span lang="en">Technical features</span></a><a href="#architecture-layers"><span lang="sl">Deset plasti 8zC</span><span lang="en">Ten layers of 8zC</span></a><a href="#flac">FLAC</a><a href="#regeneration">Super‑8zC</a><a href="#elf">A1p ELF</a>
         </nav>
       </div>
       <aside class="highlight">
@@ -274,10 +274,28 @@
               <td><strong>−219 994 B (−23<span lang="sl">,</span><span lang="en">.</span>31 %)</strong></td>
             </tr>
             <tr class="best">
-              <th scope="row"><span lang="sl">Solidni arhiv <code>.tar</code> (5 384 704 B) · <code>cmix v21</code> proti <code>8zC + PAQ -10LE</code></span><span lang="en">Solid <code>.tar</code> archive (5 384 704 B) · <code>cmix v21</code> vs. <code>8zC + PAQ -10LE</code></span></th>
-              <td>938 840 (<code>cmix v21</code>) / 920 536 (<code>PAQ -10LE</code>)</td>
-              <td><strong>701 372</strong> (<code>8zC + PAQ -10LE</code>)</td>
-              <td><strong>−237 468 B (−25<span lang="sl">,</span><span lang="en">.</span>29 % proti <code>cmix v21 Solid</code>)</strong></td>
+              <th scope="row"><span lang="sl">Solidni arhiv <code>.tar</code> (5 384 704 B) · <code>cmix v21 Solid</code> (14/14 končano)</span><span lang="en">Solid <code>.tar</code> archive (5 384 704 B) · <code>cmix v21 Solid</code> (14/14 completed)</span></th>
+              <td>938 840</td>
+              <td><strong>719 598</strong> (<code>8zC P2-C + cmix v21</code>)</td>
+              <td><strong>−219 242 B (−23<span lang="sl">,</span><span lang="en">.</span>35 %)</strong></td>
+            </tr>
+            <tr class="best">
+              <th scope="row"><span lang="sl">Solidni arhiv <code>.tar</code> (5 384 704 B) · <code>PAQ8PX -10LE Solid</code></span><span lang="en">Solid <code>.tar</code> archive (5 384 704 B) · <code>PAQ8PX -10LE Solid</code></span></th>
+              <td>920 536</td>
+              <td><strong>701 372</strong> (<code>8zC P2-C + PAQ -10LE</code>)</td>
+              <td><strong>−219 164 B (−23<span lang="sl">,</span><span lang="en">.</span>81 % · −237 468 B proti <code>cmix Solid</code>)</strong></td>
+            </tr>
+            <tr>
+              <th scope="row"><span lang="sl">Solidni arhiv 3 datotek · <code>ZIP -mx=9</code> proti <code>Cycle 12 R3</code></span><span lang="en">Solid 3-file archive · <code>ZIP -mx=9</code> vs. <code>Cycle 12 R3</code></span></th>
+              <td>1 871 734</td>
+              <td><strong>1 393 893</strong> (<code>Cycle 12 R3 + ZIP</code>)</td>
+              <td><strong>−477 841 B (−25<span lang="sl">,</span><span lang="en">.</span>53 % · premaga surovi <code>7z Ultra Solid</code> 1 491 622 B!)</strong></td>
+            </tr>
+            <tr>
+              <th scope="row"><span lang="sl">Solidni arhiv 3 datotek · <code>7z -mx=9</code> proti <code>Cycle 12 R3</code></span><span lang="en">Solid 3-file archive · <code>7z -mx=9</code> vs. <code>Cycle 12 R3</code></span></th>
+              <td>1 491 622</td>
+              <td><strong>1 092 818</strong> (<code>Cycle 12 R3 + 7z</code>)</td>
+              <td><strong>−398 804 B (−26<span lang="sl">,</span><span lang="en">.</span>74 %)</strong></td>
             </tr>
           </tbody>
         </table>
@@ -295,6 +313,92 @@
         <summary><span lang="sl">Nativno jedro Rust <code>z8c_core</code> in medplatformna preverba (Win11 ↔ Linux Omarchy)</span><span lang="en">Native Rust <code>z8c_core</code> engine and cross-platform verification (Win11 ↔ Linux Omarchy)</span></summary>
         <p lang="sl">Na domačem računalniku HOME (Linux Omarchy, Rust 1.100.0) je modul transformacij preveden v nativno knjižnico <code>z8c_core</code> (združljivo tudi s ciljem <code>wasm32-unknown-unknown</code>). Na testnih vektorjih <code>00_data_endian</code> in <code>liblzma-5.8.4.text.bin</code> se izhodi Pythona in Rusta ujemajo do zadnjega bita (<code>SHA‑256: 515041c3…</code>, čas kodiranja v Rustu 0,7 ms, obnove 0,3 ms). Na lokalnih programih ELF iz <code>/usr/bin/</code> je kodek brez napak stisnil in bitno točno obnovil <code>zstd</code> (193 792 B, ZIP −13,61 %, 7z −11,44 %), <code>rg</code> (4 377 936 B, ZIP −4,72 %, 7z −3,80 %), <code>git</code> (4 968 112 B, ZIP −4,42 %, 7z −5,00 %) ter opravil stresni preizkus na 153 131 896 B veliki binarni datoteki <code>/usr/bin/mise</code> v 0,355 s (431 MB/s) s 100 % ujemanjem <code>SHA‑256</code>.</p>
         <p lang="en">On the HOME Linux Omarchy machine (Rust 1.100.0), the transform pipeline has been ported to the native <code>z8c_core</code> crate (also verified for <code>wasm32-unknown-unknown</code>). On the <code>00_data_endian</code> and <code>liblzma-5.8.4.text.bin</code> test vectors, Python and Rust outputs match byte for byte (<code>SHA‑256: 515041c3…</code>, Rust encode 0.7 ms, decode 0.3 ms). On local <code>/usr/bin/</code> ELF executables, the codec compressed and restored <code>zstd</code> (193 792 B, ZIP −13.61%, 7z −11.44%), <code>rg</code> (4 377 936 B, ZIP −4.72%, 7z −3.80%), <code>git</code> (4 968 112 B, ZIP −4.42%, 7z −5.00%) and completed a 153 131 896 B stress test on <code>/usr/bin/mise</code> in 0.355 s (431 MB/s) with 100% <code>SHA‑256</code> verification.</p>
+      </details>
+    </section>
+
+    <section id="multiformat-v4" class="section" aria-labelledby="multiformat-v4-title">
+      <div class="section-heading">
+        <h2 id="multiformat-v4-title"><span lang="sl">Cycle 13 · Univerzalni večformatni kodek 8zC v4 (5 družin formatov)</span><span lang="en">Cycle 13 · Universal Multi-Format 8zC v4 Codec (5 Format Families)</span></h2>
+        <p lang="sl">24. novembra 2026 je BD × AI Lab v nočnem ciklu RHP (<code>8W ↔ 8H</code>) razširil 8zC iz specializiranega kodeka ELF v univerzalni petdružinski bijektivni motor <strong>Cycle 13 v4</strong> (<code>TRANSFORM_VERSION = 4</code>, skupni stisnjeni dekodirnik <code>L_v4_decode_min.py.xz = 6 620 B</code>, v celoti preveden tudi v nativni Rust <code>z8c_core v0.4.0</code> in spletni <code>WebAssembly</code> na <a href="https://www.mdlxdcc.org/8zC/">/8zC/</a>). Podpira <strong>Linux ELF64</strong>, <strong>Windows PE/COFF (<code>.exe</code>, <code>.dll</code>)</strong>, <strong>WebAssembly (<code>.wasm</code>)</strong>, <strong>tabelarične in dnevniške zapise (<code>CSV</code>, <code>TSV</code>, <code>JSONL</code>)</strong> ter <strong>nestisnjen zvok in surove slike (<code>WAV PCM16</code>, <code>BMP</code>, <code>PPM</code>)</strong>.</p>
+        <p lang="en">On 24 November 2026, during an overnight RHP cycle (<code>8W ↔ 8H</code>), BD × AI Lab expanded 8zC beyond ELF into the five-family universal bijective engine <strong>Cycle 13 v4</strong> (<code>TRANSFORM_VERSION = 4</code>, standalone decoder <code>L_v4_decode_min.py.xz = 6 620 B</code>, ported 100% bit-identically to native Rust <code>z8c_core v0.4.0</code> and browser <code>WebAssembly</code> at <a href="https://www.mdlxdcc.org/8zC/">/8zC/</a>). It supports <strong>Linux ELF64</strong>, <strong>Windows PE/COFF (<code>.exe</code>, <code>.dll</code>)</strong>, <strong>WebAssembly (<code>.wasm</code>)</strong>, <strong>tabular &amp; structured logs (<code>CSV</code>, <code>TSV</code>, <code>JSONL</code>)</strong>, and <strong>raw audio &amp; raster images (<code>WAV PCM16</code>, <code>BMP</code>, <code>PPM</code>)</strong>.</p>
+      </div>
+
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="multiformat-v4-title">
+        <table>
+          <caption><span lang="sl">1. Večformatni razvojni nabor <code>Dev-12</code> (24 327 795 B surovo, 4 nove družine) — 24/24 izoliranih obnov SHA‑256, 0 B poslabšanj</span><span lang="en">1. Multi-format development corpus <code>Dev-12</code> (24 327 795 B raw, 4 new families) — 24/24 isolated SHA‑256 restores, 0 B regressions</span></caption>
+          <thead>
+            <tr>
+              <th scope="col"><span lang="sl">Družina in datoteka (surovo)</span><span lang="en">Family and file (raw)</span></th>
+              <th scope="col"><span lang="sl">ZIP neposredno → <strong>8zC v4</strong></span><span lang="en">ZIP direct → <strong>8zC v4</strong></span></th>
+              <th scope="col"><span lang="sl">Prihranek ZIP</span><span lang="en">ZIP saving</span></th>
+              <th scope="col"><span lang="sl">7z neposredno → <strong>8zC v4</strong></span><span lang="en">7z direct → <strong>8zC v4</strong></span></th>
+              <th scope="col"><span lang="sl">Prihranek 7z</span><span lang="en">7z saving</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><code>PE64</code> · <code>7z.exe</code> (574 464 B)</th><td>250 874 → <strong>213 021</strong></td><td>−37 853 B (−15<span lang="sl">,</span><span lang="en">.</span>09 %)</td><td>209 996 → <strong>180 018</strong></td><td>−29 978 B (−14<span lang="sl">,</span><span lang="en">.</span>28 %)</td></tr>
+            <tr><th scope="row"><code>PE64</code> · <code>paq8px.exe</code> (1 352 704 B)</th><td>649 081 → <strong>610 138</strong></td><td>−38 943 B (−6<span lang="sl">,</span><span lang="en">.</span>00 %)</td><td>560 203 → <strong>530 490</strong></td><td>−29 713 B (−5<span lang="sl">,</span><span lang="en">.</span>30 %)</td></tr>
+            <tr><th scope="row"><code>PE64</code> · <code>aadauthhelper.dll</code> (454 656 B)</th><td>173 827 → <strong>148 823</strong></td><td>−25 004 B (−14<span lang="sl">,</span><span lang="en">.</span>38 %)</td><td>148 669 → <strong>128 991</strong></td><td>−19 678 B (−13<span lang="sl">,</span><span lang="en">.</span>24 %)</td></tr>
+            <tr><th scope="row"><code>WASM</code> · <code>onig.wasm</code> (466 610 B)</th><td>137 062 → <strong>123 584</strong></td><td>−13 478 B (−9<span lang="sl">,</span><span lang="en">.</span>83 %)</td><td>98 628 → <strong>98 628</strong></td><td>0 B (0<span lang="sl">,</span><span lang="en">.</span>00 %)</td></tr>
+            <tr><th scope="row"><code>WASM</code> · <code>vsda_bg.wasm</code> (64 592 B)</th><td>64 730 → <strong>64 730</strong></td><td>0 B (0<span lang="sl">,</span><span lang="en">.</span>00 %)</td><td>65 604 → <strong>65 604</strong></td><td>0 B (0<span lang="sl">,</span><span lang="en">.</span>00 %)</td></tr>
+            <tr><th scope="row"><code>WASM</code> · <code>tree-sitter-rust.wasm</code> (1 028 560 B)</th><td>97 861 → <strong>96 678</strong></td><td>−1 183 B (−1<span lang="sl">,</span><span lang="en">.</span>21 %)</td><td>69 041 → <strong>69 041</strong></td><td>0 B (0<span lang="sl">,</span><span lang="en">.</span>00 %)</td></tr>
+            <tr><th scope="row"><code>TSV</code> · <code>HOME_R2.tsv</code> (16 878 215 B)</th><td>3 075 486 → <strong>2 441 087</strong></td><td>−634 399 B (−20<span lang="sl">,</span><span lang="en">.</span>63 %)</td><td>2 405 336 → <strong>2 002 550</strong></td><td>−402 786 B (−16<span lang="sl">,</span><span lang="en">.</span>75 %)</td></tr>
+            <tr><th scope="row"><code>CSV</code> · <code>telemetry.csv</code> (446 980 B)</th><td>49 944 → <strong>12 799</strong></td><td>−37 145 B (−74<span lang="sl">,</span><span lang="en">.</span>37 %)</td><td>22 942 → <strong>5 553</strong></td><td>−17 389 B (−75<span lang="sl">,</span><span lang="en">.</span>80 %)</td></tr>
+            <tr><th scope="row"><code>JSONL</code> · <code>agent_events.jsonl</code> (610 000 B)</th><td>28 016 → <strong>951</strong></td><td>−27 065 B (−96<span lang="sl">,</span><span lang="en">.</span>61 %)</td><td>7 754 → <strong>703</strong></td><td>−7 051 B (−90<span lang="sl">,</span><span lang="en">.</span>93 %)</td></tr>
+            <tr><th scope="row"><code>WAV</code> · <code>Ring05.wav</code> PCM16 (1 132 740 B)</th><td>821 393 → <strong>650 396</strong></td><td>−170 997 B (−20<span lang="sl">,</span><span lang="en">.</span>82 %)</td><td>744 063 → <strong>649 405</strong></td><td>−94 658 B (−12<span lang="sl">,</span><span lang="en">.</span>72 %)</td></tr>
+            <tr><th scope="row"><code>WAV</code> · <code>Alarm05.wav</code> PCM16 (728 396 B)</th><td>518 842 → <strong>292 116</strong></td><td>−226 726 B (−43<span lang="sl">,</span><span lang="en">.</span>70 %)</td><td>455 810 → <strong>280 436</strong></td><td>−175 374 B (−38<span lang="sl">,</span><span lang="en">.</span>48 %)</td></tr>
+            <tr><th scope="row"><code>BMP</code> · <code>guest.bmp</code> 512×384 (589 878 B)</th><td>513 897 → <strong>34 530</strong></td><td>−479 367 B (−93<span lang="sl">,</span><span lang="en">.</span>28 %)</td><td>271 080 → <strong>21 001</strong></td><td>−250 079 B (−92<span lang="sl">,</span><span lang="en">.</span>25 %)</td></tr>
+            <tr class="best">
+              <th scope="row"><span lang="sl">Skupaj <code>Dev-12</code> z vštetim <code>L_v4 = 6 620 B</code></span><span lang="en">Total <code>Dev-12</code> including <code>L_v4 = 6 620 B</code></span></th>
+              <td>6 381 013 → <strong>4 695 473</strong></td>
+              <td><strong>−1 685 540 B (−26<span lang="sl">,</span><span lang="en">.</span>41 %)</strong></td>
+              <td>5 059 126 → <strong>4 039 040</strong></td>
+              <td><strong>−1 020 086 B (−20<span lang="sl">,</span><span lang="en">.</span>16 %)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="comparison" role="region" tabindex="0" aria-labelledby="multiformat-v4-title">
+        <table>
+          <caption><span lang="sl">2. Slepi večformatni <code>Holdout-12</code> (12 614 523 B surovo, 12 novih datotek, 24/24 obnov SHA‑256) — <code>8zC v4 + ZIP</code> premaga surovi <code>7‑Zip LZMA Ultra</code> za −429 280 B!</span><span lang="en">2. Blind multi-format <code>Holdout-12</code> (12 614 523 B raw, 12 unseen files, 24/24 SHA‑256 restores) — <code>8zC v4 + ZIP</code> beats raw <code>7‑Zip LZMA Ultra</code> by −429 280 B!</span></caption>
+          <thead>
+            <tr>
+              <th scope="col"><span lang="sl">Družina in datoteka (surovo)</span><span lang="en">Family and file (raw)</span></th>
+              <th scope="col"><span lang="sl">ZIP neposredno → <strong>8zC v4</strong></span><span lang="en">ZIP direct → <strong>8zC v4</strong></span></th>
+              <th scope="col"><span lang="sl">Prihranek ZIP</span><span lang="en">ZIP saving</span></th>
+              <th scope="col"><span lang="sl">7z neposredno → <strong>8zC v4</strong></span><span lang="en">7z direct → <strong>8zC v4</strong></span></th>
+              <th scope="col"><span lang="sl">Prihranek 7z</span><span lang="en">7z saving</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><code>PE64</code> · <code>7z.dll</code> (1 897 984 B)</th><td>820 354 → <strong>732 391</strong></td><td>−87 963 B (−10<span lang="sl">,</span><span lang="en">.</span>72 %)</td><td>676 429 → <strong>609 174</strong></td><td>−67 255 B (−9<span lang="sl">,</span><span lang="en">.</span>94 %)</td></tr>
+            <tr><th scope="row"><code>PE64</code> · <code>cmix_x86_64_v3.exe</code> (1 112 064 B)</th><td>493 843 → <strong>456 242</strong></td><td>−37 601 B (−7<span lang="sl">,</span><span lang="en">.</span>61 %)</td><td>415 784 → <strong>387 372</strong></td><td>−28 412 B (−6<span lang="sl">,</span><span lang="en">.</span>83 %)</td></tr>
+            <tr><th scope="row"><code>PE64</code> · <code>AboutSettingsHandlers.dll</code> (853 408 B)</th><td>360 313 → <strong>316 010</strong></td><td>−44 303 B (−12<span lang="sl">,</span><span lang="en">.</span>30 %)</td><td>293 514 → <strong>256 546</strong></td><td>−36 968 B (−12<span lang="sl">,</span><span lang="en">.</span>59 %)</td></tr>
+            <tr><th scope="row"><code>WASM</code> · <code>diff_wasm_bg.wasm</code> (120 920 B)</th><td>51 714 → <strong>45 563</strong></td><td>−6 151 B (−11<span lang="sl">,</span><span lang="en">.</span>89 %)</td><td>44 536 → <strong>43 000</strong></td><td>−1 536 B (−3<span lang="sl">,</span><span lang="en">.</span>45 %)</td></tr>
+            <tr><th scope="row"><code>WASM</code> · <code>external_ingest_utils_bg.wasm</code> (1 237 265 B)</th><td>405 566 → <strong>341 428</strong></td><td>−64 138 B (−15<span lang="sl">,</span><span lang="en">.</span>81 %)</td><td>279 836 → <strong>279 836</strong></td><td>0 B (0<span lang="sl">,</span><span lang="en">.</span>00 %)</td></tr>
+            <tr><th scope="row"><code>WASM</code> · <code>tree-sitter-cpp.wasm</code> (3 434 931 B)</th><td>253 836 → <strong>238 688</strong></td><td>−15 148 B (−5<span lang="sl">,</span><span lang="en">.</span>97 %)</td><td>154 713 → <strong>154 713</strong></td><td>0 B (0<span lang="sl">,</span><span lang="en">.</span>00 %)</td></tr>
+            <tr><th scope="row"><code>TSV</code> · <code>work_8z_inventory.tsv</code> (229 479 B)</th><td>26 583 → <strong>15 535</strong></td><td>−11 048 B (−41<span lang="sl">,</span><span lang="en">.</span>56 %)</td><td>22 318 → <strong>15 061</strong></td><td>−7 257 B (−32<span lang="sl">,</span><span lang="en">.</span>52 %)</td></tr>
+            <tr><th scope="row"><code>CSV</code> · <code>orderbook_ticks.csv</code> CRLF (390 468 B)</th><td>63 358 → <strong>5 774</strong></td><td>−57 584 B (−90<span lang="sl">,</span><span lang="en">.</span>89 %)</td><td>27 907 → <strong>2 640</strong></td><td>−25 267 B (−90<span lang="sl">,</span><span lang="en">.</span>54 %)</td></tr>
+            <tr><th scope="row"><code>JSONL</code> · <code>system_audit.jsonl</code> 2-shemi (551 250 B)</th><td>27 859 → <strong>1 134</strong></td><td>−26 725 B (−95<span lang="sl">,</span><span lang="en">.</span>93 %)</td><td>13 652 → <strong>884</strong></td><td>−12 768 B (−93<span lang="sl">,</span><span lang="en">.</span>52 %)</td></tr>
+            <tr><th scope="row"><code>WAV</code> · <code>Ring08.wav</code> PCM16 (995 772 B)</th><td>798 148 → <strong>541 000</strong></td><td>−257 148 B (−32<span lang="sl">,</span><span lang="en">.</span>22 %)</td><td>725 682 → <strong>532 779</strong></td><td>−192 903 B (−26<span lang="sl">,</span><span lang="en">.</span>58 %)</td></tr>
+            <tr><th scope="row"><code>WAV</code> · <code>Ring09.wav</code> PCM16 (869 328 B)</th><td>675 640 → <strong>301 731</strong></td><td>−373 909 B (−55<span lang="sl">,</span><span lang="en">.</span>34 %)</td><td>416 302 → <strong>239 435</strong></td><td>−176 867 B (−42<span lang="sl">,</span><span lang="en">.</span>49 %)</td></tr>
+            <tr><th scope="row"><code>BMP</code> · <code>user.bmp</code> 640×480 (921 654 B)</th><td>791 598 → <strong>74 307</strong></td><td>−717 291 B (−90<span lang="sl">,</span><span lang="en">.</span>61 %)</td><td>435 030 → <strong>28 904</strong></td><td>−406 126 B (−93<span lang="sl">,</span><span lang="en">.</span>36 %)</td></tr>
+            <tr class="best">
+              <th scope="row"><span lang="sl">Skupaj <code>Holdout-12</code> z vštetim <code>L_v4 = 6 620 B</code></span><span lang="en">Total <code>Holdout-12</code> including <code>L_v4 = 6 620 B</code></span></th>
+              <td>4 768 812 → <strong>3 076 423</strong></td>
+              <td><strong>−1 692 389 B (−35<span lang="sl">,</span><span lang="en">.</span>49 %)</strong></td>
+              <td>3 505 703 → <strong>2 556 964</strong></td>
+              <td><strong>−948 739 B (−27<span lang="sl">,</span><span lang="en">.</span>06 %)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details>
+        <summary><span lang="sl">Kako deluje 5 družin transformacij v Cycle 13 v4 (Python ↔ Rust <code>z8c_core v0.4.0</code> ↔ WebAssembly)?</span><span lang="en">How do the 5 transform families in Cycle 13 v4 work (Python ↔ Rust <code>z8c_core v0.4.0</code> ↔ WebAssembly)?</span></summary>
+        <p lang="sl"><strong>1. PE/COFF (<code>fmt_id = 2</code>):</strong> uporabi <code>BCJ_X64_V4</code> na izvršljivi sekciji, 12-ravninski ZigZag delta prediktor na <code>.pdata</code> (<code>RUNTIME_FUNCTION</code>), 16-bitno krajevno delto z dvema bajtnima ravninama na <code>.reloc</code> (izniči tip <code>0xA000</code> v ničle) ter MDL-varovano transpozicijo <code>.rdata</code> in izrez ničelnih blokov. <strong>2. WebAssembly (<code>fmt_id = 3</code>):</strong> vzročni 5-tokovni razcep LEB128 sekcije <code>Code</code> v tokove <code>ops</code>, <code>locals</code>, <code>align</code>, <code>offset</code> in <code>calls</code>. <strong>3. Tabular/JSONL (<code>fmt_id = 4</code>):</strong> večshemska ekstrakcija ogrodja ločil in transpozicija stolpcev s kanonično celoštevilsko delto ali predponskim LCP. <strong>4. Media Raw (<code>fmt_id = 5</code>):</strong> pri <code>WAV PCM16</code> reverzibilna preslikava <code>Mid/Side</code> z napovedovalnikom LPC reda 1/2 in ZigZag16, pri <code>BMP/PPM</code> pa barvni obrat <code>YCoCg-R</code> in prostorski napovedovalnik 2D <code>MED (LOCO-I)</code> po ločenih barvnih ravninah. Vseh 6 referenčnih tokov se med Win11 Pythonom in Linux Rustom/WASM ujema 100 % do bita (<code>SHA‑256</code>).</p>
+        <p lang="en"><strong>1. PE/COFF (<code>fmt_id = 2</code>):</strong> applies <code>BCJ_X64_V4</code> on executable code, 12-plane ZigZag delta prediction on <code>.pdata</code> (<code>RUNTIME_FUNCTION</code>), per-block 16-bit delta + 2-plane byte split on <code>.reloc</code> (cancelling <code>0xA000</code> type nibbles to zeros), plus MDL-gated <code>.rdata</code> transposition and zero-run excision. <strong>2. WebAssembly (<code>fmt_id = 3</code>):</strong> causal 5-stream LEB128 splitter on the <code>Code</code> section (<code>ops</code>, <code>locals</code>, <code>align</code>, <code>offset</code>, <code>calls</code>). <strong>3. Tabular/JSONL (<code>fmt_id = 4</code>):</strong> multi-schema separator-skeleton extraction and columnar transposition with canonical integer deltas or prefix LCP. <strong>4. Media Raw (<code>fmt_id = 5</code>):</strong> reversible <code>Mid/Side</code> + order-1/2 LPC + ZigZag16 on <code>WAV PCM16</code>, and reversible <code>YCoCg-R</code> + 2D <code>MED (LOCO-I)</code> spatial prediction across color planes on <code>BMP/PPM</code>. All 6 reference streams match 100% bit-for-bit (<code>SHA‑256</code>) across Win11 Python, Linux Rust, and browser WebAssembly.</p>
       </details>
     </section>
 
