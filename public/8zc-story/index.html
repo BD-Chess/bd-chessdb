@@ -177,8 +177,11 @@
     html { font-size:var(--font-percent,100%); scroll-padding-top:calc(var(--mast-height,68px) + 40px); }
     .shell { width:calc(100% - 64px); max-width:none; }
     .masthead-inner { flex-wrap:wrap; padding-block:8px; }
-    .header-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px 15px; margin-left:auto; }
-    .header-controls .languages,.header-controls .reading-controls { display:flex; align-items:center; gap:5px; width:auto; margin:0; }
+    .header-controls { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:8px 15px; margin-left:auto; max-width:100%; }
+    .header-controls .themes { white-space:nowrap; }
+    .secondary-link { background:transparent; color:var(--accent); border-color:var(--line); }
+    .secondary-link:hover { background:var(--panel); color:var(--ink); border-color:var(--accent); }
+     .header-controls .languages,.header-controls .reading-controls,.header-controls .themes { display:flex; align-items:center; gap:5px; width:auto; margin:0; }
     .header-controls button { font-size:14px; min-height:44px; min-width:40px; padding:5px 8px; color:var(--ink); border:1px solid var(--line); border-radius:3px; background:var(--panel-soft); white-space:nowrap; }
     .header-controls button[aria-pressed="true"] { color:var(--accent); border-color:var(--accent); }
     .header-controls button:disabled { opacity:.45; cursor:default; }
@@ -220,7 +223,9 @@
           <button type="button" id="font-down" aria-label="Pomanjšaj besedilo" data-aria-sl="Pomanjšaj besedilo" data-aria-en="Decrease text size">A−</button>
           <button type="button" id="font-reset" aria-label="Ponastavi velikost besedila" data-aria-sl="Ponastavi velikost besedila" data-aria-en="Reset text size">100%</button>
           <button type="button" id="font-up" aria-label="Povečaj besedilo" data-aria-sl="Povečaj besedilo" data-aria-en="Increase text size">A+</button>
-          <button type="button" id="theme-toggle" aria-pressed="false"><span lang="sl">Svetla podlaga</span><span lang="en">Light background</span></button>
+          </div>
+        <div class="themes" role="group" aria-label="Podlaga" data-aria-sl="Podlaga" data-aria-en="Theme">
+          <button type="button" data-theme-choice="dark" aria-pressed="true">Dark</button><span aria-hidden="true">|</span><button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
         </div>
         <span class="sr-only" id="reading-status" role="status" aria-live="polite"></span>
       </div>
@@ -236,7 +241,8 @@
           <p class="hero-deck"><strong><span lang="sl">Bojan Dobrečevič (BD) in sodelavci AI razvijajo 8zC skozi številna nova semena, povezave, izvedbe in preizkuse.</span><span lang="en">Bojan Dobrečevič (BD) and AI collaborators develop 8zC through many new seeds, connections, implementations and experiments.</span></strong> <span lang="sl">Ob kompresorju nastaja tudi način dela, ki človekovo zamisel poveže z dokazljivim rezultatom — in z naslednjim vprašanjem.</span><span lang="en">Alongside the compressor, a way of working is emerging that connects a human idea to a demonstrable result — and to the next question.</span></p>
           <div class="hero-actions">
             <a class="button-link" href="#zacetek"><span lang="sl">Preberi zgodbo</span><span lang="en">Read the story</span> <span aria-hidden="true">↓</span></a>
-            <a href="/8zC/"><span lang="sl">Preizkusi 8zC</span><span lang="en">Try 8zC</span> <span aria-hidden="true">↗</span></a>
+            <a class="button-link secondary-link" href="/8zC/"><span lang="sl">Preizkusi 8zC</span><span lang="en">Try 8zC</span> <span aria-hidden="true">↗</span></a>
+            <a class="button-link secondary-link" href="/8zc-results/"><span lang="sl">Rezultati 8zC</span><span lang="en">8zC results</span> <span aria-hidden="true">↗</span></a>
           </div>
         </div>
         <aside class="hero-mark" aria-label="Dve povezani razvojni zgodbi" data-aria-sl="Dve povezani razvojni zgodbi" data-aria-en="Two interconnected development stories">
@@ -734,7 +740,7 @@
       const tocLinks = Array.from(document.querySelectorAll('.toc-list a'));
       const chapters = Array.from(document.querySelectorAll('.chapter'));
       const progress = document.getElementById('reading-progress');
-      const themeButton = document.getElementById('theme-toggle');
+      const themeButtons = [...document.querySelectorAll('[data-theme-choice]')];
       const down = document.getElementById('font-down');
       const up = document.getElementById('font-up');
       const reset = document.getElementById('font-reset');
@@ -749,11 +755,11 @@
 
       function syncTheme() {
         const light = root.dataset.theme === 'light';
-        themeButton.setAttribute('aria-pressed', String(light));
+        for (const button of themeButtons) button.setAttribute('aria-pressed', String(button.dataset.themeChoice === (light ? 'light' : 'dark')));
         document.querySelector('meta[name="theme-color"]').content = light ? '#f4f2e9' : '#101d1d';
       }
-      themeButton.addEventListener('click', () => {
-        const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+      for (const button of themeButtons) button.addEventListener('click', () => {
+        const next = button.dataset.themeChoice;
         root.dataset.theme = next;
         try { localStorage.setItem('8zc-story-theme', next); } catch (_) {}
         syncTheme();
