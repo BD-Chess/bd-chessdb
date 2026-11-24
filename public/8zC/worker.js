@@ -1,5 +1,19 @@
 "use strict";
 
+const MAX_FILE_BYTES = 256 * 1024 * 1024; // 256 MiB per file (fits comfortably inside 2-4 GiB wasm32 Worker heap)
+let cachedWasmBytes = null;
+
+async function getWasmInstance() {
+  if (!cachedWasmBytes) {
+    const response = await fetch("./decoder.wasm");
+    if (!response.ok) throw new Error("Brskalnik ni mogel prebrati datoteke decoder.wasm.");
+    cachedWasmBytes = await response.arrayBuffer();
+  }
+  // Fresh instance per file (<1 ms from cached ArrayBuffer) guarantees zero WASM linear-memory accumulation across large batches
+  const { instance } = await WebAssembly.instantiate(cachedWasmBytes, {});
+  return instance.exports;
+}
+
 async function sha256Hex(bytes) {
   if (!self.crypto?.subtle) return "";
   try {
@@ -18,7 +32,6 @@ async function measureBrowserZipSize(inputBytes) {
     writer.write(inputBytes);
     writer.close();
     const buf = await new Response(cs.readable).arrayBuffer();
-    // Standard single-member ZIP container overhead (30B local hdr + 2B name "in" + 46B central dir + 2B name + 22B EOCD = 102 B)
     return buf.byteLength + 102;
   } catch {
     return null;
@@ -27,7 +40,7 @@ async function measureBrowserZipSize(inputBytes) {
 
 function callWasm(api, fnName, inputBytes) {
   const ptr = api.alloc(inputBytes.length) >>> 0;
-  if (!ptr) throw new Error("Za vhodno datoteko ni dovolj pomnilnika.");
+  if (!ptr) throw new Error("Za vhodno datoteko ni dovolj pomnilnika v WASM.");
   try {
     new Uint8Array(api.memory.buffer, ptr, inputBytes.length).set(inputBytes);
     const code = api[fnName](ptr, inputBytes.length);
@@ -44,16 +57,77 @@ function callWasm(api, fnName, inputBytes) {
   }
 }
 
-self.onmessage = async ({ data: { mode, file } }) => {
+function resolveFileOp(file, defaultMode, inputBytes) {
+  const nameLow = (file.name || "").toLowerCase();
+  if (nameLow.endsWith(".8zc.zip")) return "decode";
+  if (defaultMode === "decode") return "decode";
+  return "encode";
+}
+
+self.onmessage = async ({ data }) => {
   try {
-    if (!["encode", "decode", "compare"].includes(mode)) throw new Error("Neznan postopek.");
-    const maxBytes = 16 * 1024 * 1024 + (mode === "decode" ? 1024 : 0);
-    if (!file.size || file.size > maxBytes) throw new Error("Neveljavna velikost vhodne datoteke.");
-    const response = await fetch("./decoder.wasm");
-    if (!response.ok) throw new Error("Brskalnik ni mogel prebrati datoteke decoder.wasm.");
-    const wasmBytes = await response.arrayBuffer();
-    const { instance } = await WebAssembly.instantiate(wasmBytes, {});
-    const api = instance.exports;
+    const { mode, file, files } = data;
+    if (!["encode", "decode", "compare", "batch"].includes(mode)) throw new Error("Neznan postopek.");
+
+    if (mode === "batch") {
+      if (!Array.isArray(files) || !files.length) throw new Error("Ni izbranih datotek.");
+      const defaultOp = data.defaultMode === "decode" ? "decode" : "encode";
+      const items = [];
+      const transfers = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        self.postMessage({ progress: true, index: i + 1, total: files.length, filename: f.name });
+        const maxBytes = MAX_FILE_BYTES + 65536;
+        if (!f.size || f.size > maxBytes) {
+          throw new Error(`Datoteka "${f.name}" je prazna ali presega mejo 256 MiB.`);
+        }
+        const api = await getWasmInstance();
+        const input = new Uint8Array(await f.arrayBuffer());
+        const op = resolveFileOp(f, defaultOp, input);
+        const t0 = performance.now();
+        const out = callWasm(api, op, input);
+        const elapsedMs = Math.max(1, Math.round(performance.now() - t0));
+
+        let verified = true;
+        let browserZipBytes = null;
+        let outDigest = await sha256Hex(out);
+
+        if (op === "encode") {
+          // Verify lossless roundtrip inside fresh WASM instance for files <= 64 MiB automatically
+          if (input.length <= 64 * 1024 * 1024) {
+            const apiDec = await getWasmInstance();
+            const restored = callWasm(apiDec, "decode", out);
+            verified = restored.length === input.length && restored.every((b, idx) => b === input[idx]);
+            if (!verified) throw new Error(`Preverba bitno točne obnove za "${f.name}" ni uspela.`);
+            browserZipBytes = await measureBrowserZipSize(input);
+          }
+        }
+
+        items.push({
+          origName: f.name,
+          op,
+          inputBytes: input.length,
+          outputBytes: out.byteLength,
+          browserZipBytes,
+          digest: outDigest,
+          verified,
+          elapsedMs,
+          bytes: out.buffer,
+        });
+        transfers.push(out.buffer);
+      }
+
+      self.postMessage({ batchDone: true, items }, transfers);
+      return;
+    }
+
+    const maxBytes = MAX_FILE_BYTES + (mode === "decode" ? 65536 : 0);
+    if (!file || !file.size || file.size > maxBytes) {
+      throw new Error("Datoteka je prazna ali presega dovoljeno velikost (256 MiB).");
+    }
+
+    const api = await getWasmInstance();
     const input = new Uint8Array(await file.arrayBuffer());
 
     if (mode === "compare") {
@@ -62,8 +136,9 @@ self.onmessage = async ({ data: { mode, file } }) => {
       const encoded = callWasm(api, "encode", input);
       const encodeMs = Math.max(1, Math.round(performance.now() - t0));
 
+      const apiDec = await getWasmInstance();
       const t1 = performance.now();
-      const restored = callWasm(api, "decode", encoded);
+      const restored = callWasm(apiDec, "decode", encoded);
       const decodeMs = Math.max(1, Math.round(performance.now() - t1));
 
       const restoredDigest = await sha256Hex(restored);

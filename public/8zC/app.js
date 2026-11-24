@@ -9,11 +9,11 @@ const QUICK_SAMPLES = [
     chip_sl: "ELF64 (80 KB)",
     chip_en: "ELF64 (80 KB)",
     sha256: "7a08d5a9e1e9b2b3556c866df883e58ddbf1879fd7859a5e33845f6560476bcc",
-    title_sl: "00_data_endian.elf (Linux ELF64 · Haskell · BCJ_V8_SPLIT_LRU63)",
-    title_en: "00_data_endian.elf (Linux ELF64 · Haskell · BCJ_V8_SPLIT_LRU63)",
+    title_sl: "00_data_endian.elf (Linux ELF64 · Haskell · BCJ_V9_SPLIT_LRU_STACK)",
+    title_en: "00_data_endian.elf (Linux ELF64 · Haskell · BCJ_V9_SPLIT_LRU_STACK)",
     raw_B: 80264,
-    zip:  { direct: 15976, best: 9915,  pct: "-37,9 %", label: "Cycle13 R5 v8 ELF" },
-    sz7z: { direct: 13555, best: 9281,  pct: "-31,5 %", label: "Cycle13 R5 v8 ELF" },
+    zip:  { direct: 15976, best: 9915,  pct: "-37,9 %", label: "Cycle13 R6 v9 ELF" },
+    sz7z: { direct: 13555, best: 9281,  pct: "-31,5 %", label: "Cycle13 R6 v9 ELF" },
     paq:  { direct: 9001,  z8c: 6492,   pct: "-27,9 % (-3)" },
     cmix: null,
   },
@@ -25,11 +25,11 @@ const QUICK_SAMPLES = [
     chip_sl: "Win64 DLL (235 KB)",
     chip_en: "Win64 DLL (235 KB)",
     sha256: "b03a3fc0014c8e7ceb3076e880af923db22fcf2a4327815d5ef7b51fc596df8f",
-    title_sl: "sample_pe64_win32.dll (Windows PE32+ x64 · BCJ_V8_SPLIT_LRU63 + T4_V8)",
-    title_en: "sample_pe64_win32.dll (Windows PE32+ x64 · BCJ_V8_SPLIT_LRU63 + T4_V8)",
+    title_sl: "sample_pe64_win32.dll (Windows PE32+ x64 · BCJ_V9_STACK_SPLIT + PE_RELOC_V2 + T4_V9)",
+    title_en: "sample_pe64_win32.dll (Windows PE32+ x64 · BCJ_V9_STACK_SPLIT + PE_RELOC_V2 + T4_V9)",
     raw_B: 234896,
-    zip:  { direct: 87017, best: 75726, pct: "-13,0 %", label: "Cycle13 R5 v8 PE" },
-    sz7z: { direct: 77337, best: 69406, pct: "-10,3 %", label: "Cycle13 R5 v8 PE" },
+    zip:  { direct: 87017, best: 75273, pct: "-13,5 %", label: "Cycle13 R6 v9 PE" },
+    sz7z: { direct: 77337, best: 69386, pct: "-10,3 %", label: "Cycle13 R6 v9 PE" },
   },
   {
     id: "sample_wasm",
@@ -39,11 +39,11 @@ const QUICK_SAMPLES = [
     chip_sl: "WASM (121 KB)",
     chip_en: "WASM (121 KB)",
     sha256: "b3b38d82ff4c4cdf9c8bb4490ebcd236d0966c41ce80688afed729979383ea6d",
-    title_sl: "sample_module.wasm (WebAssembly · WASM_SPLIT_9_MTF + T4_V8)",
-    title_en: "sample_module.wasm (WebAssembly · WASM_SPLIT_9_MTF + T4_V8)",
+    title_sl: "sample_module.wasm (WebAssembly · WASM_SPLIT_9_MTF + T4_V9)",
+    title_en: "sample_module.wasm (WebAssembly · WASM_SPLIT_9_MTF + T4_V9)",
     raw_B: 120920,
-    zip:  { direct: 51714, best: 43659, pct: "-15,6 %", label: "Cycle13 R5 v8 WASM" },
-    sz7z: { direct: 44536, best: 42300, pct: "-5,0 %",  label: "Cycle13 R5 v8 WASM" },
+    zip:  { direct: 51714, best: 43659, pct: "-15,6 %", label: "Cycle13 R6 v9 WASM" },
+    sz7z: { direct: 44536, best: 42300, pct: "-5,0 %",  label: "Cycle13 R6 v9 WASM" },
   },
   {
     id: "sample_csv",
@@ -53,11 +53,11 @@ const QUICK_SAMPLES = [
     chip_sl: "CSV (447 KB)",
     chip_en: "CSV (447 KB)",
     sha256: "c85e819abaa6d09227e81a9cba186578fde33cb548668340d33e4874d0475fbf",
-    title_sl: "sample_telemetry.csv (TABULAR_V5 · periodična napoved + trailing-LF + rstrip0)",
-    title_en: "sample_telemetry.csv (TABULAR_V5 · seasonal predictor + trailing-LF + rstrip0)",
+    title_sl: "sample_telemetry.csv (TABULAR_V6 · 2-stopenjska sezonska napoved + HEX_PACK_DEDUP + BASENAME)",
+    title_en: "sample_telemetry.csv (TABULAR_V6 · 2-stage seasonal predictor + HEX_PACK_DEDUP + BASENAME)",
     raw_B: 446980,
-    zip:  { direct: 49944, best: 437,   pct: "-99,13 %", label: "Cycle13 R5 v8 Tabular" },
-    sz7z: { direct: 22942, best: 392,   pct: "-98,29 %", label: "Cycle13 R5 v8 Tabular" },
+    zip:  { direct: 49944, best: 437,   pct: "-99,13 %", label: "Cycle13 R6 v9 Tabular" },
+    sz7z: { direct: 22942, best: 392,   pct: "-98,29 %", label: "Cycle13 R6 v9 Tabular" },
   },
   {
     id: "sample_jsonl",
@@ -67,11 +67,11 @@ const QUICK_SAMPLES = [
     chip_sl: "JSONL (610 KB)",
     chip_en: "JSONL (610 KB)",
     sha256: "0e81136425d74fa21d47612a2bf17fe34fb6900ce819e80d0a25bd4d6bd6bb85",
-    title_sl: "sample_events.jsonl (Strukturirani dnevniki JSONL · TABULAR_V5)",
-    title_en: "sample_events.jsonl (Structured JSONL logs · TABULAR_V5)",
+    title_sl: "sample_events.jsonl (Strukturirani dnevniki JSONL · TABULAR_V6)",
+    title_en: "sample_events.jsonl (Structured JSONL logs · TABULAR_V6)",
     raw_B: 610000,
-    zip:  { direct: 28016, best: 495,   pct: "-98,23 %", label: "Cycle13 R5 v8 JSONL" },
-    sz7z: { direct: 7754,  best: 448,   pct: "-94,22 %", label: "Cycle13 R5 v8 JSONL" },
+    zip:  { direct: 28016, best: 495,   pct: "-98,23 %", label: "Cycle13 R6 v9 JSONL" },
+    sz7z: { direct: 7754,  best: 448,   pct: "-94,22 %", label: "Cycle13 R6 v9 JSONL" },
   },
   {
     id: "sample_wav",
@@ -81,11 +81,11 @@ const QUICK_SAMPLES = [
     chip_sl: "WAV PCM16 (32 KB)",
     chip_en: "WAV PCM16 (32 KB)",
     sha256: "34272b7c3e240f31802a9f54290bc752c5648d45e64bc7aeb857f2590e29344b",
-    title_sl: "sample_stereo_pcm16.wav (Stereo 16-bit PCM zvok · WAV_V3 LPC-32 + uvarint)",
-    title_en: "sample_stereo_pcm16.wav (Stereo 16-bit PCM audio · WAV_V3 LPC-32 + uvarint)",
+    title_sl: "sample_stereo_pcm16.wav (Stereo 16-bit PCM zvok · WAV_V4 4-načinski stereo + LPC-32)",
+    title_en: "sample_stereo_pcm16.wav (Stereo 16-bit PCM audio · WAV_V4 4-mode stereo + LPC-32)",
     raw_B: 32044,
-    zip:  { direct: 26932, best: 1964,  pct: "-92,7 %", label: "Cycle13 R5 v8 WAV_V3" },
-    sz7z: { direct: 21233, best: 1884,  pct: "-91,1 %", label: "Cycle13 R5 v8 WAV_V3" },
+    zip:  { direct: 26932, best: 1964,  pct: "-92,7 %", label: "Cycle13 R6 v9 WAV_V4" },
+    sz7z: { direct: 21233, best: 1884,  pct: "-91,1 %", label: "Cycle13 R6 v9 WAV_V4" },
   },
   {
     id: "sample_bmp",
@@ -98,8 +98,8 @@ const QUICK_SAMPLES = [
     title_sl: "sample_image.bmp (512×384 · IMAGE_V4 Raw/YCoCg-R per-channel + DiagLag4 + rstrip0)",
     title_en: "sample_image.bmp (512×384 · IMAGE_V4 Raw/YCoCg-R per-channel + DiagLag4 + rstrip0)",
     raw_B: 589878,
-    zip:  { direct: 513897, best: 503,   pct: "-99,90 %", label: "Cycle13 R5 v8 IMAGE_V4" },
-    sz7z: { direct: 271080, best: 487,   pct: "-99,82 %", label: "Cycle13 R5 v8 IMAGE_V4" },
+    zip:  { direct: 513897, best: 503,   pct: "-99,90 %", label: "Cycle13 R6 v9 IMAGE_V4" },
+    sz7z: { direct: 271080, best: 487,   pct: "-99,82 %", label: "Cycle13 R6 v9 IMAGE_V4" },
   },
   {
     id: "sample_autodcc",
@@ -112,8 +112,8 @@ const QUICK_SAMPLES = [
     title_sl: "sample_autodcc_sensor.bin (FMT_AUTO_DCC · samodejni korak + delta O1/O2)",
     title_en: "sample_autodcc_sensor.bin (FMT_AUTO_DCC · auto-stride + delta O1/O2)",
     raw_B: 33808,
-    zip:  { direct: 12017, best: 245,   pct: "-98,0 %", label: "Cycle13 R5 v8 Auto-DCC" },
-    sz7z: { direct: 6927,  best: 224,   pct: "-96,8 %", label: "Cycle13 R5 v8 Auto-DCC" },
+    zip:  { direct: 12017, best: 246,   pct: "-98,0 %", label: "Cycle13 R6 v9 Auto-DCC" },
+    sz7z: { direct: 6927,  best: 224,   pct: "-96,8 %", label: "Cycle13 R6 v9 Auto-DCC" },
   },
 ];
 
@@ -125,8 +125,8 @@ const ELF_BENCHMARK_SAMPLES = [
     title_sl: "00_data_endian.elf (Haskell / GHC)",
     title_en: "00_data_endian.elf (Haskell / GHC)",
     raw_B: 80264,
-    zip:  { direct: 15976, z8c_r3: 10484, z8c_v5: 9915,  pct_v5: "-37,9 %" },
-    sz7z: { direct: 13555, z8c_r3: 9525,  z8c_v5: 9281,  pct_v5: "-31,5 %" },
+    zip:  { direct: 15976, z8c_r3: 10484, z8c_v9: 9915,  pct_v9: "-37,9 %" },
+    sz7z: { direct: 13555, z8c_r3: 9525,  z8c_v9: 9281,  pct_v9: "-31,5 %" },
     paq:  { direct: 9001,  z8c: 6492,  pct: "-27,9 % (-3)" },
     cmix: null,
   },
@@ -137,8 +137,8 @@ const ELF_BENCHMARK_SAMPLES = [
     title_sl: "02_calf_so.elf (C++ / GCC avdio vtičnik)",
     title_en: "02_calf_so.elf (C++ / GCC audio plugin)",
     raw_B: 1182672,
-    zip:  { direct: 297204, z8c_r3: 207569, z8c_v5: 184690, pct_v5: "-37,9 %" },
-    sz7z: { direct: 239015, z8c_r3: 174354, z8c_v5: 158990, pct_v5: "-33,5 %" },
+    zip:  { direct: 297204, z8c_r3: 207569, z8c_v9: 184690, pct_v9: "-37,9 %" },
+    sz7z: { direct: 239015, z8c_r3: 174354, z8c_v9: 158990, pct_v9: "-33,5 %" },
     paq:  { direct: 145887, z8c: 123729, pct: "-15,2 % (-10LE)" },
     cmix: { direct: 145654, z8c: 111456, pct: "-23,5 % (R3+cmix)" },
   },
@@ -149,8 +149,8 @@ const ELF_BENCHMARK_SAMPLES = [
     title_sl: "03_yesod_form_so.elf (Haskell / GHC knjižnica)",
     title_en: "03_yesod_form_so.elf (Haskell / GHC library)",
     raw_B: 1472320,
-    zip:  { direct: 283835, z8c_r3: 186015, z8c_v5: 164187, pct_v5: "-42,2 %" },
-    sz7z: { direct: 210821, z8c_r3: 140758, z8c_v5: 131135, pct_v5: "-37,8 %" },
+    zip:  { direct: 283835, z8c_r3: 186015, z8c_v9: 158107, pct_v9: "-44,3 %" },
+    sz7z: { direct: 210821, z8c_r3: 140758, z8c_v9: 131135, pct_v9: "-37,8 %" },
     paq:  { direct: 117163, z8c: 99514,  pct: "-15,1 % (-10LE)" },
     cmix: { direct: 114899, z8c: 98691,  pct: "-14,1 %" },
   },
@@ -161,8 +161,8 @@ const ELF_BENCHMARK_SAMPLES = [
     title_sl: "01_jwtui.elf (Rust / LLVM izvršljivi program)",
     title_en: "01_jwtui.elf (Rust / LLVM executable)",
     raw_B: 2726704,
-    zip:  { direct: 1290629, z8c_r3: 1000231, z8c_v5: 947115, pct_v5: "-26,6 %" },
-    sz7z: { direct: 1047223, z8c_r3: 779900,  z8c_v5: 743969, pct_v5: "-29,0 %" },
+    zip:  { direct: 1290629, z8c_r3: 1000231, z8c_v9: 937814, pct_v9: "-27,3 %" },
+    sz7z: { direct: 1047223, z8c_r3: 779900,  z8c_v9: 743482, pct_v9: "-29,0 %" },
     paq:  { direct: 704961,  z8c: 522419,  pct: "-25,9 % (-10LE)" },
     cmix: { direct: 683352,  z8c: 501302,  pct: "-26,6 %" },
   },
@@ -173,8 +173,8 @@ const ELF_BENCHMARK_SAMPLES = [
     title_sl: "04_geany.elf (C / C++ urejevalnik · 3,92 MB)",
     title_en: "04_geany.elf (C / C++ IDE executable · 3.92 MB)",
     raw_B: 3922032,
-    zip:  { direct: 1733761, z8c_r3: 1495837, z8c_v5: 1381695, pct_v5: "-20,3 %" },
-    sz7z: { direct: 1412165, z8c_r3: 1230998, z8c_v5: 1140037, pct_v5: "-19,3 %" },
+    zip:  { direct: 1733761, z8c_r3: 1495837, z8c_v9: 1374082, pct_v9: "-20,7 %" },
+    sz7z: { direct: 1412165, z8c_r3: 1230998, z8c_v9: 1140037, pct_v9: "-19,3 %" },
     paq:  null,
     cmix: null,
   },
@@ -188,36 +188,51 @@ const translations = {
     "The first row measures the current file in your browser; the direct ZIP size is estimated from browser Deflate plus a ZIP wrapper. Other rows are recorded external-codec measurements for the same SHA-256. The reference matrices below show those external measurements.",
   "Rezultati 8zC": "8zC results",
   "Kodek 8zC": "8zC codec",
-  "Stisnite datoteko (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhiva 8zC obnovite izvirnik. Vse teče lokalno v vašem brskalniku (Rust + WebAssembly).":
-    "Compress a file (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM or structured binary via Auto-DCC) or restore the original from an 8zC archive. Everything runs locally in your browser (Rust + WebAssembly).",
+  "Stisnite eno ali več datotek hkrati (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhivov 8zC obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
+    "Compress one or multiple files at once (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM or structured binary via Auto-DCC) or restore originals from 8zC archives. Everything runs 100% locally in your browser (Rust + WebAssembly).",
   "Izberite postopek": "Choose an operation",
-  "Stisni datoteko": "Compress file",
-  "Obnovi izvirnik": "Restore original",
-  "Vhodna datoteka (6 družin formatov)": "Input file (6 format families)",
-  "Vhodni arhiv 8zC ZIP": "8zC ZIP input archive",
+  "Stisni datoteke": "Compress files",
+  "Obnovi izvirnike": "Restore originals",
+  "Vhodne datoteke (6 družin formatov)": "Input files (6 format families)",
+  "Vhodni arhivi 8zC ZIP": "8zC ZIP input archives",
   "1-klik vzorci:": "1-click samples:",
-  "Izberite poljubno datoteko": "Choose any file",
-  "Izberite arhiv ZIP": "Choose a ZIP archive",
-  "ali jo povlecite sem (ali kliknite vzorec zgoraj: ELF, DLL, WASM, CSV, JSONL, WAV, BMP, Auto-DCC)":
-    "or drop it here (or click a sample chip above: ELF, DLL, WASM, CSV, JSONL, WAV, BMP, Auto-DCC)",
-  "ali ga povlecite sem": "or drop it here",
-  "1 datoteka · do 16 MiB": "1 file · up to 16 MiB",
-  "1 arhiv · do 16 MiB + 1 KiB": "1 archive · up to 16 MiB + 1 KiB",
+  "Izberite eno ali več datotek": "Choose one or more files",
+  "Izberite enega ali več arhivov ZIP": "Choose one or more ZIP archives",
+  "ali jih povlecite sem (lahko tudi mešano: navadne datoteke in arhive *.8zc.zip hkrati!)":
+    "or drop them here (you can even drop mixed raw files and *.8zc.zip archives together!)",
+  "ali jih povlecite sem": "or drop them here",
+  "1–100 datotek · do 256 MiB / datoteko (1 GiB skupaj)": "1–100 files · up to 256 MiB / file (1 GiB batch)",
+  "1–100 arhivov · do 256 MiB / arhiv (1 GiB skupaj)": "1–100 archives · up to 256 MiB / archive (1 GiB batch)",
   "Primerjaj kompresije": "Compare compressions",
   "Stisni": "Compress",
+  "Stisni vse": "Compress all",
   "Obnovi": "Restore",
+  "Obnovi vse": "Restore all",
+  "Obdelaj vse": "Process all",
   "Prekliči": "Cancel",
   "Obnovljena datoteka": "Restored file",
   "Arhiv 8zC ZIP": "8zC ZIP archive",
   "Shrani ZIP": "Save ZIP",
   "Shrani izvirnik": "Save original",
+  "Shrani vse (.zip)": "Save all (.zip)",
+  "Paketna obdelava zaključena": "Batch processing complete",
+  "Datoteka": "File",
+  "Postopek": "Operation",
+  "Vhod": "Input",
+  "Čisti ZIP": "Direct ZIP",
+  "Izhod 8zC": "8zC Output",
+  "Prihranek / SHA-256": "Savings / SHA-256",
+  "Prenos": "Download",
   "Licence knjižnic": "Library licenses",
-  "Izberite samo eno datoteko.": "Choose one file.",
-  "Datoteka je prazna.": "The file is empty.",
-  "Datoteka presega dovoljeno velikost.": "The file exceeds the size limit.",
+  "Izberite največ 100 datotek hkrati.": "Choose up to 100 files at once.",
+  "Ena od izbranih datotek je prazna.": "One of the selected files is empty.",
+  "Datoteka presega dovoljeno velikost (256 MiB).": "A file exceeds the 256 MiB limit.",
+  "Skupna velikost paketa presega 1 GiB.": "Total batch size exceeds 1 GiB.",
   "Postopek je preklican.": "Operation cancelled.",
   "Arhiv je pripravljen za shranjevanje.": "Your archive is ready to save.",
   "Izvirna datoteka je pripravljena za shranjevanje.": "Your restored file is ready to save.",
+  "Paketna obdelava je zaključena — posamezne datoteke ali skupni ZIP so pripravljeni za prenos.":
+    "Batch complete — individual files or combined ZIP are ready to download.",
   "Stiskanje poteka …": "Compressing …",
   "Obnova poteka …": "Restoring …",
   "Primerjava kompresij v brskalniku poteka …": "Running browser compression comparison …",
@@ -226,23 +241,23 @@ const translations = {
   "Brskalnik ni mogel zagnati opravila. Odprite aplikacijo prek lokalnega spletnega strežnika.":
     "The browser could not start the operation.",
   "Primerjava kompresij (Čisti kodek proti 8zC)": "Compression comparison (Raw codec vs. 8zC)",
-  "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R5 v8) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256.":
-    "Live multi-format browser benchmark (Rust + WebAssembly Cycle 13 R5 v8) and verified reference matrices with 100% byte-exact SHA-256 restoration.",
+  "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R6 v9) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256.":
+    "Live multi-format browser benchmark (Rust + WebAssembly Cycle 13 R6 v9) and verified reference matrices with 100% byte-exact SHA-256 restoration.",
   "Živi izid v vašem brskalniku": "Live result in your browser",
   "Kodek / stopnja": "Codec / stage",
   "Surovo": "Raw",
   "Čisti kodek": "Direct codec",
   "8zC + kodek": "8zC + codec",
   "Prihranek": "Savings",
-  "Cycle 13 R5 (v8) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)":
-    "Cycle 13 R5 (v8) · 7 multi-format samples (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)",
+  "Cycle 13 R6 (v9) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)":
+    "Cycle 13 R6 (v9) · 7 multi-format samples (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)",
   "Vzorec in družina formata": "Sample and format family",
-  "Čisti ZIP → 8zC v8 + ZIP": "Direct ZIP → 8zC v8 + ZIP",
-  "Čisti 7z → 8zC v8 + 7z": "Direct 7z → 8zC v8 + 7z",
+  "Čisti ZIP → 8zC v9 + ZIP": "Direct ZIP → 8zC v9 + ZIP",
+  "Čisti 7z → 8zC v9 + 7z": "Direct 7z → 8zC v9 + 7z",
   "Živi preizkus": "Live test",
   "Preizkusi v živo →": "Test live →",
-  "Cycle 13 R5 (v8) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)":
-    "Cycle 13 R5 (v8) · Reference matrix of 5 ELF64 binaries (.zip · .7z · .paq · .cmix)",
+  "Cycle 13 R6 (v9) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)":
+    "Cycle 13 R6 (v9) · Reference matrix of 5 ELF64 binaries (.zip · .7z · .paq · .cmix)",
   "Zaženi 00_data_endian.elf v živo →": "Run 00_data_endian.elf live →",
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
@@ -263,7 +278,11 @@ function fmtPct(savedBytes, baseBytes) {
   return (language === "en" ? pct : pct.replace(".", ",")) + " %";
 }
 
-const MAX_INPUT_BYTES = 16 * 1024 * 1024;
+// 256 MiB per file, 1 GiB per multi-file batch, up to 100 files
+const MAX_INPUT_BYTES = 256 * 1024 * 1024;
+const MAX_BATCH_BYTES = 1024 * 1024 * 1024;
+const MAX_BATCH_FILES = 100;
+
 const modes = byId("modes");
 const fileInput = byId("file");
 const choose = byId("choose");
@@ -274,13 +293,114 @@ const compareBtn = byId("compare-btn");
 const runSampleLiveBtn = byId("run-sample-live");
 const statusLine = byId("status");
 const download = byId("download");
+const downloadAll = byId("download-all");
 
 let mode = "encode";
-let selected = null;
+let selectedFiles = [];
 let activeSampleId = null;
 let worker = null;
-let objectUrl = null;
+let objectUrls = [];
 let lastCompareData = null;
+
+// --- Minimal zero-dependency IEEE 802.3 CRC-32 + STORE .zip builder for "Save all (.zip)" ---
+const CRC32_TABLE = (() => {
+  const tbl = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    tbl[i] = c >>> 0;
+  }
+  return tbl;
+})();
+
+function crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) {
+    c = CRC32_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  }
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function buildStoreZip(entries) {
+  const enc = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+  const usedNames = new Set();
+
+  for (const e of entries) {
+    let safeName = (e.name || "file.bin").replace(/[\\/]+/g, "_");
+    if (usedNames.has(safeName)) {
+      let idx = 2;
+      const dot = safeName.indexOf(".");
+      const stem = dot > 0 ? safeName.slice(0, dot) : safeName;
+      const ext = dot > 0 ? safeName.slice(dot) : "";
+      while (usedNames.has(`${stem}_${idx}${ext}`)) idx++;
+      safeName = `${stem}_${idx}${ext}`;
+    }
+    usedNames.add(safeName);
+
+    const nameBytes = enc.encode(safeName);
+    const data = e.bytes instanceof Uint8Array ? e.bytes : new Uint8Array(e.bytes);
+    const crc = crc32(data);
+    const len = data.byteLength;
+
+    const lhdr = new ArrayBuffer(30 + nameBytes.length);
+    const lv = new DataView(lhdr);
+    lv.setUint32(0, 0x04034B50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 0x0800, true); // UTF-8 filename flag
+    lv.setUint16(8, 0, true);      // STORE (already compressed or exact restored binary)
+    lv.setUint16(10, 0, true);
+    lv.setUint16(12, 0x5778, true);
+    lv.setUint32(14, crc, true);
+    lv.setUint32(18, len, true);
+    lv.setUint32(22, len, true);
+    lv.setUint16(26, nameBytes.length, true);
+    lv.setUint16(28, 0, true);
+    new Uint8Array(lhdr, 30).set(nameBytes);
+
+    const chdr = new ArrayBuffer(46 + nameBytes.length);
+    const cv = new DataView(chdr);
+    cv.setUint32(0, 0x02014B50, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0x0800, true);
+    cv.setUint16(10, 0, true);
+    cv.setUint16(12, 0, true);
+    cv.setUint16(14, 0x5778, true);
+    cv.setUint32(16, crc, true);
+    cv.setUint32(20, len, true);
+    cv.setUint32(24, len, true);
+    cv.setUint16(28, nameBytes.length, true);
+    cv.setUint16(30, 0, true);
+    cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true);
+    cv.setUint16(36, 0, true);
+    cv.setUint32(38, 0, true);
+    cv.setUint32(42, offset, true);
+    new Uint8Array(chdr, 46).set(nameBytes);
+
+    localParts.push(new Uint8Array(lhdr), data);
+    centralParts.push(new Uint8Array(chdr));
+    offset += lhdr.byteLength + len;
+  }
+
+  let centralLen = 0;
+  for (const cp of centralParts) centralLen += cp.byteLength;
+  const eocd = new ArrayBuffer(22);
+  const ev = new DataView(eocd);
+  ev.setUint32(0, 0x06054B50, true);
+  ev.setUint16(4, 0, true);
+  ev.setUint16(6, 0, true);
+  ev.setUint16(8, entries.length, true);
+  ev.setUint16(10, entries.length, true);
+  ev.setUint32(12, centralLen, true);
+  ev.setUint32(16, offset, true);
+  ev.setUint16(20, 0, true);
+
+  return new Blob([...localParts, ...centralParts, new Uint8Array(eocd)], { type: "application/zip" });
+}
 
 function inferBadge(name) {
   if (!name) return "8zC";
@@ -295,6 +415,16 @@ function inferBadge(name) {
   if (lower.endsWith(".bin") || lower.endsWith(".dat")) return "DCC";
   if (lower.endsWith(".zip")) return "ZIP";
   return "8zC";
+}
+
+function outputFileNameFor(origName, op) {
+  if (op === "encode") return origName + ".8zc.zip";
+  if (/\.8zc\.zip$/i.test(origName)) return origName.replace(/\.8zc\.zip$/i, "");
+  if (/\.zip$/i.test(origName)) {
+    const stripped = origName.replace(/\.zip$/i, "");
+    return stripped.includes(".") ? stripped : stripped + ".bin";
+  }
+  return origName + ".restored";
 }
 
 function renderSampleChips() {
@@ -361,11 +491,11 @@ function renderElfMatrix() {
     tr.appendChild(tdRaw);
 
     const tdZip = document.createElement("td");
-    tdZip.innerHTML = `<span>${fmtB(s.zip.direct)}</span> → <strong>${fmtB(s.zip.z8c_v5)}</strong> <span class="badge">${s.zip.pct_v5}</span>`;
+    tdZip.innerHTML = `<span>${fmtB(s.zip.direct)}</span> → <strong>${fmtB(s.zip.z8c_v9)}</strong> <span class="badge">${s.zip.pct_v9}</span>`;
     tr.appendChild(tdZip);
 
     const td7z = document.createElement("td");
-    td7z.innerHTML = `<span>${fmtB(s.sz7z.direct)}</span> → <strong>${fmtB(s.sz7z.z8c_v5)}</strong> <span class="badge">${s.sz7z.pct_v5}</span>`;
+    td7z.innerHTML = `<span>${fmtB(s.sz7z.direct)}</span> → <strong>${fmtB(s.sz7z.z8c_v9)}</strong> <span class="badge">${s.sz7z.pct_v9}</span>`;
     tr.appendChild(td7z);
 
     const tdPaq = document.createElement("td");
@@ -400,9 +530,10 @@ function renderLiveCompare(data) {
     (s) => s.sha256 === data.inputDigest && s.raw_B === data.inputBytes
   );
 
+  const singleFile = selectedFiles[0];
   byId("live-compare-title").textContent =
     (language === "en" ? "Live result in your browser: " : "Živi izid v vašem brskalniku: ") +
-    (selected ? selected.name : "00_data_endian.elf");
+    (singleFile ? singleFile.name : "00_data_endian.elf");
 
   const addRow = (label, rawB, baseB, z8cB, note) => {
     const tr = document.createElement("tr");
@@ -441,8 +572,8 @@ function renderLiveCompare(data) {
 
   addRow(
     language === "en"
-      ? "Browser Deflate ZIP vs. 8zC WASM v8 (live)"
-      : "Brskalniški Deflate ZIP proti 8zC WASM v8 (v živo)",
+      ? "Browser Deflate ZIP vs. 8zC WASM v9 (live)"
+      : "Brskalniški Deflate ZIP proti 8zC WASM v9 (v živo)",
     data.inputBytes,
     data.browserZipBytes,
     data.z8cZipBytes,
@@ -451,14 +582,14 @@ function renderLiveCompare(data) {
 
   if (matchedQuick) {
     addRow(
-      language === "en" ? "Recorded: 8zC v8 + 7-Zip Deflate (-mx=9)" : "Zabeleženo: 8zC v8 + 7-Zip Deflate (-mx=9)",
+      language === "en" ? "Recorded: 8zC v9 + 7-Zip Deflate (-mx=9)" : "Zabeleženo: 8zC v9 + 7-Zip Deflate (-mx=9)",
       matchedQuick.raw_B,
       matchedQuick.zip.direct,
       matchedQuick.zip.best,
       matchedQuick.zip.label
     );
     addRow(
-      language === "en" ? "Recorded: 8zC v8 + 7-Zip LZMA (-mx=9)" : "Zabeleženo: 8zC v8 + 7-Zip LZMA (-mx=9)",
+      language === "en" ? "Recorded: 8zC v9 + 7-Zip LZMA (-mx=9)" : "Zabeleženo: 8zC v9 + 7-Zip LZMA (-mx=9)",
       matchedQuick.raw_B,
       matchedQuick.sz7z.direct,
       matchedQuick.sz7z.best,
@@ -498,6 +629,49 @@ function renderLiveCompare(data) {
   byId("compare-panel").hidden = false;
 }
 
+function updateSelectionLabels() {
+  const encoding = mode === "encode";
+  if (!selectedFiles.length) {
+    byId("file-icon").textContent = encoding ? "8zC" : "ZIP";
+    byId("filename").textContent = t(encoding ? "Izberite eno ali več datotek" : "Izberite enega ali več arhivov ZIP");
+    byId("filehint").textContent = t(
+      encoding
+        ? "ali jih povlecite sem (lahko tudi mešano: navadne datoteke in arhive *.8zc.zip hkrati!)"
+        : "ali jih povlecite sem"
+    );
+    byId("start-label").textContent = t(encoding ? "Stisni" : "Obnovi");
+    compareBtn.hidden = !encoding;
+    return;
+  }
+
+  if (selectedFiles.length === 1) {
+    const f = selectedFiles[0];
+    byId("file-icon").textContent = inferBadge(f.name);
+    byId("filename").textContent = f.name;
+    byId("filehint").textContent =
+      f.size.toLocaleString(language === "en" ? "en-US" : "sl-SI") +
+      (language === "en" ? " B · Click or drop to replace" : " B · Kliknite ali povlecite za zamenjavo");
+    byId("start-label").textContent = t(encoding ? "Stisni" : "Obnovi");
+    compareBtn.hidden = !encoding;
+  } else {
+    const totBytes = selectedFiles.reduce((acc, f) => acc + f.size, 0);
+    const hasArc = selectedFiles.some((f) => f.name.toLowerCase().endsWith(".8zc.zip"));
+    const hasRaw = selectedFiles.some((f) => !f.name.toLowerCase().endsWith(".8zc.zip"));
+    byId("file-icon").textContent = `${selectedFiles.length}×`;
+    byId("filename").textContent =
+      language === "en"
+        ? `${selectedFiles.length} files selected (${fmtB(totBytes)})`
+        : `Izbranih ${selectedFiles.length} datotek (${fmtB(totBytes)})`;
+    byId("filehint").textContent = selectedFiles
+      .slice(0, 4)
+      .map((f) => f.name)
+      .join(", ") + (selectedFiles.length > 4 ? " …" : "");
+    byId("start-label").textContent =
+      hasArc && hasRaw ? t("Obdelaj vse") : t(encoding ? "Stisni vse" : "Obnovi vse");
+    compareBtn.hidden = true;
+  }
+}
+
 function setLanguage(lang) {
   language = lang;
   localStorage.setItem("8zc-language", lang);
@@ -513,25 +687,38 @@ function setLanguage(lang) {
   byId("reference-note").textContent = t("Prva vrstica meri trenutno datoteko v brskalniku; velikost neposrednega ZIP je ocenjena iz brskalniškega Deflate in ovojnice ZIP. Druge vrstice so zabeležene meritve zunanjih kodekov za isti SHA-256. Referenčni matriki spodaj prikazujeta te zunanje meritve.");
   document.querySelector("h1").textContent = t("Kodek 8zC");
   document.querySelector(".intro").textContent = t(
-    "Stisnite datoteko (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhiva 8zC obnovite izvirnik. Vse teče lokalno v vašem brskalniku (Rust + WebAssembly)."
+    "Stisnite eno ali več datotek hkrati (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhivov 8zC obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly)."
   );
   document.querySelector("#modes legend").textContent = t("Izberite postopek");
   const modeSpans = document.querySelectorAll("#modes label span");
-  if (modeSpans[0]) modeSpans[0].textContent = t("Stisni datoteko");
-  if (modeSpans[1]) modeSpans[1].textContent = t("Obnovi izvirnik");
+  if (modeSpans[0]) modeSpans[0].textContent = t("Stisni datoteke");
+  if (modeSpans[1]) modeSpans[1].textContent = t("Obnovi izvirnike");
 
   const encoding = mode === "encode";
-  byId("input-heading").textContent = t(encoding ? "Vhodna datoteka (6 družin formatov)" : "Vhodni arhiv 8zC ZIP");
+  byId("input-heading").textContent = t(encoding ? "Vhodne datoteke (6 družin formatov)" : "Vhodni arhivi 8zC ZIP");
   byId("samples-caption").textContent = t("1-klik vzorci:");
-  byId("limits").textContent = t(encoding ? "1 datoteka · do 16 MiB" : "1 arhiv · do 16 MiB + 1 KiB");
+  byId("limits").textContent = t(
+    encoding
+      ? "1–100 datotek · do 256 MiB / datoteko (1 GiB skupaj)"
+      : "1–100 arhivov · do 256 MiB / arhiv (1 GiB skupaj)"
+  );
   byId("compare-label").textContent = t("Primerjaj kompresije");
-  byId("start-label").textContent = t(encoding ? "Stisni" : "Obnovi");
   cancel.textContent = t("Prekliči");
   byId("licenses-link").textContent = t("Licence knjižnic");
 
+  byId("batch-heading").textContent = t("Paketna obdelava zaključena");
+  byId("save-all-label").textContent = t("Shrani vse (.zip)");
+  byId("th-b-file").textContent = t("Datoteka");
+  byId("th-b-op").textContent = t("Postopek");
+  byId("th-b-in").textContent = t("Vhod");
+  byId("th-b-base").textContent = t("Čisti ZIP");
+  byId("th-b-out").textContent = t("Izhod 8zC");
+  byId("th-b-save").textContent = t("Prihranek / SHA-256");
+  byId("th-b-dl").textContent = t("Prenos");
+
   byId("compare-heading").textContent = t("Primerjava kompresij (Čisti kodek proti 8zC)");
   byId("compare-sub").textContent = t(
-    "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R5 v8) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256."
+    "Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R6 v9) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256."
   );
   byId("th-live-codec").textContent = t("Kodek / stopnja");
   byId("th-live-raw").textContent = t("Surovo");
@@ -540,37 +727,26 @@ function setLanguage(lang) {
   byId("th-live-save").textContent = t("Prihranek");
 
   byId("v4-matrix-title").textContent = t(
-    "Cycle 13 R5 (v8) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)"
+    "Cycle 13 R6 (v9) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)"
   );
   byId("th-v4-file").textContent = t("Vzorec in družina formata");
   byId("th-v4-raw").textContent = t("Surovo");
-  byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v8 + ZIP");
-  byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v8 + 7z");
+  byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
+  byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
   byId("th-v4-try").textContent = t("Živi preizkus");
 
   byId("matrix-title").textContent = t(
-    "Cycle 13 R5 (v8) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)"
+    "Cycle 13 R6 (v9) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)"
   );
   runSampleLiveBtn.textContent = t("Zaženi 00_data_endian.elf v živo →");
   byId("th-m-file").textContent = t("Vzorčni ELF (prevajalnik)");
   byId("th-m-raw").textContent = t("Surovo");
-  byId("th-m-zip").textContent = t("Čisti ZIP → 8zC v8 + ZIP");
-  byId("th-m-7z").textContent = t("Čisti 7z → 8zC v8 + 7z");
+  byId("th-m-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
+  byId("th-m-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
   byId("th-m-paq").textContent = t("Čisti PAQ8PX → 8zC + PAQ");
   byId("th-m-cmix").textContent = t("Čisti cmix v21 → 8zC + cmix");
 
-  if (!selected) {
-    byId("filename").textContent = t(encoding ? "Izberite poljubno datoteko" : "Izberite arhiv ZIP");
-    byId("filehint").textContent = t(
-      encoding
-        ? "ali jo povlecite sem (ali kliknite vzorec zgoraj: ELF, DLL, WASM, CSV, JSONL, WAV, BMP, Auto-DCC)"
-        : "ali ga povlecite sem"
-    );
-  } else {
-    byId("filehint").textContent =
-      selected.size.toLocaleString(language === "en" ? "en-US" : "sl-SI") +
-      (language === "en" ? " B · Click to replace" : " B · Kliknite za zamenjavo");
-  }
+  updateSelectionLabels();
   if (!byId("result").hidden) {
     byId("result-heading").textContent = t(encoding ? "Arhiv 8zC ZIP" : "Obnovljena datoteka");
     byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani izvirnik");
@@ -590,9 +766,12 @@ function setTheme(theme) {
 function clearResult() {
   byId("result").hidden = true;
   byId("digest-row").hidden = true;
+  byId("batch-result").hidden = true;
+  byId("batch-body").textContent = "";
   download.removeAttribute("href");
-  if (objectUrl) URL.revokeObjectURL(objectUrl);
-  objectUrl = null;
+  downloadAll.removeAttribute("href");
+  for (const u of objectUrls) URL.revokeObjectURL(u);
+  objectUrls = [];
 }
 
 function status(message, error = false) {
@@ -600,46 +779,72 @@ function status(message, error = false) {
   statusLine.toggleAttribute("data-error", error);
 }
 
-function selectFile(file, sampleId = null) {
-  const encoding = mode === "encode";
-  selected = file;
+function selectFiles(filesList, sampleId = null) {
+  selectedFiles = filesList ? Array.from(filesList) : [];
   activeSampleId = sampleId;
-  start.disabled = !file;
+  start.disabled = selectedFiles.length === 0;
   clearResult();
   status("");
-  byId("file-icon").textContent = file ? inferBadge(file.name) : encoding ? "8zC" : "ZIP";
-  byId("filename").textContent = file
-    ? file.name
-    : t(encoding ? "Izberite poljubno datoteko" : "Izberite arhiv ZIP");
-  byId("filehint").textContent = file
-    ? file.size.toLocaleString(language === "en" ? "en-US" : "sl-SI") +
-      (language === "en" ? " B · Click to replace" : " B · Kliknite za zamenjavo")
-    : t(
-        encoding
-          ? "ali jo povlecite sem (ali kliknite vzorec zgoraj: ELF, DLL, WASM, CSV, JSONL, WAV, BMP, Auto-DCC)"
-          : "ali ga povlecite sem"
-      );
+  updateSelectionLabels();
   renderSampleChips();
 }
 
-function acceptFiles(files) {
-  if (!files.length || worker) return;
-  const file = files[0];
-  const maxBytes = MAX_INPUT_BYTES + (mode === "decode" ? 1024 : 0);
-  if (files.length !== 1 || !file.size || file.size > maxBytes) {
-    selectFile(null);
-    status(
-      files.length !== 1
-        ? t("Izberite samo eno datoteko.")
-        : !file.size
-        ? t("Datoteka je prazna.")
-        : t("Datoteka presega dovoljeno velikost."),
-      true
-    );
+function acceptFiles(rawFileList) {
+  if (!rawFileList || !rawFileList.length || worker) return;
+  const arr = Array.from(rawFileList);
+
+  if (arr.length > MAX_BATCH_FILES) {
+    selectFiles(null);
+    status(t("Izberite največ 100 datotek hkrati."), true);
     return;
   }
-  selectFile(file, null);
-  status((language === "en" ? "Selected file: " : "Izbrana datoteka: ") + file.name);
+
+  let totalBytes = 0;
+  const perFileLimit = MAX_INPUT_BYTES + 65536;
+  for (const f of arr) {
+    if (!f.size) {
+      selectFiles(null);
+      status(t("Ena od izbranih datotek je prazna."), true);
+      return;
+    }
+    if (f.size > perFileLimit) {
+      selectFiles(null);
+      status(t("Datoteka presega dovoljeno velikost (256 MiB)."), true);
+      return;
+    }
+    totalBytes += f.size;
+  }
+
+  if (totalBytes > MAX_BATCH_BYTES) {
+    selectFiles(null);
+    status(t("Skupna velikost paketa presega 1 GiB."), true);
+    return;
+  }
+
+  // Convenience: if user drops 1 file ending in .8zc.zip while in encode mode, switch to decode automatically
+  if (arr.length === 1) {
+    const nm = arr[0].name.toLowerCase();
+    if (nm.endsWith(".8zc.zip") && mode !== "decode") {
+      modes.querySelector('input[value="decode"]').checked = true;
+      mode = "decode";
+      setLanguage(language);
+    } else if (!nm.endsWith(".zip") && mode === "decode") {
+      modes.querySelector('input[value="encode"]').checked = true;
+      mode = "encode";
+      setLanguage(language);
+    }
+  }
+
+  selectFiles(arr, null);
+  if (arr.length === 1) {
+    status((language === "en" ? "Selected file: " : "Izbrana datoteka: ") + arr[0].name);
+  } else {
+    status(
+      language === "en"
+        ? `Selected ${arr.length} files (${fmtB(totalBytes)}) — click "${byId("start-label").textContent}" to run.`
+        : `Izbranih ${arr.length} datotek (${fmtB(totalBytes)}) — kliknite »${byId("start-label").textContent}« za zagon.`
+    );
+  }
 }
 
 function switchMode() {
@@ -649,12 +854,13 @@ function switchMode() {
   fileInput.value = "";
   sampleChips.hidden = !encoding;
   byId("samples-caption").hidden = !encoding;
-  compareBtn.hidden = !encoding;
-  byId("input-heading").textContent = t(encoding ? "Vhodna datoteka (6 družin formatov)" : "Vhodni arhiv 8zC ZIP");
-  byId("file-icon").textContent = encoding ? "8zC" : "ZIP";
-  byId("limits").textContent = t(encoding ? "1 datoteka · do 16 MiB" : "1 arhiv · do 16 MiB + 1 KiB");
-  byId("start-label").textContent = t(encoding ? "Stisni" : "Obnovi");
-  selectFile(null);
+  byId("input-heading").textContent = t(encoding ? "Vhodne datoteke (6 družin formatov)" : "Vhodni arhivi 8zC ZIP");
+  byId("limits").textContent = t(
+    encoding
+      ? "1–100 datotek · do 256 MiB / datoteko (1 GiB skupaj)"
+      : "1–100 arhivov · do 256 MiB / arhiv (1 GiB skupaj)"
+  );
+  selectFiles(null);
 }
 
 function busy(active) {
@@ -681,28 +887,22 @@ function stop() {
   start.focus();
 }
 
+function trackUrl(blob) {
+  const u = URL.createObjectURL(blob);
+  objectUrls.push(u);
+  return u;
+}
+
 function showResult({ bytes, digest }) {
   const encoding = mode === "encode";
-  let name;
-  if (encoding) {
-    name = (selected ? selected.name : "archive") + ".8zc.zip";
-  } else {
-    const rawName = selected ? selected.name : "restored.bin";
-    if (/\.8zc\.zip$/i.test(rawName)) {
-      name = rawName.replace(/\.8zc\.zip$/i, "");
-    } else if (/\.zip$/i.test(rawName)) {
-      const stripped = rawName.replace(/\.zip$/i, "");
-      name = stripped.includes(".") ? stripped : stripped + ".bin";
-    } else {
-      name = rawName + ".restored";
-    }
-  }
-  objectUrl = URL.createObjectURL(
+  const singleFile = selectedFiles[0];
+  const name = outputFileNameFor(singleFile ? singleFile.name : "output", mode);
+  const url = trackUrl(
     new Blob([bytes], {
       type: encoding ? "application/zip" : "application/octet-stream",
     })
   );
-  download.href = objectUrl;
+  download.href = url;
   download.download = name;
   byId("result-heading").textContent = t(encoding ? "Arhiv 8zC ZIP" : "Obnovljena datoteka");
   byId("save-label").textContent = t(encoding ? "Shrani ZIP" : "Shrani izvirnik");
@@ -714,6 +914,126 @@ function showResult({ bytes, digest }) {
   status(
     t(encoding ? "Arhiv je pripravljen za shranjevanje." : "Izvirna datoteka je pripravljena za shranjevanje.")
   );
+}
+
+function showBatchResult(items) {
+  const tbody = byId("batch-body");
+  tbody.textContent = "";
+  const zipEntries = [];
+
+  let totIn = 0;
+  let totBaseZip = 0;
+  let countWithBase = 0;
+  let totOut = 0;
+
+  for (const it of items) {
+    const outName = outputFileNameFor(it.origName, it.op);
+    const outUint8 = new Uint8Array(it.bytes);
+    zipEntries.push({ name: outName, bytes: outUint8 });
+
+    totIn += it.inputBytes;
+    totOut += it.outputBytes;
+    if (it.browserZipBytes) {
+      totBaseZip += it.browserZipBytes;
+      countWithBase++;
+    }
+
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = it.origName;
+    tr.appendChild(th);
+
+    const tdOp = document.createElement("td");
+    tdOp.textContent = it.op === "encode" ? (language === "en" ? "Compress" : "Stiskanje") : (language === "en" ? "Restore" : "Obnova");
+    tr.appendChild(tdOp);
+
+    const tdIn = document.createElement("td");
+    tdIn.textContent = fmtB(it.inputBytes);
+    tr.appendChild(tdIn);
+
+    const tdBase = document.createElement("td");
+    tdBase.textContent = it.browserZipBytes ? fmtB(it.browserZipBytes) : "—";
+    tr.appendChild(tdBase);
+
+    const tdOut = document.createElement("td");
+    const st = document.createElement("strong");
+    st.textContent = fmtB(it.outputBytes);
+    tdOut.appendChild(st);
+    tr.appendChild(tdOut);
+
+    const tdSave = document.createElement("td");
+    if (it.op === "encode" && it.browserZipBytes) {
+      const diff = it.outputBytes - it.browserZipBytes;
+      const bdg = document.createElement("span");
+      bdg.className = "badge";
+      bdg.textContent = `${diff.toLocaleString(language === "en" ? "en-US" : "sl-SI")} B (${fmtPct(diff, it.browserZipBytes)}) · ✓ SHA-256`;
+      tdSave.appendChild(bdg);
+    } else {
+      tdSave.textContent = it.digest ? `SHA-256: ${it.digest.slice(0, 12)}…` : "✓ OK";
+    }
+    tr.appendChild(tdSave);
+
+    const tdDl = document.createElement("td");
+    const a = document.createElement("a");
+    a.className = "chip-btn mini-btn";
+    a.href = trackUrl(new Blob([outUint8], { type: it.op === "encode" ? "application/zip" : "application/octet-stream" }));
+    a.download = outName;
+    a.textContent = (language === "en" ? "Save ↓" : "Shrani ↓");
+    tdDl.appendChild(a);
+    tr.appendChild(tdDl);
+
+    tbody.appendChild(tr);
+  }
+
+  // Total summary row
+  const trTot = document.createElement("tr");
+  const thTot = document.createElement("th");
+  thTot.scope = "row";
+  thTot.innerHTML = `<strong>${language === "en" ? `TOTAL (${items.length} files)` : `SKUPAJ (${items.length} datotek)`}</strong>`;
+  trTot.appendChild(thTot);
+
+  const tdOpT = document.createElement("td");
+  tdOpT.textContent = "—";
+  trTot.appendChild(tdOpT);
+
+  const tdInT = document.createElement("td");
+  tdInT.innerHTML = `<strong>${fmtB(totIn)}</strong>`;
+  trTot.appendChild(tdInT);
+
+  const tdBaseT = document.createElement("td");
+  tdBaseT.textContent = countWithBase === items.length ? fmtB(totBaseZip) : "—";
+  trTot.appendChild(tdBaseT);
+
+  const tdOutT = document.createElement("td");
+  tdOutT.innerHTML = `<strong>${fmtB(totOut)}</strong>`;
+  trTot.appendChild(tdOutT);
+
+  const tdSaveT = document.createElement("td");
+  if (countWithBase === items.length && totBaseZip > 0) {
+    const diffT = totOut - totBaseZip;
+    tdSaveT.innerHTML = `<span class="badge">${diffT.toLocaleString(language === "en" ? "en-US" : "sl-SI")} B (${fmtPct(diffT, totBaseZip)})</span>`;
+  } else {
+    tdSaveT.textContent = "100 % OK";
+  }
+  trTot.appendChild(tdSaveT);
+
+  const tdDlT = document.createElement("td");
+  tdDlT.textContent = "";
+  trTot.appendChild(tdDlT);
+  tbody.appendChild(trTot);
+
+  const bundleBlob = buildStoreZip(zipEntries);
+  downloadAll.href = trackUrl(bundleBlob);
+  downloadAll.download = `8zC_batch_${items.length}_files.zip`;
+
+  byId("batch-summary").textContent =
+    language === "en"
+      ? `${items.length} files processed (${fmtB(totIn)} → ${fmtB(totOut)}) · Bundle size: ${fmtB(bundleBlob.size)}`
+      : `Obdelanih ${items.length} datotek (${fmtB(totIn)} → ${fmtB(totOut)}) · Skupni paket: ${fmtB(bundleBlob.size)}`;
+
+  byId("batch-result").hidden = false;
+  status(t("Paketna obdelava je zaključena — posamezne datoteke ali skupni ZIP so pripravljeni za prenos."));
 }
 
 async function loadSampleById(sampleId, autoCompare = false) {
@@ -729,7 +1049,7 @@ async function loadSampleById(sampleId, autoCompare = false) {
     if (!resp.ok) throw new Error((language === "en" ? "Could not load " : "Ni mogoče naložiti ") + s.filename);
     const blob = await resp.blob();
     const file = new File([blob], s.filename, { type: "application/octet-stream" });
-    selectFile(file, s.id);
+    selectFiles([file], s.id);
     status((language === "en" ? "Loaded sample: " : "Naložen vzorec: ") + file.name);
     if (autoCompare) {
       runWorker("compare");
@@ -740,17 +1060,28 @@ async function loadSampleById(sampleId, autoCompare = false) {
 }
 
 function runWorker(workerMode) {
-  if (!selected || worker) return;
+  if (!selectedFiles.length || worker) return;
   clearResult();
+  const isBatch = selectedFiles.length > 1 && workerMode !== "compare";
   try {
     worker = new Worker("/8zC/worker.js");
     const current = worker;
     worker.onmessage = ({ data }) => {
       if (worker !== current) return;
+      if (data.progress) {
+        status(
+          language === "en"
+            ? `[${data.index} / ${data.total}] Processing ${data.filename} …`
+            : `[${data.index} / ${data.total}] Obdelujem ${data.filename} …`
+        );
+        return;
+      }
       finish();
       if (data.error) {
         status(data.error, true);
         start.focus();
+      } else if (data.batchDone) {
+        showBatchResult(data.items);
       } else if (data.compare) {
         showResult(data);
         renderLiveCompare(data);
@@ -769,14 +1100,23 @@ function runWorker(workerMode) {
     };
     busy(true);
     cancel.focus();
-    status(
-      workerMode === "compare"
-        ? t("Primerjava kompresij v brskalniku poteka …")
-        : mode === "encode"
-        ? t("Stiskanje poteka …")
-        : t("Obnova poteka …")
-    );
-    worker.postMessage({ mode: workerMode, file: selected });
+    if (isBatch) {
+      status(
+        language === "en"
+          ? `Starting batch of ${selectedFiles.length} files …`
+          : `Zaganjam paketno obdelavo ${selectedFiles.length} datotek …`
+      );
+      worker.postMessage({ mode: "batch", defaultMode: mode, files: selectedFiles });
+    } else {
+      status(
+        workerMode === "compare"
+          ? t("Primerjava kompresij v brskalniku poteka …")
+          : mode === "encode"
+          ? t("Stiskanje poteka …")
+          : t("Obnova poteka …")
+      );
+      worker.postMessage({ mode: workerMode, file: selectedFiles[0] });
+    }
   } catch {
     finish();
     status(
@@ -790,7 +1130,7 @@ function runWorker(workerMode) {
 async function handleCompareClick() {
   if (worker) return;
   byId("compare-panel").hidden = false;
-  if (!selected) {
+  if (!selectedFiles.length) {
     await loadSampleById("00_data_endian", true);
   } else {
     runWorker("compare");

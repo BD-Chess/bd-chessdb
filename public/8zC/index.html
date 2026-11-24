@@ -5,40 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <meta name="description" content="Univerzalni večformatni kodek 8zC (Cycle 13 R5 v8): v brskalniku stisnite datoteke ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali poljuben binarni zapis (Auto-DCC) ter primerjajte kompresijo s 100 % obnovo SHA-256.">
+  <meta name="description" content="Univerzalni večformatni kodek 8zC (Cycle 13 R6 v9): v brskalniku stisnite eno ali več datotek (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM, Auto-DCC) do 256 MiB ter primerjajte kompresijo s 100 % obnovo SHA-256.">
   <link rel="canonical" href="https://www.mdlxdcc.org/8zC/">
-  <title>Kodek 8zC · Cycle 13 R5 (v8) Multi-Format</title>
+  <title>Kodek 8zC · Cycle 13 R6 (v9) Multi-Format</title>
   <link rel="stylesheet" href="/8zC/style.css">
   <script defer src="/8zC/app.js"></script>
 </head>
 <body>
   <header class="mast">
     <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>8zC</div>
-    <div class="mast-links"><span class="release" id="release-tag">Cycle 13 R5 (v8) · 6 Format Families</span><button id="theme" type="button">☀ Light</button><span class="languages"><button type="button" data-lang="en">EN</button> <button type="button" data-lang="sl">SL</button></span><a href="/8zC-results/" id="results-link">Rezultati 8zC</a></div>
+    <div class="mast-links"><span class="release" id="release-tag">Cycle 13 R6 (v9) · 6 Format Families</span><button id="theme" type="button">☀ Light</button><span class="languages"><button type="button" data-lang="en">EN</button> | <button type="button" data-lang="sl">SL</button></span><a href="/8zC-results/" id="results-link">Rezultati 8zC</a></div>
   </header>
   <main>
     <h1>Kodek 8zC</h1>
-    <p class="intro">Stisnite datoteko (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhiva 8zC obnovite izvirnik. Vse teče lokalno v vašem brskalniku (Rust + WebAssembly).</p>
+    <p class="intro">Stisnite eno ali več datotek hkrati (ELF64, Windows EXE/DLL, WebAssembly .wasm, CSV/TSV/JSONL, WAV, BMP/PPM ali strukturirano binarno datoteko Auto-DCC) ali iz arhivov 8zC obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).</p>
     <p class="hint"><span id="author-credit">Ideje, raziskovalne povezave in arhitektura · Bojan Dobrečevič (BD). Skupni razvoj in preverjanje · BD × AI Lab.</span> <a id="origin-link" href="/8zc-story/">Izvor in celotna zgodba BD × AI Lab</a></p>
     <fieldset id="modes">
       <legend class="sr-only">Izberite postopek</legend>
-      <label><input type="radio" name="mode" value="encode" checked><span>Stisni datoteko</span></label>
-      <label><input type="radio" name="mode" value="decode"><span>Obnovi izvirnik</span></label>
+      <label><input type="radio" name="mode" value="encode" checked><span>Stisni datoteke</span></label>
+      <label><input type="radio" name="mode" value="decode"><span>Obnovi izvirnike</span></label>
     </fieldset>
     <section class="panel" aria-labelledby="input-heading">
       <div class="panel-head">
-        <h2 id="input-heading">Vhodna datoteka (6 družin formatov)</h2>
+        <h2 id="input-heading">Vhodne datoteke (6 družin formatov)</h2>
         <span class="hint" id="samples-caption">1-klik vzorci:</span>
       </div>
       <div class="sample-chips" id="sample-chips" role="group" aria-label="Vzorčne datoteke / Sample files"></div>
-      <input type="file" id="file" hidden>
+      <input type="file" id="file" multiple hidden>
       <button type="button" id="choose" class="drop" aria-describedby="limits">
         <span class="file-icon" id="file-icon" aria-hidden="true">8zC</span>
-        <span id="filename">Izberite poljubno datoteko</span>
-        <span id="filehint" class="hint">ali jo povlecite sem (ali kliknite vzorec zgoraj: ELF, DLL, WASM, CSV, JSONL, WAV, BMP, Auto-DCC)</span>
+        <span id="filename">Izberite eno ali več datotek</span>
+        <span id="filehint" class="hint">ali jih povlecite sem (lahko tudi mešano: navadne datoteke in arhive *.8zc.zip hkrati!)</span>
       </button>
       <div class="action-row">
-        <span id="limits" class="limits">1 datoteka · do 16 MiB</span>
+        <span id="limits" class="limits">1–100 datotek · do 256 MiB / datoteko (1 GiB skupaj)</span>
         <div class="btn-group">
           <button type="button" id="compare-btn" class="secondary"><span id="compare-label">Primerjaj kompresije</span></button>
           <button type="button" id="start" class="primary" disabled><span id="start-label">Stisni</span> <span aria-hidden="true">→</span></button>
@@ -54,11 +54,36 @@
       </div>
       <div id="digest-row" hidden><span>SHA-256</span><code id="digest"></code></div>
     </section>
+    <section id="batch-result" class="panel output batch-section" aria-labelledby="batch-heading" hidden>
+      <div class="output-top">
+        <div>
+          <h2 id="batch-heading">Paketna obdelava zaključena</h2>
+          <p id="batch-summary" class="hint"></p>
+        </div>
+        <a id="download-all" class="primary"><span id="save-all-label">Shrani vse (.zip)</span> <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="table-wrap batch-table-wrap">
+        <table class="cmp-table">
+          <thead>
+            <tr>
+              <th scope="col" id="th-b-file">Datoteka</th>
+              <th scope="col" id="th-b-op">Postopek</th>
+              <th scope="col" id="th-b-in">Vhod</th>
+              <th scope="col" id="th-b-base">Čisti ZIP</th>
+              <th scope="col" id="th-b-out">Izhod 8zC</th>
+              <th scope="col" id="th-b-save">Prihranek / SHA-256</th>
+              <th scope="col" id="th-b-dl">Prenos</th>
+            </tr>
+          </thead>
+          <tbody id="batch-body"></tbody>
+        </table>
+      </div>
+    </section>
     <section id="compare-panel" class="panel compare-section" aria-labelledby="compare-heading" hidden>
       <div class="output-top">
         <div>
           <h2 id="compare-heading">Primerjava kompresij (Čisti kodek proti 8zC)</h2>
-          <p id="compare-sub" class="hint">Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R5 v8) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256.</p>
+          <p id="compare-sub" class="hint">Živi večformatni preizkus v brskalniku (Rust + WebAssembly Cycle 13 R6 v9) in preverjene referenčne matrike s 100 % bitno točno obnovo SHA-256.</p>
         </div>
       </div>
       <div id="live-compare-box" class="live-box" hidden>
@@ -82,7 +107,7 @@
       </div>
       <div class="matrix-box">
         <div class="panel-head matrix-head">
-          <h3 id="v4-matrix-title">Cycle 13 R5 (v8) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)</h3>
+          <h3 id="v4-matrix-title">Cycle 13 R6 (v9) · 7 večformatnih vzorcev (PE64 · WASM · CSV · JSONL · WAV · BMP · Auto-DCC)</h3>
         </div>
         <div class="table-wrap">
           <table class="cmp-table">
@@ -90,8 +115,8 @@
               <tr>
                 <th scope="col" id="th-v4-file">Vzorec in družina formata</th>
                 <th scope="col" id="th-v4-raw">Surovo</th>
-                <th scope="col" id="th-v4-zip">Čisti ZIP → 8zC v8 + ZIP</th>
-                <th scope="col" id="th-v4-7z">Čisti 7z → 8zC v8 + 7z</th>
+                <th scope="col" id="th-v4-zip">Čisti ZIP → 8zC v9 + ZIP</th>
+                <th scope="col" id="th-v4-7z">Čisti 7z → 8zC v9 + 7z</th>
                 <th scope="col" id="th-v4-try">Živi preizkus</th>
               </tr>
             </thead>
@@ -101,7 +126,7 @@
       </div>
       <div class="matrix-box">
         <div class="panel-head matrix-head">
-          <h3 id="matrix-title">Cycle 13 R5 (v8) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)</h3>
+          <h3 id="matrix-title">Cycle 13 R6 (v9) · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .paq · .cmix)</h3>
           <button type="button" id="run-sample-live" class="chip-btn">Zaženi 00_data_endian.elf v živo →</button>
         </div>
         <div class="table-wrap">
@@ -110,8 +135,8 @@
               <tr>
                 <th scope="col" id="th-m-file">Vzorčni ELF (prevajalnik)</th>
                 <th scope="col" id="th-m-raw">Surovo</th>
-                <th scope="col" id="th-m-zip">Čisti ZIP → 8zC v8 + ZIP</th>
-                <th scope="col" id="th-m-7z">Čisti 7z → 8zC v8 + 7z</th>
+                <th scope="col" id="th-m-zip">Čisti ZIP → 8zC v9 + ZIP</th>
+                <th scope="col" id="th-m-7z">Čisti 7z → 8zC v9 + 7z</th>
                 <th scope="col" id="th-m-paq">Čisti PAQ8PX → 8zC + PAQ</th>
                 <th scope="col" id="th-m-cmix">Čisti cmix v21 → 8zC + cmix</th>
               </tr>
@@ -123,6 +148,6 @@
     </section>
     <noscript>Za uporabo kodeka vklopite JavaScript.</noscript>
   </main>
-  <footer>8zC Cycle 13 R5 (v8) <span aria-hidden="true">/</span> Rust <code>z8c_core v0.8.0</code> + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt" id="licenses-link">Licence knjižnic</a></footer>
+  <footer>8zC Cycle 13 R6 (v9) <span aria-hidden="true">/</span> Rust <code>z8c_core v0.9.0</code> + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt" id="licenses-link">Licence knjižnic</a></footer>
 </body>
 </html>
