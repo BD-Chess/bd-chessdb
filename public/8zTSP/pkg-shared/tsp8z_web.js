@@ -65,22 +65,6 @@ function getArrayU32FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
 }
-
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_externrefs.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
-/**
- * @param {number} threads
- */
-export function configure_pool(threads) {
-    const ret = wasm.configure_pool(threads);
-    if (ret[1]) {
-        throw takeFromExternrefTable0(ret[0]);
-    }
-}
-
 /**
  * @returns {Uint32Array}
  */
@@ -99,6 +83,21 @@ export function pool_stats() {
     var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
     return v1;
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_externrefs.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+/**
+ * @param {number} threads
+ */
+export function configure_pool(threads) {
+    const ret = wasm.configure_pool(threads);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
 }
 
 let cachedFloat64ArrayMemory0 = null;
@@ -229,27 +228,6 @@ export class Problem {
         return Solution.__wrap(ret[0]);
     }
     /**
-     * Private source candidate: 0 = instrumented one pass, 1 = instrumented
-     * restart control, 2 = preserve state at the first safe group boundary
-     * after the requested time. Never substitutes a continuation for small-map GA.
-     * @param {number} seconds
-     * @param {number} seed
-     * @param {number} max_steps
-     * @param {number} passes
-     * @param {boolean} refinement
-     * @param {number} first_seconds
-     * @param {number} profile
-     * @param {boolean | null} [mdl_dcc]
-     * @returns {Solution}
-     */
-    solve_phase_profile(seconds, seed, max_steps, passes, refinement, first_seconds, profile, mdl_dcc) {
-        const ret = wasm.problem_solve_phase_profile(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, first_seconds, profile, isLikeNone(mdl_dcc) ? 0xFFFFFF : mdl_dcc ? 1 : 0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Solution.__wrap(ret[0]);
-    }
-    /**
      * @param {string} text
      */
     constructor(text) {
@@ -329,21 +307,6 @@ export class Solution {
     get dcc_proposals() {
         const ret = wasm.solution_dcc_proposals(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @returns {string}
-     */
-    handoff_summary() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.solution_handoff_summary(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
     }
     /**
      * @returns {Uint32Array}
@@ -524,9 +487,6 @@ function __wbg_get_imports(memory) {
     imports.wbg.__wbg_static_accessor_WINDOW_b45bfc5a37f6cfa2 = function() {
         const ret = typeof window === 'undefined' ? null : window;
         return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
-    };
-    imports.wbg.__wbg_tsp8zHandoff_688df9b8204b1851 = function(arg0, arg1) {
-        self.tsp8zHandoff(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_tsp8zPhase_950932b6ea23da89 = function(arg0, arg1, arg2, arg3, arg4, arg5) {
         self.tsp8zPhase(arg0 >>> 0, arg1, arg2, arg3, getArrayU32FromWasm0(arg4, arg5));

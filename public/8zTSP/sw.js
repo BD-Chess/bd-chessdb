@@ -1,6 +1,6 @@
 // Packager replaces BUILD; scope is deliberately limited to this application.
 'use strict';
-const BUILD='723f494d2f6889e95fcd';
+const BUILD='d434aa5db0291a111e7a';
 const BASE='/8zTSP/',PREFIX='8ztsp-pwa-',CACHE=PREFIX+BUILD;
 const absolute=path=>new URL(path,self.location.origin+BASE).href;
 let manifestPromise;
@@ -25,8 +25,10 @@ self.addEventListener('install',event=>event.waitUntil((async()=>{
   // Fetch into this version's separate cache. The active old version remains untouched on failure.
   const cache=await caches.open(CACHE);
   try {
+    const oldCaches=await Promise.all((await caches.keys()).filter(k=>k.startsWith(PREFIX) && k!==CACHE).map(k=>caches.open(k)));
     await Promise.all(info.files.map(async entry=>{
       const url=absolute(entry.path);if(!url.startsWith(absolute('')) || entry.path.includes('..') || /(^|\/)api\//.test(entry.path))throw Error('Invalid offline asset');
+      for(const oc of oldCaches){const hit=await oc.match(url);if(hit){try{await cache.put(url,await checkedAsset(hit,entry));return;}catch{}}}
       const asset=await checkedAsset(await fetch(url,{cache:'reload'}),entry);await cache.put(url,asset);
     }));
     const page=await fetch(absolute(''),{cache:'reload'});
