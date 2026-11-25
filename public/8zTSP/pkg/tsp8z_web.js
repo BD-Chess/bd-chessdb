@@ -169,6 +169,27 @@ export class Problem {
         return Solution.__wrap(ret[0]);
     }
     /**
+     * Private source candidate: 0 = instrumented one pass, 1 = instrumented
+     * restart control, 2 = preserve state at the first safe group boundary
+     * after the requested time. Never substitutes a continuation for small-map GA.
+     * @param {number} seconds
+     * @param {number} seed
+     * @param {number} max_steps
+     * @param {number} passes
+     * @param {boolean} refinement
+     * @param {number} first_seconds
+     * @param {number} profile
+     * @param {boolean | null} [mdl_dcc]
+     * @returns {Solution}
+     */
+    solve_phase_profile(seconds, seed, max_steps, passes, refinement, first_seconds, profile, mdl_dcc) {
+        const ret = wasm.problem_solve_phase_profile(this.__wbg_ptr, seconds, seed, max_steps, passes, refinement, first_seconds, profile, isLikeNone(mdl_dcc) ? 0xFFFFFF : mdl_dcc ? 1 : 0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Solution.__wrap(ret[0]);
+    }
+    /**
      * @param {string} text
      */
     constructor(text) {
@@ -250,6 +271,21 @@ export class Solution {
         return ret;
     }
     /**
+     * @returns {string}
+     */
+    handoff_summary() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.solution_handoff_summary(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * @returns {Uint32Array}
      */
     tour() {
@@ -322,6 +358,9 @@ function __wbg_get_imports() {
     imports.wbg = {};
     imports.wbg.__wbg___wbindgen_throw_b855445ff6a94295 = function(arg0, arg1) {
         throw new Error(getStringFromWasm0(arg0, arg1));
+    };
+    imports.wbg.__wbg_tsp8zHandoff_688df9b8204b1851 = function(arg0, arg1) {
+        self.tsp8zHandoff(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_tsp8zPhase_950932b6ea23da89 = function(arg0, arg1, arg2, arg3, arg4, arg5) {
         self.tsp8zPhase(arg0 >>> 0, arg1, arg2, arg3, getArrayU32FromWasm0(arg4, arg5));
