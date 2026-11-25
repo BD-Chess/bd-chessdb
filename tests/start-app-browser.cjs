@@ -45,7 +45,13 @@ async function suite(browser, engine, url, mobile) {
     assert.equal(await page.locator('#bs-pins a').count(), 8, 'eight suggested favorites');
     assert.match(await page.locator('#bs-pins').textContent(), /Browser Loop · tabla/);
     assert.match(await page.locator('#bs-pins').textContent(), /BD × AI TODO/);
-    assert.equal(await page.locator('.bs-category').count(), 6, 'six directory categories');
+    assert.equal(await page.locator('.bs-category').count(), 7, 'seven directory categories, including Current projects');
+    const current = page.locator('[data-category="current"] .bs-category-links');
+    assert.deepEqual(await current.locator(':scope > .bs-shortcut').evaluateAll(els => els.map(e => e.matches('.bs-8zc-group') ? '8zc-group' : new URL(e.href).pathname.toLowerCase())), ['8zc-group','/nara/illuminara','/tsp/8ztsp/','/8ztsp/','/8zllm/','/8znas/'], 'six aligned cells, Nara second');
+    const codec = current.locator('.bs-8zc-sub');
+    assert.deepEqual(await codec.evaluateAll(els => els.map(a => [new URL(a.href).pathname.toLowerCase(), a.textContent.trim(), a.getAttribute('aria-label')])), [['/8zc/','kodek','8zC · kodek'],['/8zc-results/','rezultati','8zC · rezultati'],['/8zc-story/','story','8zC · story']], 'three distinct localized 8zC links');
+    const codecOptions = await page.locator('#bs-pin-select option').evaluateAll(els => els.filter(e => ['/8zc/','/8zc-results/','/8zc-story/'].includes(new URL(e.value).pathname.toLowerCase())).map(e => e.textContent).sort());
+    assert.deepEqual(codecOptions, ['8zC · kodek','8zC · rezultati','8zC · story'], 'each 8zC destination is independently pinnable');
     await page.getByText('Novica Slovenija', {exact:true}).waitFor({state:'visible'});
     assert.match(await page.locator('#bs-live-news-status').textContent(), /Interpretacije metapodatkov RSS/);
     assert.match(await page.locator('#bs-live-news').textContent(), /Vir SI/);
@@ -60,6 +66,7 @@ async function suite(browser, engine, url, mobile) {
     await page.screenshot({ path: path.join(evidence, name + '-light.png'), fullPage: true });
     await page.locator('[data-lang="en"]').click();
     assert.match(await page.title(), /Your world/);
+    assert.deepEqual(await codec.evaluateAll(els => els.map(a => a.getAttribute('aria-label'))), ['8zC · codec','8zC · results','8zC · story'], 'English link labels');
     assert.match(await omniLink.innerText(), /AI assistant for OmniCPQ/);
     await page.locator('[data-theme="dark"]').click();
     assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
@@ -73,10 +80,15 @@ async function suite(browser, engine, url, mobile) {
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('bd-start-v1')).preferences.openGroups.research === true);
     await page.locator('#bs-search-input').fill('andaluzija');
     assert.equal(await page.locator('[data-category="research"]').isVisible(), false);
+    assert.equal(await current.locator('.bs-8zc-group').getAttribute('hidden'), '', 'no empty codec cell during unrelated search');
     assert.equal(await page.locator('[data-category="travel"]').evaluate(el => el.open), true);
     await page.locator('#bs-clear-search').click();
     assert.equal(await page.locator('[data-category="research"]').evaluate(el => el.open), true, 'search restores group state');
     assert.equal(await page.locator('[data-category="travel"]').evaluate(el => el.open), false);
+    await page.locator('#bs-search-input').fill('8zc-story');
+    assert.equal(await current.locator('.bs-8zc-group').isVisible(), true);
+    assert.equal(await current.locator('.bs-8zc-sub:visible').count(), 1, 'only matching codec sublink is shown');
+    assert.match(await current.locator('.bs-8zc-sub:visible').getAttribute('href'), /8zc-story/);
     await page.locator('#bs-search-input').fill('8ztsp');
     await page.locator('#bs-site-result-list a').filter({hasText:'8zTSP'}).first().waitFor({state:'visible'});
     await page.locator('#bs-search-input').fill('the count the mountain asked for');
@@ -452,6 +464,33 @@ async function syncAcrossBrowsers(browser, engine, url) {
     results.push({ name: engine + '-sync', status: 'PASS', checks: ['create on first browser', 'ciphertext only', 'mistyped password creates nothing', 'adopt server data with backup', 'appearance per device', 'remembered password', 'offline edit kept', 'conflict: load newer', 'conflict: keep this device', 'disconnect keeps data'] });
   } finally { for (const context of contexts) await context.close(); }
 }
+async function codecCTA(browser, engine, url) {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  try {
+    const page = await context.newPage();
+    const response = await page.goto(new URL('/8zC-results/index.html?lang=en', url).href, { waitUntil: 'domcontentloaded' });
+    assert(response && response.ok(), '8zC results reachable');
+    const cta = page.locator('.try-8zc-cta');
+    await cta.waitFor({state:'visible'});
+    await page.waitForFunction(() => document.documentElement.dataset.language === 'en');
+    assert.equal(await cta.locator('[lang="en"]').innerText(), 'Try 8zC');
+    assert.equal(await page.locator('.section-links a').filter({hasText:'Try 8zC'}).count(), 0, 'CTA is outside the link list');
+    for (const [lang, theme, width] of [['en','dark',390],['sl','light',1440]]) {
+      await page.setViewportSize({width,height:844});
+      await page.locator('[data-select-language="'+lang+'"]').click();
+      await page.locator('[data-theme-choice="'+theme+'"]').click();
+      const state = await cta.evaluate(a => {const r=a.getBoundingClientRect(),s=getComputedStyle(a);return {pathname:new URL(a.href).pathname.toLowerCase(),lang:new URL(a.href).searchParams.get('lang'),height:r.height,left:r.left,right:r.right,background:s.backgroundColor,foreground:s.color,font:parseFloat(s.fontSize)};});
+      assert.equal(state.pathname,'/8zc/');
+      assert.equal(state.lang,lang);
+      assert(state.height>=55 && state.font>=18 && state.left>=0 && state.right<=width+1, 'large responsive CTA '+JSON.stringify(state));
+      assert.notEqual(state.background,state.foreground);
+      assert.notEqual(state.background,'rgba(0, 0, 0, 0)');
+      assert.equal(await cta.locator('[lang="'+lang+'"]').innerText(),lang==='sl'?'Preizkusi 8zC':'Try 8zC');
+      await cta.screenshot({path:path.join(evidence,engine+'-8zc-cta-'+lang+'.png')});
+    }
+    results.push({name:engine+'-8zc-cta',status:'PASS',checks:['prominent filled CTA','correct codec route and language','light/dark and mobile/desktop']});
+  } finally { await context.close(); }
+}
 (async () => {
   let server;
   let url = process.env.START_QA_URL;
@@ -470,7 +509,7 @@ async function syncAcrossBrowsers(browser, engine, url) {
   try {
     for (const [engine, type] of Object.entries({ chromium, webkit })) {
       const browser = await type.launch({ headless: true });
-      try { await suite(browser, engine, url, false); await suite(browser, engine, url, true); await storageFailures(browser, engine, url); await newsIntegrity(browser, engine, url); await wideLayout(browser, engine, url); await syncAcrossBrowsers(browser, engine, url); }
+      try { await suite(browser, engine, url, false); await suite(browser, engine, url, true); await storageFailures(browser, engine, url); await newsIntegrity(browser, engine, url); await wideLayout(browser, engine, url); await syncAcrossBrowsers(browser, engine, url); await codecCTA(browser, engine, url); }
       finally { await browser.close(); }
     }
     console.log('BD_START_BROWSER_PASS', JSON.stringify(results));
