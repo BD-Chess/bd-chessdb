@@ -99,6 +99,12 @@ async function encodeNativeWithLevel(inputBytes, level) {
     let fastApi = await getWasmInstance(true);
     return callWasm(fastApi, "encode_native", inputBytes);
   }
+  if (level === "max" && typeof api.encode_native_max === "function") {
+    return callWasm(api, "encode_native_max", inputBytes);
+  }
+  if (level === "ultra" && typeof api.encode_native_ultra === "function") {
+    return callWasm(api, "encode_native_ultra", inputBytes);
+  }
   return callWasm(api, "encode_native", inputBytes);
 }
 
@@ -110,7 +116,7 @@ function isNative8zcMagic(bytes) {
     bytes[1] === 0x5a &&
     bytes[2] === 0x43 &&
     bytes[3] === 0x4e &&
-    (bytes[4] === 0x01 || bytes[4] === 0x02)
+    (bytes[4] === 0x01 || bytes[4] === 0x02 || bytes[4] === 0x03)
   );
 }
 
@@ -127,7 +133,7 @@ self.onmessage = async ({ data }) => {
   try {
     const { mode, file, files } = data;
     const encodeFormat = data.encodeFormat === "zip" ? "zip" : "native";
-    const encodeLevel = data.encodeLevel === "fast" ? "fast" : "max";
+    const encodeLevel = ["fast", "max", "ultra"].includes(data.encodeLevel) ? data.encodeLevel : "ultra";
     if (!["encode", "encode_native", "decode", "compare", "batch"].includes(mode)) throw new Error("Neznan postopek.");
 
     if (mode === "batch") {
@@ -246,6 +252,8 @@ self.onmessage = async ({ data }) => {
       let encodeNativeFastMs = null;
       let z8cNativeMaxBytes = undefined;
       let encodeNativeMaxMs = null;
+      let z8cNativeUltraBytes = undefined;
+      let encodeNativeUltraMs = null;
       let restoredDigestNat = "";
       let verifiedNative = true;
 
@@ -264,23 +272,35 @@ self.onmessage = async ({ data }) => {
         restoredDigestNat = checkNat.restoredDigest;
         verifiedNative = checkNat.verified;
 
-        if (encodeLevel === "max") {
+        if (encodeLevel === "ultra") {
+          z8cNativeUltraBytes = encodedNative.byteLength;
+          encodeNativeUltraMs = encodeNativeMs;
+        } else if (encodeLevel === "max") {
           z8cNativeMaxBytes = encodedNative.byteLength;
           encodeNativeMaxMs = encodeNativeMs;
-          if (input.length <= 524288) {
-            const tf0 = performance.now();
-            const encFast = await encodeNativeWithLevel(input, "fast");
-            encodeNativeFastMs = Math.max(1, Math.round(performance.now() - tf0));
-            z8cNativeFastBytes = encFast.byteLength;
-          }
         } else {
           z8cNativeFastBytes = encodedNative.byteLength;
           encodeNativeFastMs = encodeNativeMs;
-          if (input.length <= 524288) {
+        }
+
+        if (input.length <= 614400) {
+          if (z8cNativeUltraBytes === undefined) {
+            const tu0 = performance.now();
+            const encUltra = await encodeNativeWithLevel(input, "ultra");
+            encodeNativeUltraMs = Math.max(1, Math.round(performance.now() - tu0));
+            z8cNativeUltraBytes = encUltra.byteLength;
+          }
+          if (z8cNativeMaxBytes === undefined) {
             const tm0 = performance.now();
             const encMax = await encodeNativeWithLevel(input, "max");
             encodeNativeMaxMs = Math.max(1, Math.round(performance.now() - tm0));
             z8cNativeMaxBytes = encMax.byteLength;
+          }
+          if (z8cNativeFastBytes === undefined) {
+            const tf0 = performance.now();
+            const encFast = await encodeNativeWithLevel(input, "fast");
+            encodeNativeFastMs = Math.max(1, Math.round(performance.now() - tf0));
+            z8cNativeFastBytes = encFast.byteLength;
           }
         }
       }
@@ -320,6 +340,8 @@ self.onmessage = async ({ data }) => {
           encodeNativeFastMs,
           z8cNativeMaxBytes,
           encodeNativeMaxMs,
+          z8cNativeUltraBytes,
+          encodeNativeUltraMs,
           browserZipBytes,
           encodeMs,
           decodeMs,

@@ -5,20 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <meta name="description" content="Suvereni večformatni kodek 8zC v1.1 (.8zc 8ZCN\x02: I3 + I4 Bt4-DP + I9 Audio Rice + Cycle 13 R6 v9): v brskalniku stisnite eno ali več datotek do 256 MiB v suvereni format .8zc ali .8zc.zip ter obnovite izvirnike s 100 % preverjeno SHA-256.">
+  <meta name="description" content="Suvereni večformatni kodek 8zC v1.2.1 (.8zc 8ZCN\x03 & 8ZCN\x02: I5+I6+I10+I11 + M03 Schema-DP + I4.2 Bt4-DP + I3 + I9 Audio Rice): v brskalniku stisnite eno ali več datotek do 256 MiB v suvereni format .8zc (Ultra / Max / Hitro) ali .8zc.zip ter obnovite izvirnike s 100 % preverjeno SHA-256.">
   <link rel="canonical" href="https://www.mdlxdcc.org/8zC/">
-  <title>Kodek 8zC · v1.1 Native (.8zc) + Cycle 13 R6 (v9)</title>
+  <title>Kodek 8zC · v1.2.1 Native (.8zc &lt;2,00 MB) + Cycle 13 R6 (v9)</title>
   <link rel="stylesheet" href="/8zC/style.css">
   <script defer src="/8zC/app.js"></script>
 </head>
 <body>
   <header class="mast">
     <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>8zC</div>
-    <div class="mast-links"><span class="release" id="release-tag">v1.1 Native (.8zc) · Cycle 13 R6 (v9)</span><button id="theme" type="button">☀ Light</button><span class="languages"><button type="button" data-lang="en">EN</button> | <button type="button" data-lang="sl">SL</button></span><a href="/8zc-results/" id="results-link">Rezultati 8zC</a></div>
+    <div class="mast-links"><span class="release" id="release-tag">v1.2.1 Native (.8zc) · Cycle 13 R6 (v9)</span><button id="theme" type="button">☀ Light</button><span class="languages"><button type="button" data-lang="en">EN</button> | <button type="button" data-lang="sl">SL</button></span><a href="/8zc-results/" id="results-link">Rezultati 8zC</a></div>
   </header>
   <main>
     <h1>Kodek 8zC</h1>
-    <p class="intro">Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format <strong>.8zc</strong> (<code>8ZCN\x02</code> z dolžino in CRC-32, brez zunanjih knjižnic) ali v <code>.8zc.zip</code> ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).</p>
+    <p class="intro">Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format <strong>.8zc</strong> (<code>8ZCN\x03</code> / <code>8ZCN\x02</code> z dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus pod 2,00 MB) ali v <code>.8zc.zip</code> ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).</p>
     <p class="hint"><span id="author-credit">Ideje, raziskovalne povezave in arhitektura · Bojan Dobrečevič (BD). Skupni razvoj in preverjanje · BD × AI Lab.</span> <a id="origin-link" href="/8zc-story/">Izvor in celotna zgodba BD × AI Lab</a></p>
     <div class="controls-bar">
       <fieldset id="modes">
@@ -33,8 +33,9 @@
       </fieldset>
       <fieldset id="enc-levels">
         <legend class="sr-only">Stopnja stiskanja .8zc</legend>
-        <label><input type="radio" name="enclvl" value="max" checked><span>Max (v1.1 Optimal)</span></label>
-        <label><input type="radio" name="enclvl" value="fast"><span>Hitro (v1.0)</span></label>
+        <label><input type="radio" name="enclvl" value="ultra" checked><span>Ultra (v1.2.1 &lt;2 MB)</span></label>
+        <label><input type="radio" name="enclvl" value="max"><span>Max (v1.5 Optimal)</span></label>
+        <label><input type="radio" name="enclvl" value="fast"><span>Hitro (Fast)</span></label>
       </fieldset>
     </div>
     <section class="panel" aria-labelledby="input-heading">
@@ -129,7 +130,7 @@
                 <th scope="col" id="th-v4-raw">Surovo</th>
                 <th scope="col" id="th-v4-zip">Čisti ZIP → 8zC v9 + ZIP</th>
                 <th scope="col" id="th-v4-7z">Čisti 7z → 8zC v9 + 7z</th>
-                <th scope="col" id="th-v4-nat">Suvereni .8zc (v1.1)</th>
+                <th scope="col" id="th-v4-nat">Suvereni .8zc (v1.2.1)</th>
                 <th scope="col" id="th-v4-try">Živi preizkus</th>
               </tr>
             </thead>
@@ -139,7 +140,7 @@
       </div>
       <div class="matrix-box">
         <div class="panel-head matrix-head">
-          <h3 id="matrix-title">Cycle 13 R6 (v9) + v1.1 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)</h3>
+          <h3 id="matrix-title">Cycle 13 R6 (v9) + v1.2.1 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)</h3>
           <button type="button" id="run-sample-live" class="chip-btn">Zaženi 00_data_endian.elf v živo →</button>
         </div>
         <div class="table-wrap">
@@ -150,7 +151,7 @@
                 <th scope="col" id="th-m-raw">Surovo</th>
                 <th scope="col" id="th-m-zip">Čisti ZIP → 8zC v9 + ZIP</th>
                 <th scope="col" id="th-m-7z">Čisti 7z → 8zC v9 + 7z</th>
-                <th scope="col" id="th-m-nat">Suvereni .8zc (v1.1)</th>
+                <th scope="col" id="th-m-nat">Suvereni .8zc (v1.2.1)</th>
                 <th scope="col" id="th-m-paq">Čisti PAQ8PX → 8zC + PAQ</th>
                 <th scope="col" id="th-m-cmix">Čisti cmix v21 → 8zC + cmix</th>
               </tr>
@@ -162,6 +163,6 @@
     </section>
     <noscript>Za uporabo kodeka vklopite JavaScript.</noscript>
   </main>
-  <footer>8zC v1.1 Native (<code>8ZCN\x02</code> · I3 + I4 Bt4-DP + I9 Audio Rice) + Cycle 13 R6 (v9) <span aria-hidden="true">/</span> Rust <code>z8c_core v1.1.0</code> + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt" id="licenses-link">Licence knjižnic</a></footer>
+  <footer>8zC v1.2.1 Native (<code>8ZCN\x03</code> &amp; <code>8ZCN\x02</code> · I5+I6+I10+I11 + M03 Schema-DP + I4.2 Bt4-DP + I3 + I9 Audio Rice) + Cycle 13 R6 (v9) <span aria-hidden="true">/</span> Rust <code>z8c_core v1.2.1</code> + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt" id="licenses-link">Licence knjižnic</a></footer>
 </body>
 </html>
