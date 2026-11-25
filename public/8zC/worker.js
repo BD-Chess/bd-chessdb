@@ -116,7 +116,7 @@ function isNative8zcMagic(bytes) {
     bytes[1] === 0x5a &&
     bytes[2] === 0x43 &&
     bytes[3] === 0x4e &&
-    (bytes[4] === 0x01 || bytes[4] === 0x02 || bytes[4] === 0x03)
+    (bytes[4] === 0x01 || bytes[4] === 0x02 || bytes[4] === 0x03 || bytes[4] === 0x04)
   );
 }
 
