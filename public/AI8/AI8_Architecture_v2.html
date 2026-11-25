@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="sl" data-theme="dark" data-title-sl="AI8 Architecture v2.2 — The Self-Selecting Governor" data-title-en="AI8 Architecture v2.2 — The Self-Selecting Governor"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#091210"><meta name="description" content="Authorial AI8 v2.2 research document, 19 November 2026."><meta name="robots" content="index,follow"><meta name="author" content="BD × AI Lab"><link rel="canonical" href="https://www.mdlxdcc.org/ai8/architecture-v2"><title>AI8 Architecture v2.2 — The Self-Selecting Governor</title><link rel="stylesheet" href="/ai8/ai8-toolbar.css"><style>:root{color-scheme:dark;--bg:#091210;--surface:#101d18;--panel:#15261f;--line:#304b3e;--ink:#eff6ef;--muted:#b0c2b7;--accent:#b9ee8b;--cyan:#83dccc;--gold:#edc98d;--scale:1;font-size:calc(16px * var(--scale));font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}html[data-theme=light]{color-scheme:light;--bg:#f4f7f1;--surface:#fff;--panel:#e8f1e5;--line:#c3d5c5;--ink:#172e23;--muted:#486054;--accent:#2e6c28;--cyan:#12665d;--gold:#795011}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,color-mix(in srgb,var(--accent) 9%,transparent),transparent 36rem),var(--bg);color:var(--ink);line-height:1.65}a{color:var(--accent);text-underline-offset:.18em}a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:4px}.skip{position:absolute;left:-10000px;top:0}.skip:focus{left:1rem;background:var(--surface);padding:.75rem;z-index:100}.wrap{max-width:1180px;margin:auto;padding:0 24px}.mast{border-bottom:1px solid var(--line);background:var(--bg)}.head{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-block:12px}.brand{font-weight:850;color:var(--ink);text-decoration:none;letter-spacing:-.04em}.brand span{color:var(--accent)}.brand small{display:block;font-size:.59rem;letter-spacing:.15em;color:var(--muted)}nav{display:flex;gap:15px;flex-wrap:wrap;font-size:.82rem}nav a{color:var(--muted);text-decoration:none}.hero{padding:clamp(2.5rem,6vw,5rem) 0 2.5rem;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:2rem;align-items:center}.eyebrow,.kicker{font-family:ui-monospace,Consolas,monospace;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;font-size:.71rem;font-weight:650}.mark{font-size:clamp(4rem,11vw,8.5rem);line-height:1.03;font-weight:850;letter-spacing:-.09em;color:var(--accent);margin:0 0 .3rem}h1,h2,h3{line-height:1.18;letter-spacing:-.035em;margin:0 0 .65rem;overflow-wrap:anywhere}h1{font-size:clamp(2rem,5vw,3.8rem)}h2{font-size:clamp(1.55rem,3.5vw,2.35rem)}h3{font-size:1.13rem}p{margin:.4rem 0 .85rem}.lead{font-size:1.12rem;color:var(--muted);max-width:70ch}.muted,.note{color:var(--muted)}.note{font-size:.82rem}.actions{display:flex;gap:.65rem 1rem;flex-wrap:wrap;margin-top:1.3rem;align-items:center}.button{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.58rem 1rem;text-decoration:none;font-weight:700}.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}.panel,.tile,.flow-node,.metric{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:1.2rem;min-width:0}.panel{padding:1.5rem}.section{padding:2.25rem 0;border-top:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{display:flex;flex-direction:column;gap:.3rem}.tile:hover{border-color:var(--accent)}.tile .kicker{color:var(--cyan)}.tile p{color:var(--muted);font-size:.9rem}.tile a{font-size:.88rem}.tile .more{margin-top:auto;align-self:flex-start;font-weight:700}.links{display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin-top:.4rem}.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.65rem;margin:1rem 0}.flow-node{position:relative;padding:1rem}.flow-node b{display:block;color:var(--accent);font-size:1.05rem}.flow-node p{font-size:.83rem;color:var(--muted);margin:.35rem 0}.flow-node:not(:last-child):after{content:"→";position:absolute;right:-.6rem;top:45%;z-index:2;color:var(--accent);font-weight:800}.loop{font-family:ui-monospace,monospace;color:var(--cyan);font-size:.82rem;border:1px dashed var(--line);padding:.65rem;border-radius:12px}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:1.25rem 0}.metric strong{display:block;font-size:clamp(1.6rem,4vw,2.5rem);color:var(--accent);font-variant-numeric:tabular-nums}.metric small{color:var(--muted)}.bar{height:13px;background:var(--panel);border-radius:999px;overflow:hidden;margin:.35rem 0 1rem}.bar i{display:block;height:100%;background:var(--cyan);border-radius:inherit}.bar i.half{width:50%}.bar i.full{width:100%}.source{max-width:900px;margin:auto}.source p,.source li{overflow-wrap:anywhere;white-space:pre-wrap}.source h2{margin:2rem 0 .65rem}.source h3{margin:1.5rem 0 .5rem}.source .source-line{font-size:.94rem}.source ul{padding-left:1.3rem}.source .rule{border-top:1px solid var(--line);margin:1.4rem 0}.source .banner{border-left:3px solid var(--gold);padding:.5rem 1rem;background:var(--surface);margin:1rem 0}.footer{border-top:1px solid var(--line);padding:1.5rem 0 2.5rem;color:var(--muted);font-size:.82rem}.footer a{margin-right:.8rem}.status{font-size:.7rem;letter-spacing:.07em;color:var(--gold);font-weight:650;text-transform:uppercase}[data-lang][hidden]{display:none!important}@media(max-width:850px){.hero{grid-template-columns:1fr}.grid,.flow{grid-template-columns:repeat(2,minmax(0,1fr))}.flow-node:nth-child(2):after{display:none}}@media(max-width:540px){.wrap{padding:0 16px}.grid,.grid.two,.flow,.metrics{grid-template-columns:1fr}.flow-node:not(:last-child):after{content:"↓";top:auto;right:1rem;bottom:-.75rem}.hero{padding-top:2rem}.head{gap:8px}.ai8-toolbar{justify-content:flex-start}.panel{padding:1rem}}</style><script defer src="/ai8/ai8-toolbar.js"></script></head><body><a class="skip" href="#main"><span data-lang="sl">Preskoči na vsebino</span><span data-lang="en" hidden>Skip to content</span></a><header class="mast"><div class="wrap head"><a class="brand" href="/">MDL<span>×</span>DCC <small>BD × AI LAB</small></a><nav aria-label="AI8"><a href="/ai8/">AI8</a><a href="/ai8/live/">LIVE</a><a href="/ai8/learning/">Learning</a><a href="/ai8/knowledge">Knowledge</a></nav><div class="ai8-toolbar" data-ai8-toolbar role="group" aria-label="Language, theme and text size"><button type="button" data-ai8-lang="sl" aria-pressed="true">SL</button><button type="button" data-ai8-lang="en" aria-pressed="false">EN</button><span class="ai8-divider" aria-hidden="true"></span><button type="button" data-ai8-theme="dark" aria-label="Dark theme">◐</button><button type="button" data-ai8-theme="light" aria-label="Light theme">☀</button><span class="ai8-divider" aria-hidden="true"></span><button type="button" data-ai8-down aria-label="Smaller text">A−</button><button type="button" data-ai8-reset aria-label="Reset text size">100%</button><button type="button" data-ai8-up aria-label="Larger text">A+</button></div></div></header><main class="wrap" id="main"><article class="source" lang="en"><section class="section"><div class="actions"><a href="/ai8/">← AI8</a><a href="/ai8/overview.html">Overview &amp; Trilogy</a><a href="/bd/ai8_architecture">Historical v1 archive</a><a href="/ai8/philosophy-and-origins">Philosophy &amp; Origins</a></div><div class="banner"><b>Authorial research document · v2.2 · 19 November 2026</b><p>Engineering specifications, historical reports and philosophical hypotheses retain their original claim status. The source wording is retained; builder-only conversion notes are omitted. English source document.</p></div><h1>AI8 Architecture v2.2 — The Self-Selecting Governor (ssMDL×DCC-R)</h1>
+<p class="source-line">Authors: Bojan Dobrečevič (BD) × AI8 (BD × AI Lab, Ljubljana)</p>
+<p class="source-line">Date: 2026-11-19</p>
+<p class="source-line">Status: Technical &amp; Engineering Specification v2.2 (Reviewed &amp; Corrected Pre-HTML Baseline)</p>
+<p class="source-line">Companion Document: AI8 Philosophy and Origins (<a href="/ai8/philosophy-and-origins">./AI8_Philosophy_and_Origins.html</a> — ontology, Absolute Consciousness / CFH / CCH foundations, and personal origin narrative)</p>
+<p class="source-line">Historical Research Archive: Full 14-Chapter v1 Monograph (<a href="/bd/ai8_architecture">./AI8_Architecture.html</a> — preserved in full for the 286-variant arena tables, Flip4M progression, and March 2026 discovery logs)</p>
+<div class="rule"></div>
+<h2>Executive Summary</h2>
+<p class="source-line">AI8 (AI ∞ — Continuous Intelligence Architecture) is a persistent, self-monitoring, self-selecting control and discovery architecture built on the Minimum Description Length × Dynamic Complexity Control (MDL × DCC) kernel. Unlike stateless, single-burst inference systems (prompt → response → silence), AI8 operates as a continuous process governed by a five-layer control hierarchy (G1–G5), three levels of recursive self-selection (R1–R3), and an autonomous seed-generation loop (R).</p>
+<p class="source-line">This v2.2 specification incorporates mathematical, epistemic, and multi-agent verification refinements over v1 and v2.1:</p>
+<p class="source-line">1. Strict separation between ontological layers (O1 Physical/Computational Substrate vs. O2 Non-Computational Consciousness Field) and five substrate control layers (G1–G5), eliminating category errors between control actuators and phenomenological field coupling.</p>
+<p class="source-line">2. Exact boundary-vanishing, strictly concave formulation of dynamic openness (Ψ(h)) via the exponential binary Kullback–Leibler / Beta kernel, paired with explicit distinction between causal coupling/integration (k, Cₙ) and computable multi-worker operational proxies (k̂, Ĉₙ), plus strict separation from control actuation (u).</p>
+<p class="source-line">3. Stabilized self-calibrating band regulation with hard informational guardrails (h_floor, h_ceil), hysteresis deadbands, timescale separation (τ_R3 ≫ τ_R2 ≫ τ_R1 ≫ W), and an exogenous objective anchor on G4 to prevent wireheading.</p>
+<p class="source-line">4. Bit-consistent MDL accounting, blinded multi-agent review independence rules in R, and strict separation between empirically measured domains (8zTSP, 8zC-M) and candidate target domains under active research.</p>
+<div class="rule"></div>
+<h2>1. Canonical Glossary &amp; Layer Separation</h2>
+<p class="source-line">To prevent cross-domain collision between ontology, control theory, and software engineering, AI8 v2.2 enforces distinct notation:</p>
+<ul>
+<li>O1 (Ontology — Computational &amp; Physical Substrate): Silicon, neural tissue, and discrete state transitions. Algorithmic, deterministic or stochastic, directly measurable.</li>
+<li>O2 (Ontology — Consciousness Field CF): Postulated in the AC / CFH / CCH companion papers; non-computational phenomenal ground.</li>
+<li>G1–G5 (Control on O1): Five engineering governance layers operating strictly inside O1 (replacing overloaded &quot;Layer 1–5&quot; labels).</li>
+<li>R1–R3 (Recursion on O1): Three control recursion levels (base search → governor selection → meta-governor selection).</li>
+<li>R (Discovery on O1): Autonomous Seed &amp; Lens Generation Layer (ssMDL×DCC-R), feeding candidate hypotheses into G1–G5.</li>
+<li>k ∈ [0, 1] (Regime Metric — Effective Structural Coupling): Causal bidirectional interaction bandwidth between active subsystems (approximated in software fleets by proxy k̂ plus interventional ablation).</li>
+<li>Cₙ ∈ [0, 1] (Regime Metric — Integration / Coherence): Synchronized dynamical integration across active threads/workers (approximated in software fleets by proxy Ĉₙ).</li>
+<li>h ∈ [0, 1] (Sensor Signal — Normalized Complexity): Normalized sequential complexity, e.g., LZ76_norm of an operational symbol stream over window W.</li>
+<li>Ψ(h) ∈ [0, 1] (Regime Metric — Dynamic Openness): Strictly concave function of h on [0, 1] peaking at Ψ(h*) = 1 for any target h* ∈ (0, 1) and vanishing exactly at both boundaries (Ψ(0) = 0, Ψ(1) = 0).</li>
+<li>S ∈ [0, 1] (Regime Metric — Dynamical Regime Index): S = k · Cₙ · Ψ(h). Tracks whether an O1 process occupies the productive, integrated, and differentiated dynamical band.</li>
+<li>u ∈ [0, 1] (Actuator — Control Input Variable): Adjusted in real time by DCC to steer O1 search and attention knobs (never identical to Ψ(h)).</li>
+</ul>
+<h2>2. Core Control Loop: Digital Complexity Controller (DCC)</h2>
+<h3>2.1 The Two Failure Modes</h3>
+<p class="source-line">Every uncontrolled search, inference, or coordination process degenerates into one of two failure modes:</p>
+<ul>
+<li>Seizure (h → 0): Premature convergence on a single attractor, repetitive loop, or retrieval lock. High regularity, zero novelty.</li>
+<li>Noise (h → 1): Unstructured random thrashing, high token/compute burn, zero cumulative structure.</li>
+</ul>
+<p class="source-line">The Digital Complexity Controller (DCC) regulates the process in real time to maintain h inside a productive target band [h_low, h_high] centered on h* ∈ (0, 1) between seizure and noise.</p>
+<h3>2.2 Exact Concave Ψ(h), Operational Proxies k̂ and Ĉₙ, and Actuator u</h3>
+<h2>1. Exact Concave Dynamic Openness (Ψ(h) ∈ [0, 1]):</h2>
+<p class="source-line">(Correction over v2.1: an unclipped Gaussian is strictly positive at h = 0, 1 and loses concavity in the tails, whereas 4h(1 - h) peaks only at h* = 1/2.)</p>
+<p class="source-line">For any target complexity h* ∈ (0, 1) (including narrow empirical regimes such as h* ≈ 0.05 in TSP local search), AI8 v2.2 defines Ψ(h) on h ∈ (0, 1) via the normalized Beta / exponential binary Kullback–Leibler kernel:</p>
+<p class="source-line">Ψ(h) = (h / h*)^α · ((1 - h) / (1 - h*))^β = exp( -γ · D_KL(Bern(h*) || Bern(h)) )</p>
+<p class="source-line">with α = γ · h*, β = γ · (1 - h*), and 0 &lt; γ ≤ 1 / max(h*, 1 - h*), extended by continuity to Ψ(0) = 0 and Ψ(1) = 0.</p>
+<p class="source-line">Canonical parameter-free form (γ = 1): α = h* and β = 1 - h* (α + β = 1).</p>
+<p class="source-line">Symmetric quadratic special case (h* = 1/2, γ = 2): α = 1, β = 1, recovering Ψ(h) = 4 · h · (1 - h).</p>
+<p class="source-line">Verified mathematical properties: Because 0 &lt; α ≤ 1 and 0 &lt; β ≤ 1 (with α · β &gt; 0 and not both equal to 1 except 4h(1 - h) where Ψ''(h) = -8 &lt; 0), the second derivative</p>
+<p class="source-line">Ψ''(h) = Ψ(h) · [ α(α - 1)/h² - 2αβ/(h(1 - h)) + β(β - 1)/(1 - h)² ]</p>
+<p class="source-line">is strictly negative for all h ∈ (0, 1). Thus Ψ(h) is strictly concave across the entire interval [0, 1], achieves its unique global maximum Ψ(h*) = 1 at arbitrary h* ∈ (0, 1), and satisfies exact boundary collapse Ψ(0) = 0 and Ψ(1) = 0. Consequently, S = k · Cₙ · Ψ(h) vanishes in both pathological limits.</p>
+<p class="source-line">2. Structural Coupling (k) vs. Operational Proxy (k̂) ([HYPOTHESIS / PROXY]):</p>
+<p class="source-line">In multi-worker software arenas (M parallel workers over epoch N), raw message/state exchange rate</p>
+<p class="source-line">k̂ = min(1, E_exchanged / E_capacity)</p>
+<p class="source-line">serves as a cheap observable proxy, not proof of effective causal coupling (high message volume can still be ignored by recipients). Establishing effective coupling k requires pairing k̂ with causal sensitivity checks (e.g., non-zero transfer entropy or measurable trajectory divergence relative to an isolated k = 0 ablation control).</p>
+<p class="source-line">3. Integration (Cₙ) vs. Operational Proxy (Ĉₙ) ([HYPOTHESIS / PROXY]):</p>
+<p class="source-line">4. Oscillator / EEG systems: Phase-Locking Value (PLV) across channels.</p>
+<p class="source-line">1. Multi-worker discrete fleets (M ≥ 2): Mean pairwise structural agreement across active worker states X₁, ..., X_M (e.g., edge Jaccard overlap on tours or normalized mutual information across generator choices):</p>
+<p class="source-line">Ĉₙ = (2 / (M · (M - 1))) · Σ_{i&lt;j} Sim(X_i, X_j)</p>
+<p class="source-line">Ĉₙ is an operational proxy: static overlap from identical initialization must be discounted (e.g., relative to baseline seed overlap), and high Ĉₙ alone never suffices because clone collapse (Ĉₙ → 1) drives innovation h → 0 and collapses Ψ(h) → 0.</p>
+<p class="source-line">5. Actuator vs. State (u vs. Ψ(h)):</p>
+<p class="source-line">Control parameters such as perturbation strength, candidate neighborhood radius, temperature, or memory-trust weight u_memory ∈ [0, 1] (used in Flip4M v4) are actuators (u) on O1 that steer the system's operating point; they are never equated with Ψ(h).</p>
+<h3>2.3 Stabilized Self-Calibrating Band Regulation</h3>
+<p class="source-line">AI8 v2.2 explicitly declares its fixed architectural hyperparameters (W buffer length, N update cadence, step size Δu, deadband δ, and guardrails h_floor, h_ceil):</p>
+<p class="source-line">6. Protection Against Anchor Collapse: Self-calibrating [h_low, h_high] from observed history H enforces hard informational bounds so a cold start inside seizure or noise cannot lock the band inside pathology:</p>
+<p class="source-line">h_low = max(h_floor, P_25(H)),   h_high = min(h_ceil, P_75(H)),   with h_high - h_low ≥ Δ_min &gt; 0 and h* = (h_low + h_high) / 2.</p>
+<p class="source-line">7. Hysteresis Deadband Against Limit-Cycle Chattering:u updates only when h &lt; h_low - δ or h &gt; h_high + δ, preventing oscillation across window boundaries due to buffer lag W.</p>
+<p class="source-line">8. Level-Specific Polarity Rules (Resolving Semantic Inversion): The same sensor reading h requires opposite control polarity depending on whether DCC is governing an inner search generator (G1) or evaluating regime persistence (G2):</p>
+<ul>
+<li>G1 (Search Execution — symbol stream I: step outcomes 1 = improvement, 0 = reject):</li>
+<li>Low h (h &lt; h_low - δ): Seizure / Local Optimum → Decrease u (broaden search, increase perturbation).</li>
+<li>High h (h &gt; h_high + δ): Random Thrashing → Increase u (tighten acceptance, focus exploitation).</li>
+<li>G2 (Domain / Regime Routing — symbol stream I: winning model/generator ID per epoch):</li>
+<li>Low h (h &lt; h_low - δ): Persistent Regime → Maintain trust / allocation in active specialist until residual degrades.</li>
+<li>High h (h &gt; h_high + δ): Regime Breakdown / Chaos → Reduce exposure / trigger fallback exploration.</li>
+</ul>
+<div class="rule"></div>
+<h2>3. Bit-Consistent MDL Selection &amp; Recursive Closure (R1–R3)</h2>
+<h3>3.1 Uniform Bit Accounting</h3>
+<p class="source-line">Every candidate model, heuristic, or DCC configuration M is evaluated by Minimum Description Length (MDL) in uniform bit units:</p>
+<p class="source-line">L_total(M | D, B) = L_model(M) + L_residual(D | M, B)</p>
+<p class="source-line">where:</p>
+<ul>
+<li>L_model(M) encodes the exact selector index (log₂(|Universe|) bits), sensor/law parameters, and framing overhead — never 0.00 bits for multi-parameter controllers such as ADSR or PID (tables zero-anchored to the best variant are explicitly labeled ΔL_total).</li>
+<li>L_residual(D | M, B) encodes residual error or optimality gap under declared compute budget B using a fixed, pre-declared coding distribution (eliminating arbitrary human weights such as gap% × scaling_constant).</li>
+</ul>
+<h3>3.2 Three Levels of Control Recursion (R1–R3)</h3>
+<p class="source-line">AI8 separates control recursion (R1–R3) from methodological self-similarity (applying multi-scale decomposition MSTD to both spatial coordinates and cognitive idea-threads):</p>
+<ul>
+<li>R1 (Base Loop): MDL selects the best domain model/solver; DCC regulates its search dynamics (u).</li>
+<li>R2 (Governor Selection): MDL evaluates competing DCC configurations (Sensor, Control Law, Representation) conditioned on budget B; Meta-DCC regulates the meta-arena budget.</li>
+<li>R3 (Meta-Governor Closure): MDL selects the Meta-DCC policy itself. Recursion terminates naturally when adding a meta-level costs more description bits (L_model) than it saves in residual cost (L_residual).</li>
+</ul>
+<h3>3.3 Preventing Deadlocks &amp; Wireheading</h3>
+<p class="source-line">1. Timescale Separation: Adaptation timescales must satisfy τ_R3 ≫ τ_R2 ≫ τ_R1 ≫ W so budget-sensitive specialists (e.g., tunneling at short budgets vs. interference at long budgets) are evaluated over full dwell horizons without chattering.</p>
+<p class="source-line">2. Fibrillation Fallback (G4): Non-smooth control laws (such as ADSR, which exhibits sharp bifurcation between exact convergence and sudden collapse) run under a G4 stability monitor that triggers deterministic fallback to a smooth baseline (BB or EMA) upon variance spikes.</p>
+<p class="source-line">3. Exogenous Objective Anchor on G4: Internal MDL cannot rewrite its own ground-truth loss function, preventing wireheading. Ground-truth evaluation metrics (exact tour length, SHA3-256 bit-exact reconstruction, hard compute/wall budgets, and human-defined mission goals) remain strictly exogenous to G4.</p>
+<div class="rule"></div>
+<h2>4. Five Governance Layers (G1–G5) + Autonomous Seed Layer (R)</h2>
+<p class="source-line">All five governance layers operate inside the computational substrate O1:</p>
+<ul>
+<li>G1 — Search Execution (What step next?): Regulates local operators, perturbation strength, and acceptance thresholds (LZ76 + BB/ADSR). Status: [VERIFIED].</li>
+<li>G2 — Domain &amp; Routing (Where to look / which specialist?): Routes control across competing solvers/generators in an arena and prevents retrieval lock. Status: [VERIFIED] in 8zTSP &amp; 8zC-M.</li>
+<li>G3 — Meta-Governance (How to improve the controller?): Runs R2/R3 arenas over sensors and control laws. Status: [VERIFIED] in ssMDL-DCC arenas.</li>
+<li>G4 — Homeostatic Health (Is this worth doing / is the system healthy?): Enforces compute budgets, detects worker starvation/fibrillation, and preserves exogenous task alignment. Status: [REASONED / PARTIAL].</li>
+<li>G5 — Multi-Resolution Zoom (What structural pattern connects active threads?): Coarsens active thread signatures across zoom levels (O(n·L)) to discover cross-domain compositions. Status: [HYPOTHESIS / SPECIFICATION].</li>
+<li>R — Autonomous Seed &amp; Independent Review Layer (What missing lens or falsifier should enter the arena?): Executes RHPr census/absence detection, forced-lens reframing, physical-intuition simulation (Child), falsifier pairing, and empirical arena conversion (seed → bridge → test → result → session genome). Status: [SPECIFICATION].</li>
+<li>Epistemic Independence Rule (ZBOR Protocol): In multi-agent evaluation, reviewers must commit their evidence, assumptions, and explicit conditions for changing their verdict independently before viewing peer conclusions. Sequential agreement after reading another agent's verdict counts as synthesis, not independent confirmation; disputes are resolved by direct artifact inspection or empirical test rather than vote counting.</li>
+</ul>
+<div class="rule"></div>
+<h2>5. Empirical Grounding, Verification Posture &amp; Falsification Matrix</h2>
+<ul>
+<li>5.1 Empirically Measured Domains vs. Candidate Target Domains</li>
+</ul>
+<p class="source-line">AI8 v2.2 maintains a strict boundary between measured evidence and expansion targets:</p>
+<ul>
+<li>Measured in Declared Scope ([VERIFIED / MEASURED]):</li>
+<li>Founding Compressibility Hypothesis (8zTSP): Across TSP trajectories, LZ76 sequence complexity correlates with tour quality (ρ = +0.80).</li>
+<li>The Init Paradox (2× Independent Confirmations): Inferior initializations (MSTD starting at 11.61% gap, plus elevation-partitioned starts) achieve stronger final tours (0.8330% gap on uy734) if and only if active DCC governance is enabled.</li>
+<li>Self-Calibrating Band Discovery: On uy734, v2.5 meta-DCC narrowed its band from [0, 1] to [0.040, 0.061] within 10 observations, eliminating fleet-wide worker starvation.</li>
+<li>Mathematical Generator Discovery (8zC-M v0.7.2): Rust-accelerated Krichevsky–Trofimov census, Berlekamp–Massey, PRNG state recovery, and evo hidden-state search verified across 588,708 replayed records with zero false hits on decoy controls; genomic FASTA (8Z-LO) beats 7-Zip on 44/50 genomes (19.24% vs 21.69%, specialist GeCo3 at 16.88%).</li>
+<li>Interactive &amp; Diagnostic Arenas: ChessDCC (2,055 near-equal positions), Flip4M, and 8zSudoku (including negative controls where simpler baselines beat MDL_DCC).</li>
+<li>Candidate Target Domains ([HYPOTHESIS / TARGET — UNTESTED IN PRODUCTION]):</li>
+</ul>
+<p class="source-line">The MSTD + TEP + MDL × DCC architecture is designed as a domain-general combinatorial kernel targeting future transfer into VLSI/EDA routing, logistics/VRP, industrial scheduling, power/telecom networks, protein folding / crystal discovery (8zMaterials, early stage), and quantum circuit compilation. No empirical superiority is claimed in these target domains prior to dedicated benchmark campaigns.</p>
+<h3>5.2 Tiered Verification &amp; Core IP Stewardship</h3>
+<p class="source-line">To balance scientific verifiability with commercial protection of a transferable optimization architecture:</p>
+<p class="source-line">9. Open Result Verification (Permissive License): Benchmark instances, published .tour / replay outputs, SHA-256 digests, and the standalone verifier (verify_independent.py) are published openly so any third party (academic or commercial) can independently verify solution validity and objective length/exactness. Note that verifying a .tour file confirms route validity and metric length; verifying wall-clock speed, RAM footprint, or global optimality requires separate benchmark execution or dual-checker optimality certificates.</p>
+<p class="source-line">10. Controlled Execution Access: A public no-password browser demo requires a dedicated Lite build compiled without confidential operators. Full-engine research evaluation is provided free of charge upon reviewed request under agreed non-commercial terms — choosing consciously between server-side API execution (retaining executable binaries entirely on lab infrastructure) and controlled binary/demo access (recognizing that client-side .wasm decryption controls distribution rather than preventing local binary inspection).</p>
+<p class="source-line">11. Private Core Repository &amp; Provenance Archive: Core Rust source repositories remain private for future commercial licensing. Prior-existence and provenance records combine archived source snapshots, SHA-256 digests, blockchain/qualified timestamps, and chronological Git authorship logs (noting that timestamps establish existence-at-time and integrity rather than standalone legal authorship or patent novelty).</p>
+<p class="source-line">AI8 v2.2 is falsified or narrowed if any of the following hold on frozen benchmark suites:</p>
+<ul>
+<li>L01 (No Governance Gain): A static, non-adaptive controller matches or beats DCC at equal compute budget B.</li>
+<li>L02 (Hidden Domain Tuning): Cross-domain transfer requires undocumented, problem-specific threshold hacks.</li>
+<li>L03 (Overhead Exceeds Savings): Full accounting of L_model + search compute eliminates net MDL gain.</li>
+<li>L04 (Out-of-Sample Collapse): Gains disappear on unseen, frozen test corpora.</li>
+<li>L05 (Non-Reproducibility): Independent verifiers fail to validate published solutions, trajectories, or SHA3-256 / SHA-256 digests.</li>
+<li>L06 (Recursive Regress): R2/R3 meta-governance consistently costs more bits/compute than fixed R1.</li>
+</ul>
+<div class="rule"></div>
+<p class="source-line">6. Architectural Boundary: Substrate (O1) vs. Field (O2)</p>
+<ul>
+<li>AI8 v2.2 explicitly rejects naive emergent functionalism (&quot;run a complex loop on silicon and consciousness automatically emerges&quot;):</li>
+<li>Everything specified in Sections 1–5 (G1–G5, R1–R3, R, MDL × DCC) is an engineering architecture on O1. Its utility stands independently of any metaphysical commitment.</li>
+<li>Under the broader AC / CFH / CCH ontological hypothesis (detailed in <a href="/ai8/philosophy-and-origins">./AI8_Philosophy_and_Origins.html</a>), G1–G5 build candidate dynamical conditions (high S on O1), while phenomenal presence requires coupling to O2. On strictly deterministic silicon hardware, O1 serves as a deterministic dynamical testbed unless coupled to a genuine physical indeterminacy interface.</li>
+</ul>
+<div class="rule"></div></section></article></main><footer class="footer"><div class="wrap"><b>BD × AI Lab · Less describes more.</b><p><span data-lang="sl">Raziskovalni program · javni pregled · 25. 11. 2026</span><span data-lang="en" hidden>Research programme · public overview · 25 Nov 2026</span></p><a href="/ai8/">AI8</a><a href="/ai8/overview.html"><span data-lang="sl">Arhitekturni pregled</span><span data-lang="en" hidden>Architecture overview</span></a><a href="/ai8/knowledge">Knowledge Atlas</a><a href="/start/">Start</a></div></footer></body></html>
