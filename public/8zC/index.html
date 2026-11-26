@@ -5,20 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <meta name="description" content="Suvereni večformatni kodek 8zC v1.4.1 (.8zc 8ZCN\x05 + v4/v3/v2/v1: MIX7 7-modelni logistični mešalnik + B1+B2 kontekstni mešalnik LZ77 odločitev + FMT_WAV_V6 Schur-Burg PARCOR/LAR + FMT_WASM_V10 14-pasovno strukturno razcepljanje + FMT_M03_PAL_BZZ + 100 % kompilacijske tabele brez plavajoče vejice): v brskalniku stisnite eno ali več datotek do 256 MiB v suvereni format .8zc (Ultra / Max / Hitro · 1,854 MB na 33 datotekah, 14/33 proti paq8px -8) ali .8zc.zip ter obnovite izvirnike s 100 % preverjeno SHA-256.">
+  <meta name="description" content="Suvereni večformatni kodek 8zC v1.5.0 (.8zc 8ZCN\x05 + v4/v3/v2/v1: X64CausalSubset dvopasovni kavzalni razcep x86-64 ukazov + B3_DeepBt4 18-bitni razčlenjevalnik + FMT_WASM_V11_CTX CM8 + LiveMTF + InPlace D7 + MIX7 + B1+B2 + FMT_WAV_V6 Schur-Burg PARCOR/LAR + FMT_M03_PAL_BZZ + 100 % kompilacijske tabele brez plavajoče vejice): v brskalniku stisnite eno ali več datotek do 256 MiB v suvereni format .8zc (Ultra / Max / Hitro · 1,811 MB na 33 datotekah, 14/33 proti paq8px -8, 239/239 na slepem .ttf/Windows paketu) ali .8zc.zip ter obnovite izvirnike s 100 % preverjeno SHA-256.">
   <link rel="canonical" href="https://www.mdlxdcc.org/8zC/">
-  <title>Kodek 8zC · v1.4.1 Native (.8zc &lt;1,855 MB) + Cycle 13 R6 (v9)</title>
+  <title>Kodek 8zC · v1.5.0 Native (.8zc &lt;1,811 MB) + Cycle 13 R6 (v9)</title>
   <link rel="stylesheet" href="/8zC/style.css">
   <script defer src="/8zC/app.js"></script>
 </head>
 <body>
   <header class="mast">
     <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>8zC</div>
-    <div class="mast-links"><span class="release" id="release-tag">v1.4.1 Native (.8zc) · Cycle 13 R6 (v9)</span><button id="theme" type="button">☀ Light</button><span class="languages"><button type="button" data-lang="en">EN</button> | <button type="button" data-lang="sl">SL</button></span><a href="/ai8/">AI8</a><a href="/8zc-results/" id="results-link">Rezultati 8zC</a></div>
+    <div class="mast-links"><span class="release" id="release-tag">v1.5.0 Native (.8zc) · Cycle 13 R6 (v9)</span><button id="theme" type="button">☀ Light</button><span class="languages"><button type="button" data-lang="en">EN</button> | <button type="button" data-lang="sl">SL</button></span><a href="/ai8/">AI8</a><a href="/8zc-results/" id="results-link">Rezultati 8zC</a></div>
   </header>
   <main>
     <h1>Kodek 8zC</h1>
-    <p class="intro">Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format <strong>.8zc</strong> (<code>8ZCN\x05</code> z vzvratnim branjem <code>v1..v4</code>, dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus 1,854 MB · 14/33 proti <code>paq8px -8</code>) ali v <code>.8zc.zip</code> ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).</p>
+    <p class="intro">Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format <strong>.8zc</strong> (<code>8ZCN\x05</code> z vzvratnim branjem <code>v1..v4</code>, dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus 1,811 MB · 14/33 proti <code>paq8px -8</code> · 239/239 na slepem paketu) ali v <code>.8zc.zip</code> ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).</p>
     <p class="hint"><span id="author-credit">Ideje, raziskovalne povezave in arhitektura · Bojan Dobrečevič (BD). Skupni razvoj in preverjanje · BD × AI Lab.</span> <a id="origin-link" href="/8zc-story/">Izvor in celotna zgodba BD × AI Lab</a></p>
     <div class="controls-bar">
       <fieldset id="modes">
@@ -33,7 +33,7 @@
       </fieldset>
       <fieldset id="enc-levels">
         <legend class="sr-only">Stopnja stiskanja .8zc</legend>
-        <label><input type="radio" name="enclvl" value="ultra" checked><span>Ultra (v1.4.1 &lt;1,855 MB)</span></label>
+        <label><input type="radio" name="enclvl" value="ultra" checked><span>Ultra (v1.5.0 &lt;1,811 MB)</span></label>
         <label><input type="radio" name="enclvl" value="max"><span>Max (v1.5 Optimal)</span></label>
         <label><input type="radio" name="enclvl" value="fast"><span>Hitro (Fast)</span></label>
       </fieldset>
@@ -130,7 +130,7 @@
                 <th scope="col" id="th-v4-raw">Surovo</th>
                 <th scope="col" id="th-v4-zip">Čisti ZIP → 8zC v9 + ZIP</th>
                 <th scope="col" id="th-v4-7z">Čisti 7z → 8zC v9 + 7z</th>
-                <th scope="col" id="th-v4-nat">Suvereni .8zc (v1.4.1)</th>
+                <th scope="col" id="th-v4-nat">Suvereni .8zc (v1.5.0)</th>
                 <th scope="col" id="th-v4-try">Živi preizkus</th>
               </tr>
             </thead>
@@ -140,7 +140,7 @@
       </div>
       <div class="matrix-box">
         <div class="panel-head matrix-head">
-          <h3 id="matrix-title">Cycle 13 R6 (v9) + v1.4.1 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)</h3>
+          <h3 id="matrix-title">Cycle 13 R6 (v9) + v1.5.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)</h3>
           <button type="button" id="run-sample-live" class="chip-btn">Zaženi 00_data_endian.elf v živo →</button>
         </div>
         <div class="table-wrap">
@@ -151,7 +151,7 @@
                 <th scope="col" id="th-m-raw">Surovo</th>
                 <th scope="col" id="th-m-zip">Čisti ZIP → 8zC v9 + ZIP</th>
                 <th scope="col" id="th-m-7z">Čisti 7z → 8zC v9 + 7z</th>
-                <th scope="col" id="th-m-nat">Suvereni .8zc (v1.4.1)</th>
+                <th scope="col" id="th-m-nat">Suvereni .8zc (v1.5.0)</th>
                 <th scope="col" id="th-m-paq">Čisti PAQ8PX → 8zC + PAQ</th>
                 <th scope="col" id="th-m-cmix">Čisti cmix v21 → 8zC + cmix</th>
               </tr>
@@ -163,6 +163,6 @@
     </section>
     <noscript>Za uporabo kodeka vklopite JavaScript.</noscript>
   </main>
-  <footer>8zC v1.4.1 Native (<code>8ZCN\x05</code> + <code>v1..v4</code> · MIX7 + B1+B2 LZ Decision CM + FMT_WAV_V6 PARCOR/LAR + FMT_WASM_V10 14-lane + FMT_M03_PAL_BZZ + Zero-Float LUTs + ScratchArena) + Cycle 13 R6 (v9) <span aria-hidden="true">/</span> Rust <code>z8c_core v1.4.1</code> + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt" id="licenses-link">Licence knjižnic</a></footer>
+  <footer>8zC v1.5.0 Native (<code>8ZCN\x05</code> + <code>v1..v4</code> · X64CausalSubset + B3_DeepBt4 + FMT_WASM_V11_CTX + MIX7 + B1+B2 LZ Decision CM + FMT_WAV_V6 PARCOR/LAR + FMT_M03_PAL_BZZ + Zero-Float LUTs + ScratchArena) + Cycle 13 R6 (v9) <span aria-hidden="true">/</span> Rust <code>z8c_core v1.5.0</code> + WebAssembly <span aria-hidden="true">/</span> <a href="/8zC/THIRD-PARTY-NOTICES.txt" id="licenses-link">Licence knjižnic</a></footer>
 </body>
 </html>
