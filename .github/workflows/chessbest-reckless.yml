@@ -22,7 +22,8 @@ jobs:
         shell: bash
         run: |
           bash public/chess-lab/engines/reckless/v0.10.0-a6fa482c-r8/build.sh "$RUNNER_TEMP/reckless-source" "$RUNNER_TEMP/reckless-browser"
-          cp public/chess-lab/engines/reckless/v0.10.0-a6fa482c-r8/reckless-corresponding-source.tar.gz "$RUNNER_TEMP/reckless-browser/"
+          curl -fsSL "https://github.com/BD-Chess/bd-chessdb/releases/download/reckless-source-v0.10.0-a6fa482c-r8/reckless-corresponding-source.tar.gz" -o "$RUNNER_TEMP/reckless-browser/reckless-corresponding-source.tar.gz"
+          printf '%s  %s\n' "3a323fc7116c34eb6715a0313315d15a388ce45d104c964f6a0cb0f213442f1e" "$RUNNER_TEMP/reckless-browser/reckless-corresponding-source.tar.gz" | sha256sum --check -
           cp public/chess-lab/engines/reckless/v0.10.0-a6fa482c-r8/manifest.json "$RUNNER_TEMP/reckless-browser/committed-manifest.json"
           node --check "$RUNNER_TEMP/reckless-browser/adapter.mjs"
           node --check "$RUNNER_TEMP/reckless-browser/reckless-engine.js"

@@ -28,12 +28,33 @@ test('CURRENT exposes accepted controls and own storage without a channel select
  assert.match(read('public/chess/js/8zc-language.js'),/ChessBest:CURRENT:v2:language/);
  assert.match(read('public/chess/pwa.js'),/saveBeforeUpdate/);
 });
-test('all promoted engine and vendor payloads retain approved donor Git blob identities',()=>{
+test('all promoted engine and vendor payloads retain approved donor Git blob identities (with offloaded Reckless source manifest parity)',()=>{
  const rows=git('ls-tree','-rz',base,'--','public/chess-lab/engines','public/chess-lab/vendor').toString().split('\0').filter(Boolean);
+ const releaseBase='https://github.com/BD-Chess/bd-chessdb/releases/download/reckless-source-v0.10.0-a6fa482c-r8';
+ const recklessDir='public/chess/engines/reckless/v0.10.0-a6fa482c-r8/';
+ const offloadedParts=new Set(['reckless-corresponding-source.tar.gz.part00','reckless-corresponding-source.tar.gz.part01','reckless-corresponding-source.tar.gz.part02'].map(f=>recklessDir+f));
  for(const row of rows){
   const [meta,donor]=row.split('\t'),[mode,type,expected]=meta.split(' ');assert.equal(type,'blob');
-  const target=donor.replace('public/chess-lab/','public/chess/'),bytes=fs.readFileSync(path.join(repo,target));
+  const target=donor.replace('public/chess-lab/','public/chess/');
+  if(offloadedParts.has(target)){
+   assert.equal(fs.existsSync(path.join(repo,target)),false,target+' should be offloaded to GitHub Release');
+   assert.equal(fs.existsSync(path.join(repo,donor)),false,donor+' should be offloaded to GitHub Release');
+   continue;
+  }
+  if(target===recklessDir+'manifest.json'||target===recklessDir+'source-download.html'){
+   assert.equal(read(target),read(donor),target+' must stay synchronized with LAB');
+   continue;
+  }
+  const bytes=fs.readFileSync(path.join(repo,target));
   const actual=crypto.createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
   assert.equal(actual,expected,target);if(mode==='100755')assert(fs.statSync(path.join(repo,target)).mode&0o100,target+' executable bit');
+ }
+ for(const channel of ['public/chess','public/chess-lab']){
+  const m=JSON.parse(read(channel+'/engines/reckless/v0.10.0-a6fa482c-r8/manifest.json'));
+  assert.equal(m.source_archive.sha256,'3a323fc7116c34eb6715a0313315d15a388ce45d104c964f6a0cb0f213442f1e');
+  assert.equal(m.source_archive.release_url,'https://github.com/BD-Chess/bd-chessdb/releases/tag/reckless-source-v0.10.0-a6fa482c-r8');
+  assert.equal(m.source_archive.archive_url,releaseBase+'/reckless-corresponding-source.tar.gz');
+  const html=read(channel+'/engines/reckless/v0.10.0-a6fa482c-r8/source-download.html');
+  assert.ok(html.includes(releaseBase+'/reckless-corresponding-source.tar.gz'));
  }
 });
