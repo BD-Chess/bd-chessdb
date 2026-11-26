@@ -259,6 +259,7 @@
         <li><strong>Prices are per token, not per task</strong> (USD per 1M tokens, input/output, standard list price). Models that think a lot use more tokens and cost more in practice than the table shows. Value = (overall score − quality floor) ÷ blended price (3 : 1 input : output). The floor is chosen in the “Quality floor” list (default 50; scores are relative, so the floor is an adjustable cutoff for the Value calculation). Models below the floor have no value. The “best trade-off” tag (Pareto) means that no other ranked model is at least as good and cheaper, or better for the same price; it is shown only above the floor.</li>
         <li><strong>Confidence</strong> = number of independent sources (high ≥ 6, medium 3–5, low ≤ 2). A model is ranked only with at least <b data-k="rank_min_sources">3</b> sources and category coverage of at least <b data-k="rank_min_coverage">45 %</b>.</li>
       </ul>
+      <div class="controls"><label class="qf-pick"><span id="source-scope-intro-label">Viri:</span> <select id="source-scope-intro" disabled><option value="all">Vsi</option><option value="top5">Top 5</option></select></label> <span class="small muted" id="scope-global-note"></span></div>
       <ul class="stats" id="stats" aria-live="polite"></ul>
       <ul class="leaders" id="leaders"></ul>
       <p class="status-line" id="status" role="status"></p>
@@ -296,12 +297,14 @@
       <h3><span data-lang="sl">Najboljša vrednost po cenovnih razredih</span><span data-lang="en" hidden>Best value by price tier</span></h3>
       <p class="prose small muted" data-lang="sl">Razred po mešani ceni: frontier ≥ $5, srednji $1–5, poceni &lt; $1 na 1 M žetonov. Najboljša vrednost šteje le točke nad izbranim pragom kakovosti (<b data-k="value_min_overall">50</b>): (skupno − prag) ÷ mešana cena. Zadnji stolpec je brez praga (skupno ÷ cena).</p>
       <p class="prose small muted" data-lang="en" hidden>Tier by blended price: frontier ≥ $5, mid $1–5, budget &lt; $1 per 1M tokens. Best value counts only the points above the chosen quality floor (<b data-k="value_min_overall">50</b>): (overall − floor) ÷ blended price. The last column has no floor (overall ÷ price).</p>
+      <div class="controls"><label class="qf-pick"><span id="source-scope-tiers-label">Viri:</span> <select id="source-scope-tiers" disabled><option value="all">Vsi</option><option value="top5">Top 5</option></select></label></div>
       <div class="tw"><table class="data" id="tiers"></table></div>
     </section>
 
     <section id="kategorije" aria-labelledby="kategorije-t">
       <div class="eyebrow"><span data-lang="sl">Po kategorijah</span><span data-lang="en" hidden>By category</span></div>
       <h2 id="kategorije-t"><span data-lang="sl">Kdo je najboljši pri čem</span><span data-lang="en" hidden>Who is best at what</span></h2>
+      <div class="controls"><label class="qf-pick"><span id="source-scope-cats-label">Viri:</span> <select id="source-scope-cats" disabled><option value="all">Vsi</option><option value="top5">Top 5</option></select></label></div>
       <ul class="tabs" id="tabs" aria-label="Kategorija" data-aria-sl="Kategorija" data-aria-en="Category"></ul>
       <p class="fnote" data-fnote hidden></p>
       <p class="catdesc" id="catdesc"></p>
@@ -313,6 +316,7 @@
       <div class="eyebrow"><span data-lang="sl">Previdno</span><span data-lang="en" hidden>Caution</span></div>
       <h2 id="razhajanja-t"><span data-lang="sl">Kje se viri ne strinjajo</span><span data-lang="en" hidden>Where the sources disagree</span></h2>
       <div class="box">
+        <div class="controls"><label class="qf-pick"><span id="source-scope-disagree-label">Viri:</span> <select id="source-scope-disagree" disabled><option value="all">Vsi</option><option value="top5">Top 5</option></select></label></div>
         <div class="comment" id="disagree-text"></div>
         <h3><span data-lang="sl">Največja razhajanja med lestvicami</span><span data-lang="en" hidden>Largest spread between boards</span></h3>
         <p class="small" data-lang="sl">SD = standardni odklon popravljenih percentilov modela čez vse lestvice. Visok SD pomeni, da je model na eni lestvici blizu vrha, na drugi pa daleč spodaj.</p>
@@ -320,6 +324,7 @@
         <p class="fnote" data-fnote hidden></p>
         <div class="tw"><table class="data" id="disagree"></table></div>
         <h3><span data-lang="sl">Kdo vodi koliko lestvic</span><span data-lang="en" hidden>Who leads how many boards</span></h3>
+        <div class="controls"><label class="qf-pick"><span id="source-scope-leaders-label">Viri:</span> <select id="source-scope-leaders" disabled><option value="all">Vsi</option><option value="top5">Top 5</option></select></label></div>
         <p class="small" id="leadercounts"></p>
         <details class="more">
           <summary><span data-lang="sl">Vodilni model na vsaki lestvici</span><span data-lang="en" hidden>Leading model on every board</span></summary>
@@ -344,6 +349,7 @@
       <h2 id="viri-t"><span data-lang="sl">Viri</span><span data-lang="en" hidden>Sources</span></h2>
       <p class="prose" data-lang="sl">Vsak kandidat je ocenjen v šestih točkah: znana organizacija ali akademska skupina, objavljena metodologija, ponovljivost (odprta koda, podatki, rezultati po nalogah), pogostost posodabljanja, neodvisnost od ponudnikov modelov in ravnanje s kontaminacijo. Iz tega sledi ugled 1–5 in odločitev. Opisi virov so v angleščini, kot jih je zapisal pregled.</p>
       <p class="prose" data-lang="en" hidden>Every candidate is judged on six points: known organisation or academic group, published methodology, reproducibility (open code, data, per-item results), update frequency, independence from model vendors, and contamination handling. This gives a respectability score 1–5 and a verdict.</p>
+      <div class="controls"><label class="qf-pick"><span id="source-scope-catalog-label">Viri:</span> <select id="source-scope-catalog" disabled><option value="all">Vsi</option><option value="top5">Top 5</option></select></label></div>
       <h3 id="acc-h"></h3>
       <div id="accepted"></div>
       <h3 id="norow-h"></h3>
@@ -400,7 +406,7 @@
         <li>Slovenian evidence is thin; SloBench results are mostly older models and the Slovenian arena has few votes.</li>
         <li>Name canonicalisation is heuristic; when in doubt see <code>models[].board_scores</code> in the JSON.</li>
       </ul>
-      <h3><span data-lang="sl">Podatki</span><span data-lang="en" hidden>Data</span></h3>
+      <h3><span data-lang="sl">Podatki (celotni zajem)</span><span data-lang="en" hidden>Data (full capture)</span></h3>
       <p class="prose small"><a data-file="meta_index.json" href="meta_index.json"><code>meta_index.json</code></a> · <a data-file="sources.json" href="sources.json"><code>sources.json</code></a> · <a data-file="commentary_sl.json" href="commentary_sl.json"><code>commentary_sl.json</code></a></p>
       <p class="prose small muted" data-lang="sl">Osvežitev ni samodejna: nov zajem podatkov sprožimo ročno. Ob zajemu se viri ponovno zajamejo, izračun ponovi in objavi. Strani so brez piškotkov; nastavitve videza ostanejo le v tem brskalniku.</p>
       <p class="prose small muted" data-lang="en" hidden>The index is not refreshed automatically: a new data collection is started by hand. Each time, the sources are collected again, the computation is rerun and published. No cookies; display settings stay in this browser only.</p>
@@ -418,12 +424,13 @@
   (function () {
     "use strict";
     var root = document.documentElement;
-    var D = null, S = null, C = null, U = null;
+    var D = null, ALL_DATA = null, S = null, C = null, U = null;
     var BOARD = {}, CATS = ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "sl", "long_context", "speed"];
     var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {}, sort: {}, vend: {}, top: 0, sourceScope: "all" };
     var TOP = 40, CTOP = 25;
     var TOP5_IDS = ["artificial_analysis","epoch_ai","lmarena","arc_prize","vals_ai"], TOP5_DROP = ["aa_intelligence_index","epoch_eci","vals_index","vals_finance_index","vals_legal_index","vals_science_index","arc_agi_3_provider_adapter","aa_omniscience_non_hallucination"];
-    var TOP5_DATA = null, TOP5_PARETO = {}, TOP5_ERROR = false;
+    var TOP5_DATA = null, TOP5_ERROR = false;
+    var SOURCE_SELECTS = ["source-scope","source-scope-intro","source-scope-tiers","source-scope-cats","source-scope-disagree","source-scope-leaders","source-scope-catalog"];
     // BEGIN SOURCE_SCOPE_ENGINE
     function buildSourceScope(data, sourceIds, excludedIds) {
   const cfg=data.config, weights=cfg.category_weights, categories=Object.keys(weights);
@@ -503,9 +510,41 @@
   models.sort((a,b)=>b.overall-a.overall||(a.model_id<b.model_id?-1:a.model_id>b.model_id?1:0));
   let rank=0;
   for(const m of models)if(m.n_sources>=cfg.rank_min_sources&&m.category_coverage>=cfg.rank_min_coverage)m.overall_rank=++rank;
-  return {models,n_boards:boards.size,n_sources:new Set([...boards.values()].map(b=>b.meta.source_id)).size,n_ranked:rank,n_missing:data.models.length-models.length};
+  return {models,board_ids:[...boards.keys()],n_boards:boards.size,n_sources:new Set([...boards.values()].map(b=>b.meta.source_id)).size,n_ranked:rank,n_missing:data.models.length-models.length};
 }
     // END SOURCE_SCOPE_ENGINE
+    // One immutable capture and one derived view. All rank-dependent renderers read D.
+    // Speed is the published AA output-speed observation, not a quality contribution.
+    function makeScopeView(data, computed) {
+      const ids=new Set(computed.board_ids), allowed=new Set(TOP5_IDS);
+      const boards=data.boards.filter(b=>ids.has(b.board_id)||(b.board_id==="aa_output_speed"&&allowed.has(b.source_id)));
+      const models=computed.models;
+      const modelMap=new Map(models.map(m=>[m.model_id,m]));
+      const category_leaders={};
+      for(const cat of Object.keys(data.config.category_weights)){
+        category_leaders[cat]=models.filter(m=>m.categories[cat]).sort((a,b)=>b.categories[cat].score-a.categories[cat].score||b.overall-a.overall).map(m=>({model_id:m.model_id,score:m.categories[cat].score,n_sources:m.categories[cat].n_sources}));
+      }
+      const board_leaders=(data.board_leaders||[]).filter(b=>ids.has(b.board_id)&&allowed.has(b.source_id));
+      if(board_leaders.length!==ids.size||new Set(board_leaders.map(b=>b.board_id)).size!==ids.size)throw Error("Missing selected board leaders");
+      const board_leader_counts={};
+      for(const b of board_leaders)board_leader_counts[b.leader]=(board_leader_counts[b.leader]||0)+1;
+      const disagreements=models.filter(m=>m.overall_rank&&m.board_scores.length>=3&&Number.isFinite(m.pct_spread_sd)).sort((a,b)=>b.pct_spread_sd-a.pct_spread_sd||b.overall-a.overall).slice(0,10).map(m=>{
+        const scores=m.board_scores.slice().sort((a,b)=>b.adj_pct-a.adj_pct||a.board_id.localeCompare(b.board_id));
+        return {model_id:m.model_id,overall:m.overall,pct_spread_sd:m.pct_spread_sd,best_board:scores[0].board_id,worst_board:scores[scores.length-1].board_id};
+      });
+      const speedModels=boards.some(b=>b.board_id==="aa_output_speed")?data.models.filter(m=>m.output_tokens_per_s).map(m=>({...m,...(modelMap.get(m.model_id)||{overall:null,overall_rank:null,category_coverage:0,n_sources:0,sources:[],categories:{},board_scores:[],slovenian:null,slovenian_raw:[]})})): [];
+      return {...data,...computed,models,boards,category_leaders,board_leaders,board_leader_counts,disagreements,speedModels,
+        ranking:models.filter(m=>m.overall_rank).map(m=>m.model_id),
+        counts:{...data.counts,sources_accepted:computed.n_sources,boards_used:computed.n_boards,models_universe:models.length,models_ranked:computed.n_ranked}};
+    }
+    function topScopeActive(){return st.sourceScope==="top5"&&!!TOP5_DATA;}
+    function applySourceScope(){
+      D=topScopeActive()?TOP5_DATA:ALL_DATA;
+      BOARD={};
+      (D.boards||[]).forEach(function(b){BOARD[b.board_id]=b;});
+      computePareto();
+      initVendors();
+    }
     var T = {
       sl: {
         loading: "Nalagam podatke …", failed: "Podatkov ni bilo mogoče naložiti.", noResults: "Ni zadetkov.",
@@ -534,7 +573,7 @@
         newTag: "NOVO", newFam: "Nova družina", released: "izšel", afterData: "po zadnjem zajemu podatkov — še brez ocene", notInData: "še ni na nobeni sprejeti lestvici — brez ocene",
         notRanked: "še ni rangiran", announce: "objava",
         newNote: "Rezultati veljajo za izbrani zajem. Skupno mesto zahteva vsaj 3 neodvisne vire in 45 % pokritosti kategorij.",
-        scopeLabel: "Viri:", scopeAll: "Vsi", scopeTop5: "Top 5", scopeCoverage: "Pokritost virov in kategorij", scopeError: "TOP 5 za ta zajem ni na voljo; prikazani so vsi viri.", scopeIntro: "TOP 5: Artificial Analysis, Epoch AI, Arena, ARC Prize, Vals AI.", scopeMethod: "Isti primerjalni nabor modelov; ponovni izračun percentilov, popravka moči polja in skupne ocene samo iz izbranih lestvic. Prekrivajoči se sestavljeni indeksi, podvojeni režimi ARC, jezikovne podlestvice Arena (če obstaja skupna neangleška) in dodatna metrika AA Omniscience so izločeni. Merila za rangiranje ostanejo ≥ 3 viri in ≥ 45 % pokritosti kategorij. Druge tabele in povzetki ostanejo pri vseh virih; cene so nespremenjene.", scopeBoards: "lestvic", scopeNoData: "modelov brez meritve v TOP 5",
+        scopeGlobal: "Izbor velja za vse lestvice na strani.", scopeSl: "Izbrani TOP 5 viri v tem zajemu nimajo namenske slovenske lestvice. Za slovenske rezultate preklopi na Vsi.", scopeComment: "Komentar in novice iz celotnega zajema so na voljo v načinu Vsi; prikazane lestvice so preračunane samo iz TOP 5.", scopeMissingModel: "brez ocene kakovosti v TOP 5", scopeLabel: "Viri:", scopeAll: "Vsi", scopeTop5: "Top 5", scopeCoverage: "Pokritost virov in kategorij", scopeError: "TOP 5 za ta zajem ni na voljo; prikazani so vsi viri.", scopeIntro: "TOP 5: Artificial Analysis, Epoch AI, Arena, ARC Prize, Vals AI.", scopeMethod: "Isti primerjalni nabor modelov; ponovni izračun percentilov, popravka moči polja in skupne ocene samo iz izbranih lestvic. Prekrivajoči se sestavljeni indeksi, podvojeni režimi ARC, jezikovne podlestvice Arena (če obstaja skupna neangleška) in dodatna metrika AA Omniscience so izločeni. Merila za rangiranje ostanejo ≥ 3 viri in ≥ 45 % pokritosti kategorij. Izbor velja za vse lestvice, povzetke in podrobnosti. Cene ostanejo iz uradnega cenovnega zajema; hitrost je ločena meritev Artificial Analysis.", scopeBoards: "lestvic", scopeNoData: "modelov brez meritve v TOP 5",
         none: "–"
       },
       en: {
@@ -564,7 +603,7 @@
         newTag: "NEW", newFam: "New family", released: "released", afterData: "after the last data collection — not scored yet", notInData: "not yet on any accepted board — no score",
         notRanked: "not ranked yet", announce: "announcement",
         newNote: "Results are for the selected capture. An overall rank requires at least 3 independent sources and 45% category coverage.",
-        scopeLabel: "Sources:", scopeAll: "All", scopeTop5: "Top 5", scopeCoverage: "Source and category coverage", scopeError: "TOP 5 is unavailable for this capture; all sources are shown.", scopeIntro: "TOP 5: Artificial Analysis, Epoch AI, Arena, ARC Prize, Vals AI.", scopeMethod: "Same model comparison panel; percentiles, field-strength correction and overall scores are recomputed using only the selected boards. Overlapping composite indices, duplicate ARC harness, Arena language subsets (when the non-English aggregate exists) and the additional AA Omniscience metric are excluded. Rank eligibility remains ≥ 3 sources and ≥ 45% category coverage. Other tables and summaries retain all sources; prices are unchanged.", scopeBoards: "boards", scopeNoData: "models with no TOP 5 observation",
+        scopeGlobal: "The selection applies to every ranking on this page.", scopeSl: "The selected TOP 5 sources have no dedicated Slovenian leaderboard in this capture. Choose All to see Slovenian results.", scopeComment: "Full-capture commentary and updates are available in All mode; the displayed rankings are recomputed from TOP 5 only.", scopeMissingModel: "no TOP 5 quality score", scopeLabel: "Sources:", scopeAll: "All", scopeTop5: "Top 5", scopeCoverage: "Source and category coverage", scopeError: "TOP 5 is unavailable for this capture; all sources are shown.", scopeIntro: "TOP 5: Artificial Analysis, Epoch AI, Arena, ARC Prize, Vals AI.", scopeMethod: "Same model comparison panel; percentiles, field-strength correction and overall scores are recomputed using only the selected boards. Overlapping composite indices, duplicate ARC harness, Arena language subsets (when the non-English aggregate exists) and the additional AA Omniscience metric are excluded. Rank eligibility remains ≥ 3 sources and ≥ 45% category coverage. The selection applies to every ranking, summary and detail. Prices retain their published price provenance; speed is a separate Artificial Analysis measurement.", scopeBoards: "boards", scopeNoData: "models with no TOP 5 observation",
         none: "–"
       }
     };
@@ -658,7 +697,8 @@
       renderCapPick();
       var scope = D.capture_scope && D.capture_scope.note && D.capture_scope.note[L()];
       el("foot-dates").textContent = t("data") + ": " + fmtDate(fetched) + " · " + t("built") + " " + builtTxt + (scope ? " · " + scope : "");
-      var cards = [[c.sources_accepted, t("st_sources")], [c.boards_used, t("st_boards")], [c.models_universe, t("st_models")], [c.models_ranked, t("st_ranked")], [c.sources_rejected, t("st_rejected")]];
+      var cards = [[c.sources_accepted, t("st_sources")], [c.boards_used, t("st_boards")], [c.models_universe, t("st_models")], [c.models_ranked, t("st_ranked")]];
+      if (!topScopeActive()) cards.push([c.sources_rejected, t("st_rejected")]);
       el("stats").innerHTML = cards.map(function (x) { return '<li class="stat"><b>' + esc(nfi(x[0])) + "</b><span>" + esc(x[1]) + "</span></li>"; }).join("");
       var lead = [];
       var top = byRank()[0];
@@ -684,17 +724,19 @@
     function topPer(list) { if (!st.top) return list; var n = {}; return list.filter(function (m) { var v = vendorOf(m); n[v] = (n[v] || 0) + 1; return n[v] <= st.top; }); }
     function pick(list) { return topPer(list.filter(vendOK)); }
     function initVendors() {
-      var best = {};
+      // Keep chip identity stable across scope changes; counts reflect the active scope.
+      var best = {}, fullCounts = {};
       VCOUNT = {}; BYID = {};
       D.models.forEach(function (m) { BYID[m.model_id] = m; });
-      byRank().forEach(function (m) { var v = vendorOf(m); VCOUNT[v] = (VCOUNT[v] || 0) + 1; if (!(v in best)) best[v] = m.overall_rank; });
-      VMAIN = Object.keys(VCOUNT).filter(function (v) { return VCOUNT[v] >= 3; }).sort(function (a, b) { return best[a] - best[b]; });
+      ALL_DATA.models.filter(function(m){return m.overall_rank;}).slice().sort(function(a,b){return a.overall_rank-b.overall_rank;}).forEach(function(m){var v=vendorOf(m); fullCounts[v]=(fullCounts[v]||0)+1; if(!(v in best))best[v]=m.overall_rank;});
+      byRank().forEach(function (m) { var v = vendorOf(m); VCOUNT[v] = (VCOUNT[v] || 0) + 1; });
+      VMAIN = Object.keys(fullCounts).filter(function(v){return fullCounts[v]>=3;}).sort(function(a,b){return best[a]-best[b];});
     }
     function renderFilter() {
       var other = 0;
       Object.keys(VCOUNT).forEach(function (v) { if (VMAIN.indexOf(v) < 0) other += VCOUNT[v]; });
-      var chips = [["", t("vAll"), null]].concat(VMAIN.map(function (v) { return [v, v, VCOUNT[v]]; }));
-      if (other) chips.push(["__other", t("vOther"), other]);
+      var chips = [["", t("vAll"), null]].concat(VMAIN.map(function (v) { return [v, v, VCOUNT[v] || 0]; }));
+      if (other || st.vend.__other) chips.push(["__other", t("vOther"), other]);
       el("vchips").innerHTML = chips.map(function (c) {
         var on = c[0] ? !!st.vend[c[0]] : !vendActive();
         return '<button type="button" class="chip" data-vendor="' + esc(c[0]) + '" aria-pressed="' + on + '">' + esc(c[1]) + (c[2] !== null ? '<span class="n">' + esc(c[2]) + "</span>" : "") + "</button>";
@@ -729,7 +771,7 @@
           var m = BY[w.id], rel = parseDate(w.released), txt;
           if (m && m.overall_rank) txt = "#" + m.overall_rank + " · " + t("overall").toLowerCase() + " " + nf(m.overall, 1) + " · " + t("conf").toLowerCase() + " " + t(m.confidence || "low") + " · " + m.n_sources;
           else if (m) txt = t("notRanked") + " · " + m.n_sources + " " + t("srcs");
-          else txt = fetched && rel && rel > fetched ? t("afterData") : t("notInData");
+          else txt = fetched && rel && rel > fetched ? t("afterData") : topScopeActive() ? t("scopeMissingModel") : t("notInData");
           return '<li><span class="mid">' + esc(w.id) + "</span> — " + esc(t("released")) + " " + esc(fmtDate(rel)) + " · " + esc(txt) + (w.url ? " · " + link(w.url, t("announce")) : "") + "</li>";
         }).join("") + "</ul>";
       }).join("") + (order.length ? '<p class="small muted">' + esc(t("newNote")) + "</p>" : "");
@@ -837,20 +879,25 @@
     }
 
     function renderSourceScope() {
-      var sel = el("source-scope"), note = el("source-scope-note");
-      el("source-scope-label").textContent = t("scopeLabel");
-      sel.options[0].textContent = t("scopeAll");
-      sel.options[1].textContent = t("scopeTop5");
-      sel.disabled = !TOP5_DATA;
-      sel.value = st.sourceScope;
+      var note = el("source-scope-note");
+      SOURCE_SELECTS.forEach(function(id){
+        var sel=el(id);
+        el(id+"-label").textContent=t("scopeLabel");
+        sel.options[0].textContent=t("scopeAll");
+        sel.options[1].textContent=t("scopeTop5");
+        sel.setAttribute("aria-label",t("scopeLabel")+" "+t("scopeGlobal"));
+        sel.disabled=!TOP5_DATA;
+        sel.value=st.sourceScope;
+      });
+      el("scope-global-note").textContent=TOP5_ERROR?t("scopeError"):t("scopeGlobal")+(topScopeActive()?" "+t("scopeIntro"):"");
       note.hidden = st.sourceScope !== "top5" && !TOP5_ERROR;
       note.textContent = TOP5_ERROR ? t("scopeError") : st.sourceScope === "top5" ? t("scopeIntro") + " · " + TOP5_DATA.n_boards + " " + t("scopeBoards") + " · " + TOP5_DATA.n_missing + " " + t("scopeNoData") + ". " + t("scopeMethod") : "";
     }
     function renderOverall() {
       renderSourceScope();
-      var isTop5 = st.sourceScope === "top5" && TOP5_DATA;
-      var scopeModels = isTop5 ? TOP5_DATA.models : D.models;
-      var pareto = isTop5 ? TOP5_PARETO : PARETO;
+      var isTop5 = topScopeActive();
+      var scopeModels = D.models;
+      var pareto = PARETO;
       var cols = overallCols(), all = scopeModels.filter(function(m){return m.overall_rank;}).sort(function(a,b){return a.overall_rank-b.overall_rank;}), q = st.q.trim().toLowerCase(), list = pick(all);
       list = q ? list.filter(function (m) { return (m.model_id + " " + (m.vendor || "")).toLowerCase().indexOf(q) >= 0; }) : list;
       list = sortList(list, "overall", cols);
@@ -915,7 +962,7 @@
         { k: "nboards", label: esc(t("nboards")), num: true, cls: "d-only", get: function (m) { return m.categories[c].n_boards; } }, ov];
     }
     function catList(c) {
-      if (c === "speed") return D.models.filter(function (m) { return m.output_tokens_per_s; }).sort(function (a, b) { return b.output_tokens_per_s - a.output_tokens_per_s; });
+      if (c === "speed") return (topScopeActive() ? D.speedModels : D.models.filter(function (m) { return m.output_tokens_per_s; })).slice().sort(function (a, b) { return b.output_tokens_per_s - a.output_tokens_per_s; });
       if (c === "sl") return slModels();
       return D.models.filter(function (m) { return (m.categories || {})[c]; }).sort(function (a, b) { return b.categories[c].score - a.categories[c].score || b.overall - a.overall; });
     }
@@ -941,6 +988,7 @@
           (thin ? '<span class="thin-mark" title="' + esc(t("thinTip")) + '">*</span>' : "") + '</td><td class="num d-only">' + esc(k.n_boards) + '</td><td class="num">' + esc(nf(m.overall, 1)) + "</td></tr>";
       });
       if (c === "speed") desc = t("speedNote");
+      else if (c === "sl" && topScopeActive() && !cb.boards.length) desc = t("scopeSl");
       else if (c === "sl") {
         var named = D.models.filter(function (m) { return m.named && (m.slovenian === null || m.slovenian === undefined); }).map(function (m) { return m.model_id; });
         desc = t("slNote") + (named.length ? " " + t("noSl") + " " + named.join(", ") + "." : "");
@@ -978,7 +1026,7 @@
     }
 
     function renderDisagree() {
-      var bl = blocks();
+      var bl = topScopeActive() ? [] : blocks();
       el("disagree-text").innerHTML = bl.filter(isDisagreeBlock).map(renderBlock).join("");
       var dcols = disagreeCols(), ts = st.top ? topSet() : null;
       var dl = (D.disagreements || []).filter(function (x) { var m = BYID[x.model_id]; return (!m || vendOK(m)) && (!ts || ts[x.model_id]); });
@@ -994,14 +1042,14 @@
         var bd = BOARD[b.board_id] || {};
         return "<tr><td>" + link(bd.url, bd.name || b.board_id) + '<span class="sub">' + esc(catLabel(b.category)) + " · " + esc(srcShort(b.source_id)) + '</span></td><td><span class="mid">' + esc(b.leader) + "</span>" + (b.leader_setting ? '<span class="sub">' + esc(b.leader_setting) + "</span>" : "") + '</td><td class="num">' + esc(nf(b.leader_score, 2)) + '</td><td class="d-only small">' + esc(b.data_date_parsed || "") + "</td></tr>";
       }).join("") + "</tbody>";
-      var by = C ? '<p class="small muted">' + esc(t("commentBy")) + ": " + esc(C.author || "") + ", " + esc(C.written || "") + "</p>" : "";
-      el("commentary").innerHTML = bl.filter(function (b) { return !isDisagreeBlock(b); }).map(renderBlock).join("") + by;
+      var by = C && !topScopeActive() ? '<p class="small muted">' + esc(t("commentBy")) + ": " + esc(C.author || "") + ", " + esc(C.written || "") + "</p>" : "";
+      el("commentary").innerHTML = topScopeActive() ? '<p class="small muted">' + esc(t("scopeComment")) + "</p>" : bl.filter(function (b) { return !isDisagreeBlock(b); }).map(renderBlock).join("") + by;
     }
 
     function renderUpdates() {
       var section = el("novosti");
       if (!section) return;
-      if (!U || CAPDIR) { section.hidden = true; return; }
+      if (!U || CAPDIR || topScopeActive()) { section.hidden = true; return; }
       section.hidden = false;
       el("novosti-t").textContent = (U.title || {})[L()] || "";
       el("updates-meta").textContent = (L() === "en" ? "Updated " : "Osveženo ") + fmtDate(parseDate(U.updated)) + " · " +
@@ -1019,7 +1067,7 @@
 
     function renderSources() {
       if (!S) return;
-      var acc = (S.accepted || []).slice().sort(function (a, b) { return (b.respectability_score || 0) - (a.respectability_score || 0) || String(a.name).localeCompare(String(b.name)); });
+      var acc = (S.accepted || []).filter(function(a){return !topScopeActive()||TOP5_IDS.indexOf(a.source_id)>=0;}).slice().sort(function (a, b) { return (b.respectability_score || 0) - (a.respectability_score || 0) || String(a.name).localeCompare(String(b.name)); });
       el("acc-h").textContent = t("accepted") + " (" + acc.length + ")";
       el("accepted").innerHTML = acc.map(function (a) {
         var n = Math.max(0, Math.min(5, a.respectability_score || 0));
@@ -1034,14 +1082,15 @@
           row("verdict", esc(a.verdict_reason) + " · " + esc(a.n_boards) + " " + esc(t("nb")) + " / " + esc(a.n_entries) + " " + esc(t("ne"))) +
           "<dt>URL</dt><dd>" + link(a.url, a.url) + "</dd></dl></details>";
       }).join("");
-      var nr = S.vetted_accept_without_raw || [];
+      var nr = topScopeActive()?[]:(S.vetted_accept_without_raw || []);
       el("norow-h").textContent = t("norow") + " (" + nr.length + ")";
       el("norow-h").hidden = !nr.length;
       el("norow").innerHTML = nr.map(function (a) { return "<li><b>" + link(a.url, a.name) + "</b> — " + esc(a.reason) + "</li>"; }).join("");
       var ps = (S.price_source || {}).source_meta;
       el("pricesrc").innerHTML = ps ? esc(ps.measures || "") + " " + esc(ps.respectability_rationale || "") + " " + link(ps.url, ps.name || ps.url) + (S.price_source.notes ? '<span class="sub">' + esc(S.price_source.notes) + "</span>" : "") : "";
-      var rej = (S.rejected || []).slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
+      var rej = (topScopeActive()?[]:(S.rejected || [])).slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
       el("rej-h").textContent = t("rejected") + " (" + rej.length + ")";
+      el("rej-h").hidden=topScopeActive();
       el("rejected").innerHTML = rej.map(function (a) { return "<li><b>" + link(a.url, a.name) + "</b> — " + esc(a.verdict_reason || a.reason || "") + "</li>"; }).join("");
     }
 
@@ -1106,7 +1155,7 @@
     el("vtop").addEventListener("change", function () { st.top = Number(el("vtop").value) || 0; refilter(); });
     document.addEventListener("click", function (ev) { var b = ev.target && ev.target.closest ? ev.target.closest("[data-fclear]") : null; if (!b) return; st.vend = {}; st.top = 0; refilter(); var c = el("vchips").querySelector("button"); if (c) c.focus(); });
 
-    el("source-scope").addEventListener("change", function () { st.sourceScope = TOP5_DATA && el("source-scope").value === "top5" ? "top5" : "all"; if (D) { renderOverall(); syncURL(); } });
+    SOURCE_SELECTS.forEach(function(id){el(id).addEventListener("change",function(){st.sourceScope=TOP5_DATA&&el(id).value==="top5"?"top5":"all";if(ALL_DATA){applySourceScope();renderAll();syncURL();}});});
     var timer = 0;
     el("q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(function () { st.q = el("q").value; if (D) { renderOverall(); syncURL(); } }, 120); });
     el("all-toggle").addEventListener("click", function () { st.all = !st.all; renderOverall(); });
@@ -1157,12 +1206,11 @@
       return Promise.all([getJSON(CAPDIR + "meta_index.json"), getJSON(CAPDIR + "sources.json").catch(function () { return null; }), getJSON(CAPDIR + "commentary_sl.json").catch(function () { return null; }), getJSON("updates.json").catch(function () { return null; })]);
     })
       .then(function (r) {
-        D = r[0]; S = r[1]; C = r[2]; U = r[3];
-        computePareto();
-        (D.boards || []).forEach(function (b) { BOARD[b.board_id] = b; });
-        try { TOP5_DATA = buildSourceScope(D, TOP5_IDS, TOP5_DROP); if (TOP5_DATA.n_sources !== TOP5_IDS.length || !TOP5_DATA.n_ranked) throw Error("Incomplete TOP 5 capture"); TOP5_PARETO = paretoFor(TOP5_DATA.models); } catch (e) { TOP5_DATA = null; TOP5_ERROR = true; console.warn("TOP 5 scope:", e); }
-        initVendors();
+        ALL_DATA = D = r[0]; S = r[1]; C = r[2]; U = r[3];
+        try { var scoped=buildSourceScope(ALL_DATA,TOP5_IDS,TOP5_DROP); if(scoped.n_sources!==TOP5_IDS.length||!scoped.n_ranked)throw Error("Incomplete TOP 5 capture"); TOP5_DATA=makeScopeView(ALL_DATA,scoped); } catch(e){TOP5_DATA=null;TOP5_ERROR=true;console.warn("TOP 5 scope:",e);}
+        applySourceScope();
         readURL();
+        applySourceScope();
         el("status").textContent = "";
         renderAll();
         return true;
