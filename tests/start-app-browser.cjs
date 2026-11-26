@@ -49,9 +49,9 @@ async function suite(browser, engine, url, mobile) {
     const current = page.locator('[data-category="current"] .bs-category-links');
     assert.deepEqual(await current.locator(':scope > .bs-shortcut').evaluateAll(els => els.map(e => e.matches('.bs-8zc-group') ? '8zc-group' : new URL(e.href).pathname.toLowerCase())), ['8zc-group','/nara/illuminara','/tsp/8ztsp/','/8ztsp/','/8zllm/','/8znas/'], 'six aligned cells, Nara second');
     const codec = current.locator('.bs-8zc-sub');
-    assert.deepEqual(await codec.evaluateAll(els => els.map(a => [new URL(a.href).pathname.toLowerCase(), a.textContent.trim(), a.getAttribute('aria-label')])), [['/8zc/','kodek','8zC · kodek'],['/8zc-results/','rezultati','8zC · rezultati'],['/8zc-story/','story','8zC · story']], 'three distinct localized 8zC links');
+    assert.deepEqual(await codec.evaluateAll(els => els.map(a => [new URL(a.href).pathname.toLowerCase(), a.textContent.trim(), a.getAttribute('aria-label')])), [['/8zc/','kodek','8zC · kodek'],['/8zc-results/','rezultati','8zC · rezultati']], 'two distinct localized 8zC links');
     const codecOptions = await page.locator('#bs-pin-select option').evaluateAll(els => els.filter(e => ['/8zc/','/8zc-results/','/8zc-story/'].includes(new URL(e.value).pathname.toLowerCase())).map(e => e.textContent).sort());
-    assert.deepEqual(codecOptions, ['8zC · kodek','8zC · rezultati','8zC · story'], 'each 8zC destination is independently pinnable');
+    assert.deepEqual(codecOptions, ['8zC · kodek','8zC · rezultati'], 'each 8zC destination is independently pinnable');
     await page.getByText('Novica Slovenija', {exact:true}).waitFor({state:'visible'});
     assert.match(await page.locator('#bs-live-news-status').textContent(), /Interpretacije metapodatkov RSS/);
     assert.match(await page.locator('#bs-live-news').textContent(), /Vir SI/);
@@ -66,7 +66,7 @@ async function suite(browser, engine, url, mobile) {
     await page.screenshot({ path: path.join(evidence, name + '-light.png'), fullPage: true });
     await page.locator('[data-lang="en"]').click();
     assert.match(await page.title(), /Your world/);
-    assert.deepEqual(await codec.evaluateAll(els => els.map(a => a.getAttribute('aria-label'))), ['8zC · codec','8zC · results','8zC · story'], 'English link labels');
+    assert.deepEqual(await codec.evaluateAll(els => els.map(a => a.getAttribute('aria-label'))), ['8zC · codec','8zC · results'], 'English link labels');
     assert.match(await omniLink.innerText(), /AI assistant for OmniCPQ/);
     await page.locator('[data-theme="dark"]').click();
     assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
@@ -85,10 +85,12 @@ async function suite(browser, engine, url, mobile) {
     await page.locator('#bs-clear-search').click();
     assert.equal(await page.locator('[data-category="research"]').evaluate(el => el.open), true, 'search restores group state');
     assert.equal(await page.locator('[data-category="travel"]').evaluate(el => el.open), false);
-    await page.locator('#bs-search-input').fill('8zc-story');
+    await page.locator('#bs-search-input').fill('8zc-results');
     assert.equal(await current.locator('.bs-8zc-group').isVisible(), true);
     assert.equal(await current.locator('.bs-8zc-sub:visible').count(), 1, 'only matching codec sublink is shown');
-    assert.match(await current.locator('.bs-8zc-sub:visible').getAttribute('href'), /8zc-story/);
+    assert.match(await current.locator('.bs-8zc-sub:visible').getAttribute('href'), /8zC-results/i);
+    await page.locator('#bs-search-input').fill('8zc-story');
+    assert.equal(await current.locator('.bs-8zc-group').isVisible(), false, 'story is no longer a built-in Start shortcut');
     await page.locator('#bs-search-input').fill('8ztsp');
     await page.locator('#bs-site-result-list a').filter({hasText:'8zTSP'}).first().waitFor({state:'visible'});
     await page.locator('#bs-search-input').fill('the count the mountain asked for');
