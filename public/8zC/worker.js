@@ -89,6 +89,35 @@ function callWasm(api, fnName, inputBytes) {
   }
 }
 
+function callWasmWithRef(api, fnName, inputBytes, refBytes) {
+  if (!refBytes || !refBytes.length || typeof api[fnName] !== "function") {
+    return callWasm(api, fnName === "decode_with_ref" ? "decode" : "encode_native", inputBytes);
+  }
+  const ptr = api.alloc(inputBytes.length) >>> 0;
+  if (!ptr) throw new Error("Za vhodno datoteko ni dovolj pomnilnika v WASM.");
+  const refPtr = api.alloc(refBytes.length) >>> 0;
+  if (!refPtr) {
+    api.free(ptr, inputBytes.length);
+    throw new Error("Za referenčni zemljevid .tsp ni dovolj pomnilnika v WASM.");
+  }
+  try {
+    new Uint8Array(api.memory.buffer, ptr, inputBytes.length).set(inputBytes);
+    new Uint8Array(api.memory.buffer, refPtr, refBytes.length).set(refBytes);
+    const code = api[fnName](ptr, inputBytes.length, refPtr, refBytes.length);
+    const offset = api.result_ptr() >>> 0;
+    const size = api.result_len() >>> 0;
+    const view = new Uint8Array(api.memory.buffer, offset, size);
+    if (code !== 0) {
+      const detail = new TextDecoder().decode(view);
+      throw new Error((fnName.startsWith("encode") ? "Stiskanje ni uspelo." : "Obnova ni uspela.") + (detail ? " " + detail : ""));
+    }
+    return view.slice();
+  } finally {
+    api.free(refPtr, refBytes.length);
+    api.free(ptr, inputBytes.length);
+  }
+}
+
 async function encodeNativeWithLevel(inputBytes, level) {
   let api = await getWasmInstance(false);
   if (level === "fast") {
@@ -109,14 +138,24 @@ async function encodeNativeWithLevel(inputBytes, level) {
 }
 
 function isNative8zcMagic(bytes) {
+  if (!bytes || bytes.length < 5 || bytes[0] !== 0x38 || bytes[1] !== 0x5a) return false;
+  // 8ZCN\x01..\x06
+  if (bytes[2] === 0x43 && bytes[3] === 0x4e && bytes[4] >= 0x01 && bytes[4] <= 0x06) return true;
+  // 8ZTJ\x01 (FMT_8ZTSP_JSON = 16) or 8ZTM\x01 (FMT_TSP_MAP = 17)
+  if (bytes[2] === 0x54 && (bytes[3] === 0x4a || bytes[3] === 0x4d) && bytes[4] === 0x01) return true;
+  return false;
+}
+
+function isCoRef8ztjMagic(bytes) {
   return (
     bytes &&
-    bytes.length >= 5 &&
+    bytes.length >= 6 &&
     bytes[0] === 0x38 &&
     bytes[1] === 0x5a &&
-    bytes[2] === 0x43 &&
-    bytes[3] === 0x4e &&
-    (bytes[4] === 0x01 || bytes[4] === 0x02 || bytes[4] === 0x03 || bytes[4] === 0x04 || bytes[4] === 0x05)
+    bytes[2] === 0x54 &&
+    bytes[3] === 0x4a &&
+    bytes[4] === 0x01 &&
+    bytes[5] === 0x01
   );
 }
 
@@ -142,6 +181,14 @@ self.onmessage = async ({ data }) => {
       const items = [];
       const transfers = [];
 
+      let batchTspRefBytes = null;
+      for (const bf of files) {
+        if ((bf.name || "").toLowerCase().endsWith(".tsp") && bf.size > 0 && bf.size <= MAX_FILE_BYTES) {
+          batchTspRefBytes = new Uint8Array(await bf.arrayBuffer());
+          break;
+        }
+      }
+
       for (let i = 0; i < files.length; i++) {
         const f = files[i];
         self.postMessage({ progress: true, index: i + 1, total: files.length, filename: f.name });
@@ -157,6 +204,10 @@ self.onmessage = async ({ data }) => {
           let out;
           if (op === "encode_native") {
             out = await encodeNativeWithLevel(input, encodeLevel);
+          } else if (op === "decode" && isCoRef8ztjMagic(input) && batchTspRefBytes) {
+            let api = await getWasmInstance(false);
+            out = callWasmWithRef(api, "decode_with_ref", input, batchTspRefBytes);
+            api = null;
           } else {
             let api = await getWasmInstance(false);
             out = callWasm(api, op, input);

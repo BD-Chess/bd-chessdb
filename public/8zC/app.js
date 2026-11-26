@@ -208,7 +208,7 @@ const translations = {
   "Format .8zc (suveren)": "Format .8zc (sovereign)",
   "Format .8zc.zip": "Format .8zc.zip",
   "Stopnja stiskanja .8zc": ".8zc compression level",
-  "Ultra (v1.5.0 <1,811 MB)": "Ultra (v1.5.0 <1.811 MB)",
+  "Ultra (v1.6.0 <1,811 MB)": "Ultra (v1.6.0 <1.811 MB)",
   "Max (v1.5 Optimal)": "Max (v1.5 Optimal)",
   "Hitro (Fast)": "Fast (Hitro)",
   "Stisni datoteke": "Compress files",
@@ -276,11 +276,11 @@ const translations = {
   "Vzorec in družina formata": "Sample and format family",
   "Čisti ZIP → 8zC v9 + ZIP": "Direct ZIP → 8zC v9 + ZIP",
   "Čisti 7z → 8zC v9 + 7z": "Direct 7z → 8zC v9 + 7z",
-  "Suvereni .8zc (v1.5.0)": "Sovereign .8zc (v1.5.0)",
+  "Suvereni .8zc (v1.6.0)": "Sovereign .8zc (v1.6.0)",
   "Živi preizkus": "Live test",
   "Preizkusi v živo →": "Test live →",
-  "Cycle 13 R6 (v9) + v1.5.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
-    "Cycle 13 R6 (v9) + v1.5.0 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
+  "Cycle 13 R6 (v9) + v1.6.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
+    "Cycle 13 R6 (v9) + v1.6.0 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
   "Zaženi 00_data_endian.elf v živo →": "Run 00_data_endian.elf live →",
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
