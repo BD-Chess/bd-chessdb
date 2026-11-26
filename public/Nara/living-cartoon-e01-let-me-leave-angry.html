@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="color-scheme" content="dark"/>
+  <meta name="theme-color" content="#050811"/>
+  <title>Let Me Leave Angry — Nara Living Cartoon · Episode 01</title>
+  <meta name="description" content="After returning from a conflict large enough to erase civilizations, Nara enters a rain-dark kitchen where none of her scale can repair what she missed. All seven panels feature seamless ambient cinemagraph loops—paced entirely by the reader with instant EN | SL switching."/>
+  <style>
+    :root {
+      --bg-deep: #050811;
+      --bg-card: #0c1220;
+      --bg-card-elevated: #111a2e;
+      --border-subtle: rgba(214, 180, 118, 0.22);
+      --border-gold: rgba(235, 195, 120, 0.55);
+      --text-main: #eef2f9;
+      --text-muted: #a6b3c9;
+      --gold-accent: #e5b96e;
+      --cyan-accent: #6ec4e5;
+      --bubble-nara: rgba(24, 38, 66, 0.92);
+      --bubble-adaeze: rgba(44, 29, 24, 0.92);
+      --bubble-notebook: rgba(19, 25, 38, 0.96);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 50% 0%, #101a30 0%, var(--bg-deep) 65%);
+      color: var(--text-main);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    .lc-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(14px);
+      background: rgba(5, 8, 17, 0.86);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.7rem 1.2rem;
+    }
+    .lc-topbar-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .lc-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-size: 0.95rem;
+    }
+    .lc-brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold-accent);
+      box-shadow: 0 0 10px var(--gold-accent);
+    }
+    .lc-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .lc-btn {
+      background: var(--bg-card-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 0.38rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .lc-btn:hover {
+      border-color: var(--border-gold);
+    }
+    .lc-btn.active {
+      background: var(--gold-accent);
+      color: #090d16;
+      border-color: var(--gold-accent);
+    }
+    .lc-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.1rem 5rem;
+    }
+    .lc-hero {
+      background: linear-gradient(145deg, rgba(18, 28, 48, 0.92), rgba(10, 15, 27, 0.96));
+      border: 1px solid var(--border-gold);
+      border-radius: 18px;
+      padding: 2rem 1.8rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    }
+    .lc-kicker {
+      color: var(--gold-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .lc-hero h1 {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: clamp(1.9rem, 4vw, 2.75rem);
+      margin: 0 0 0.85rem;
+      line-height: 1.18;
+    }
+    .lc-deck {
+      color: var(--text-muted);
+      font-size: 1.04rem;
+      margin: 0 0 1.2rem;
+    }
+    .lc-jump-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .lc-jump-link {
+      text-decoration: none;
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.78rem;
+    }
+    .lc-jump-link.is-loop {
+      border-color: var(--border-gold);
+      color: var(--gold-accent);
+    }
+    .lc-act-divider {
+      text-align: center;
+      margin: 3rem 0 1.5rem;
+      color: var(--gold-accent);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .lc-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      margin-bottom: 2.8rem;
+      overflow: hidden;
+      box-shadow: 0 16px 42px rgba(0, 0, 0, 0.5);
+    }
+    .lc-panel-animated {
+      border-color: var(--border-gold);
+      box-shadow: 0 18px 48px rgba(229, 185, 110, 0.11);
+    }
+    .lc-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.15rem 1.4rem 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .lc-panel-num {
+      font-family: "Georgia", serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--gold-accent);
+      background: rgba(229, 185, 110, 0.12);
+      border: 1px solid var(--border-gold);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .lc-panel-titles h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-family: "Georgia", serif;
+    }
+    .lc-panel-sub {
+      margin: 0.15rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+    }
+    .lc-narration-top {
+      padding: 1rem 1.4rem;
+      background: rgba(15, 23, 40, 0.65);
+      font-size: 0.97rem;
+      color: #dce4f2;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .lc-narration-top p { margin: 0; }
+    .lc-media-wrap {
+      position: relative;
+      background: #020409;
+      line-height: 0;
+    }
+    .lc-image, .lc-video {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+    }
+    @media (orientation: portrait) {
+      .lc-image, .lc-video {
+        aspect-ratio: 9 / 16;
+      }
+    }
+    .lc-badge-bar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      line-height: 1.2;
+      pointer-events: none;
+    }
+    .lc-live-badge, .lc-static-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.32rem 0.72rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      backdrop-filter: blur(10px);
+    }
+    .lc-live-badge {
+      background: rgba(15, 19, 29, 0.84);
+      color: var(--gold-accent);
+      border: 1px solid var(--border-gold);
+    }
+    .lc-static-badge {
+      background: rgba(10, 14, 22, 0.72);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .lc-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f5b951;
+      box-shadow: 0 0 8px #f5b951;
+      animation: lcPulse 2s infinite ease-in-out;
+    }
+    @keyframes lcPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+    .lc-panel-toggle {
+      pointer-events: auto;
+      background: rgba(10, 14, 22, 0.82);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+      padding: 0.28rem 0.68rem;
+      font-size: 0.73rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .lc-dialogue-dock {
+      padding: 1.25rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      background: linear-gradient(180deg, rgba(8, 13, 24, 0.95), rgba(13, 20, 35, 0.95));
+    }
+    .lc-bubble {
+      max-width: 88%;
+      padding: 0.85rem 1.15rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      line-height: 1.5;
+    }
+    .lc-bubble-left {
+      align-self: flex-start;
+      background: var(--bubble-nara);
+      border-left: 3px solid var(--cyan-accent);
+      border-bottom-left-radius: 4px;
+    }
+    .lc-bubble-right {
+      align-self: flex-end;
+      background: var(--bubble-adaeze);
+      border-right: 3px solid var(--gold-accent);
+      border-bottom-right-radius: 4px;
+    }
+    .lc-bubble-center {
+      align-self: center;
+      text-align: center;
+      background: var(--bubble-notebook);
+      border: 1px solid var(--border-gold);
+      font-family: "Georgia", serif;
+      font-size: 1.1rem;
+      padding: 1.1rem 1.8rem;
+    }
+    .lc-speaker {
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--gold-accent);
+      margin-bottom: 0.25rem;
+    }
+    .lc-bubble-left .lc-speaker {
+      color: var(--cyan-accent);
+    }
+    .lc-speech {
+      font-size: 1.01rem;
+    }
+    .lc-caption-card {
+      padding: 0.95rem 1.4rem 1.2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.94rem;
+      background: rgba(7, 11, 20, 0.75);
+    }
+    .lc-caption-card p { margin: 0; }
+    [hidden] { display: none !important; }
+    @media (max-width: 600px) {
+      .lc-hero { padding: 1.35rem 1.15rem; }
+      .lc-panel-header, .lc-narration-top, .lc-dialogue-dock, .lc-caption-card {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      .lc-bubble { max-width: 96%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="lc-topbar">
+    <div class="lc-topbar-inner">
+      <a class="lc-brand" href="illuminara-episode-01-let-me-leave-angry.html">
+        <span class="lc-brand-dot" aria-hidden="true"></span>
+        <span>NARA · LIVING CARTOON</span>
+      </a>
+      <div class="lc-controls" role="group" aria-label="Language and motion controls">
+        <button type="button" class="lc-btn active" id="btn-lang-en" data-set-lang="en">EN</button>
+        <button type="button" class="lc-btn" id="btn-lang-sl" data-set-lang="sl">SL</button>
+        <button type="button" class="lc-btn" id="btn-motion-toggle" aria-pressed="false">
+          <span data-lang-en>⏸ Pause All Motion</span>
+          <span data-lang-sl hidden>⏸ Ustavi vse gibanje</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="lc-container">
+    <section class="lc-hero">
+      <div class="lc-kicker">
+        <span data-lang-en>Illuminara · Episode 01 · Living Cartoon Pilot (R1 · 7/7 Live Panels)</span>
+        <span data-lang-sl hidden>Illuminara · Epizoda 01 · Živi strip / Living Cartoon (R1 · 7/7 živih kadrov)</span>
+      </div>
+      <h1>
+        <span data-lang-en>Let Me Leave Angry</span>
+        <span data-lang-sl hidden>Pusti, da odidem jezna</span>
+      </h1>
+      <p class="lc-deck">
+        <span data-lang-en>After returning from a conflict large enough to erase civilizations, Nara enters a rain-dark kitchen where none of her scale can repair what she missed. All seven panels feature seamless ambient cinemagraph loops—paced entirely by the reader with instant EN | SL switching.</span>
+        <span data-lang-sl hidden>Po vrnitvi iz spopada, ki bi lahko izbrisal civilizacije, Nara stopi v z dežjem zatemnjeno kuhinjo, kjer nič od njene razsežnosti ne more popraviti tega, kar je zamudila. Vseh sedem prizorov je oživljenih z neskončnimi cinemagraph zankami v ritmu bralca in s takojšnjim preklopom EN | SL.</span>
+      </p>
+      <nav class="lc-jump-nav" aria-label="Panel navigation">
+        <a class="lc-jump-link is-loop" href="#panel-P01">01 · Just Rain (LOOP)</a>
+        <a class="lc-jump-link is-loop" href="#panel-P02">02 · Good Reasons (LOOP)</a>
+        <a class="lc-jump-link is-loop" href="#panel-P03">03 · The Better Argument (LOOP)</a>
+        <a class="lc-jump-link is-loop" href="#panel-P04">04 · Do Not Make a Room (LOOP)</a>
+        <a class="lc-jump-link is-loop" href="#panel-P05">05 · Something Wider (LOOP)</a>
+        <a class="lc-jump-link is-loop" href="#panel-P06">06 · Larger Room (LOOP)</a>
+        <a class="lc-jump-link is-loop" href="#panel-P07">07 · Window Closed (LOOP)</a>
+      </nav>
+    </section>
+
+    
+      <div class="lc-act-divider">
+        <span data-lang-en>Act I · Good Reasons</span>
+        <span data-lang-sl hidden>I. dejanje · Dobri razlogi</span>
+      </div>
+      <article class="lc-panel lc-panel-animated" id="panel-P01">
+        <header class="lc-panel-header">
+          <div class="lc-panel-num">01</div>
+          <div class="lc-panel-titles">
+            <h2>
+              <span data-lang-en>Just Rain</span>
+              <span data-lang-sl hidden>Samo dež</span>
+            </h2>
+            <p class="lc-panel-sub">
+              <span data-lang-en>Adaeze’s kitchen · ordinary rain · three hours after the orbital corridor</span>
+              <span data-lang-sl hidden>Adaezina kuhinja · navaden dež · tri ure po orbitalnem koridorju</span>
+            </p>
+          </div>
+        </header>
+
+        <div class="lc-narration lc-narration-top">
+          <p data-lang-en>Three hours earlier she had held an evacuation corridor open between two orbital habitats while a hull fragment the size of a courthouse crossed where her body had been. The field had put her back. Adaeze had made stew.</p>
+          <p data-lang-sl hidden>Tri ure prej je držala odprt evakuacijski koridor med dvema orbitalnima habitatoma, medtem ko je kos trupa v velikosti sodišča prečkal mesto, kjer je bilo njeno telo. Polje jo je sestavilo nazaj. Adaeze je skuhala enolončnico.</p>
+        </div>
+
+        
+        <div class="lc-media-wrap lc-media-loop" data-loop-panel="P01">
+          <div class="lc-badge-bar">
+            <span class="lc-live-badge">
+              <span class="lc-pulse-dot" aria-hidden="true"></span>
+              <span data-lang-en>LIVE PANEL · 4.5s LOOP</span>
+              <span data-lang-sl hidden>ŽIVI KADER · 4.5s ZANKA</span>
+            </span>
+            <button type="button" class="lc-panel-toggle" data-toggle-video="P01" aria-label="Toggle panel motion">
+              <span data-state-label-en>⏸ Pause</span>
+              <span data-state-label-sl hidden>⏸ Ustavi</span>
+            </button>
+          </div>
+          <video class="lc-video" id="video-P01" autoplay loop muted playsinline preload="metadata" poster="assets/img/i1/I01_S01_just_rain.webp" data-video-l="assets/video/i1/E01_P01_just_rain_loop.mp4?v=4" data-video-p="assets/video/i1/E01_P01_just_rain_P_loop.mp4?v=4" data-poster-l="assets/img/i1/I01_S01_just_rain.webp" data-poster-p="assets/img/i1/I01_S01_just_rain_P.webp">
+            <source src="assets/video/i1/E01_P01_just_rain_loop.mp4?v=4" type="video/mp4"/>
+          </video>
+        </div>
+
+        <div class="lc-dialogue-dock">
+          
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“You are dripping on my floor.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Kapljaš mi po tleh.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-left">
+            <div class="lc-speaker">Nara</div>
+            <div class="lc-speech" data-lang-en>“I thought I dried.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Mislila sem, da sem se osušila.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“You thought cosmically.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Mislila si kozmično.«</div>
+          </div>
+        </div>
+
+        <footer class="lc-caption-card">
+          <p data-lang-en>On the windowsill, three basil plants leaned toward the dark glass. AC was not decoration. Nothing glowed because a daughter was sitting across from her mother.</p>
+          <p data-lang-sl hidden>Na okenski polici so se tri lončnice bazilike nagibale k temnemu steklu. AC ni bil okras. Nič ni žarelo samo zato, ker je hči sedela nasproti svoje matere.</p>
+        </footer>
+      </article>
+
+      <article class="lc-panel lc-panel-animated" id="panel-P02">
+        <header class="lc-panel-header">
+          <div class="lc-panel-num">02</div>
+          <div class="lc-panel-titles">
+            <h2>
+              <span data-lang-en>Good Reasons</span>
+              <span data-lang-sl hidden>Dobri razlogi</span>
+            </h2>
+            <p class="lc-panel-sub">
+              <span data-lang-en>Two bowls on the table · the blue thermos · the sixth anniversary</span>
+              <span data-lang-sl hidden>Dve skledi na mizi · modra termovka · šesta obletnica</span>
+            </p>
+          </div>
+        </header>
+
+        <div class="lc-narration lc-narration-top">
+          <p data-lang-en>Every year on the morning her father died, Adaeze took coffee in the blue thermos to the harbour wall. Last year a city had been falling. This year fourteen million lives hung inside an orbital conflict zone.</p>
+          <p data-lang-sl hidden>Vsako leto je Adaeze na jutro očetove smrti odnesla kavo v modri termovki na pristaniški zid. Lani je padalo mesto. Letos je bilo v orbitalnem spopadu ujetih štirinajst milijonov življenj.</p>
+        </div>
+
+        
+        <div class="lc-media-wrap lc-media-loop" data-loop-panel="P02">
+          <div class="lc-badge-bar">
+            <span class="lc-live-badge">
+              <span class="lc-pulse-dot" aria-hidden="true"></span>
+              <span data-lang-en>LIVE PANEL · 4.5s LOOP</span>
+              <span data-lang-sl hidden>ŽIVI KADER · 4.5s ZANKA</span>
+            </span>
+            <button type="button" class="lc-panel-toggle" data-toggle-video="P02" aria-label="Toggle panel motion">
+              <span data-state-label-en>⏸ Pause</span>
+              <span data-state-label-sl hidden>⏸ Ustavi</span>
+            </button>
+          </div>
+          <video class="lc-video" id="video-P02" autoplay loop muted playsinline preload="metadata" poster="assets/img/i1/I01_S02_good_reasons.webp" data-video-l="assets/video/i1/E01_P02_good_reasons_loop.mp4?v=4" data-video-p="assets/video/i1/E01_P02_good_reasons_P_loop.mp4?v=4" data-poster-l="assets/img/i1/I01_S02_good_reasons.webp" data-poster-p="assets/img/i1/I01_S02_good_reasons_P.webp">
+            <source src="assets/video/i1/E01_P02_good_reasons_loop.mp4?v=4" type="video/mp4"/>
+          </video>
+        </div>
+
+        <div class="lc-dialogue-dock">
+          
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“You missed his day again.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Spet si zamudila njegov dan.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-left">
+            <div class="lc-speaker">Nara</div>
+            <div class="lc-speech" data-lang-en>“I know… I sent you a message. I couldn’t leave.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Vem … Poslala sem ti sporočilo. Nisem mogla oditi.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“You sent me an explanation. I didn’t ask whether you could. I need you to stop interpreting me.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Poslala si mi pojasnilo. Nisem vprašala, ali si mogla. Hočem, da me nehaš prevajati.«</div>
+          </div>
+        </div>
+
+        <footer class="lc-caption-card">
+          <p data-lang-en>Every sentence of Nara’s explanation was true. Every sentence was unbearable. For the first time, she let the argument remain unsaid.</p>
+          <p data-lang-sl hidden>Vsak stavek Narinega pojasnila je bil resničen. Vsak stavek je bil neznosen. Prvič je argument pustila neizrečen.</p>
+        </footer>
+      </article>
+
+      <article class="lc-panel lc-panel-animated" id="panel-P03">
+        <header class="lc-panel-header">
+          <div class="lc-panel-num">03</div>
+          <div class="lc-panel-titles">
+            <h2>
+              <span data-lang-en>The Better Argument</span>
+              <span data-lang-sl hidden>Boljši argument</span>
+            </h2>
+            <p class="lc-panel-sub">
+              <span data-lang-en>Before AC · the court interpreter’s gift and wound</span>
+              <span data-lang-sl hidden>Pred AC · dar in rana sodne tolmačke</span>
+            </p>
+          </div>
+        </header>
+
+        <div class="lc-narration lc-narration-top">
+          <p data-lang-en>Before AC, Nara had been a court interpreter. She could return anyone’s position clearer than they held it themselves. Once a man had told her: “She gave me my argument back better than I had it. I have never hated anyone more.”</p>
+          <p data-lang-sl hidden>Pred poljem AC je bila Nara sodna tolmačka. Vsakomur je znala vrniti njegovo stališče čistejše, kot ga je imel sam. Nekoč ji je nekdo rekel: »Moj argument mi je vrnila boljši, kot sem ga imel sam. Še nikogar nisem tako sovražil.«</p>
+        </div>
+
+        
+        <div class="lc-media-wrap lc-media-loop" data-loop-panel="P03">
+          <div class="lc-badge-bar">
+            <span class="lc-live-badge">
+              <span class="lc-pulse-dot" aria-hidden="true"></span>
+              <span data-lang-en>LIVE PANEL · 4.5s LOOP</span>
+              <span data-lang-sl hidden>ŽIVI KADER · 4.5s ZANKA</span>
+            </span>
+            <button type="button" class="lc-panel-toggle" data-toggle-video="P03" aria-label="Toggle panel motion">
+              <span data-state-label-en>⏸ Pause</span>
+              <span data-state-label-sl hidden>⏸ Ustavi</span>
+            </button>
+          </div>
+          <video class="lc-video" id="video-P03" autoplay loop muted playsinline preload="metadata" poster="assets/img/i1/I01_S03_the_better_argument.webp" data-video-l="assets/video/i1/E01_P03_the_better_argument_loop.mp4?v=4" data-video-p="assets/video/i1/E01_P03_the_better_argument_P_loop.mp4?v=4" data-poster-l="assets/img/i1/I01_S03_the_better_argument.webp" data-poster-p="assets/img/i1/I01_S03_the_better_argument_P.webp">
+            <source src="assets/video/i1/E01_P03_the_better_argument_loop.mp4?v=4" type="video/mp4"/>
+          </video>
+        </div>
+
+        <div class="lc-dialogue-dock">
+          
+          <div class="lc-bubble lc-bubble-left">
+            <div class="lc-speaker">Nara</div>
+            <div class="lc-speech" data-lang-en>“You think I turned him into a scheduling conflict.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Misliš, da sem ga spremenila v konflikt na urniku.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“No. That is better than what I said. Cleaner. More elegant. You are always sorry at exactly the level where the problem becomes manageable.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Ne. To je boljše od tistega, kar sem rekla jaz. Čistejše. Bolj elegantno. Vedno ti je žal natanko na ravni, kjer problem postane obvladljiv.«</div>
+          </div>
+        </div>
+
+        <footer class="lc-caption-card">
+          <p data-lang-en>Nara could survive inside a star-facing rupture. She had no defence against the possibility that her mother was right.</p>
+          <p data-lang-sl hidden>Nara je lahko preživela razpoko, obrnjeno proti zvezdi. Ni pa imela obrambe pred možnostjo, da ima njena mati prav.</p>
+        </footer>
+      </article>
+
+      <div class="lc-act-divider">
+        <span data-lang-en>Act II · The Larger Room</span>
+        <span data-lang-sl hidden>II. dejanje · Večja soba</span>
+      </div>
+      <article class="lc-panel lc-panel-animated" id="panel-P04">
+        <header class="lc-panel-header">
+          <div class="lc-panel-num">04</div>
+          <div class="lc-panel-titles">
+            <h2>
+              <span data-lang-en>Do Not Make a Room Around This</span>
+              <span data-lang-sl hidden>Ne delaj sobe okoli tega</span>
+            </h2>
+            <p class="lc-panel-sub">
+              <span data-lang-en>A coat, a doorway and ten safe minutes</span>
+              <span data-lang-sl hidden>Plašč, prag in deset varnih minut</span>
+            </p>
+          </div>
+        </header>
+
+        <div class="lc-narration lc-narration-top">
+          <p data-lang-en>Adaeze carried her bowl to the sink and took her coat from the chair. Something inside Nara tightened—not fear of danger, but fear of ending. She had already imagined holding ten safe minutes in which neither could leave in anger.</p>
+          <p data-lang-sl hidden>Adaeze je odnesla skledo v korito in vzela plašč s stola. Nekaj v Nari se je stisnilo — ne strah pred nevarnostjo, temveč strah pred koncem. Že si je predstavljala deset varnih minut, v katerih nobena ne bi mogla oditi v jezi.</p>
+        </div>
+
+        
+        <div class="lc-media-wrap lc-media-loop" data-loop-panel="P04">
+          <div class="lc-badge-bar">
+            <span class="lc-live-badge">
+              <span class="lc-pulse-dot" aria-hidden="true"></span>
+              <span data-lang-en>LIVE PANEL · 4.5s LOOP</span>
+              <span data-lang-sl hidden>ŽIVI KADER · 4.5s ZANKA</span>
+            </span>
+            <button type="button" class="lc-panel-toggle" data-toggle-video="P04" aria-label="Toggle panel motion">
+              <span data-state-label-en>⏸ Pause</span>
+              <span data-state-label-sl hidden>⏸ Ustavi</span>
+            </button>
+          </div>
+          <video class="lc-video" id="video-P04" autoplay loop muted playsinline preload="metadata" poster="assets/img/i1/I01_S04_do_not_make_a_room_around_this.webp" data-video-l="assets/video/i1/E01_P04_do_not_make_a_room_around_this_loop.mp4?v=4" data-video-p="assets/video/i1/E01_P04_do_not_make_a_room_around_this_P_loop.mp4?v=4" data-poster-l="assets/img/i1/I01_S04_do_not_make_a_room_around_this.webp" data-poster-p="assets/img/i1/I01_S04_do_not_make_a_room_around_this_P.webp">
+            <source src="assets/video/i1/E01_P04_do_not_make_a_room_around_this_loop.mp4?v=4" type="video/mp4"/>
+          </video>
+        </div>
+
+        <div class="lc-dialogue-dock">
+          
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“Nara. Do not make a room around this.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Nara. Ne delaj sobe okoli tega.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-left">
+            <div class="lc-speaker">Nara</div>
+            <div class="lc-speech" data-lang-en>“I wasn’t going to.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Saj nisem nameravala.«</div>
+          </div>
+        </div>
+
+        <footer class="lc-caption-card">
+          <p data-lang-en>Nara felt the lie before she finished believing it—and released the thought. The room remained an ordinary kitchen.</p>
+          <p data-lang-sl hidden>Nara je začutila laž, še preden ji je do konca verjela — in misel izpustila. Soba je ostala navadna kuhinja.</p>
+        </footer>
+      </article>
+
+      <article class="lc-panel lc-panel-animated" id="panel-P05">
+        <header class="lc-panel-header">
+          <div class="lc-panel-num">05</div>
+          <div class="lc-panel-titles">
+            <h2>
+              <span data-lang-en>Something Wider</span>
+              <span data-lang-sl hidden>Nekaj širšega</span>
+            </h2>
+            <p class="lc-panel-sub">
+              <span data-lang-en>The first offer of the wide window · a candle beside a sun</span>
+              <span data-lang-sl hidden>Prva ponudba širokega okna · sveča ob soncu</span>
+            </p>
+          </div>
+        </header>
+
+        <div class="lc-narration lc-narration-top">
+          <p data-lang-en>For less than a second, Nara touched the threshold. The air became strangely clear—not bright, clear. One surface over a vast, unclaimed presence. She held only the protective edge around the person she loved.</p>
+          <p data-lang-sl hidden>Za manj kot sekundo se je Nara dotaknila praga. Zrak je postal nenavadno jasen — ne svetel, jasen. Ena površina nad neizmerno, neprisvojeno navzočnostjo. Držala je le zaščitni rob okoli človeka, ki ga je imela rada.</p>
+        </div>
+
+        
+        <div class="lc-media-wrap lc-media-loop" data-loop-panel="P05">
+          <div class="lc-badge-bar">
+            <span class="lc-live-badge">
+              <span class="lc-pulse-dot" aria-hidden="true"></span>
+              <span data-lang-en>LIVE PANEL · 4.5s LOOP</span>
+              <span data-lang-sl hidden>ŽIVI KADER · 4.5s ZANKA</span>
+            </span>
+            <button type="button" class="lc-panel-toggle" data-toggle-video="P05" aria-label="Toggle panel motion">
+              <span data-state-label-en>⏸ Pause</span>
+              <span data-state-label-sl hidden>⏸ Ustavi</span>
+            </button>
+          </div>
+          <video class="lc-video" id="video-P05" autoplay loop muted playsinline preload="metadata" poster="assets/img/i1/I01_S05_something_wider.webp" data-video-l="assets/video/i1/E01_P05_something_wider_loop.mp4?v=4" data-video-p="assets/video/i1/E01_P05_something_wider_P_loop.mp4?v=4" data-poster-l="assets/img/i1/I01_S05_something_wider.webp" data-poster-p="assets/img/i1/I01_S05_something_wider_P.webp">
+            <source src="assets/video/i1/E01_P05_something_wider_loop.mp4?v=4" type="video/mp4"/>
+          </video>
+        </div>
+
+        <div class="lc-dialogue-dock">
+          
+          <div class="lc-bubble lc-bubble-left">
+            <div class="lc-speaker">Nara</div>
+            <div class="lc-speech" data-lang-en>“I can open something wider than the quiet window. The field holds your boundary while your awareness opens farther. I don’t choose what you encounter. I can’t make you forgive me.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Lahko odprem nekaj širšega od tihega okna. Polje drži tvojo mejo, medtem ko se tvoja zavest odpre dlje. Ne izbiram, kaj boš srečala. Ne morem te pripraviti, da mi odpustiš.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“What would I see? My husband? … Would I be different?”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Kaj bi videla? Svojega moža? … Bi bila potem drugačna?«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-left">
+            <div class="lc-speaker">Nara</div>
+            <div class="lc-speech" data-lang-en>“I don’t know. Yes—because experiences change us. A candle beside a sun: protected, not absorbed.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Ne vem. Da — ker nas izkušnje spremenijo. Sveča ob soncu: zaščitena, ne posrkana.«</div>
+          </div>
+        </div>
+
+        <footer class="lc-caption-card">
+          <p data-lang-en>The threshold lasted half a heartbeat. Then Nara let it close. Adaeze had not entered. Nothing had reached her.</p>
+          <p data-lang-sl hidden>Prag je trajal pol srčnega utripa. Nato ga je Nara zaprla. Adaeze ni vstopila. Nič se je ni dotaknilo.</p>
+        </footer>
+      </article>
+
+      <div class="lc-act-divider">
+        <span data-lang-en>Act III · The Door</span>
+        <span data-lang-sl hidden>III. dejanje · Vrata</span>
+      </div>
+      <article class="lc-panel lc-panel-animated" id="panel-P06">
+        <header class="lc-panel-header">
+          <div class="lc-panel-num">06</div>
+          <div class="lc-panel-titles">
+            <h2>
+              <span data-lang-en>Make the Larger Room Yours</span>
+              <span data-lang-sl hidden>Narediš večjo sobo svojo</span>
+            </h2>
+            <p class="lc-panel-sub">
+              <span data-lang-en>The threshold remains private · the right to choose the door</span>
+              <span data-lang-sl hidden>Prag ostane zaseben · pravica izbrati vrata</span>
+            </p>
+          </div>
+        </header>
+
+        <div class="lc-narration lc-narration-top">
+          <p data-lang-en>Adaeze opened the door and cold hallway air entered. Every part of Illuminara that had ever held a collapsing boundary wanted to intervene—to warm the corridor, to open the window just a fraction.</p>
+          <p data-lang-sl hidden>Adaeze je odprla vrata in vstopil je hladen zrak s hodnika. Vsak del Illuminare, ki je kdaj držal razpadajočo mejo, je hotel poseči — ogreti hodnik, odpreti okno le za drobec.</p>
+        </div>
+
+        
+        <div class="lc-media-wrap lc-media-loop" data-loop-panel="P06">
+          <div class="lc-badge-bar">
+            <span class="lc-live-badge">
+              <span class="lc-pulse-dot" aria-hidden="true"></span>
+              <span data-lang-en>LIVE PANEL · 4.5s LOOP</span>
+              <span data-lang-sl hidden>ŽIVI KADER · 4.5s ZANKA</span>
+            </span>
+            <button type="button" class="lc-panel-toggle" data-toggle-video="P06" aria-label="Toggle panel motion">
+              <span data-state-label-en>⏸ Pause</span>
+              <span data-state-label-sl hidden>⏸ Ustavi</span>
+            </button>
+          </div>
+          <video class="lc-video" id="video-P06" autoplay loop muted playsinline preload="metadata" poster="assets/img/i1/I01_S06_make_the_larger_room_yours.webp" data-video-l="assets/video/i1/E01_P06_make_the_larger_room_yours_loop.mp4?v=4" data-video-p="assets/video/i1/E01_P06_make_the_larger_room_yours_P_loop.mp4?v=4" data-poster-l="assets/img/i1/I01_S06_make_the_larger_room_yours.webp" data-poster-p="assets/img/i1/I01_S06_make_the_larger_room_yours_P.webp">
+            <source src="assets/video/i1/E01_P06_make_the_larger_room_yours_loop.mp4?v=4" type="video/mp4"/>
+          </video>
+        </div>
+
+        <div class="lc-dialogue-dock">
+          
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“You decide the room needs more complexity. More perspectives. More understanding. And because you can make that room, everyone else looks unreasonable for wanting the door.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Ti se odločiš, da soba potrebuje več kompleksnosti. Več perspektiv. Več razumevanja. In ker ti lahko narediš takšno sobo, so vsi drugi videti nerazumni, ker hočejo vrata.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“No window. No better version of what I mean. No safe extra minute. I want to leave angry.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Brez okna. Brez boljše različice tega, kar mislim. Brez varne dodatne minute. Hočem oditi jezna.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-left">
+            <div class="lc-speaker">Nara</div>
+            <div class="lc-speech" data-lang-en>“I love you.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Rada te imam.«</div>
+          </div>
+
+          <div class="lc-bubble lc-bubble-right">
+            <div class="lc-speaker">Adaeze</div>
+            <div class="lc-speech" data-lang-en>“I know.”</div>
+            <div class="lc-speech" data-lang-sl hidden>»Vem.«</div>
+          </div>
+        </div>
+
+        <footer class="lc-caption-card">
+          <p data-lang-en>Nara stepped back from the doorway. She could preserve everything except the one thing Adaeze had asked for: the right to let the damage become real.</p>
+          <p data-lang-sl hidden>Nara je stopila korak nazaj od vrat. Ohranila bi lahko vse, razen edine stvari, za katero je prosila Adaeze: pravice, da škoda postane resnična.</p>
+        </footer>
+      </article>
+
+      <article class="lc-panel lc-panel-animated" id="panel-P07">
+        <header class="lc-panel-header">
+          <div class="lc-panel-num">07</div>
+          <div class="lc-panel-titles">
+            <h2>
+              <span data-lang-en>The Window Remained Closed</span>
+              <span data-lang-sl hidden>Okno je ostalo zaprto</span>
+            </h2>
+            <p class="lc-panel-sub">
+              <span data-lang-en>The crooked basil plant · the notebook afterward</span>
+              <span data-lang-sl hidden>Kriva bazilika · zvezek po odhodu</span>
+            </p>
+          </div>
+        </header>
+
+        <div class="lc-narration lc-narration-top">
+          <p data-lang-en>The door closed. No cosmic event followed. It was harder than holding the orbital corridor. On the windowsill, one basil plant had grown crooked toward the light across the street. Nara reached to turn the pot—and stopped. She left it as it was.</p>
+          <p data-lang-sl hidden>Vrata so se zaprla. Noben kozmični dogodek ni sledil. Bilo je težje kot držati orbitalni koridor. Na okenski polici je ena od bazilik zrasla postrani proti luči čez cesto. Nara je segla, da bi lonček obrnila — in se ustavila. Pustila ga je takšnega, kakršen je bil.</p>
+        </div>
+
+        
+        <div class="lc-media-wrap lc-media-loop" data-loop-panel="P07">
+          <div class="lc-badge-bar">
+            <span class="lc-live-badge">
+              <span class="lc-pulse-dot" aria-hidden="true"></span>
+              <span data-lang-en>LIVE PANEL · 5.0s LOOP</span>
+              <span data-lang-sl hidden>ŽIVI KADER · 5.0s ZANKA</span>
+            </span>
+            <button type="button" class="lc-panel-toggle" data-toggle-video="P07" aria-label="Toggle panel motion">
+              <span data-state-label-en>⏸ Pause</span>
+              <span data-state-label-sl hidden>⏸ Ustavi</span>
+            </button>
+          </div>
+          <video class="lc-video" id="video-P07" autoplay loop muted playsinline preload="metadata" poster="assets/img/i1/I01_S07_the_window_remained_closed.webp" data-video-l="assets/video/i1/E01_P07_the_window_remained_closed_loop.mp4?v=4" data-video-p="assets/video/i1/E01_P07_the_window_remained_closed_P_loop.mp4?v=4" data-poster-l="assets/img/i1/I01_S07_the_window_remained_closed.webp" data-poster-p="assets/img/i1/I01_S07_the_window_remained_closed_P.webp">
+            <source src="assets/video/i1/E01_P07_the_window_remained_closed_loop.mp4?v=4" type="video/mp4"/>
+          </video>
+        </div>
+
+        <div class="lc-dialogue-dock">
+          
+          <div class="lc-bubble lc-bubble-center">
+            <div class="lc-speaker">Nara · Notebook / Zvezek</div>
+            <div class="lc-speech" data-lang-en>She said no.<br/>The window remained closed.</div>
+            <div class="lc-speech" data-lang-sl hidden>Rekla je ne.<br/>Okno je ostalo zaprto.</div>
+          </div>
+        </div>
+
+        <footer class="lc-caption-card">
+          <p data-lang-en>For once she did not improve her mother’s argument. She looked at the two sentences. They were accurate. They were not enough. She let them be enough anyway.</p>
+          <p data-lang-sl hidden>Tokrat materinega argumenta ni izboljšala. Pogledala je stavka. Bila sta natančna. Nista bila dovolj. Vseeno jima je dovolila, da sta dovolj.</p>
+        </footer>
+      </article>
+  </main>
+
+  <script>
+    (function() {
+      let currentLang = (new URLSearchParams(window.location.search).get("lang") || "en").toLowerCase() === "sl" ? "sl" : "en";
+      let motionPaused = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function applyLanguage(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        document.documentElement.setAttribute("data-lang", lang);
+        document.querySelectorAll("[data-lang-en]").forEach(el => {
+          el.hidden = (lang !== "en");
+        });
+        document.querySelectorAll("[data-lang-sl]").forEach(el => {
+          el.hidden = (lang !== "sl");
+        });
+        document.getElementById("btn-lang-en").classList.toggle("active", lang === "en");
+        document.getElementById("btn-lang-sl").classList.toggle("active", lang === "sl");
+        updateMotionButtons();
+      }
+
+      function updateMotionButtons() {
+        const globalBtn = document.getElementById("btn-motion-toggle");
+        globalBtn.setAttribute("aria-pressed", String(motionPaused));
+        globalBtn.classList.toggle("active", motionPaused);
+        const enSpan = globalBtn.querySelector("[data-lang-en]");
+        const slSpan = globalBtn.querySelector("[data-lang-sl]");
+        if (enSpan) enSpan.textContent = motionPaused ? "▶ Resume Motion" : "⏸ Pause All Motion";
+        if (slSpan) slSpan.textContent = motionPaused ? "▶ Nadaljuj gibanje" : "⏸ Ustavi vse gibanje";
+
+        document.querySelectorAll("[data-toggle-video]").forEach(btn => {
+          const pid = btn.getAttribute("data-toggle-video");
+          const vid = document.getElementById("video-" + pid);
+          const paused = !vid || vid.paused;
+          const bEn = btn.querySelector("[data-state-label-en]");
+          const bSl = btn.querySelector("[data-state-label-sl]");
+          if (bEn) { bEn.textContent = paused ? "▶ Play" : "⏸ Pause"; bEn.hidden = (currentLang !== "en"); }
+          if (bSl) { bSl.textContent = paused ? "▶ Predvajaj" : "⏸ Ustavi"; bSl.hidden = (currentLang !== "sl"); }
+        });
+      }
+
+      function setAllMotion(pause) {
+        motionPaused = pause;
+        document.querySelectorAll("video.lc-video").forEach(v => {
+          if (pause) v.pause();
+          else v.play().catch(() => {});
+        });
+        updateMotionButtons();
+      }
+
+      document.querySelectorAll("[data-set-lang]").forEach(btn => {
+        btn.addEventListener("click", () => applyLanguage(btn.getAttribute("data-set-lang")));
+      });
+
+      document.getElementById("btn-motion-toggle").addEventListener("click", () => {
+        setAllMotion(!motionPaused);
+      });
+
+      const portraitMq = window.matchMedia ? window.matchMedia("(orientation: portrait)") : null;
+
+      function syncDualFrameVideos() {
+        const isPortrait = Boolean(portraitMq ? portraitMq.matches : window.innerHeight > window.innerWidth);
+        document.querySelectorAll("video.lc-video[data-video-l]").forEach(vid => {
+          const targetVideo = isPortrait ? (vid.getAttribute("data-video-p") || vid.getAttribute("data-video-l")) : vid.getAttribute("data-video-l");
+          const targetPoster = isPortrait ? (vid.getAttribute("data-poster-p") || vid.getAttribute("data-poster-l")) : vid.getAttribute("data-poster-l");
+          if (targetPoster && vid.getAttribute("poster") !== targetPoster) {
+            vid.setAttribute("poster", targetPoster);
+          }
+          const sourceEl = vid.querySelector("source");
+          const currentSrc = (sourceEl && sourceEl.getAttribute("src")) || vid.getAttribute("src") || "";
+          if (targetVideo && currentSrc !== targetVideo) {
+            const wasPaused = motionPaused || vid.paused;
+            if (sourceEl) sourceEl.setAttribute("src", targetVideo);
+            else vid.setAttribute("src", targetVideo);
+            vid.load();
+            if (!wasPaused) vid.play().catch(() => {});
+          }
+        });
+      }
+
+      if (portraitMq && portraitMq.addEventListener) portraitMq.addEventListener("change", syncDualFrameVideos);
+      window.addEventListener("resize", syncDualFrameVideos, { passive: true });
+
+      document.querySelectorAll("[data-toggle-video]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const pid = btn.getAttribute("data-toggle-video");
+          const vid = document.getElementById("video-" + pid);
+          if (!vid) return;
+          if (vid.paused) vid.play().catch(() => {});
+          else vid.pause();
+          updateMotionButtons();
+        });
+      });
+
+      syncDualFrameVideos();
+      applyLanguage(currentLang);
+      if (motionPaused) setAllMotion(true);
+    })();
+  </script>
+</body>
+</html>

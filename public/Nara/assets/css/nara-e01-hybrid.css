@@ -1,0 +1,39 @@
+/* Hybrid image <-> DualFrame video toggle styles for Illuminara E01 */
+.nara-hybrid-trigger {
+  cursor: pointer;
+}
+
+.nara-hybrid-trigger .story-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #06101c;
+}
+
+.nara-hybrid-trigger .story-image[hidden],
+.nara-hybrid-trigger .story-video[hidden],
+.nara-hybrid-trigger picture[hidden] {
+  display: none !important;
+}
+
+.nara-hybrid-trigger[data-active-media="image"] .nara-hybrid-badge--to-image {
+  display: none;
+}
+
+.nara-hybrid-trigger[data-active-media="video"] .nara-hybrid-badge--to-video {
+  display: none;
+}
+
+.nara-hybrid-trigger[data-active-media="video"] .nara-hybrid-badge--to-image {
+  border-color: rgba(235, 195, 120, 0.58);
+  color: #f6ddb0;
+}
+
+@media (orientation: portrait) {
+  .nara-hybrid-trigger .story-image,
+  .nara-hybrid-trigger .story-video {
+    aspect-ratio: 9 / 16;
+  }
+}
