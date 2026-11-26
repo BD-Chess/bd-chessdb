@@ -413,3 +413,42 @@ test('quality floor URL handles invalid values and coexists with search, filters
     assert.equal(u.hash, '#skupno');
   } finally { b.window.close(); }
 });
+
+test('source scope is global, synchronized and reversible for every capture', async () => {
+  const captures = read('captures.json').captures;
+  const ids = ["source-scope","source-scope-intro","source-scope-tiers","source-scope-cats","source-scope-disagree","source-scope-leaders","source-scope-catalog"];
+  const tables = ['stats','leaders','overall','tiers','cattable','disagree','boardleaders','weights'];
+  for (const capture of captures) {
+    const b = await boot('https://www.mdlxdcc.org/llms/?d='+capture.date+'&cat=coding','en');
+    try {
+      const {doc,window} = b;
+      const snap = () => Object.fromEntries(tables.map(id=>[id,doc.getElementById(id).innerHTML]));
+      const choose=(id,value)=>{const s=doc.getElementById(id);s.value=value;s.dispatchEvent(new window.Event('change'));};
+      const all=snap();
+      assert.equal(doc.getElementById('source-scope').value,'all');
+      choose('source-scope-cats','top5');
+      assert.deepEqual(b.errors,[]);
+      for(const id of ids) assert.equal(doc.getElementById(id).value,'top5',id);
+      assert.equal(new URL(window.location.href).searchParams.get('sources'),'top5');
+      for(const id of tables.filter(x=>x!=='weights')) assert.notEqual(snap()[id],all[id],capture.date+' '+id);
+      assert.equal(snap().weights,all.weights);
+      assert.equal(doc.querySelectorAll('#accepted details.src').length,5);
+      assert.equal(doc.getElementById('novosti').hidden,true);
+      assert.ok(doc.querySelectorAll('#boardleaders tbody tr').length>0);
+      assert.equal(doc.querySelectorAll('#boardleaders tbody tr').length,Number(doc.getElementById('source-scope-note').textContent.match(/· (\d+) boards/)[1]));
+      doc.querySelector('#tabs [data-cat="sl"]').click();
+      assert.match(doc.getElementById('catdesc').textContent,/no dedicated Slovenian/);
+      assert.match(doc.getElementById('cattable').textContent,/No matches/);
+      doc.querySelector('#tabs [data-cat="speed"]').click();
+      assert.ok(doc.querySelectorAll('#cattable tbody .mid').length>0);
+      doc.querySelector('#tabs [data-cat="coding"]').click();
+      choose('source-scope-leaders','all');
+      assert.deepEqual(snap(),all);
+      for(const id of ids) assert.equal(doc.getElementById(id).value,'all',id);
+      assert.equal(new URL(window.location.href).searchParams.get('sources'),null);
+    } finally {b.window.close();}
+  }
+  const b=await boot('https://www.mdlxdcc.org/llms/?sources=top5&cat=coding');
+  try{assert.deepEqual(b.errors,[]);assert.equal(b.doc.getElementById('source-scope-cats').value,'top5');assert.equal(b.doc.querySelector('#tabs [aria-pressed="true"]').getAttribute('data-cat'),'coding');}
+  finally{b.window.close();}
+});
