@@ -659,11 +659,17 @@ html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:
 .lab-intro{border-top:1px solid var(--line);padding:25px 0}
 .lab-intro p{font-size:.94rem;line-height:1.8;color:var(--muted);margin:0;max-width:65ch}
 .hero-study[data-hero-kind="tsp"]{min-height:0}
-.tsp-hero-media{display:block;aspect-ratio:1200/726;overflow:hidden;border-radius:14px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);text-decoration:none}
+.tsp-hero-media{display:block;aspect-ratio:1200/698;overflow:hidden;border-radius:14px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);text-decoration:none;cursor:pointer}
 .tsp-hero-media:before{display:none}
 .tsp-hero-media img,.tsp-hero-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .tsp-hero-media video{opacity:0;pointer-events:none}
 .tsp-hero-media.is-playing video{opacity:1}
+.tsp-hero-media.tsp-fullscreen,.tsp-hero-media:fullscreen{position:fixed!important;inset:0!important;z-index:10005!important;width:100vw!important;height:100dvh!important;aspect-ratio:auto!important;border:0!important;border-radius:0!important;margin:0!important;background:var(--bg)!important;cursor:default}
+.tsp-fs-bar{display:none;position:fixed;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));z-index:10006;align-items:center;gap:8px}
+.tsp-hero-media.tsp-fullscreen .tsp-fs-bar,.tsp-hero-media:fullscreen .tsp-fs-bar{display:flex}
+.tsp-fs-btn{min-height:38px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--surface) 86%,transparent);color:var(--ink);font:600 .68rem/1 Consolas,monospace;letter-spacing:.06em;backdrop-filter:blur(8px);cursor:pointer}
+.tsp-fs-btn:hover,.tsp-fs-btn:focus-visible,.tsp-fs-btn[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.tsp-fs-close{width:42px;height:42px;padding:0;border-radius:50%;font:500 1.25rem/1 Arial,sans-serif}
 .tsp-hero-cta{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:44px;padding:9px 14px;text-decoration:none;white-space:nowrap;border:1px solid var(--accent);border-radius:999px;background:var(--surface);color:var(--ink);font-size:.75rem;line-height:1.4;text-align:center}
 .tsp-hero-cta:hover{border-color:var(--accent2);color:var(--accent)}
 .tsp-hero-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:5px 12px;margin:8px 0 12px}
@@ -756,9 +762,11 @@ html:not([data-lang=sl]) .dna-essay-sl,html[data-lang=sl] .dna-essay-en{display:
 </div>
 
 <div class="hero-slide" data-hero-slide="tsp" hidden>
-<div class="art-wrap tsp-hero-media" id="tsp-hero-media" role="img" aria-label="Recorded 8zTSP search through 3,496 cities">
-<img id="tsp-hero-poster" src="/tsp/media/8ztsp-nu3496-hero-home-poster-en.webp" alt="" width="1200" height="726" fetchpriority="high" decoding="async">
+<div class="art-wrap tsp-hero-media hero-click-open" id="tsp-hero-media" role="button" tabindex="0" aria-label="Recorded 8zTSP search through 3,496 cities — click for HD / 4K fullscreen">
+<span class="hero-click-hint" aria-hidden="true">CLICK ANIMATION · HD / 4K</span>
+<img id="tsp-hero-poster" src="/tsp/media/8ztsp-nu3496-hero-home-poster-en.webp" alt="" width="1200" height="698" fetchpriority="high" decoding="async">
 <video id="tsp-hero-video" muted playsinline loop preload="none" poster="/tsp/media/8ztsp-nu3496-hero-home-poster-en.webp" aria-hidden="true" tabindex="-1"></video>
+<div class="tsp-fs-bar" id="tsp-fs-bar"><button class="tsp-fs-btn" id="tsp-fs-hd" type="button" aria-pressed="false">HD 1080p</button><button class="tsp-fs-btn" id="tsp-fs-4k" type="button" aria-pressed="false">4K 2160p</button><button class="tsp-fs-btn tsp-fs-close" id="tsp-fs-close" type="button" aria-label="Exit fullscreen">×</button></div>
 </div>
 <div class="tsp-hero-actions"><a class="tsp-hero-cta" id="tsp-hero-link" href="/tsp/" aria-label="Explore TSP — recorded 8zTSP search through 3,496 cities"><span class="en" lang="en">Explore TSP →</span><span class="sl" lang="sl">Razišči TSP →</span></a><button class="tsp-hero-play" id="tsp-hero-play" type="button" aria-controls="tsp-hero-video" aria-pressed="false"><span class="en" lang="en">Play animation</span><span class="sl" lang="sl">Predvajaj animacijo</span></button><span id="tsp-hero-status" class="study-note" role="status"></span></div>
 <figcaption class="study-bottom"><p class="study-note" id="tsp-hero-context"><span class="en" lang="en">A recorded 8zTSP search through 3,496 cities · nu3496, University of Waterloo.</span><span class="sl" lang="sl">Posnetek iskanja poti z 8zTSP skozi 3.496 mest · nu3496, Univerza Waterloo.</span></p></figcaption>
@@ -1073,8 +1081,51 @@ const labels={
  pi:['PI BY AREA','PI PO POVRŠINI'],
  pattern:['A SMALL RULE. A RICH WORLD.','KRATKO PRAVILO. BOGAT SVET.']
 };
-const tspVideo=$('#tsp-hero-video'),tspPoster=$('#tsp-hero-poster'),tspLink=$('#tsp-hero-link'),tspMedia=$('#tsp-hero-media'),tspPlay=$('#tsp-hero-play');
-let tspLanguage=null,tspManual=false,tspUserPaused=false,tspFailed=false,tspAttempt=0;
+const tspVideo=$('#tsp-hero-video'),tspPoster=$('#tsp-hero-poster'),tspLink=$('#tsp-hero-link'),tspMedia=$('#tsp-hero-media'),tspPlay=$('#tsp-hero-play'),tspFsHd=$('#tsp-fs-hd'),tspFs4k=$('#tsp-fs-4k'),tspFsClose=$('#tsp-fs-close');
+let tspLanguage=null,tspManual=false,tspUserPaused=false,tspFailed=false,tspAttempt=0,tspFullscreen=false,tspTier='';
+function detectTspMonitorTier(){
+  const dpr=window.devicePixelRatio||1;
+  const maxPx=Math.max((window.screen?.width||window.innerWidth)*dpr,window.innerWidth*dpr);
+  const maxH=Math.max((window.screen?.height||window.innerHeight)*dpr,window.innerHeight*dpr);
+  return (maxPx>=2560||maxH>=1440)?'-4k':'-hd';
+}
+function syncTspFsButtons(){
+  if(tspFsHd)tspFsHd.setAttribute('aria-pressed',String(tspTier==='-hd'));
+  if(tspFs4k)tspFs4k.setAttribute('aria-pressed',String(tspTier==='-4k'));
+}
+function setTspTier(tier){
+  if(tspTier===tier&&tspVideo.hasAttribute('src'))return;
+  const t=tspVideo.currentTime||0;
+  tspTier=tier;syncTspFsButtons();
+  const lang=isSl()?'sl':'en',base='/tsp/media/8ztsp-nu3496-hero-home';
+  tspVideo.src=base+tspTier+'-'+lang+'.mp4';
+  tspVideo.addEventListener('loadedmetadata',()=>{try{if(t>0&&t<tspVideo.duration)tspVideo.currentTime=t;}catch(_){}},{once:true});
+  tspManual=true;tspUserPaused=false;syncTspVideo();
+}
+function enterTspFullscreen(forcedTier){
+  stopHeroAuto();
+  tspFullscreen=true;
+  tspMedia.classList.add('tsp-fullscreen');
+  if(!document.fullscreenElement&&typeof tspMedia.requestFullscreen==='function'){
+    try{tspMedia.requestFullscreen().catch(()=>{});}catch(_){}
+  }
+  setTspTier(forcedTier||detectTspMonitorTier());
+}
+function exitTspFullscreen(){
+  if(!tspFullscreen&&!document.fullscreenElement)return;
+  tspFullscreen=false;
+  tspMedia.classList.remove('tsp-fullscreen');
+  if(document.fullscreenElement===tspMedia&&typeof document.exitFullscreen==='function'){
+    try{document.exitFullscreen().catch(()=>{});}catch(_){}
+  }
+  setTspTier('');
+  startHeroAuto();
+}
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement&&tspFullscreen){
+    tspFullscreen=false;tspMedia.classList.remove('tsp-fullscreen');setTspTier('');startHeroAuto();
+  }
+});
 function updateTspPlay(){
   const playing=!tspVideo.paused&&!tspVideo.ended;
   tspPlay.textContent=isSl()?(playing?'Premor animacije':'Predvajaj animacijo'):(playing?'Pause animation':'Play animation');
@@ -1088,7 +1139,7 @@ function syncTspVideo(){
     if(tspVideo.hasAttribute('src')){tspVideo.removeAttribute('src');tspVideo.load();}
     tspPoster.src=base+'-poster-'+lang+'.webp';tspVideo.poster=tspPoster.src;tspLanguage=lang;
   }
-  tspMedia.setAttribute('aria-label',isSl()?'Posnetek iskanja poti z 8zTSP skozi 3.496 mest':'Recorded 8zTSP search through 3,496 cities');
+  tspMedia.setAttribute('aria-label',isSl()?'Posnetek iskanja poti z 8zTSP skozi 3.496 mest — klikni za HD / 4K celozaslonski prikaz':'Recorded 8zTSP search through 3,496 cities — click for HD / 4K fullscreen');
   tspLink.setAttribute('aria-label',isSl()?'Razišči TSP — posnetek iskanja poti z 8zTSP skozi 3.496 mest':'Explore TSP — recorded 8zTSP search through 3,496 cities');
   $('#tsp-hero-status').textContent=tspFailed?(isSl()?'Animacija ni na voljo. Razišči TSP.':'Animation unavailable. Explore TSP.') : '';
   const dialog=$('#hero-dialog'),active=slides[index]==='tsp'&&!document.hidden&&!(dialog&&dialog.open);
@@ -1097,11 +1148,22 @@ function syncTspVideo(){
   }
   if(tspFailed){updateTspPlay();return;}
   if(!tspVideo.paused){updateTspPlay();return;}
-  if(!tspVideo.hasAttribute('src'))tspVideo.src=base+'-'+lang+'.mp4';
+  if(!tspVideo.hasAttribute('src'))tspVideo.src=base+tspTier+'-'+lang+'.mp4';
   const attempt=++tspAttempt;
   const pending=tspVideo.play();
   if(pending&&typeof pending.catch==='function')pending.catch(()=>{if(attempt===tspAttempt){tspUserPaused=true;updateTspPlay();}});
 }
+tspMedia.addEventListener('click',e=>{
+  if(e.target.closest&&e.target.closest('#tsp-fs-bar'))return;
+  if(!tspFullscreen)enterTspFullscreen();
+});
+tspMedia.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&!e.target.closest('#tsp-fs-bar')){e.preventDefault();if(!tspFullscreen)enterTspFullscreen();}
+});
+if(tspFsHd)tspFsHd.addEventListener('click',e=>{e.stopPropagation();setTspTier('-hd');});
+if(tspFs4k)tspFs4k.addEventListener('click',e=>{e.stopPropagation();setTspTier('-4k');});
+if(tspFsClose)tspFsClose.addEventListener('click',e=>{e.stopPropagation();exitTspFullscreen();});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&tspFullscreen){e.preventDefault();exitTspFullscreen();}},true);
 tspVideo.addEventListener('playing',()=>{tspMedia.classList.add('is-playing');updateTspPlay();});
 tspVideo.addEventListener('pause',updateTspPlay);
 tspVideo.addEventListener('error',()=>{if(!tspVideo.hasAttribute('src'))return;tspFailed=true;tspMedia.classList.remove('is-playing');syncTspVideo();});
