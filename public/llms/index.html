@@ -280,10 +280,12 @@
       <p class="fnote" data-fnote hidden></p>
       <div class="note newbox" id="newbox" role="note" hidden></div>
       <div class="controls">
+        <label class="qf-pick" id="source-scope-pick"><span id="source-scope-label">Viri:</span> <select id="source-scope" disabled><option value="all">Vsi</option><option value="top5">Top 5</option></select></label>
         <input type="search" id="q" autocomplete="off" placeholder="Išči model ali ponudnika …" data-ph-sl="Išči model ali ponudnika …" data-ph-en="Search model or provider …" aria-label="Išči model ali ponudnika" data-aria-sl="Išči model ali ponudnika" data-aria-en="Search model or provider">
         <button type="button" class="btn" id="all-toggle" aria-pressed="false"></button>
         <label class="qf-pick" id="qf-pick"><span id="qf-label">Prag kakovosti</span><select id="qf-sel"></select></label>
       </div>
+      <p class="small muted" id="source-scope-note" aria-live="polite" hidden></p>
       <div class="tw"><table class="data" id="overall"></table></div>
       <p class="small muted" id="value-note"></p>
       <details class="more" id="unranked-box">
@@ -418,8 +420,92 @@
     var root = document.documentElement;
     var D = null, S = null, C = null, U = null;
     var BOARD = {}, CATS = ["reasoning", "coding", "agentic", "knowledge", "preference", "multilingual", "sl", "long_context", "speed"];
-    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {}, sort: {}, vend: {}, top: 0 };
+    var st = { cat: "reasoning", all: false, catAll: false, q: "", open: {}, sort: {}, vend: {}, top: 0, sourceScope: "all" };
     var TOP = 40, CTOP = 25;
+    var TOP5_IDS = ["artificial_analysis","epoch_ai","lmarena","arc_prize","vals_ai"], TOP5_DROP = ["aa_intelligence_index","epoch_eci","vals_index","vals_finance_index","vals_legal_index","vals_science_index","arc_agi_3_provider_adapter","aa_omniscience_non_hallucination"];
+    var TOP5_DATA = null, TOP5_PARETO = {}, TOP5_ERROR = false;
+    // BEGIN SOURCE_SCOPE_ENGINE
+    function buildSourceScope(data, sourceIds, excludedIds) {
+  const cfg=data.config, weights=cfg.category_weights, categories=Object.keys(weights);
+  const allow=new Set(sourceIds), excluded=new Set(excludedIds), all=!sourceIds.length;
+  const org=cfg.org_group||{}, round=(x,n=1)=>Math.round(x*10**n)/10**n;
+  const clip=x=>round(Math.max(0,Math.min(100,x)));
+  const selectedBoards=data.boards.filter(b=>(all||allow.has(b.source_id))&&categories.includes(b.category)&&b.weight>0&&b.n_universe>=cfg.min_board_models&&!excluded.has(b.board_id));
+  const aggregate=selectedBoards.some(b=>b.board_id==="lmarena_text_non_english");
+  const boards=new Map(selectedBoards.filter(b=>all||!aggregate||b.source_id!=="lmarena"||!b.board_id.startsWith("lmarena_text_")||["lmarena_text_overall","lmarena_text_non_english"].includes(b.board_id)).map(b=>[b.board_id,{meta:b,rows:[]}]));
+  const results=new Map();
+  for(const m of data.models) {
+    for(const s of m.board_scores||[]) {
+      const b=boards.get(s.board_id);
+      if(!b)continue;
+      if(s.source_id!==b.meta.source_id||s.category!==b.meta.category||s.weight!==b.meta.weight||!Number.isFinite(s.score))throw Error("Invalid board observation: "+s.board_id);
+      b.rows.push({id:m.model_id,src:s,score:s.score,pct:0});
+    }
+  }
+  for(const [id,b] of boards) {
+    if(b.rows.length!==b.meta.n_universe||new Set(b.rows.map(r=>r.id)).size!==b.rows.length)throw Error("Incomplete comparison panel: "+id);
+    b.rows.sort((a,c)=>b.meta.higher_is_better?c.score-a.score:a.score-c.score);
+    for(let i=0;i<b.rows.length;) {
+      let j=i;
+      while(j+1<b.rows.length&&b.rows[j+1].score===b.rows[i].score)j++;
+      const pct=100*(1-(i+j)/2/(b.rows.length-1));
+      for(let k=i;k<=j;k++)b.rows[k].pct=pct;
+      i=j+1;
+    }
+  }
+  // Same alternating ridge fixed-effects fit as build_meta_index.py (200 iterations).
+  for(const cat of categories) {
+    const byModel=new Map(), byBoard=new Map(), theta=new Map(), beta=new Map();
+    for(const [id,b] of boards) {
+      if(b.meta.category!==cat)continue;
+      byBoard.set(id,b.rows);beta.set(id,0);
+      for(const row of b.rows) {
+        if(!byModel.has(row.id)) {byModel.set(row.id,[]);theta.set(row.id,50);}
+        byModel.get(row.id).push({board:id,p:row.pct,w:b.meta.weight,src:row.src});
+      }
+    }
+    for(let i=0;i<200;i++) {
+      for(const [id,rows] of byModel) {
+        let n=cfg.shrink_k*50,den=cfg.shrink_k;
+        for(const r of rows){n+=r.w*(r.p-beta.get(r.board));den+=r.w;}
+        theta.set(id,n/den);
+      }
+      for(const [id,rows] of byBoard) {
+        let n=0;for(const r of rows)n+=r.pct-theta.get(r.id);
+        beta.set(id,n/(rows.length+cfg.fe_lambda));
+      }
+    }
+    for(const [id,rows] of byModel) {
+      if(!results.has(id))results.set(id,{categories:{},sources:new Set(),contrib:[]});
+      const result=results.get(id), sourceSet=new Set();
+      let w=0,p=0;
+      for(const r of rows) {
+        const s=org[r.src.source_id]||r.src.source_id;
+        sourceSet.add(s);result.sources.add(s);w+=r.w;p+=r.w*r.p;
+        const offset=round(beta.get(r.board),2);
+        result.contrib.push({...r.src,pct:round(r.p),field_offset:offset,adj_pct:round(r.p-offset)});
+      }
+      result.categories[cat]={score:clip(theta.get(id)),raw_mean_pct:round(p/w),n_sources:sourceSet.size,n_boards:rows.length};
+    }
+  }
+  const models=[];
+  for(const original of data.models) {
+    const r=results.get(original.model_id);
+    if(!r)continue;
+    let coverage=0,score=0;
+    for(const cat of Object.keys(r.categories)){coverage+=weights[cat];score+=weights[cat]*r.categories[cat].score;}
+    const points=r.contrib.map(b=>b.adj_pct), avg=points.reduce((a,b)=>a+b,0)/points.length;
+    const spread=points.length<2?null:round(Math.sqrt(points.reduce((a,b)=>a+(b-avg)**2,0)/points.length));
+    const overall=round(score/coverage), sources=[...r.sources].sort();
+    const m={...original,overall,category_coverage:round(coverage,2),categories:r.categories,n_sources:sources.length,sources,board_scores:r.contrib,slovenian:null,slovenian_raw:[],pct_spread_sd:spread,value_score_per_usd:original.price&&original.price.blended_3to1>0?round(overall/original.price.blended_3to1,2):null,overall_rank:null,confidence:sources.length>=6?"high":sources.length>=3?"medium":"low"};
+    models.push(m);
+  }
+  models.sort((a,b)=>b.overall-a.overall||(a.model_id<b.model_id?-1:a.model_id>b.model_id?1:0));
+  let rank=0;
+  for(const m of models)if(m.n_sources>=cfg.rank_min_sources&&m.category_coverage>=cfg.rank_min_coverage)m.overall_rank=++rank;
+  return {models,n_boards:boards.size,n_sources:new Set([...boards.values()].map(b=>b.meta.source_id)).size,n_ranked:rank,n_missing:data.models.length-models.length};
+}
+    // END SOURCE_SCOPE_ENGINE
     var T = {
       sl: {
         loading: "Nalagam podatke …", failed: "Podatkov ni bilo mogoče naložiti.", noResults: "Ni zadetkov.",
@@ -448,6 +534,7 @@
         newTag: "NOVO", newFam: "Nova družina", released: "izšel", afterData: "po zadnjem zajemu podatkov — še brez ocene", notInData: "še ni na nobeni sprejeti lestvici — brez ocene",
         notRanked: "še ni rangiran", announce: "objava",
         newNote: "Rezultati veljajo za izbrani zajem. Skupno mesto zahteva vsaj 3 neodvisne vire in 45 % pokritosti kategorij.",
+        scopeLabel: "Viri:", scopeAll: "Vsi", scopeTop5: "Top 5", scopeCoverage: "Pokritost virov in kategorij", scopeError: "TOP 5 za ta zajem ni na voljo; prikazani so vsi viri.", scopeIntro: "TOP 5: Artificial Analysis, Epoch AI, Arena, ARC Prize, Vals AI.", scopeMethod: "Isti primerjalni nabor modelov; ponovni izračun percentilov, popravka moči polja in skupne ocene samo iz izbranih lestvic. Prekrivajoči se sestavljeni indeksi, podvojeni režimi ARC, jezikovne podlestvice Arena (če obstaja skupna neangleška) in dodatna metrika AA Omniscience so izločeni. Merila za rangiranje ostanejo ≥ 3 viri in ≥ 45 % pokritosti kategorij. Druge tabele in povzetki ostanejo pri vseh virih; cene so nespremenjene.", scopeBoards: "lestvic", scopeNoData: "modelov brez meritve v TOP 5",
         none: "–"
       },
       en: {
@@ -477,6 +564,7 @@
         newTag: "NEW", newFam: "New family", released: "released", afterData: "after the last data collection — not scored yet", notInData: "not yet on any accepted board — no score",
         notRanked: "not ranked yet", announce: "announcement",
         newNote: "Results are for the selected capture. An overall rank requires at least 3 independent sources and 45% category coverage.",
+        scopeLabel: "Sources:", scopeAll: "All", scopeTop5: "Top 5", scopeCoverage: "Source and category coverage", scopeError: "TOP 5 is unavailable for this capture; all sources are shown.", scopeIntro: "TOP 5: Artificial Analysis, Epoch AI, Arena, ARC Prize, Vals AI.", scopeMethod: "Same model comparison panel; percentiles, field-strength correction and overall scores are recomputed using only the selected boards. Overlapping composite indices, duplicate ARC harness, Arena language subsets (when the non-English aggregate exists) and the additional AA Omniscience metric are excluded. Rank eligibility remains ≥ 3 sources and ≥ 45% category coverage. Other tables and summaries retain all sources; prices are unchanged.", scopeBoards: "boards", scopeNoData: "models with no TOP 5 observation",
         none: "–"
       }
     };
@@ -501,15 +589,17 @@
     var QF_DEFAULT = 50, QF_OPTIONS = [0, 40, 50, 60, 70, 80], VMIN = QF_DEFAULT, PARETO = {};
     function belowQ(m) { return VMIN > 0 && !(m.overall >= VMIN); }
     function valueOf(m) { var p = m.price ? m.price.blended_3to1 : null; return p > 0 && !belowQ(m) ? Math.max(0, m.overall - VMIN) / p : null; }
-    function computePareto() {
-      PARETO = {};
-      var c = D.models.filter(function (m) { return m.overall_rank && m.price && m.price.blended_3to1 > 0; });
+    function paretoFor(models) {
+      var out = {};
+      var c = models.filter(function (m) { return m.overall_rank && m.price && m.price.blended_3to1 > 0; });
       c.forEach(function (m) {
         var pm = m.price.blended_3to1;
         var dom = c.some(function (o) { var po = o.price.blended_3to1; return o !== m && o.overall >= m.overall && po <= pm && (o.overall > m.overall || po < pm); });
-        if (!dom) PARETO[m.model_id] = 1;
+        if (!dom) out[m.model_id] = 1;
       });
+      return out;
     }
+    function computePareto() { PARETO = paretoFor(D.models); }
     function L() { return root.lang === "en" ? "en" : "sl"; }
     function t(k) { var v = T[L()][k]; return v === undefined ? (T.sl[k] === undefined ? k : T.sl[k]) : v; }
     function loc() { return L() === "en" ? "en-GB" : "sl-SI"; }
@@ -746,16 +836,30 @@
       ];
     }
 
+    function renderSourceScope() {
+      var sel = el("source-scope"), note = el("source-scope-note");
+      el("source-scope-label").textContent = t("scopeLabel");
+      sel.options[0].textContent = t("scopeAll");
+      sel.options[1].textContent = t("scopeTop5");
+      sel.disabled = !TOP5_DATA;
+      sel.value = st.sourceScope;
+      note.hidden = st.sourceScope !== "top5" && !TOP5_ERROR;
+      note.textContent = TOP5_ERROR ? t("scopeError") : st.sourceScope === "top5" ? t("scopeIntro") + " · " + TOP5_DATA.n_boards + " " + t("scopeBoards") + " · " + TOP5_DATA.n_missing + " " + t("scopeNoData") + ". " + t("scopeMethod") : "";
+    }
     function renderOverall() {
-      var cols = overallCols(), all = byRank(), q = st.q.trim().toLowerCase(), list = pick(all);
+      renderSourceScope();
+      var isTop5 = st.sourceScope === "top5" && TOP5_DATA;
+      var scopeModels = isTop5 ? TOP5_DATA.models : D.models;
+      var pareto = isTop5 ? TOP5_PARETO : PARETO;
+      var cols = overallCols(), all = scopeModels.filter(function(m){return m.overall_rank;}).sort(function(a,b){return a.overall_rank-b.overall_rank;}), q = st.q.trim().toLowerCase(), list = pick(all);
       list = q ? list.filter(function (m) { return (m.model_id + " " + (m.vendor || "")).toLowerCase().indexOf(q) >= 0; }) : list;
       list = sortList(list, "overall", cols);
       var shown = q || st.all || filtering() ? list : list.slice(0, TOP);
       var head = thead("overall", cols);
       var body = shown.map(function (m) {
-        var extra = (PARETO[m.model_id] && !belowQ(m) ? '<span class="newtag pareto" title="' + esc(t("paretoTip")) + '">' + esc(t("pareto")) + "</span>" : "") + '<span class="m-only"> · ' + esc(priceTxt(m.price)) + " · " + esc(m.n_sources) + " " + esc(t("srcs")) + "</span>";
+        var extra = (pareto[m.model_id] && !belowQ(m) ? '<span class="newtag pareto" title="' + esc(t("paretoTip")) + '">' + esc(t("pareto")) + "</span>" : "") + '<span class="m-only"> · ' + esc(priceTxt(m.price)) + " · " + esc(m.n_sources) + (isTop5 ? "/5" : "") + " " + esc(t("srcs")) + "</span>";
         var dim = st.sort.overall && st.sort.overall.k === "value" && belowQ(m);
-        var r = (dim ? rowOpen(m).replace("<tr", '<tr data-belowq="1"') : rowOpen(m)) + '<td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + confBadge(m) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + (belowQ(m) ? '<span class="muted" title="' + esc(t("belowQ")) + '">' + esc(t("none")) + "</span>" : esc(nf(valueOf(m), 1))) + "</td></tr>";
+        var r = (dim ? rowOpen(m).replace("<tr", '<tr data-belowq="1"') : rowOpen(m)) + '<td class="rk">' + esc(m.overall_rank) + "</td><td>" + modelCell(m, true, extra) + '</td><td class="num"><span class="score">' + esc(nf(m.overall, 1)) + "</span>" + bar(m.overall) + '</td><td class="d-only">' + (isTop5 ? '<span class="conf" title="' + esc(t("scopeCoverage") + ": " + nf(m.category_coverage * 100, 0) + "%") + '">' + esc(m.n_sources) + '/5</span>' : confBadge(m)) + '</td><td class="num d-only">' + esc(priceTxt(m.price)) + '</td><td class="num">' + (belowQ(m) ? '<span class="muted" title="' + esc(t("belowQ")) + '">' + esc(t("none")) + "</span>" : esc(nf(valueOf(m), 1))) + "</td></tr>";
         if (st.open[m.model_id]) r += detailRow(m, 6);
         return r;
       }).join("");
@@ -766,7 +870,7 @@
       tg.hidden = !!q || filtering();
       tg.textContent = st.all ? t("showTop") : t("showAll") + " (" + all.length + ")";
       tg.setAttribute("aria-pressed", String(st.all));
-      var un = D.models.filter(function (m) { return !m.overall_rank && vendOK(m); }).sort(function (a, b) { return b.overall - a.overall; });
+      var un = scopeModels.filter(function (m) { return !m.overall_rank && vendOK(m); }).sort(function (a, b) { return b.overall - a.overall; });
       el("unranked-sum").textContent = t("unranked") + ": " + un.length;
       el("unranked").innerHTML = un.map(function (m) { return '<span class="mid">' + esc(m.model_id) + "</span> (" + esc(nf(m.overall, 1)) + ", " + esc(m.n_sources) + ")"; }).join(" · ");
     }
@@ -968,6 +1072,7 @@
         put("s", sortTxt(st.sort.overall));
         put("cs", sortTxt(st.sort["cat:" + st.cat]));
         put("q", st.q.trim());
+        put("sources", st.sourceScope === "top5" ? "top5" : "");
         put("qf", VMIN !== QF_DEFAULT ? String(VMIN) : "");
         var qs = p.toString();
         history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
@@ -976,6 +1081,7 @@
     function readURL() {
       try {
         var p = new URLSearchParams(location.search), x;
+        st.sourceScope = TOP5_DATA && p.get("sources") === "top5" ? "top5" : "all";
         var qf = p.get("qf"); if (qf !== null && qf !== "" && isFinite(Number(qf)) && Number(qf) >= 0 && Number(qf) <= 95) VMIN = Number(qf);
         (p.get("v") || "").split(",").forEach(function (v) { v = v.trim(); if (v === "drugi" || v === "other") st.vend.__other = 1; else if (VMAIN.indexOf(v) >= 0) st.vend[v] = 1; });
         var tp = Number(p.get("top"));
@@ -1000,6 +1106,7 @@
     el("vtop").addEventListener("change", function () { st.top = Number(el("vtop").value) || 0; refilter(); });
     document.addEventListener("click", function (ev) { var b = ev.target && ev.target.closest ? ev.target.closest("[data-fclear]") : null; if (!b) return; st.vend = {}; st.top = 0; refilter(); var c = el("vchips").querySelector("button"); if (c) c.focus(); });
 
+    el("source-scope").addEventListener("change", function () { st.sourceScope = TOP5_DATA && el("source-scope").value === "top5" ? "top5" : "all"; if (D) { renderOverall(); syncURL(); } });
     var timer = 0;
     el("q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(function () { st.q = el("q").value; if (D) { renderOverall(); syncURL(); } }, 120); });
     el("all-toggle").addEventListener("click", function () { st.all = !st.all; renderOverall(); });
@@ -1053,6 +1160,7 @@
         D = r[0]; S = r[1]; C = r[2]; U = r[3];
         computePareto();
         (D.boards || []).forEach(function (b) { BOARD[b.board_id] = b; });
+        try { TOP5_DATA = buildSourceScope(D, TOP5_IDS, TOP5_DROP); if (TOP5_DATA.n_sources !== TOP5_IDS.length || !TOP5_DATA.n_ranked) throw Error("Incomplete TOP 5 capture"); TOP5_PARETO = paretoFor(TOP5_DATA.models); } catch (e) { TOP5_DATA = null; TOP5_ERROR = true; console.warn("TOP 5 scope:", e); }
         initVendors();
         readURL();
         el("status").textContent = "";
