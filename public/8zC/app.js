@@ -201,8 +201,8 @@ const translations = {
     "The first row measures the current file in your browser; the direct ZIP size is estimated from browser Deflate plus a ZIP wrapper. Other rows are recorded external-codec measurements for the same SHA-256. The reference matrices below show those external measurements.",
   "Rezultati 8zC": "8zC results",
   "Kodek 8zC": "8zC codec",
-  "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x06/\\x05 z vzvratnim branjem v1..v4, dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus 1,698 MB samostojno in 1,679 MB v kohortnem arhivu .8zcc · Hutter enwik8 22,59 MB in enwik9 194,33 MB · 16/33 proti paq8px -8 · 319/319 na vseh treh korpusih · 350/350 na slepem korpusu proti 7z) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
-    "Compress one or multiple files at once into our 100% sovereign multi-plane .8zc format (8ZCN\\x06/\\x05 backward-compatible with v1..v4, length and CRC-32, zero external libraries, 33-file corpus at 1.698 MB standalone and 1.679 MB in .8zcc cohort archive · Hutter enwik8 22.59 MB and enwik9 194.33 MB · 16/33 wins/ties vs. paq8px -8 · 319/319 across all three corpora · 350/350 on blind unseen corpus vs. 7z) or .8zc.zip, and automatically restore originals. Everything runs 100% locally in your browser (Rust + WebAssembly).",
+  "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x06/\\x05 z vzvratnim branjem v1..v4, dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus 1,698 MB samostojno in 1,679 MB v kohortnem arhivu .8zcc · Hutter enwik8 22,13 MB in enwik9 190,03 MB · 16/33 proti paq8px -8 · 319/319 na vseh treh korpusih · 350/350 na slepem korpusu proti 7z) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
+    "Compress one or multiple files at once into our 100% sovereign multi-plane .8zc format (8ZCN\\x06/\\x05 backward-compatible with v1..v4, length and CRC-32, zero external libraries, 33-file corpus at 1.698 MB standalone and 1.679 MB in .8zcc cohort archive · Hutter enwik8 22.13 MB and enwik9 190.03 MB · 16/33 wins/ties vs. paq8px -8 · 319/319 across all three corpora · 350/350 on blind unseen corpus vs. 7z) or .8zc.zip, and automatically restore originals. Everything runs 100% locally in your browser (Rust + WebAssembly).",
   "Izberite postopek": "Choose an operation",
   "Format izhoda": "Output format",
   "Format .8zc (suveren)": "Format .8zc (sovereign)",
@@ -285,9 +285,9 @@ const translations = {
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
   "Čisti cmix v21 → 8zC + cmix": "Direct cmix v21 → 8zC + cmix",
-  "8zC v2.0.0 · Hutter Prize MediaWiki/XML pogon (FMT_WIKI_XML = 20 · enwik9 194,33 MB), preboj pod 1,698 MB in kohortni DAG arhiv (8ZCC\\x01)":
-    "8zC v2.0.0 · Hutter Prize MediaWiki/XML Engine (FMT_WIKI_XML = 20 · enwik9 194.33 MB), Sub-1.698 MB Breakthrough & Cohort DAG Archive (8ZCC\\x01)",
-  "enwik9 5,15× (1,555 bpc) · O(1) naključni dostop · 0 floatov": "enwik9 5.15x (1.555 bpc) · O(1) random access · 0 floats",
+  "8zC v2.0.0 · Hutter Prize MediaWiki/XML pogon (FMT_WIKI_XML = 20 · enwik9 190,03 MB), preboj pod 1,698 MB in kohortni DAG arhiv (8ZCC\\x01)":
+    "8zC v2.0.0 · Hutter Prize MediaWiki/XML Engine (FMT_WIKI_XML = 20 · enwik9 190.03 MB), Sub-1.698 MB Breakthrough & Cohort DAG Archive (8ZCC\\x01)",
+  "enwik9 5,26× (1,520 bpc) · O(1) naključni dostop · 0 floatov": "enwik9 5.26x (1.520 bpc) · O(1) random access · 0 floats",
   "Strukturna kohorta (33-datotečni korpus · 8 blokov O(1))": "Structural cohort (33-file corpus · 8 O(1) blocks)",
   "Posamični 8zC (Max / Ultra)": "Individual 8zC (Max / Ultra)",
   "Kohortni arhiv 8ZCC\\x01 (Max / Ultra)": "Cohort archive 8ZCC\\x01 (Max / Ultra)",
@@ -880,10 +880,10 @@ function setLanguage(lang) {
   byId("th-m-cmix").textContent = t("Čisti cmix v21 → 8zC + cmix");
   if (byId("cohort-8zc-heading")) {
     byId("cohort-8zc-heading").textContent = t(
-      "8zC v2.0.0 · Hutter Prize MediaWiki/XML pogon (FMT_WIKI_XML = 20 · enwik9 194,33 MB), preboj pod 1,698 MB in kohortni DAG arhiv (8ZCC\\x01)"
+      "8zC v2.0.0 · Hutter Prize MediaWiki/XML pogon (FMT_WIKI_XML = 20 · enwik9 190,03 MB), preboj pod 1,698 MB in kohortni DAG arhiv (8ZCC\\x01)"
     );
   }
-  if (byId("cohort-badge")) byId("cohort-badge").textContent = t("enwik9 5,15× (1,555 bpc) · O(1) naključni dostop · 0 floatov");
+  if (byId("cohort-badge")) byId("cohort-badge").textContent = t("enwik9 5,26× (1,520 bpc) · O(1) naključni dostop · 0 floatov");
   if (byId("th-c-cohort")) byId("th-c-cohort").textContent = t("Strukturna kohorta (33-datotečni korpus · 8 blokov O(1))");
   if (byId("th-c-raw")) byId("th-c-raw").textContent = t("Surovo");
   if (byId("th-c-indiv")) byId("th-c-indiv").textContent = t("Posamični 8zC (Max / Ultra)");
