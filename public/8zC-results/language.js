@@ -20,7 +20,7 @@ function selectLanguage(lang, persist) {
   for (const button of languageButtons) button.setAttribute("aria-pressed", String(button.dataset.selectLanguage === language));
   for (const link of document.querySelectorAll("a[href]")) {
     const url = new URL(link.href, location.href);
-    if (url.origin === location.origin && ["/8zc/", "/8zc-story/", "/8zc-results/"].includes(url.pathname.toLowerCase())) {
+    if (url.origin === location.origin && ["/8zc/", "/8zc-story/", "/8zc-results/", "/8zc-hutter/"].includes(url.pathname.toLowerCase())) {
       url.searchParams.set("lang", language);
       link.href = url.href;
     }

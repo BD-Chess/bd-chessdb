@@ -1,0 +1,146 @@
+@import url("/8zC-results/results.css?v=20261125-cta-r1");
+
+.f1-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--active);
+  color: var(--accent);
+  font: 600 .82rem/1.4 ui-monospace, monospace;
+  letter-spacing: .02em;
+  margin-bottom: 12px;
+}
+
+.tracks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 22px 0;
+}
+
+.track-card {
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  background: var(--panel);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.track-card.track-c {
+  border-top-color: var(--state-planned);
+}
+
+.track-card h3 {
+  margin: 0;
+  font: 600 1.22rem/1.28 Georgia, "Times New Roman", serif;
+  color: var(--ink);
+}
+
+.track-tag {
+  font: 600 .78rem/1.35 ui-monospace, monospace;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.track-card.track-c .track-tag {
+  color: var(--state-planned);
+}
+
+.track-card p, .track-card ul {
+  margin: 0;
+  font-size: .94rem;
+  color: var(--muted);
+}
+
+.track-card ul {
+  padding-inline-start: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.track-card li strong {
+  color: var(--ink);
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0 8px;
+}
+
+.secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55em;
+  min-height: 56px;
+  padding: .78em 1.25em;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--accent);
+  font-size: clamp(1.02rem, 1.7vw, 1.18rem);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.secondary-cta:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.bitcost-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 170px;
+}
+
+.bitcost-bar {
+  display: inline-block;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font: 600 .78rem/1.35 ui-monospace, monospace;
+  background: var(--active);
+  color: var(--state-verified);
+  border: 1px solid var(--line);
+}
+
+.status-pill.null-res {
+  color: var(--state-partial);
+}
+
+.status-pill.bug-found {
+  color: var(--state-planned);
+}
+
+.code-xray {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 16px 20px;
+  margin-top: 16px;
+  overflow-x: auto;
+  font: .86rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--ink);
+}
+
+@media (max-width: 920px) {
+  .tracks-grid {
+    grid-template-columns: 1fr;
+  }
+}
