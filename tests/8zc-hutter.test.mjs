@@ -34,7 +34,7 @@ test('8zC-Hutter page, hutter-data.json, redirects, headers and 8zC-results F1 b
 
   // Verify redirects and headers
   assert.match(headers, /\/8zC-Hutter\/\*/);
-  assert.match(redirects, /\/8zc-hutter \/8zC-Hutter\/ 301!/);
+  assert.match(redirects, /\/8zc-hutter\/ \/8zC-Hutter\/index\.html 200!/);
   assert.match(redirects, /\/8zHutter \/8zC-Hutter\/ 301!/);
   assert.match(redirects, /\/8zhutter \/8zC-Hutter\/ 301!/);
 });
