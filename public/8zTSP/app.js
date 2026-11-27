@@ -707,6 +707,45 @@ async function start(options = {}) {
       unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, source: mapMeta?.source || '', credit: mapMeta?.credit || '' }, { separate: recordingSeparate });
     if (turned) recorder.data.xScale = mapMeta.display.xScale;
   });
+const PULSE_TRACE_CAP = 256;
+const PULSE_TRACE_HEAD = 16;
+function createEmptyPulseSummary() {
+  return {
+    v: 1, count: 0, regularCount: 0, endgameCount: 0, totalWallMs: 0, totalGain: 0,
+    gainByPhase: { reentry: 0, ring11: 0, pocket2: 0, subKickLk: 0, globalLk: 0, globalKick: 0, endgame: 0 },
+    peakWasmBytes: 0, softGuardHits: 0
+  };
+}
+function ingestPulseEvent(rec, rawEv, worker) {
+  if (!rec || !rawEv || typeof rawEv !== 'object') return;
+  if (!Array.isArray(rec.pulseTrace)) rec.pulseTrace = [];
+  if (!rec.pulseSummary) rec.pulseSummary = createEmptyPulseSummary();
+  const nextId = (rec.pulseSummary.count || 0) + 1;
+  const ev = { ...rawEv, id: nextId, worker, pageSeconds: (performance.now() - started) / 1000 };
+  const s = rec.pulseSummary;
+  const isEndgame = typeof ev.kind === 'string' && ev.kind.startsWith('endgame_');
+  s.count = nextId;
+  if (isEndgame) s.endgameCount += 1; else s.regularCount += 1;
+  s.totalWallMs += Number(ev.wallMs) || 0;
+  s.totalGain += Number(ev.gainTotal) || 0;
+  if (isEndgame) {
+    s.gainByPhase.endgame += Number(ev.gainTotal) || 0;
+  } else {
+    s.gainByPhase.reentry += Number(ev.gainReentry) || 0;
+    s.gainByPhase.ring11 += Number(ev.gainRing11) || 0;
+    s.gainByPhase.pocket2 += Number(ev.gainPocket2) || 0;
+    s.gainByPhase.subKickLk += Number(ev.gainSubKickLk) || 0;
+    s.gainByPhase.globalLk += Number(ev.gainGlobalLk) || 0;
+    s.gainByPhase.globalKick += Number(ev.gainGlobalKick) || 0;
+  }
+  const wb = Number(ev.wasmBytes) || 0;
+  if (wb > s.peakWasmBytes) s.peakWasmBytes = wb;
+  if (ev.wasmSoftGuardHit) s.softGuardHits += 1;
+  rec.pulseTrace.push(ev);
+  if (rec.pulseTrace.length > PULSE_TRACE_CAP) {
+    rec.pulseTrace = rec.pulseTrace.slice(0, PULSE_TRACE_HEAD).concat(rec.pulseTrace.slice(-(PULSE_TRACE_CAP - PULSE_TRACE_HEAD)));
+  }
+}
   shareNotice = null; shareFallbackFile = null;
   active = true; best = Infinity; tour = null; started = performance.now(); shownElapsed = 0;
   runRecord = { schema: '8ztsp-web-run-v1', name: mapName, inputSha256: inputHash, cities: coords.length / 2, seconds, seed,
@@ -716,7 +755,7 @@ async function start(options = {}) {
     engineRevision: ENGINE_BUILD.engineRevision, webVersion: ENGINE_BUILD.webVersion, passMode, metric: text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\w+)/)?.[1] || null, handoffs: [],
     refinement, mdlDcc: useMdlDcc, twoPass: plan.enabled, passPlan: plan, passEvents: [], passBudgets: [], currentPass: plan.enabled ? 1 : null, reference, unit: mapMeta?.unit ?? null, optimum: mapMeta?.optimum || null, stopAtOptimum: !!mapMeta?.optimum && (options.stopAtOptimum ?? $('stopOptimum').checked),
     optimumReached: null, example: mapMeta?.id || null, maxSteps: options.maxSteps || 0, passes: options.passes || 0,
-    history: [], historyReceived: 0, historyDropped: 0, results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
+    history: [], historyReceived: 0, historyDropped: 0, pulseTrace: [], pulseSummary: createEmptyPulseSummary(), results: [], firstReach: null, tour: null, userAgent: navigator.userAgent, page: 'mdlxdcc.org/8zTSP/' };
   render();
   let shared;
   if (crossOriginIsolated && typeof SharedArrayBuffer !== 'undefined') {
@@ -767,6 +806,7 @@ async function start(options = {}) {
         if (data.type === 'pool-terminate') { children.get(data.id)?.terminate(); return; }
         recordWasmMemory(i, data.wasmMemoryBytes);
         if (data.type === 'memory') return;
+        if (data.type === 'pulse') { ingestPulseEvent(runRecord, data.event, i); return; }
         if (data.type === 'error') { fail(data.message); return; }
         if (data.type === 'budget') { runRecord.passBudgets[i] = { worker: i, ...data.plan }; return; }
         if (data.type === 'handoff') {

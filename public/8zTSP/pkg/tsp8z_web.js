@@ -368,6 +368,9 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_tsp8zProgress_8700e8430fd22195 = function(arg0, arg1, arg2, arg3, arg4) {
         self.tsp8zProgress(arg0, arg1, arg2, getArrayU32FromWasm0(arg3, arg4));
     };
+    imports.wbg.__wbg_tsp8zPulse_28e4e4fb42feaa4a = function(arg0, arg1) {
+        self.tsp8zPulse(getStringFromWasm0(arg0, arg1));
+    };
     imports.wbg.__wbindgen_cast_2241b6af4c4b2941 = function(arg0, arg1) {
         // Cast intrinsic for `Ref(String) -> Externref`.
         const ret = getStringFromWasm0(arg0, arg1);

@@ -42,6 +42,13 @@ self.tsp8zPhase = (pass, length, elapsed, steps, tour) => {
 self.tsp8zHandoff = summary => {
   self.postMessage({type:'handoff',token,summary:JSON.parse(summary)});
 };
+self.tsp8zPulse = jsonStr => {
+  try {
+    const ev = JSON.parse(jsonStr);
+    if (!ev.wasmBytes && wasm?.memory?.buffer) ev.wasmBytes = wasm.memory.buffer.byteLength;
+    self.postMessage({type:'pulse',token,event:ev,wasmMemoryBytes:ev.wasmBytes||wasm?.memory?.buffer?.byteLength});
+  } catch {}
+};
 self.onmessage = async ({data}) => {
   if (data.type === 'pool-event') {
     proxies.get(data.id)?.dispatchEvent(new MessageEvent('message',{data:data.message}));
