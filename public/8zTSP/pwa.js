@@ -15,8 +15,8 @@
 //    button and the offline state; the old boxes (above the map panel, at the bottom of the password page) are gone.
 (()=>{
  'use strict';
- const BUILT_AT='2026-11-26T18:03';
- const PAGE_BUILD='41a5b41ded7ee07ff0db';   // demo/pwa_build.py writes this build's id here: the page knows its own build without asking the worker   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
+ const BUILT_AT='2026-11-27T13:42';
+ const PAGE_BUILD='6f9967f761efbe943fd0';   // demo/pwa_build.py writes this build's id here: the page knows its own build without asking the worker   // demo/pwa_build.py writes the build's local date and time here (YYYY-MM-DDTHH:MM)
  const state=window.tsp8zPwa??={prompt:null,registration:null,acceptUpdate:false,reloading:false,message:null,build:'',latestBuild:'',userPressed:false};
  const T={
   install:['Install the app','Namesti aplikacijo'],
