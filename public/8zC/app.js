@@ -208,7 +208,7 @@ const translations = {
   "Format .8zc (suveren)": "Format .8zc (sovereign)",
   "Format .8zc.zip": "Format .8zc.zip",
   "Stopnja stiskanja .8zc": ".8zc compression level",
-  "Ultra (v1.8.1 <1,811 MB)": "Ultra (v1.8.1 <1.811 MB)",
+  "Ultra (v1.8.2 <1,811 MB)": "Ultra (v1.8.2 <1.811 MB)",
   "Max (v1.5 Optimal)": "Max (v1.5 Optimal)",
   "Hitro (Fast)": "Fast (Hitro)",
   "Stisni datoteke": "Compress files",
@@ -276,17 +276,17 @@ const translations = {
   "Vzorec in družina formata": "Sample and format family",
   "Čisti ZIP → 8zC v9 + ZIP": "Direct ZIP → 8zC v9 + ZIP",
   "Čisti 7z → 8zC v9 + 7z": "Direct 7z → 8zC v9 + 7z",
-  "Suvereni .8zc (v1.8.1)": "Sovereign .8zc (v1.8.1)",
+  "Suvereni .8zc (v1.8.2)": "Sovereign .8zc (v1.8.2)",
   "Živi preizkus": "Live test",
   "Preizkusi v živo →": "Test live →",
-  "Cycle 13 R6 (v9) + v1.8.1 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
-    "Cycle 13 R6 (v9) + v1.8.1 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
+  "Cycle 13 R6 (v9) + v1.8.2 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
+    "Cycle 13 R6 (v9) + v1.8.2 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
   "Zaženi 00_data_endian.elf v živo →": "Run 00_data_endian.elf live →",
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
   "Čisti cmix v21 → 8zC + cmix": "Direct cmix v21 → 8zC + cmix",
-  "8zC v1.8.1 · Hladna hramba, sinteza profilov formul MDL in kohortni DAG arhiv 8zC × 8zTSP (8ZCC\\x01)":
-    "8zC v1.8.1 · Cold Storage, MDL Formula Profile Synthesis & 8zC × 8zTSP Cohort DAG Archive (8ZCC\\x01)",
+  "8zC v1.8.2 · Hladna hramba, sinteza profilov formul MDL in kohortni DAG arhiv 8zC × 8zTSP (8ZCC\\x01)":
+    "8zC v1.8.2 · Cold Storage, MDL Formula Profile Synthesis & 8zC × 8zTSP Cohort DAG Archive (8ZCC\\x01)",
   "O(1) selektivni naključni dostop · 0 floatov": "O(1) selective random access · 0 floats",
   "Strukturna kohorta (33-datotečni korpus · 8 blokov O(1))": "Structural cohort (33-file corpus · 8 O(1) blocks)",
   "Posamični 8zC (vsota)": "Individual 8zC (sum)",
@@ -821,7 +821,7 @@ function setLanguage(lang) {
   const lvlLegend = document.querySelector("#enc-levels legend");
   if (lvlLegend) lvlLegend.textContent = t("Stopnja stiskanja .8zc");
   const lvlSpans = document.querySelectorAll("#enc-levels label span");
-  if (lvlSpans[0]) lvlSpans[0].textContent = t("Ultra (v1.8.1 <1,811 MB)");
+  if (lvlSpans[0]) lvlSpans[0].textContent = t("Ultra (v1.8.2 <1,811 MB)");
   if (lvlSpans[1]) lvlSpans[1].textContent = t("Max (v1.5 Optimal)");
   if (lvlSpans[2]) lvlSpans[2].textContent = t("Hitro (Fast)");
 
@@ -864,23 +864,23 @@ function setLanguage(lang) {
   byId("th-v4-raw").textContent = t("Surovo");
   byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
   byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
-  if (byId("th-v4-nat")) byId("th-v4-nat").textContent = t("Suvereni .8zc (v1.8.1)");
+  if (byId("th-v4-nat")) byId("th-v4-nat").textContent = t("Suvereni .8zc (v1.8.2)");
   byId("th-v4-try").textContent = t("Živi preizkus");
 
   byId("matrix-title").textContent = t(
-    "Cycle 13 R6 (v9) + v1.8.1 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)"
+    "Cycle 13 R6 (v9) + v1.8.2 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)"
   );
   runSampleLiveBtn.textContent = t("Zaženi 00_data_endian.elf v živo →");
   byId("th-m-file").textContent = t("Vzorčni ELF (prevajalnik)");
   byId("th-m-raw").textContent = t("Surovo");
   byId("th-m-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
   byId("th-m-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
-  if (byId("th-m-nat")) byId("th-m-nat").textContent = t("Suvereni .8zc (v1.8.1)");
+  if (byId("th-m-nat")) byId("th-m-nat").textContent = t("Suvereni .8zc (v1.8.2)");
   byId("th-m-paq").textContent = t("Čisti PAQ8PX → 8zC + PAQ");
   byId("th-m-cmix").textContent = t("Čisti cmix v21 → 8zC + cmix");
   if (byId("cohort-8zc-heading")) {
     byId("cohort-8zc-heading").textContent = t(
-      "8zC v1.8.1 · Hladna hramba, sinteza profilov formul MDL in kohortni DAG arhiv 8zC × 8zTSP (8ZCC\\x01)"
+      "8zC v1.8.2 · Hladna hramba, sinteza profilov formul MDL in kohortni DAG arhiv 8zC × 8zTSP (8ZCC\\x01)"
     );
   }
   if (byId("cohort-badge")) byId("cohort-badge").textContent = t("O(1) selektivni naključni dostop · 0 floatov");
