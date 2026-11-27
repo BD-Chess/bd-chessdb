@@ -26,12 +26,12 @@ const QUICK_SAMPLES = [
     chip_sl: "Win64 DLL (235 KB)",
     chip_en: "Win64 DLL (235 KB)",
     sha256: "b03a3fc0014c8e7ceb3076e880af923db22fcf2a4327815d5ef7b51fc596df8f",
-    title_sl: "sample_pe64_win32.dll (Windows PE32+ x64 · X64CausalSubset M4_FULL_SPLIT + PE_RELOC_V2 + T4_V9)",
-    title_en: "sample_pe64_win32.dll (Windows PE32+ x64 · X64CausalSubset M4_FULL_SPLIT + PE_RELOC_V2 + T4_V9)",
+    title_sl: "sample_pe64_win32.dll (Windows PE32+ x64 · X64CausalSubset v2 M4_FULL_SPLIT + PE_RELOC_V2 + T4_V9)",
+    title_en: "sample_pe64_win32.dll (Windows PE32+ x64 · X64CausalSubset v2 M4_FULL_SPLIT + PE_RELOC_V2 + T4_V9)",
     raw_B: 234896,
     zip:  { direct: 87017, best: 75273, pct: "-13,5 %", label: "Cycle13 R6 v9 PE" },
     sz7z: { direct: 77337, best: 69386, pct: "-10,3 %", label: "Cycle13 R6 v9 PE" },
-    nat:  { bytes: 65471,  pct7z: "-15,3 % vs 7z" },
+    nat:  { bytes: 64638,  pct7z: "-16,4 % vs 7z" },
   },
   {
     id: "sample_wasm",
@@ -174,7 +174,7 @@ const ELF_BENCHMARK_SAMPLES = [
     raw_B: 2726704,
     zip:  { direct: 1290629, z8c_r3: 1000231, z8c_v9: 937814, pct_v9: "-27,3 %" },
     sz7z: { direct: 1047223, z8c_r3: 779900,  z8c_v9: 743482, pct_v9: "-29,0 %" },
-    nat:  { bytes: 688782, pct7z: "-34,2 % vs 7z" },
+    nat:  { bytes: 678211, pct7z: "-35,2 % vs 7z" },
     paq:  { direct: 704961,  z8c: 522419,  pct: "-25,9 % (-10LE)" },
     cmix: { direct: 683352,  z8c: 501302,  pct: "-26,6 %" },
   },
@@ -201,14 +201,14 @@ const translations = {
     "The first row measures the current file in your browser; the direct ZIP size is estimated from browser Deflate plus a ZIP wrapper. Other rows are recorded external-codec measurements for the same SHA-256. The reference matrices below show those external measurements.",
   "Rezultati 8zC": "8zC results",
   "Kodek 8zC": "8zC codec",
-  "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x05 z vzvratnim branjem v1..v4, dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus 1,811 MB · 14/33 proti paq8px -8 · 239/239 na slepem paketu) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
-    "Compress one or multiple files at once into our 100% sovereign multi-plane .8zc format (8ZCN\\x05 backward-compatible with v1..v4, length and CRC-32, zero external libraries, 33-file corpus at 1.811 MB · 14/33 wins/ties vs. paq8px -8 · 239/239 on the blind suite) or .8zc.zip, and automatically restore originals. Everything runs 100% locally in your browser (Rust + WebAssembly).",
+  "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x06/\\x05 z vzvratnim branjem v1..v4, dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus 1,699 MB samostojno in 1,683 MB v kohortnem arhivu .8zcc · 16/33 proti paq8px -8 · 319/319 na vseh treh korpusih) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly).":
+    "Compress one or multiple files at once into our 100% sovereign multi-plane .8zc format (8ZCN\\x06/\\x05 backward-compatible with v1..v4, length and CRC-32, zero external libraries, 33-file corpus at 1.699 MB standalone and 1.683 MB in .8zcc cohort archive · 16/33 wins/ties vs. paq8px -8 · 319/319 across all three corpora) or .8zc.zip, and automatically restore originals. Everything runs 100% locally in your browser (Rust + WebAssembly).",
   "Izberite postopek": "Choose an operation",
   "Format izhoda": "Output format",
   "Format .8zc (suveren)": "Format .8zc (sovereign)",
   "Format .8zc.zip": "Format .8zc.zip",
   "Stopnja stiskanja .8zc": ".8zc compression level",
-  "Ultra (v1.8.2 <1,811 MB)": "Ultra (v1.8.2 <1.811 MB)",
+  "Ultra (v1.9.0 <1,699 MB)": "Ultra (v1.9.0 <1.699 MB)",
   "Max (v1.5 Optimal)": "Max (v1.5 Optimal)",
   "Hitro (Fast)": "Fast (Hitro)",
   "Stisni datoteke": "Compress files",
@@ -276,22 +276,22 @@ const translations = {
   "Vzorec in družina formata": "Sample and format family",
   "Čisti ZIP → 8zC v9 + ZIP": "Direct ZIP → 8zC v9 + ZIP",
   "Čisti 7z → 8zC v9 + 7z": "Direct 7z → 8zC v9 + 7z",
-  "Suvereni .8zc (v1.8.2)": "Sovereign .8zc (v1.8.2)",
+  "Suvereni .8zc (v1.9.0)": "Sovereign .8zc (v1.9.0)",
   "Živi preizkus": "Live test",
   "Preizkusi v živo →": "Test live →",
-  "Cycle 13 R6 (v9) + v1.8.2 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
-    "Cycle 13 R6 (v9) + v1.8.2 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
+  "Cycle 13 R6 (v9) + v1.9.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)":
+    "Cycle 13 R6 (v9) + v1.9.0 Native · Reference matrix of 5 ELF64 binaries (.zip · .7z · .8zc · .paq · .cmix)",
   "Zaženi 00_data_endian.elf v živo →": "Run 00_data_endian.elf live →",
   "Vzorčni ELF (prevajalnik)": "Sample ELF (compiler)",
   "Čisti PAQ8PX → 8zC + PAQ": "Direct PAQ8PX → 8zC + PAQ",
   "Čisti cmix v21 → 8zC + cmix": "Direct cmix v21 → 8zC + cmix",
-  "8zC v1.8.2 · Hladna hramba, sinteza profilov formul MDL in kohortni DAG arhiv 8zC × 8zTSP (8ZCC\\x01)":
-    "8zC v1.8.2 · Cold Storage, MDL Formula Profile Synthesis & 8zC × 8zTSP Cohort DAG Archive (8ZCC\\x01)",
+  "8zC v1.9.0 · Preboj pod 1,70 MB, sinteza profilov formul MDL in kohortni DAG arhiv 8zC × 8zTSP (8ZCC\\x01/\\x02)":
+    "8zC v1.9.0 · Sub-1.70 MB Breakthrough, MDL Formula Profile Synthesis & 8zC × 8zTSP Cohort DAG Archive (8ZCC\\x01/\\x02)",
   "O(1) selektivni naključni dostop · 0 floatov": "O(1) selective random access · 0 floats",
   "Strukturna kohorta (33-datotečni korpus · 8 blokov O(1))": "Structural cohort (33-file corpus · 8 O(1) blocks)",
-  "Posamični 8zC (vsota)": "Individual 8zC (sum)",
-  "Kohortni arhiv 8ZCC\\x01": "Cohort archive 8ZCC\\x01",
-  "Prihranek kohorte in 8zTSP ureditev": "Cohort savings & 8zTSP ordering",
+  "Posamični 8zC (Max / Ultra)": "Individual 8zC (Max / Ultra)",
+  "Kohortni arhiv 8ZCC\\x01 (Max / Ultra)": "Cohort archive 8ZCC\\x01 (Max / Ultra)",
+  "Prihranek kohorte in preboji v1.9.0": "Cohort savings & v1.9.0 breakthroughs",
 };
 
 function safeGetStorage(key) {
@@ -807,7 +807,7 @@ function setLanguage(lang) {
   byId("reference-note").textContent = t("Prva vrstica meri trenutno datoteko v brskalniku; velikost neposrednega ZIP je ocenjena iz brskalniškega Deflate in ovojnice ZIP. Druge vrstice so zabeležene meritve zunanjih kodekov za isti SHA-256. Referenčni matriki spodaj prikazujeta te zunanje meritve.");
   document.querySelector("h1").textContent = t("Kodek 8zC");
   document.querySelector(".intro").textContent = t(
-    "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x05 z vzvratnim branjem v1..v4, dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus 1,811 MB · 14/33 proti paq8px -8 · 239/239 na slepem paketu) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly)."
+    "Stisnite eno ali več datotek hkrati v naš 100 % suvereni večravninski format .8zc (8ZCN\\x06/\\x05 z vzvratnim branjem v1..v4, dolžino in CRC-32, brez zunanjih knjižnic, 33-datotečni korpus 1,699 MB samostojno in 1,683 MB v kohortnem arhivu .8zcc · 16/33 proti paq8px -8 · 319/319 na vseh treh korpusih) ali v .8zc.zip ter samodejno obnovite izvirnike. Vse teče 100 % lokalno v vašem brskalniku (Rust + WebAssembly)."
   );
   document.querySelector("#modes legend").textContent = t("Izberite postopek");
   const modeSpans = document.querySelectorAll("#modes label span");
@@ -821,7 +821,7 @@ function setLanguage(lang) {
   const lvlLegend = document.querySelector("#enc-levels legend");
   if (lvlLegend) lvlLegend.textContent = t("Stopnja stiskanja .8zc");
   const lvlSpans = document.querySelectorAll("#enc-levels label span");
-  if (lvlSpans[0]) lvlSpans[0].textContent = t("Ultra (v1.8.2 <1,811 MB)");
+  if (lvlSpans[0]) lvlSpans[0].textContent = t("Ultra (v1.9.0 <1,699 MB)");
   if (lvlSpans[1]) lvlSpans[1].textContent = t("Max (v1.5 Optimal)");
   if (lvlSpans[2]) lvlSpans[2].textContent = t("Hitro (Fast)");
 
@@ -864,31 +864,31 @@ function setLanguage(lang) {
   byId("th-v4-raw").textContent = t("Surovo");
   byId("th-v4-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
   byId("th-v4-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
-  if (byId("th-v4-nat")) byId("th-v4-nat").textContent = t("Suvereni .8zc (v1.8.2)");
+  if (byId("th-v4-nat")) byId("th-v4-nat").textContent = t("Suvereni .8zc (v1.9.0)");
   byId("th-v4-try").textContent = t("Živi preizkus");
 
   byId("matrix-title").textContent = t(
-    "Cycle 13 R6 (v9) + v1.8.2 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)"
+    "Cycle 13 R6 (v9) + v1.9.0 Native · Referenčna matrika 5 datotek ELF64 (.zip · .7z · .8zc · .paq · .cmix)"
   );
   runSampleLiveBtn.textContent = t("Zaženi 00_data_endian.elf v živo →");
   byId("th-m-file").textContent = t("Vzorčni ELF (prevajalnik)");
   byId("th-m-raw").textContent = t("Surovo");
   byId("th-m-zip").textContent = t("Čisti ZIP → 8zC v9 + ZIP");
   byId("th-m-7z").textContent = t("Čisti 7z → 8zC v9 + 7z");
-  if (byId("th-m-nat")) byId("th-m-nat").textContent = t("Suvereni .8zc (v1.8.2)");
+  if (byId("th-m-nat")) byId("th-m-nat").textContent = t("Suvereni .8zc (v1.9.0)");
   byId("th-m-paq").textContent = t("Čisti PAQ8PX → 8zC + PAQ");
   byId("th-m-cmix").textContent = t("Čisti cmix v21 → 8zC + cmix");
   if (byId("cohort-8zc-heading")) {
     byId("cohort-8zc-heading").textContent = t(
-      "8zC v1.8.2 · Hladna hramba, sinteza profilov formul MDL in kohortni DAG arhiv 8zC × 8zTSP (8ZCC\\x01)"
+      "8zC v1.9.0 · Preboj pod 1,70 MB, sinteza profilov formul MDL in kohortni DAG arhiv 8zC × 8zTSP (8ZCC\\x01/\\x02)"
     );
   }
   if (byId("cohort-badge")) byId("cohort-badge").textContent = t("O(1) selektivni naključni dostop · 0 floatov");
   if (byId("th-c-cohort")) byId("th-c-cohort").textContent = t("Strukturna kohorta (33-datotečni korpus · 8 blokov O(1))");
   if (byId("th-c-raw")) byId("th-c-raw").textContent = t("Surovo");
-  if (byId("th-c-indiv")) byId("th-c-indiv").textContent = t("Posamični 8zC (vsota)");
-  if (byId("th-c-8zcc")) byId("th-c-8zcc").textContent = t("Kohortni arhiv 8ZCC\\x01");
-  if (byId("th-c-gain")) byId("th-c-gain").textContent = t("Prihranek kohorte in 8zTSP ureditev");
+  if (byId("th-c-indiv")) byId("th-c-indiv").textContent = t("Posamični 8zC (Max / Ultra)");
+  if (byId("th-c-8zcc")) byId("th-c-8zcc").textContent = t("Kohortni arhiv 8ZCC\\x01 (Max / Ultra)");
+  if (byId("th-c-gain")) byId("th-c-gain").textContent = t("Prihranek kohorte in preboji v1.9.0");
 
   updateSelectionLabels();
   if (!byId("result").hidden) {
